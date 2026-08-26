@@ -1,0 +1,1109 @@
+
+### 1. Block 18 in the language template
+  PASS  CT_18 constant and labels
+  PASS  blank data carries c18 / t18f / attText
+  PASS  legacy template backfills on touch
+  PASS  legacy {title,notes} rows migrate to text
+  PASS  editor renders block 18 and the attachment box
+  PASS  capture reads Block 18 off the form
+  PASS  summary counts 18 and attachments
+  PASS  blank lines ignored in the attachment count
+  PASS  panel shows the 18 card and the attachment card
+  PASS  apply 18 ticks boxes and reveals 18f
+  PASS  attachment reminder shows the template list
+  PASS  reminder raises a recommendation
+  PASS  copy list includes them
+  PASS  deselecting clears the reminder
+  PASS  CT CSV carries 18 and attachment columns
+  PASS  attachment cell round-trips both separators
+
+### 2. Stable template references
+  PASS  templates gain ids
+  PASS  select emits ids, not positions
+  PASS  reordering does not re-point a saved reference
+  PASS  deleting resolves to nothing, not the wrong one
+  PASS  legacy positional reference still resolves
+  PASS  legacy positional draft restores its selection
+
+### 3. Backup integrity
+  PASS  sha256 returns 64 hex
+  PASS  counts both halves
+  PASS  canonical body key order
+  PASS  a good payload verifies
+  PASS  a tampered payload does not
+  PASS  restore refuses on a count mismatch
+  PASS  backup stamps version 4, counts, hash and the audit log
+  PASS  the audit log rides outside the checksummed body
+
+### 4. Flow-down ceiling
+  PASS  safeguarding exceedance caught
+  PASS  FCL exceedance caught
+  PASS  equal levels clean
+  PASS  NONE / NA not a false positive
+  PASS  Item 11 compared, GCA keys starred
+  PASS  live: level exceedance is an ERROR
+  PASS  live: GCA-approval adds are a WARN not an error
+  PASS  live: non-GCA adds warned separately
+  PASS  live: a box already on the prime is not flagged
+  PASS  no parent means no flow-down noise
+
+### 5. CSV classification markings
+  PASS  marking defaults UNCLASSIFIED
+  PASS  marking follows the CUI banner
+  PASS  template export prepends it
+  PASS  audit export prepends it
+  PASS  portfolio prepends it
+  PASS  importer tolerates a leading marking row
+  PASS  importer still accepts header-first files
+  PASS  unrecognised file rejected
+
+### 6. Single-tab lock
+  PASS  boot claimed the lock
+  PASS  a stale foreign lock is ignored
+  PASS  a live foreign lock forces read-only
+  PASS  read-only blocks template writes
+  PASS  read-only blocks draft writes
+  PASS  take-over reclaims and clears the overlay
+  PASS  writes work again afterwards
+
+### 7. Dashboard — search, capability export, card
+  PASS  seed a portfolio
+  PASS  search by box number
+  PASS  search by capability name finds the same
+  PASS  search reaches Block 13
+  PASS  search reaches CAGE
+  PASS  a hit on a child surfaces the chain
+  PASS  nonsense matches nothing
+  PASS  clear filters restores
+  PASS  box labels read from the form markup
+  PASS  portfolio exports capability columns correctly
+  PASS  some capability headers contain commas
+  PASS  card status border: leaf coloured, parent grey
+  PASS  subcontractor CAGE shown, omitted when blank
+  PASS  notes field is wired to an input
+  PASS  review clock stays biennial
+
+### 8. Holds
+  PASS  Blocked demands a reason, refuses empty, records it
+  PASS  badge red when open, green when cleared, absent when none
+  PASS  hold renders on the card face
+  PASS  cancel reverts the status
+  PASS  a second hold records the raising status
+  PASS  ad-hoc add, resolve and delete
+  PASS  Issued is challenged while a hold is open
+  PASS  only Blocked raises a hold prompt
+  PASS  Awaiting info is no longer offered
+  PASS  the statuses are Draft, Blocked, Ready to sign, Issued, Cancelled
+  PASS  holds reach the search index
+
+### 9. Distribution capture and log
+  PASS  parties derive from Item 18 on that draft
+  PASS  no Item 18 boxes means no parties
+  PASS  Issued opens the dialog and records what is ticked
+  PASS  skip is allowed and audit-logged
+  PASS  issued with nothing logged is badged
+  PASS  badge is a button that opens the log
+  PASS  stats report the count only
+  PASS  acknowledgement machinery is gone
+  PASS  stale ack data on an old record does not crash
+  PASS  clicking the badge expands to the log
+  PASS  Notes button declares the distribution count
+
+### 10. Dialog attachments and the CUI warning
+  PASS  rules run off the stored draft
+  PASS  unticked rules do not fire
+  PASS  manual notes split per line
+  PASS  template-required attachments resolve by id
+  PASS  a stale template reference does not throw
+  PASS  empty draft yields nothing
+  PASS  CUI detection reads the stored banner
+  PASS  the rule list is shared by both callers
+  PASS  dialog shows the CUI banner and the attachment block
+  PASS  no CUI banner on an unclassified draft
+  PASS  the on-form reminder still works
+
+### 11. FSO e-mail fields
+  PASS  fields exist and never reach the printed form
+  PASS  perf block exposes exactly 3 text inputs, e-mail last
+  PASS  positional readers unaffected, e-mail persisted
+  PASS  workspace round trip keeps them
+  PASS  MUST SEND TO FSOs aggregates 6, 7, 8 deduped
+  PASS  subcontractor e-mail required once a sub exists
+  PASS  any text clears it
+  PASS  no subcontractor, no demand
+  PASS  address FORMAT is not policed
+  PASS  18a and 18b resolve independently
+  PASS  dialog e-mail set dedupes across every source
+  PASS  a legacy draft leaves 18a blank rather than guessing
+  PASS  a legacy draft still offers its old addresses in the picker
+  PASS  CSO set still comes from 6c / 7c / 8c
+
+### 12. Templates carry the e-mail
+  PASS  facility template applies address, CAGE and e-mail
+  PASS  facility CSV has the column
+  PASS  perf template row and CSV carry it
+  PASS  applying to Item 7 fills the sub e-mail
+  PASS  applying to a location fills that block
+  PASS  save-to-template stores it, blank does not wipe it
+  PASS  the automatic harvest carries it
+
+### 13. Confirm-the-details warnings
+  PASS  7 warning is the next element after 7a; 8 warning sits in each block
+  PASS  hidden on a clean form
+  PASS  Item 7 apply raises only the 7 warning
+  PASS  a location apply raises only that block
+  PASS  wording is short and names address, CAGE, FSO, NISS
+  PASS  clearing the form clears every instance
+  PASS  typing by hand never raises them
+
+### 14. Spawn and copy
+  PASS  seed a fully-worked issued, blocked solicitation
+  PASS  spawn clears parent EVENTS
+  PASS  spawn carries working CONTEXT
+  PASS  spawn carries the form content and sets stage/title/Item 3
+  PASS  revision numbering works off the chain
+  PASS  a hold on the child does not reach the parent
+  PASS  Full copy keeps its original behaviour
+  PASS  Copy and reset the workflow clears the events, keeps the face
+  PASS  backing out of the copy dialog creates nothing
+  PASS  spawn and copy both route through one reset
+
+### 15. Cleanup fixes
+  PASS  to-do invite uses the note date, not the review clock
+  PASS  a legacy note falls back to its creation stamp
+  PASS  a note with no date at all refuses cleanly
+  PASS  dead functions are gone, live ones remain
+  PASS  XFA export still emits every block
+  PASS  core validation and Item 11 exclusions still fire
+  PASS  scanItem13 intact
+
+### 16. Classified mailing addresses
+  PASS  fields exist on 7 and on each location
+  PASS  they are not printed-form fields
+  PASS  block 13 untouched while every address is blank
+  PASS  one address renders exactly as specified
+  PASS  editing the address rewrites, never duplicates
+  PASS  a location address is labelled by its own name
+  PASS  entries are separated by a blank line
+  PASS  text above the block is never disturbed
+  PASS  editing Item 13 above the block survives a resync
+  PASS  clearing one address removes only that entry
+  PASS  clearing them all removes the block entirely
+  PASS  a nameless entity falls back to a sensible label
+  PASS  removing a location drops its entry
+  PASS  address persists through a workspace round trip
+  PASS  reopening a draft does not duplicate the block
+  PASS  resetFormFields clears Item 13 (contenteditable)
+  PASS  a fresh form cannot inherit the previous Block 13
+  PASS  8a location textarea is still the first one in the block
+  PASS  perf template save still reads the right fields past the new textarea
+
+### 17. E-mail harvesting fixes
+  PASS  an apostrophe no longer truncates the address
+  PASS  two apostrophe addresses in one field
+  PASS  ordinary addresses are unaffected
+  PASS  possessives in prose do not become addresses
+  PASS  an apostrophe address survives into the FSO list
+  PASS  the same address in two FSO fields appears once
+  PASS  an address in a CSO field and an FSO field appears once, under CSO
+  PASS  the panel says it is listed above, not that it is missing
+  PASS  a genuinely empty FSO list still says so
+  PASS  an Item 13 address does not repeat one already listed
+  PASS  distinct addresses are all still listed
+
+### 18. CSO link, address in the template, fake placeholder
+  PASS  placeholders are clearly fictitious
+  PASS  CSO link resolves from the text
+  PASS  saving Item 7 after applying a CSO template stores the link
+  PASS  the classified mailing address is stored with it
+  PASS  hand-edited CSO text drops the link rather than lying
+  PASS  a location save stores the link and the address
+  PASS  the automatic harvest links too
+  PASS  applying the template back fills address and rebuilds Item 13
+  PASS  applying to a location fills that block address
+  PASS  template row editor exposes the address, CSV carries it
+  PASS  re-saving blank does not wipe the stored address
+
+### 19. Item 12 warnings
+  PASS  a blank Q2 raises no warning
+  PASS  filling Q2 still raises none
+  PASS  the Q1 routing reminder is now an error and clears when marked
+  PASS  no leftover reference to the removed warning
+  PASS  template editor numbering matches the form
+  PASS  Item 12 capture and apply still work
+
+### 20. Skipped and Cancelled
+  PASS  Skipped is offered on a solicitation only
+  PASS  seed a solicitation with an Original spawned from it
+  PASS  a solicitation with errors can still be Skipped
+  PASS  Skipped is refused on a non-solicitation
+  PASS  Skipped counts under the Issued chip
+  PASS  the Issued filter shows the skipped solicitation
+  PASS  Cancelling demands a reason and refuses an empty one
+  PASS  Back leaves the status alone
+  PASS  a form with errors can still be cancelled
+  PASS  cancelled work leaves the working list
+  PASS  the Cancelled chip reveals only cancelled work
+  PASS  the reason is shown on the cancelled card
+  PASS  cancelling a root does not hide a live child
+  PASS  a fully cancelled chain does disappear
+  PASS  un-cancelling brings it back and is logged
+  PASS  terminal statuses sort last
+  PASS  cancellation text is searchable
+  PASS  portfolio export carries the new columns
+  PASS  the export includes cancelled work even though the board hides it
+
+### 21. Item 13 cross-reference scanning
+  PASS  Item 13 preserves newlines (root cause of the missed references)
+  PASS  a second reference on a later line is found
+  PASS  11m and 11M both register
+  PASS  every requested variation of 10a registers
+  PASS  a reference mid-sentence is found, not just at line start
+  PASS  a semicolon-separated list is found
+  PASS  prose cross-references stay inert
+  PASS  an explicit N/A disclaimer is not a marking
+  PASS  numbers that are not item ids are ignored
+  PASS  10e sub-items still resolve
+  PASS  an unchecked box referenced in Item 13 is an ERROR
+  PASS  checking the box clears the error
+  PASS  a second reference on a later line also errors
+  PASS  built-in templates use the Reference heading layout
+  PASS  every Block 13 template follows the heading layout
+  PASS  templates for other items are untouched
+  PASS  inserting a template still registers its own reference
+
+### 22. Items 1 to 5 — levels, contract numbers, form type
+  PASS  1a and 1b are required
+  PASS  safeguarding may not exceed the clearance level
+  PASS  equal levels are accepted
+  PASS  11a forces safeguarding to None or N/A
+  PASS  11b, 11c and 11d require a real safeguarding level
+  PASS  a subcontract number makes 2a mandatory
+  PASS  Item 3 must be marked
+  PASS  a Final requires Item 5 YES
+  PASS  a Final demands disposition text, and real text clears it
+  PASS  the shipped Item 5 template satisfies the rule
+  PASS  unrelated Item 13 text does not satisfy it
+  PASS  the rule only applies to a Final
+  PASS  Item 3 rules panel responds to the selection
+
+### 23. Items 6 to 9 — parties and description
+  PASS  Item 9 is prompted while empty
+  PASS  11a asks for Item 8a to identify the access location
+  PASS  performance locations can be added and removed
+  PASS  a performance location carries name, CAGE, CSO, e-mail and address
+
+### 24. Item 10 — access requirements
+  PASS  CNWDI requires Restricted Data
+  PASS  clicking the real 10c tile auto-checks 10b, not just the validation rule that assumes it
+  PASS  SAP forces Item 14 YES and Item 15
+  PASS  SCI requires the Senior Intelligence Officer in Item 15
+  PASS  10k Other requires the specify field
+  PASS  11h COMSEC account requires 10a
+  PASS  NATO prompts for the Item 13 briefing note
+  PASS  every Item 10 box is wired
+
+### 25. Item 11 — performance requirements and exclusions
+  PASS  11a excludes 11b, 11c, 11d, 11h, 11i and 11k
+  PASS  11c and 11d each exclude 11a and 11b
+  PASS  11e alongside 11c is discouraged
+  PASS  TEMPEST and OPSEC each force Item 14 YES
+  PASS  overseas performance asks for Item 13 detail and Item 18d
+  PASS  11l is only expected alongside 10j
+  PASS  11m Other requires the specify field
+  PASS  every Item 11 box is wired
+
+### 26. Items 12 to 15
+  PASS  routing DIRECT and THROUGH both register
+  PASS  unmarked routing is an error, not a suggestion
+  PASS  THROUGH demands the routing office be named
+  PASS  Item 14 YES reveals its text field and is captured
+  PASS  Item 15 YES is captured
+  PASS  the Item 13 needed panel lists what your selections demand
+  PASS  inserting a template writes into Item 13
+  PASS  a template aimed at Item 14 does not land in Item 13
+
+### 27. Items 16 to 18
+  PASS  every browser-completed Item 16 and 17 field exists and is captured
+  PASS  Items 17h and 17i are absent from the drafting screen and saved form data
+  PASS  a long phone number is flagged against the PDF field budget
+  PASS  18d is required when 11f is checked
+  PASS  18b is required on a subcontract
+  PASS  the 18f reveal toggles with its box
+  PASS  all six Item 18 boxes are captured
+
+### 28. Wizard and the validation panel
+  PASS  the wizard has eight steps and moves
+  PASS  showStep clamps out-of-range values
+  PASS  the progress readout names the step
+  PASS  every panel section renders
+  PASS  the clauses panel reacts to selections
+  PASS  the flow-down panel names GCA-approval items
+  PASS  completion status reports the counts
+  PASS  a clean form clears the error panel
+  PASS  the classification banner follows the selector
+
+### 29. Template libraries — all seven
+  PASS  all eight libraries are addressable
+  PASS  add, edit and delete a row in each library
+  PASS  rows can be reordered
+  PASS  a facility links a CSO and follows later corrections
+  PASS  CAGE duplicates are detected
+  PASS  the search box hides non-matching rows
+  PASS  CSV round trip for every library that supports it
+  PASS  all seven libraries now support the spreadsheet round trip
+  PASS  the Certifier library exports and re-imports its officials
+  PASS  the CSV buttons render for the Certifier library
+  PASS  an imported official applies to Item 17
+  PASS  an upload can be undone
+  PASS  JSON export and import round trip
+  PASS  security managers can be assigned to a language template
+  PASS  a language template records its source date
+  PASS  a legacy contract-type template migrates its text into Block 13
+
+### 30. Draft lifecycle, backup and audit
+  PASS  a draft can be created, saved, reopened and deleted
+  PASS  meta is recomputed on save
+  PASS  renaming and the requestor field persist
+  PASS  the stage chip reflects the stage
+  PASS  a full backup round-trips through restore
+  PASS  a tampered backup is rejected on checksum
+  PASS  the backup dirty counter tracks changes
+  PASS  the audit log records the material actions
+  PASS  the audit log exports as marked CSV
+  PASS  the storage meter reports without throwing
+
+### 31. Exports
+  PASS  the official PDF data packet is complete
+  PASS  the XFA dataset emits every block
+  PASS  the user-facing dynamic XFA PDF actually builds
+  PASS  the internal legacy static PDF actually builds
+  PASS  the flattened PDF contains representative form values
+  PASS  the printed Block 2a carries the task order when standalone is ticked
+  PASS  the preparer's worksheet reports the outstanding items
+  PASS  the CO package lists what the officer must verify
+  PASS  the CO package labels clauses as applicability review and uses current authority sections
+  PASS  the CO package removes obsolete SAP CNWDI NATO and overseas clause mappings
+  PASS  the CO package reports missing CUI designation direction instead of inferring it
+  PASS  the CO package checks Item 12 and minimum signed distribution
+  PASS  the live clause and flow-down panels do not revive the obsolete mappings
+  PASS  generated HTML reports encode operator text and declare a locked-down CSP
+  PASS  the generated-report opener cannot retain access to the tool window
+  PASS  the notes report covers holds, to-dos and notes
+  PASS  the validation log export runs with an entry attached
+  PASS  a draft export is named and watermarked DRAFT while errors remain
+
+### 32. CSO block layout in the exports
+  PASS  csoText produces the stacked layout with no labels on name or address
+  PASS  the multiline argument no longer changes the result
+  PASS  E-mail is spelled with the hyphen
+  PASS  missing parts are dropped, not left blank
+  PASS  7c is a multi-line box that holds newlines
+  PASS  the 8c field is a multi-line box that holds newlines
+  PASS  applying a CSO template stacks 6c, 7c and 8c alike
+  PASS  the stacked text reaches the official PDF packet
+  PASS  the stacked text reaches the dynamic XFA packet
+  PASS  the flattened PDF still builds with a stacked CSO
+  PASS  a stacked CSO survives a workspace round trip
+  PASS  CSO e-mails are still harvested from the stacked text
+  PASS  saving a location still links the CSO by matching the stacked text
+  PASS  no code reads the performance block by field position any more
+
+### 33. Fixes: override, audit in backup, undo, issue date, recount
+  PASS  IndexedDB is the storage path under test
+  PASS  a spawned child does not inherit the validation override
+  PASS  the reset clears it explicitly
+  PASS  a copy drops the issue date but keeps the rest
+  PASS  the audit log travels in the backup and merges on restore
+  PASS  restore de-duplicates the audit merge
+  PASS  a version 3 backup with no audit key still verifies
+  PASS  deleting a template row can be undone
+  PASS  the undo restores the deleted row
+  PASS  the undo button is offered for every library, not just CSV ones
+  PASS  recount refreshes stale counts and leaves everything else alone
+  PASS  recount reports what it changed and logs it
+  PASS  recount puts back the draft you had open
+  PASS  a read-only tab refuses to recount
+
+### 34. Previously untested paths
+  PASS  a real CSV file upload goes through FileReader
+  PASS  a real file attaches to the validation log and is hashed
+  PASS  SHA-256 matches the reference value for those bytes
+  PASS  the manager rollup imports team backups read-only
+  PASS  closing the rollup returns you to your own drafts
+  PASS  a 60-draft portfolio renders in reasonable time
+  PASS  search still narrows the portfolio
+  PASS  the portfolio export handles the whole portfolio
+  PASS  recount copes with a large portfolio
+
+### 35. SAP flag gates the DoDM 5205.07 rules
+  PASS  the SAP toggle exists and is off by default
+  PASS  an ordinary subcontract raises no SAP countersignature alert
+  PASS  flagging it as SAP raises the alert
+  PASS  the Item 13 tag is SAP-gated too
+  PASS  a SAP form with no subcontract still raises nothing
+  PASS  the preparer's worksheet only cites 5205.07 when flagged
+  PASS  the CO package only cites 5205.07 when flagged
+  PASS  the non-SAP subcontract advice is still given
+  PASS  the flag persists with the draft
+  PASS  the flag never reaches the printed form
+  PASS  no ungated DoDM 5205.07 countersignature claim remains
+
+### 36. Both exports format identically
+  PASS  one shared formatter set exists
+  PASS  level wording is words, no instruction text
+  PASS  dates render YYYY-MM-DD and pass anything else through
+  PASS  phones reduce to the digits both forms can hold
+  PASS  CAGE is uppercased
+  PASS  the XFA level helper defers to the shared one
+  PASS  dateFmt is now an alias
+  PASS  the flattened writer is reachable for inspection
+  PASS  the two exports agree on every formatted value
+  PASS  the flattened writer uses the same formatters
+  PASS  the internal PDF still preserves the Item 17h signing field
+  PASS  no private level map survives in the flattened writer
+  PASS  there is exactly one sanitizePdfText implementation in the whole file
+  PASS  curly quotes normalise and em-dash/ellipsis/ligatures print identically in the XFA and flattened writers
+  PASS  reviewer overflow behaves the same in both
+  PASS  CAGE fields display uppercase on the form
+  PASS  the flattened PDF still builds after the change
+
+### 37. Required fields are actually enforced
+  PASS  a hollow form is no longer clean
+  PASS  a fully completed form reaches zero errors
+  PASS  Item 6 contractor block is required
+  PASS  17h signature and 17i date are never demanded before PDF signing
+  PASS  the date of the action is required, and follows the form type
+  PASS  Item 4 is demanded only on a follow-on contract
+  PASS  Item 5 is demanded only when retention is claimed
+  PASS  Items 14 and 15 marked YES demand their narrative
+  PASS  a missing required field is highlighted on the form itself
+  PASS  the highlight clears once the field is filled
+  PASS  a conditional field is not highlighted while it does not apply
+  PASS  errors remain after a clean form is broken again
+  PASS  the Item 16 GCA block never errors and never highlights
+  PASS  the Item 17 certification block never errors and never highlights
+  PASS  a form is clean with Items 16 and 17 entirely empty
+  PASS  every asterisked field is covered by a rule, or is a known exception
+  PASS  autosave never demotes a record that was already issued
+  PASS  autosave still holds an unissued record at Draft
+  PASS  cancelled records survive autosave too
+
+### 38. Item 18a prefills from the contractor FSO only
+  PASS  18a takes the Item 6 FSO when there is one
+  PASS  18a stays EMPTY when Item 6 has no FSO
+  PASS  the subcontractor FSO never leaks into 18a
+  PASS  performance-location e-mails never leak into 18a
+  PASS  the manual FSO list never leaks into 18a
+  PASS  the requestor never leaks into 18a
+  PASS  18b still prefills from the subcontractor FSO
+  PASS  the requestor is still offered as its own row
+  PASS  every known address is still available in the picker
+
+### 39. Slashes in a contract number survive the filename
+  PASS  a slash becomes a hyphen, not nothing
+  PASS  the old behaviour would have changed the number
+  PASS  back slashes are handled the same way
+  PASS  repeated slashes collapse to one hyphen
+  PASS  spaces pack out for PDF names
+  PASS  spaces become underscores where words matter
+  PASS  other illegal characters are still dropped
+  PASS  dots and hyphens are preserved
+  PASS  empty and null are safe
+  PASS  the exported PDF name carries the slash as a hyphen
+  PASS  two numbers differing only by a slash do not collide
+
+### 40. Contract Type templates carry a whole DD-254
+  PASS  Block 2a is gone from the template shape
+  PASS  Block 2a is gone from the editor
+  PASS  capturing from the form no longer records a contract number
+  PASS  a saved template carrying an old 2a has it stripped on read
+  PASS  the Contract Type editor is the full block editor, not a text box
+  PASS  the Contract Type editor does not offer Block 2a
+  PASS  a new Contract Type row starts with the full structure
+  PASS  migration is idempotent — reading twice changes nothing
+  PASS  migration never loses the old text
+  PASS  a contract type carries checkboxes into a draft workspace
+  PASS  box language is folded into Block 13 beneath the free text
+  PASS  language for an unchecked box is not carried over
+  PASS  12, 14, 15 and 16 all travel with the template
+  PASS  an empty template field never wipes what the draft already has
+  PASS  applying a contract type to a closed draft writes the whole thing
+  PASS  the Contract Type spreadsheet has the same columns as DD-254 Language
+  PASS  the Contract Type spreadsheet no longer carries a 2a column
+  PASS  a blank Contract Type row from the spreadsheet has the full structure
+
+### 41. Applying a Contract Type to the open form
+  PASS  Items 10 and 11 actually tick on the open form
+  PASS  ticking through the tile keeps the tile styling in step
+  PASS  Item 18, Item 12 routing, 14 and 16 all land on the open form
+  PASS  the box language reaches Item 13 under the free text
+  PASS  the contract type is remembered on the draft
+  PASS  its required attachments surface in the reminder
+  PASS  reopening the draft restores the attachment reminder
+  PASS  a draft with no contract type shows no phantom attachments
+
+### 42. Dashboard marking, attachments, and cancelling an issuance
+  PASS  a CUI form is marked CUI on the card
+  PASS  an unmarked form reads UNCLASSIFIED on the card
+  PASS  the marking helper reads the stored form, not the open one
+  PASS  the attachment badge counts what has to travel
+  PASS  a form with nothing to attach shows no badge
+  PASS  opening the card lists the attachments
+  PASS  the card and the distribution dialog count the same attachments
+  PASS  the distribution screen offers a cancel button
+  PASS  skip resolves differently from cancel
+  PASS  cancelling puts the status back and records nothing
+  PASS  cancelling is written to the audit log
+  PASS  skipping still issues the DD-254
+  PASS  cancelling a re-issue keeps the original issue date
+
+### 43. Stage and marking read as part of the title
+  PASS  both chips sit on the title line
+  PASS  the stage chip is no longer in the badge row
+  PASS  the title itself is still readable on its own
+
+### 44. Templates carry the form classification
+  PASS  the marking is part of the template shape
+  PASS  the editor offers UNCLASSIFIED and CUI
+  PASS  the editor offers nothing above CUI
+  PASS  capture from form records the marking
+  PASS  capture records UNCLASSIFIED as empty
+  PASS  the marking travels into a draft workspace
+  PASS  an unmarked template does not overwrite a CUI draft
+  PASS  applying a CUI contract type marks the open form and repaints the banner
+  PASS  and the dashboard card then shows CUI
+  PASS  the spreadsheet carries the marking and rejects anything higher
+  PASS  Contract Type gets the same column
+
+### 45. Template editors name every box
+  PASS  every Item 10 box is named
+  PASS  every Item 11 box is named
+  PASS  every Item 18 box is named
+  PASS  the names match what the form says
+  PASS  names are read from the form, never hard-coded twice
+  PASS  the full name is not truncated in the editor
+  PASS  badges still use the short form
+  PASS  Contract Type gets the named boxes too
+  PASS  the box number is still shown alongside the name
+
+### 46. Insert all, view toggle, and approval holds
+  PASS  the template panel offers an insert-all action
+  PASS  insert all applies every section at once
+  PASS  insert all and applying a contract type share one path
+  PASS  the view toggle exists and remembers the choice
+  PASS  scrolling view shows every step at once
+  PASS  switching views keeps the current step
+  PASS  one table drives the approval holds
+  PASS  flow-down keeps its own narrower set on purpose
+  PASS  every trigger names who approves
+  PASS  the note names the box, the subject and the authority
+  PASS  triggers are read from the stored form
+  PASS  ticking a box raises exactly one hold, not one per pass
+  PASS  an open approval hold forces Blocked
+  PASS  un-ticking supersedes rather than deletes
+  PASS  an issued record is not dragged back to Blocked
+
+### 47. Resetting a DD-254 already in the workflow
+  PASS  the scope helper reports what would be cleared
+  PASS  a fresh draft has nothing to reset
+  PASS  a worked record does have something to reset
+  PASS  reset clears the events and keeps the face
+  PASS  declining the confirmation changes nothing
+  PASS  an approval hold comes straight back — reset is not a way past a GCA gate
+  PASS  an issued record refuses to reset
+  PASS  cancelled and skipped refuse too
+  PASS  the button is offered on a worked record and hidden on an issued one
+  PASS  the reset is written to the audit log
+  PASS  a copy records where it came from
+  PASS  a full copy can then be reset from the card
+
+### 48. The Block 17 library is named Certifier
+  PASS  the menu and heading say Certifier, not Block 17
+  PASS  exported files are named Certifier, not Block17
+  PASS  nothing user-facing still says Block 17
+  PASS  the XFA packet name is untouched — it belongs to the official form
+  PASS  the certifier template still applies to Item 17
+
+### 49. Standard Language library
+  PASS  the library is addressable and separate from the others
+  PASS  it is in the full backup
+  PASS  it is NOT in the spreadsheet round trip
+  PASS  a new row is name plus text, nothing else
+  PASS  the editor shows a name box and a text area
+  PASS  nothing is applied automatically
+  PASS  inserting puts it at the very top, above your typing
+  PASS  a second entry lands beneath the first, in insertion order
+  PASS  the applied list reflects what is in Block 13
+  PASS  the same entry cannot be applied twice
+  PASS  deleting it by hand sticks — it does not come back
+  PASS  an entry with no text is ignored rather than inserting a blank
+  PASS  what is applied is recorded on the draft for the card
+  PASS  the card shows it and it blocks nothing
+  PASS  capture from form strips it but keeps your own text
+  PASS  Insert all does not touch the standard language library
+
+### 50. Solicitation marker in Item 9
+  PASS  the marker text is exactly as specified
+  PASS  apply puts it first with a line break after
+  PASS  applying twice does not double it
+  PASS  strip removes it and leaves the description
+  PASS  strip is safe on text that never had it
+  PASS  a new solicitation opens Item 9 with the marker
+  PASS  the marker alone does not satisfy Item 9
+  PASS  a real description does satisfy it
+  PASS  spawning an Original strips the marker and keeps the description
+  PASS  an ordinary Original never gets the marker
+
+### 51. Template pack — sharing libraries between instances
+  PASS  the pack carries templates and no drafts
+  PASS  it is stamped with who exported it and when
+  PASS  every row leaves with a stable id
+  PASS  a row you already have by id updates in place, not duplicated
+  PASS  identical content is not a conflict and is skipped
+  PASS  same name, different content, different lineage keeps BOTH
+  PASS  the renamed copy carries who it came from and when
+  PASS  the renamed copy gets its own id so it never collides again
+  PASS  a genuinely new entry is just added
+  PASS  applying records an undo for that library
+  PASS  site-specific libraries are flagged so they default off
+  PASS  all eight libraries travel in a pack
+  PASS  a file that is not a pack is refused
+
+### 52. Choosing what to export
+  PASS  the picker lists every library and every entry
+  PASS  everything starts ticked, so exporting all is still one click
+  PASS  unticking a library leaves it out entirely
+  PASS  unticking one entry leaves only that one out
+  PASS  a partly ticked library shows as indeterminate
+  PASS  the running count tracks the selection
+  PASS  selecting none is refused rather than writing an empty pack
+  PASS  cancelling writes no file
+  PASS  exported rows carry the same ids the tool stores, so re-import matches
+  PASS  a partial export still imports cleanly on the other side
+
+### 53. Settings — the registry is the only source of truth
+  PASS  Manage menu offers Settings
+  PASS  every setting declares exactly one reader and one writer
+  PASS  setting keys are unique
+  PASS  writing a setting its own current value changes nothing
+  PASS  the panel renders one row per registered setting, not a fixed list
+  PASS  every registered setting is reachable from the panel
+  PASS  opening Settings hides the draft list, closing brings it back
+
+### 54. Form layout — the setting drives the real form, not just storage
+  PASS  choosing One page puts every wizard step on the page
+  PASS  choosing Step by step shows one step and hides the rest
+  PASS  the layout choice survives as a stored preference
+  PASS  the floating form button and the Settings row cannot disagree
+  PASS  only one layout is ever selected at a time
+
+### 55. Dark theme — scoped to the chrome, absent from print and export
+  PASS  theme is stored and applied to the document element
+  PASS  an unrecognised theme value falls back to light rather than breaking
+  PASS  the entire theme sheet is inside @media screen
+  PASS  no dark rule reaches the DD-254 form facsimile
+  PASS  the print stylesheet is untouched by the theme
+  PASS  severity colours stay distinct from body text in dark
+  PASS  every text colour the chrome emits has a dark mapping
+  PASS  every pale background the chrome emits has a dark mapping
+
+### 56. Backup reminder threshold
+  PASS  the default reproduces the pre-Settings behaviour exactly
+  PASS  below the threshold the count is shown without a warning
+  PASS  reaching the threshold raises the warning
+  PASS  the reminder cannot be switched off entirely
+
+### 57. Owner name is editable without clearing site data
+  PASS  the name round-trips and is trimmed
+  PASS  the stored key is the one the rollup already reads
+  PASS  clearing the name is allowed and does not store whitespace
+
+### 58. Item 13 head line — supported effort
+  PASS  the field exists under Item 2 and is not dressed as an official sub-letter
+  PASS  entering a number writes the line at the top of Item 13
+  PASS  the line goes above text that was already in Item 13
+  PASS  changing the number rewrites the line rather than adding a second one
+  PASS  clearing the number removes the line and leaves the rest intact
+  PASS  a line the operator moved down the block is rewritten where it stands
+  PASS  whitespace-only input is treated as no number
+
+### 59. The head line versus everything else that writes Item 13
+  PASS  standard language inserts BELOW the head line, not above it
+  PASS  a second standard-language entry still lands below the head line
+  PASS  with no number, standard language still starts at the very top
+  PASS  the head offset is derived, so nothing computes "the top" on its own
+  PASS  a Contract Type template that replaces Item 13 does not lose the line
+  PASS  the effort number is not written into any official form field
+  PASS  the number survives a draft round-trip and is not duplicated on reopen
+  PASS  reopening then clearing the number still removes the line cleanly
+  PASS  the classified mailing address block still owns the tail
+
+### 60. CUI designation block — the tail of Item 13
+  PASS  the fields exist under Item 18 and are not dressed as official sub-letters
+  PASS  no field filled writes nothing at all
+  PASS  one field filled writes every label, blanks left empty
+  PASS  rows print in registry order, not field order
+  PASS  clearing every field removes the block and its blank rows
+  PASS  the block is separated from what precedes it by five empty rows
+  PASS  editing a value rewrites the block instead of stacking a second one
+
+### 61. Three managed regions sharing one Item 13
+  PASS  head line, addresses and CUI block occupy their stated order
+  PASS  adding an address later does not land below the CUI block
+  PASS  the five blank rows survive clearing the effort number
+  PASS  with nothing left above it the block stands alone, with no orphaned rows
+  PASS  the five blank rows survive removing a classified mailing address
+  PASS  the tail offset is derived, so nothing appends by string length
+  PASS  a Contract Type template that replaces Item 13 does not lose the block
+  PASS  standard language still lands above the CUI block
+  PASS  the block survives a draft round-trip without duplicating
+  PASS  the CUI fields are not written into any official form field
+
+### 62. Limited dissemination controls
+  PASS  every control in the registry is rendered, and nothing else is
+  PASS  all ten controls are present with their markings
+  PASS  the full description is on the label for hover
+  PASS  exactly three controls take a list, and only those show a list box
+  PASS  one control renders as its bare marking
+  PASS  multiple controls are alphabetised and slash-separated
+  PASS  the order controls are ticked in cannot change what prints
+  PASS  REL TO carries its country list
+  PASS  DISPLAY ONLY and DL ONLY carry their lists too
+  PASS  a list-bearing control with no list yet prints bare, never a placeholder
+  PASS  sorting uses the marking, not the typed list
+  PASS  the list box is revealed only while its control is ticked
+  PASS  the LDC row sits between CUI Category and POC
+  PASS  ticking a control alone builds the whole designation block
+  PASS  unticking every control empties the row without emptying the block
+  PASS  controls and their lists survive a draft round-trip
+  PASS  reopening a draft reveals the list box for a control that was ticked
+  PASS  no LDC field reaches the official form writer
+
+### 63. Distribution statements
+  PASS  all six statements are offered, from the table
+  PASS  A and F take no reason for control
+  PASS  the reason picker offers only what the chosen statement allows
+  PASS  B and E keep their own wording of the shared reasons
+  PASS  switching statement drops a reason that is not valid for the new one
+  PASS  switching statement keeps a reason that is still valid
+  PASS  statement C assembles around its fill-ins
+  PASS  statement A has no fill-ins to assemble
+  PASS  statement F takes an office and a date but no reason
+  PASS  an unfilled slot leaves no stray separator behind
+  PASS  a missing controlling office stays visibly unfilled
+  PASS  statement and controls share the row, joined so both can be read back
+  PASS  either half alone fills the row without a dangling separator
+  PASS  a statement alone builds the whole designation block
+  PASS  the reason survives a draft round-trip despite being built at restore
+  PASS  no distribution field reaches the official form writer
+
+### 64. Configurable export filename
+  PASS  the default reproduces the previous fixed convention
+  PASS  a company filing by contract number alone gets exactly that
+  PASS  a company filing by CAGE alone gets exactly that
+  PASS  order is honoured
+  PASS  the separator choice is applied
+  PASS  an empty box is skipped without leaving a separator
+  PASS  every box empty falls back rather than producing an empty name
+  PASS  multi-line boxes contribute their first line only
+  PASS  6b, 7b and 8b are offered as their own boxes
+  PASS  each box is capped at 30 characters
+  PASS  a long combination still stays inside a usable path length
+  PASS  hyphens inside a contract number are preserved, not eaten by the separator
+  PASS  an unknown stored box is ignored rather than breaking the name
+  PASS  corrupt stored settings fall back to the default
+  PASS  the settings panel lists every box exactly once
+  PASS  reordering from the panel changes the stored order
+  PASS  adding and removing from the panel works and cannot duplicate
+  PASS  the exported filename uses the chosen convention
+
+### 65. Item 13 layout — sections over one store
+  PASS  the layout setting is offered and defaults to one block
+  PASS  writing a section creates it with its heading
+  PASS  the written format is Reference, a blank line, then the text
+  PASS  older Ref. headings are still found so nothing is duplicated
+  PASS  reading a section returns its body without the heading
+  PASS  sections land in form order regardless of the order written
+  PASS  rewriting a section replaces it in place, not a second copy
+  PASS  a section moved down the block is rewritten where it stands
+  PASS  clearing a section removes it and leaves the neighbours intact
+  PASS  operator prose outside any section is never touched
+  PASS  a section keeps its own wrapped lines
+  PASS  sections sit below the effort line and above the CUI block
+  PASS  sections stay above the classified mailing addresses
+  PASS  the composer shows a box per ticked item and nothing more
+  PASS  a section already in the text gets a box even if its item is unticked
+  PASS  typing in a composer box writes through to the real Item 13
+  PASS  editing the raw field is authoritative and the composer follows
+  PASS  switching layout never alters the stored text
+  PASS  there is one store — the composer keeps no copy of its own
+  PASS  ticking an item makes its section appear without an explicit render
+  PASS  unticking an item removes its box again
+  PASS  unchecking removes populated language in sections layout and offers undo
+  PASS  one-click put back restores both the checkbox and its exact wording
+  PASS  unchecking removes populated language in one-block layout too
+  PASS  a keystroke elsewhere does not take focus out of a composer box
+  PASS  the raw field stays visible in sections layout as the failsafe
+  PASS  the layout choice persists
+
+### 66. Saving Item 13 language back to a template
+  PASS  saving is refused when no template is chosen
+  PASS  saving is refused when there is nothing to save
+  PASS  a valid save is not refused
+  PASS  saving writes the language into the chosen template
+  PASS  Item 11 language lands in the 11 map, not the 10 map
+  PASS  replacing existing language asks first and honours a refusal
+  PASS  confirming the replacement writes the new wording
+  PASS  saving the same wording twice does not prompt
+  PASS  both entry points go through one save function
+  PASS  a section box saves the text actually in it
+
+### 67. Template language moves out of the side panel in sections layout
+  PASS  the side panel drops Item 10 and 11 cards when sections are on
+  PASS  the retired template-language panel stays absent in one-block layout
+  PASS  non Item 10/11 language also stays out of the retired panel
+  PASS  each section box offers insert and save
+  PASS  inserting template language fills the section without doubling the heading
+  PASS  text that already carries its own heading is not given a second one
+
+### 68. Validation and checklist are separate scrollers
+  PASS  the panel column holds two panels
+  PASS  each panel is named for what it holds
+  PASS  validation output lives in the validation panel
+  PASS  the things you act on live in the checklist panel
+  PASS  nothing was dropped in the split
+  PASS  no panel content ended up outside either panel
+  PASS  both panels are styled the same way
+  PASS  each panel scrolls on its own rather than the column
+  PASS  collapsing still hides both panels
+
+### 69. Chain of custody
+  PASS  the audit log no longer stops at 5,000 entries
+  PASS  reaching the cap records that entries were removed
+  PASS  the log lives in its own store in the drafts database
+  PASS  a failed audit transaction remains in the synchronous recovery journal
+  PASS  reads are still synchronous so existing callers are unchanged
+  PASS  a cancelled delete does not record a deletion
+  PASS  a confirmed delete does record one
+  PASS  deleting a parent warns and names its descendants
+  PASS  a childless draft is not warned about descendants
+  PASS  the backup carries a checksum for the history itself
+  PASS  the body checksum still ignores the audit log so old backups verify
+
+### 70. Semicolon after an item id
+  PASS  a semicolon delimits an Item 13 marking, with or without a space
+  PASS  the delimiters that already worked still work
+  PASS  a semicolon does not turn a prose cross-reference into an entry
+  PASS  a semicolon before a disclaimer is still a disclaimer
+
+### 71. Setting a validation flag aside
+  PASS  a dismissal needs an open draft
+  PASS  a dismissal without a reason is refused
+  PASS  cancelling the reason prompt dismisses nothing
+  PASS  a dismissal is stored with its reason, author and time
+  PASS  the dismissal is written to the audit log
+  PASS  a dismissed finding stops counting toward the blocking total
+  PASS  a dismissed finding is still shown, struck through, with its reason
+  PASS  every live finding offers a way to set it aside
+  PASS  putting it back restores the count and logs it
+  PASS  rewording a rule asks for the judgement again
+  PASS  dismissal keys do not inherit the old 32-bit hash collisions
+  PASS  a dismissal cannot reach a compliance hold
+
+### 72. CSV formula injection
+  PASS  a cell starting with = is neutralised
+  PASS  the other formula lead-ins are covered
+  PASS  ordinary text is untouched
+  PASS  RFC 4180 quoting still applies, and to guarded cells too
+  PASS  a quote inside a guarded cell is still doubled
+  PASS  import strips the guard so the round-trip is lossless
+  PASS  an apostrophe the operator typed is preserved
+  PASS  apostrophes immediately before formula leads survive the CSV round-trip
+  PASS  a round-trip of realistic rows preserves every value
+  PASS  a dismissal reason starting with = cannot reach a CSV as a formula
+
+### 73. Template editor save state
+  PASS  every template kind offers Save now and a state line
+  PASS  typing marks it unsaved before the timer fires
+  PASS  Save now writes immediately and says so
+  PASS  the pending timer is cancelled by an explicit save
+  PASS  Done flushes rather than trusting the timer
+  PASS  switching template kinds flushes the one being left
+  PASS  opening Settings flushes
+  PASS  opening a draft flushes
+  PASS  closing the browser with a pending write flushes and warns
+  PASS  a clean editor does not warn on close
+  PASS  opening an editor starts with a clean state line
+  PASS  Saved waits for the IndexedDB transaction to complete
+  PASS  a failed durable write stays unsaved and leaves recovery data
+  PASS  startup replay restores a journaled template write
+  PASS  every save in the editor goes through the one writer
+
+### 74. Standalone DD-254 — combined Block 2a
+  PASS  the checkbox exists beside the effort field
+  PASS  unticked, Block 2a is exactly the contract number
+  PASS  ticked, Block 2a carries the task order in the agreed format
+  PASS  ticked with no task order changes nothing
+  PASS  ticked with no contract number changes nothing
+  PASS  the XFA packet carries the combined value
+  PASS  the form field itself is never rewritten
+  PASS  the 17-character check still reads the bare contract number
+  PASS  the export filename still uses the bare contract number
+  PASS  the Item 13 reference line still appears
+  PASS  both exports read Block 2a from the same upstream
+  PASS  the combined value survives a draft round-trip
+
+### 75. Safe validation rendering and the sole official export
+  PASS  phone text is displayed literally and cannot create validation markup
+  PASS  a parent draft title cannot create markup in an error row
+  PASS  live findings are rendered through the shared DOM builder
+  PASS  the dynamic XFA form is the only user-facing official PDF export
+
+### 76. Task order templates
+  PASS  a blank template carries the two new fields
+  PASS  applying a task order template fills the task order and ticks standalone
+  PASS  the prime contract fills 2a when the draft has none
+  PASS  a contract number already on the draft is never replaced
+  PASS  a contract number on the live form is not replaced either
+  PASS  a template with no task order behaves exactly as before
+  PASS  standalone is derived from the task order, never stored separately
+  PASS  applying to the live form produces the combined Block 2a
+  PASS  the fields appear in the DD-254 Template Language editor, populated
+  PASS  the editor writes them back into the template
+  PASS  both fields are offered as CSV columns
+  PASS  the fields travel in a template pack
+
+### 77. Bulk performance locations
+  PASS  a pasted list splits on semicolons
+  PASS  commas, spaces and newlines split too, and case is normalised
+  PASS  a known CAGE fills the whole block from its template
+  PASS  three codes produce three populated blocks
+  PASS  an unknown CAGE still gets a block carrying the code
+  PASS  an incomplete block from an unknown CAGE is flagged by validation
+  PASS  a complete block from a known CAGE raises nothing
+  PASS  a block with a CAGE but no CSO raises a warning, not an error
+  PASS  an untouched empty block is left alone as work in progress
+  PASS  a duplicate inside one paste is skipped
+  PASS  a CAGE already on the form is skipped
+  PASS  organisations are listed with their facility counts
+  PASS  choosing an organisation resolves to its CAGE codes
+  PASS  an organisation adds every one of its facilities
+  PASS  both entry points go through the one expansion function
+  PASS  the organisation tag survives saving a location back to templates
+  PASS  the organisation is offered as a CSV column so fifty can be tagged at once
+  PASS  fifty locations are allowed with no cap
+  PASS  expanded locations reach the official export
+
+### 78. Template editor row layout
+  PASS  the address field cannot be squeezed to nothing by its siblings
+  PASS  the address field can be dragged wider, not only taller
+  PASS  the row wraps rather than crushing a field
+  PASS  every field in the row is still present and reachable
+
+### 79. Template editors use the window, the dashboard keeps its measure
+  PASS  opening an editor lifts the reading-width cap
+  PASS  Done restores it
+  PASS  leaving by any other route restores it too
+  PASS  the wrapper keeps its markup fallback for a browser that never runs the script
+  PASS  Auto hands the width back to the stylesheet rather than pinning one
+
+### 80. Scalable workspace
+  PASS  the default is Auto and behaves as before
+  PASS  each preset resolves to its own width
+  PASS  a chosen width applies whether or not an editor is open
+  PASS  dragging stores a pixel width that survives a reload
+  PASS  a plain click on the drag handle (no movement) leaves the preset alone
+  PASS  a real drag on the handle still stores a custom width
+  PASS  a width below the floor is clamped, not accepted
+  PASS  a nonsense stored value falls back to Auto
+  PASS  the preset row reports a dragged width as custom
+  PASS  presets and dragging write through one setter
+  PASS  the drag handle exists and is hidden from print
+  PASS  text size scales the chrome and is remembered
+  PASS  an out-of-range text size falls back to 100
+  PASS  the form facsimile is never zoomed, and neither is print
+  PASS  both controls are offered in Settings
+
+### 81. Stylesheets actually reach the document
+  PASS  the workspace width rules are in the document, not inside a script
+  PASS  the two-panel scrolling rule resolves at runtime
+  PASS  the drag handle rule resolves at runtime
+  PASS  choosing a width actually changes the wrapper
+  PASS  the generated CO package no longer carries the application stylesheet
+  PASS  the panel column has a real height to grow into, not just a cap
+
+### 82. Clearing the audit log
+  PASS  an empty log is not cleared and says so
+  PASS  a copy is exported before the confirmation is offered
+  PASS  the confirmation names the entry count and the period
+  PASS  cancelling leaves the log untouched
+  PASS  declining to confirm the download was saved stops before the typed prompt is even offered
+  PASS  a wrong confirmation word leaves the log untouched
+  PASS  typing CLEAR removes the entries and leaves exactly one
+  PASS  the remaining entry records what was removed, by whom and when
+  PASS  the recovery journal is emptied so startup cannot replay them
+  PASS  the drafts themselves are untouched
+  PASS  the action is reachable from the Reports menu
+
+### 83. Audit log viewer escaping
+  PASS  a dismissal reason or draft title cannot inject a live handler via the data-hay attribute
+
+### 83a. Manage menu search
+  PASS  typing filters to matching actions and hides sections with no match
+  PASS  a query matching nothing shows the empty state, not a blank menu
+  PASS  opening the menu always starts from a clean, unfiltered search
+
+### 84c. Guidance search
+  PASS  a distinctive term matches the field whose instructions actually contain it
+  PASS  an empty query hides the results panel instead of showing everything
+  PASS  a query matching no field guidance shows the empty state, not nothing
+  PASS  picking a result opens that field’s Instructions panel, labels it correctly, and in step mode switches to its step
+  PASS  a grouped item’s instructions are not mislabelled with a neighbouring item’s number (16 vs 17 vs 18)
+  PASS  a click outside the search box closes the results
+
+### 84b. Bulk selection and selected-only export
+  PASS  checking two cards shows the selection bar with the right count
+  PASS  select-all selects every visible card, and unchecking one clears the header checkbox
+  PASS  exporting the selection includes only the selected drafts
+  PASS  clearing the selection unchecks every card and hides the bar
+  PASS  a plain, unfiltered portfolio export is unaffected by the selection feature
+
+### 84a. Draft card overflow menu
+  PASS  Copy, Reset workflow, Compare and the override live in the card menu, closed by default
+  PASS  the ⋯ button opens its own card menu, closes any other open one, and outside-click closes it
+  PASS  Open and the ⋯ trigger both stayed directly on the card, not tucked inside the menu
+
+### 84. Item 10/11 tile checkbox click accuracy
+  PASS  every Item 10/11 (and Item 3) tile checkbox is out of the click and tab paths, so only the tile toggles it
+
+### 87. A cleared compliance hold stays cleared
+  PASS  ticking a trigger raises a compliance hold
+  PASS  reconciling again while it is open does not duplicate it
+  PASS  clearing it records a basis and closes it
+  PASS  re-entering the workflow does NOT raise it again
+  PASS  and the draft is not forced back to Blocked
+  PASS  nothing is reported as an open hold once cleared
+  PASS  reopening it by hand brings the block back
+  PASS  unticking the box supersedes an OPEN hold rather than deleting it
+  PASS  re-ticking after a supersede raises a fresh hold, because that is new
+  PASS  a documented clearance survives the box being unticked and re-ticked
+  PASS  two different triggers are tracked separately
+
+### 88. Official nonblocking access advisors
+  PASS  the official build has both advisors and no prototype labels
+  PASS  SCI above a Secret Item 1a is reported as an advisory contradiction
+  PASS  advisor evidence changes never alter blocking validation
+  PASS  11h checks Item 10a and COMSEC account authority
+  PASS  documenting the 11h prerequisites clears those two findings
+  PASS  Item 11 evidence persists in a draft but is excluded from official PDF data
+
+### 89. Conditional-alert authority references
+  PASS  every registered conditional alert exists and renders exactly one reference
+  PASS  the SCI Item 15 alert names both its form instruction and SCI authority
+  PASS  the local subcontractor e-mail safeguard is labeled as a workflow control
+  PASS  authority footers do not become errors or warnings
+
+================================
+  PASS 923   FAIL 0
+================================

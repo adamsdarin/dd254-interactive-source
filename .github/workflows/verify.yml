@@ -1,0 +1,103 @@
+# Everything a reviewer is told to check, checked on every push, in public.
+#
+# VERIFY.md asks a stranger to trust a set of claims. This workflow is what
+# stops those claims from quietly becoming untrue between releases, and its
+# log is the evidence -- which is why nothing here is allowed to be skipped
+# or made conditional.
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    # A hung step otherwise runs to the six-hour job limit. The regression
+    # suite has been observed to stall on Linux -- see KNOWN_ISSUES in
+    # SETUP.md -- and a stall must fail fast and legibly, not quietly consume
+    # a runner and leave an ambiguous red X hours later.
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Only the two harness dependencies, and not saved to a manifest: the
+      # shipped tool has no dependencies at all and must not acquire the
+      # appearance of any. jsdom and fake-indexeddb exist for the test run.
+      - name: Install test harness
+        run: npm install --no-save jsdom fake-indexeddb
+
+      - name: Locate the build
+        id: build
+        run: |
+          echo "path=$(python3 .github/scripts/newest_build.py)" >> "$GITHUB_OUTPUT"
+          echo "demo=$(python3 .github/scripts/newest_build.py --demo)" >> "$GITHUB_OUTPUT"
+
+      # First, because a broken <script> block is discarded silently by both
+      # the browser and jsdom -- the suite can pass while a whole block is dead.
+      - name: Syntax-check every script block
+        run: python3 .github/scripts/check_scripts.py
+
+      # pdf_content_regression.py extracts text from a generated PDF and
+      # asserts on it. Without pypdf that check degrades silently rather than
+      # failing, which is the worst kind of green.
+      - name: Install PDF extraction dependency
+        run: python3 -m pip install --quiet pypdf
+
+      - name: Regression suite
+        timeout-minutes: 10
+        run: |
+          cp "${{ steps.build.outputs.path }}" 01_TOOL/dd254.htm
+          cd 01_TOOL && node dd254_regression.js
+
+      # Passing assertions are not evidence the form works. Items 10/11 are
+      # hidden checkboxes behind clickable tiles; setting .checked in the data
+      # layer does nothing a user would see. This drives the real controls.
+      - name: Confirm a headless browser is present
+        run: |
+          for b in /usr/bin/google-chrome /usr/bin/chromium /usr/bin/chromium-browser; do
+            [ -x "$b" ] && { echo "browser: $b"; exit 0; }
+          done
+          echo "No browser at a path browser_smoke.js looks for; installing chromium."
+          sudo apt-get update -qq && sudo apt-get install -y -qq chromium-browser
+          for b in /usr/bin/chromium /usr/bin/chromium-browser; do
+            [ -x "$b" ] && { echo "browser: $b"; exit 0; }
+          done
+          echo "::error::browser_smoke.js cannot run without Chrome or Chromium"; exit 1
+
+      - name: Headless browser smoke test
+        timeout-minutes: 8
+        run: node 01_TOOL/browser_smoke.js "${{ steps.build.outputs.path }}"
+
+      - name: pdf-lib is the unmodified upstream release
+        run: python3 01_TOOL/rebuild_kit/verify_pdflib.py
+
+      - name: Published facts still describe the build
+        run: python3 .github/scripts/check_manifest.py
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Build verified"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Build | \`$(basename '${{ steps.build.outputs.path }}')\` |"
+            echo "| Demo | \`$(basename '${{ steps.build.outputs.demo }}')\` |"
+            echo "| SHA-256 | \`$(sha256sum '${{ steps.build.outputs.path }}' | cut -d' ' -f1)\` |"
+            echo ""
+            echo "See [VERIFY.md](../blob/main/VERIFY.md) to reproduce any of this yourself."
+          } >> "$GITHUB_STEP_SUMMARY"

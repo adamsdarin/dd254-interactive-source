@@ -1,0 +1,107 @@
+# Cut a release, and attach signed provenance to what it ships.
+#
+# A SHA-256 the author publishes about the author's own file proves only that
+# it was not altered in transit. It cannot answer "who built this, and from
+# what source" -- the question a security reviewer actually has.
+#
+# attest-build-provenance answers it. GitHub's infrastructure signs a Sigstore
+# statement binding the artefact to this repository, this commit and this
+# workflow run. A reviewer verifies it with:
+#
+#     gh attestation verify DD254_Interactive_vNNN.HTM --repo OWNER/REPO
+#
+# That link is not something the author can forge, which is exactly why it is
+# worth more than anything written in a document.
+#
+# Trigger:  git tag v189 && git push origin v189
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write        # create the release
+  id-token: write        # sign the attestation
+  attestations: write    # record it
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # A release must not be able to ship something the verify workflow would
+      # have rejected. Re-run the checks here rather than trusting that a green
+      # run exists somewhere in the history for some other commit.
+      - name: Install test harness
+        run: |
+          npm install --no-save jsdom fake-indexeddb
+          python3 -m pip install --quiet pypdf
+
+      - name: Re-run every check
+        timeout-minutes: 20
+        run: |
+          python3 .github/scripts/check_scripts.py
+          BUILD="$(python3 .github/scripts/newest_build.py)"
+          cp "$BUILD" 01_TOOL/dd254.htm
+          (cd 01_TOOL && node dd254_regression.js)
+          node 01_TOOL/browser_smoke.js "$BUILD"
+          python3 01_TOOL/rebuild_kit/verify_pdflib.py
+          python3 .github/scripts/check_manifest.py
+
+      - name: Stage assets
+        id: stage
+        run: |
+          mkdir -p dist
+          BUILD="$(python3 .github/scripts/newest_build.py)"
+          DEMO="$(python3 .github/scripts/newest_build.py --demo)"
+          cp "$BUILD" "$DEMO" dist/
+          cp 02_DOCS/DD254_Interactive_User_Manual.pdf dist/ 2>/dev/null || true
+          # The review kit, so a reviewer can start from the split parts
+          # without running anything first.
+          (cd 01_TOOL/rebuild_kit && python3 split.py >/dev/null)
+          tar czf dist/rebuild_kit.tar.gz -C 01_TOOL rebuild_kit
+          (cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          echo "build=$(basename "$BUILD")" >> "$GITHUB_OUTPUT"
+
+      # Only the .HTM files are attested. SHA256SUMS.txt is a convenience;
+      # the attestation is the load-bearing claim and it must point at the
+      # thing people actually run.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: 'dist/DD254_Interactive_v*.HTM'
+
+      # gh is preinstalled on the runner. Using it rather than a third-party
+      # release action keeps the number of external things with write access
+      # to this repository at zero -- a small point, but this project asks
+      # reviewers to care about supply chain, so it should hold itself to it.
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          gh release create "$TAG" dist/* \
+            --title "$TAG" \
+            --generate-notes \
+            --notes "
+          **Download** \`${{ steps.stage.outputs.build }}\` below, open it in Chrome or Edge. Runs locally, no install, no network.
+
+          Trying it out? The demo build with fictitious data runs in your browser: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+
+          **Verify before you run it** — see [VERIFY.md](https://github.com/${{ github.repository }}/blob/main/VERIFY.md):
+          \`\`\`
+          gh attestation verify ${{ steps.stage.outputs.build }} --repo ${{ github.repository }}
+          \`\`\`
+          Hashes in \`SHA256SUMS.txt\`. Not affiliated with or endorsed by DCSA, DoD, or any U.S. Government agency.
+          "

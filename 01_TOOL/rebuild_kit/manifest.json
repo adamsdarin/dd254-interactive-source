@@ -1,0 +1,30 @@
+{
+  "source": "DD254_Interactive_v190.HTM",
+  "sha256": "9f032a083f0cef8f88866d6b8738a049abaa8a18b01a791fcd4eac8eac512c57",
+  "parts": {
+    "01_pdflib.js": {
+      "chars": 525598,
+      "sha256": "1cd7d1f51f15de482b8e9cb7712539632a0ddefc289aa93fea9f2b145f78c9fb",
+      "note": "Third-party MIT library. Replace with your own copy of pdf-lib.min.js."
+    },
+    "02_dd254_flat.b64": {
+      "chars": 738164,
+      "sha256": "d6ffb9119c24bda280e64c4a091d61af2fdb990f9553b90836144aa28eaea266",
+      "note": "Official DD Form 254 from esd.whs.mil, base64. Re-encode your own download to replace.",
+      "decoded_sha256": "ff0b984f0a217339904eb037c4c27f344c5dd42804df2d9ed614cca35d025cf0",
+      "decoded_bytes": 553623
+    },
+    "03_dd254_xfa.b64": {
+      "chars": 83284,
+      "sha256": "77ef0f1bd8125105f223b7422c90aa944bdfc7794936c0ae5eb173b70e1e7cad",
+      "note": "Official DD Form 254 from esd.whs.mil, base64. Re-encode your own download to replace.",
+      "decoded_sha256": "86d380749d592f2a900c695bf651de2ebfb962b2d8b0071b244b90045ff217b1",
+      "decoded_bytes": 62461
+    },
+    "04_application.html": {
+      "chars": 776533,
+      "sha256": "85c2bf8684bbf75bd5b382dfa3332ac563823b79a4cf1c7dc14d3193d2e162c7",
+      "note": "Application code, markup and CSS. THIS is the part to review."
+    }
+  }
+}
