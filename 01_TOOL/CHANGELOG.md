@@ -11,6 +11,9 @@ browser storage. Each refresh, reopen, or new tab starts from only the fictitiou
 data baked into the demo; visitor changes persist only for the current page session.
 The shipped offline tool is unchanged.
 
+The demo advisor labels were shortened from NISS-verification phrasing to
+Actual FCL and Actual Safeguarding.
+
 **Corrected.** Replaced obsolete or misapplied clause mappings throughout the
 live clause panel, subcontract flow-down guidance and generated Contracting
 Officer Package. DFARS 252.204-7005 is no longer presented as a SAP/SCI clause;
