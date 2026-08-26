@@ -7,8 +7,8 @@ The documents stream reads this instead of asking for numbers.
 |---|---|
 | **File** | `DD254_Interactive_v1.9.HTM` |
 | **Tool version** | `2.116` |
-| **Size** | 2,130,196 bytes |
-| **SHA-256** | `9f032a083f0cef8f88866d6b8738a049abaa8a18b01a791fcd4eac8eac512c57` |
+| **Size** | 2,130,123 bytes |
+| **SHA-256** | `ead98abd907e8da1b0ec60d2c2e8728ecf20de2e3a0220c57e628b4770d0b4a6` |
 | **Regression assertions** | 923 |
 
 ## Component split
@@ -22,8 +22,8 @@ would download; both figures are given so neither is misleading.
 | pdf-lib (MIT) | 525,598 chars | — | 24.7% |
 | DD Form 254, flat | 738,164 chars | 553,623 bytes | 34.7% |
 | DD Form 254, dynamic XFA | 83,284 chars | 62,461 bytes | 3.9% |
-| **Application code** | **560,855 chars** | — | **26.3%** |
-| Markup and CSS | 222,295 chars | — | 10.4% |
+| **Application code** | **560,830 chars** | — | **26.3%** |
+| Markup and CSS | 222,247 chars | — | 10.4% |
 
 Not the author's code: **63.2%** of the file.
 

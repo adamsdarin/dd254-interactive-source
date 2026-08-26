@@ -4,6 +4,12 @@ Written 2026-08-11 from the record of the sessions that produced these versions.
 
 ## v1.9 — authority-correct Contracting Officer Package — 2026-08-26
 
+### Active-build parity with the public demo
+
+The active v1.9 build now uses Security POC throughout the template interface and
+shortens the advisor headings to Actual FCL and Actual Safeguarding. Demo-only
+session reset and fictitious seed data remain excluded from the active build.
+
 ### Public demo session isolation
 
 The demonstration build now uses per-page IndexedDB databases and session-scoped
