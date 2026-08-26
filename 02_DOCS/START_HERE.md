@@ -17,9 +17,9 @@ the deck, and anything else written for a person to read.
 | Document | Audience | State |
 |---|---|---|
 | `DD254_Handbook_DRAFT.md` | FSOs — how DD-254s are meant to work | **Draft, actively being written** |
-| `DD254_Interactive_User_Manual.pdf` | People using the tool | Current to v190, 24 pages |
+| `DD254_Interactive_User_Manual.pdf` | People using the tool | Current to v1.9, 24 pages |
 | `DD254_Tool_Security_Fact_Sheet.md` | A security reviewer deciding whether to allow the tool in | Current to v154 |
-| `rebuild_kit/REBUILD_GUIDE.md` *(in the tool project)* | Same reviewer, doing it themselves | Commands current to v190 |
+| `rebuild_kit/REBUILD_GUIDE.md` *(in the tool project)* | Same reviewer, doing it themselves | Commands current to v1.9 |
 | `DD254_Deck.pdf` / `.pptx` | Briefing an audience on the tool | 12 slides |
 | `linkedin_post_dd254_tool.md` | Public post | Two drafts, unused |
 

@@ -33,8 +33,12 @@ def newest_build(where):
            if 'DEMO' not in os.path.basename(f).upper()]
     if not found: sys.exit('no build found in %s'%where)
     def vnum(p):
-        m=re.search(r'_v(\d+)\.HTM$',os.path.basename(p),re.I)
-        return int(m.group(1)) if m else -1
+        name=os.path.basename(p)
+        semantic=re.search(r'_v(\d+(?:\.\d+)+)\.HTM$',name,re.I)
+        if semantic:
+            return (1, tuple(int(part) for part in semantic.group(1).split('.')))
+        legacy=re.search(r'_v(\d+)\.HTM$',name,re.I)
+        return (0, (int(legacy.group(1)),))
     return max(found,key=vnum)
 
 def split(src,out):

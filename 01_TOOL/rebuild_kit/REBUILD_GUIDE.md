@@ -17,7 +17,7 @@ proportionate ask. This procedure makes it a proportionate one, by separating
 the file into four parts and letting you replace three of them with copies you
 obtain yourself.
 
-The figures below are generated from the shipped v190 file by
+The figures below are generated from the shipped v1.9 file by
 `make_build_facts.py`. Component lengths are the characters captured by each
 extractor; shares use the 2,130,196-byte shipped file as their denominator.
 `split.py` independently records the exact extracted-part lengths and hashes in
@@ -52,7 +52,7 @@ markers, and write files.
 ## Step 1 — Verify what you were given
 
 ```
-certutil -hashfile DD254_Interactive_v190.HTM SHA256
+certutil -hashfile DD254_Interactive_v1.9.HTM SHA256
 ```
 
 Expected: `9f032a083f0cef8f88866d6b8738a049abaa8a18b01a791fcd4eac8eac512c57`
@@ -63,7 +63,7 @@ A mismatch means the file is not the one this guide describes. Stop.
 ## Step 2 — Split it
 
 ```
-python split.py DD254_Interactive_v190.HTM parts
+python split.py DD254_Interactive_v1.9.HTM parts
 ```
 
 Produces `parts/` containing four files and a `manifest.json` recording the size

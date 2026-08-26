@@ -1,6 +1,6 @@
 # DD-254 Interactive — 30-minute demonstration
 
-**Build:** `DD254_Interactive_v190_DEMO.HTM`
+**Build:** `DD254_Interactive_v1.9_DEMO.HTM`
 **Audience:** FSOs and security staff who will use the tool
 **Written for:** someone who has not rehearsed. Every step names the control to
 click and what to say while clicking it.
@@ -13,7 +13,7 @@ selections.*
 
 ## Before you start
 
-Open `DD254_Interactive_v190_DEMO.HTM` by double-clicking it. There is nothing
+Open `DD254_Interactive_v1.9_DEMO.HTM` by double-clicking it. There is nothing
 to install and no server to reach. A dark red banner across the top says
 **DEMONSTRATION BUILD — fictitious template data**; leave it visible.
 

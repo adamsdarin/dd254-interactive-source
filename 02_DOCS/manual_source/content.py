@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Covers build v190 (tool version 2.116)"
+VER="Covers build v1.9 (tool version 2.116)"
 
 DOC = [
 ("h1","1. What this tool is"),

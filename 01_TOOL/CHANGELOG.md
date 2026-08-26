@@ -1,8 +1,8 @@
-# DD-254 Interactive — change notes, v155 → v190
+# DD-254 Interactive — change notes, v155 → v1.9
 
 Written 2026-08-11 from the record of the sessions that produced these versions.
 
-## v190 — authority-correct Contracting Officer Package — 2026-08-26
+## v1.9 — authority-correct Contracting Officer Package — 2026-08-26
 
 **Corrected.** Replaced obsolete or misapplied clause mappings throughout the
 live clause panel, subcontract flow-down guidance and generated Contracting
@@ -27,10 +27,10 @@ subcontract performance still require contracting-officer review.
 
 **Testing and documentation.** Added focused regression coverage for the
 corrected citations, CUI gaps, Item 12, minimum distribution and stale-clause
-exclusions. Updated the demo instructions and user-manual source for v190; the
+exclusions. Updated the demo instructions and user-manual source for v1.9; the
 release facts, final assertion count and rebuild manifest are regenerated from
 the verified official file. The complete run passed `923 PASS / 0 FAIL`, and
-the rebuild kit reproduced the v190 file byte-for-byte.
+the rebuild kit reproduced the v1.9 file byte-for-byte.
 
 ## v189 — sign the dynamic PDF, not the drafting screen — 2026-08-26
 
@@ -171,7 +171,7 @@ declarations in the suite source — the same rule `make_build_facts.py` follows
 | v187 | `a3607f369d2a0e85` | 906 | A cleared compliance hold stays cleared |
 | v188 | `a4d96fcac53ea7a3` | 916 | Cited, nonblocking access and Item 11 performance advisors |
 | v189 | `a44bd7ee258211fd` | 918 | Items 17h and 17i move from the browser to the dynamic PDF signing workflow |
-| v190 | `9f032a083f0cef8f` | 923 | Authority-correct CO package, clause applicability review, CUI/lifecycle/distribution checks |
+| v1.9 | `9f032a083f0cef8f` | 923 | Authority-correct CO package, clause applicability review, CUI/lifecycle/distribution checks |
 
 Net: **+357 assertions**, 566 → 923. Size 1,933,671 → 2,130,196 bytes.
 

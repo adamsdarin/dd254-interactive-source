@@ -19,7 +19,13 @@ if "--demo" in sys.argv:
              if "DEMO" in os.path.basename(f).upper()]
     if not found:
         sys.exit("no demo build found in %s" % TOOL)
-    vnum = lambda p: int(re.search(r'_v(\d+)_DEMO\.HTM$', os.path.basename(p), re.I).group(1))
+    def vnum(p):
+        name = os.path.basename(p)
+        semantic = re.search(r'_v(\d+(?:\.\d+)+)_DEMO\.HTM$', name, re.I)
+        if semantic:
+            return (1, tuple(int(part) for part in semantic.group(1).split('.')))
+        legacy = re.search(r'_v(\d+)_DEMO\.HTM$', name, re.I)
+        return (0, (int(legacy.group(1)),))
     print(max(found, key=vnum))
 else:
     saved, sys.dont_write_bytecode = sys.dont_write_bytecode, True

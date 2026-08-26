@@ -1,9 +1,9 @@
 from pathlib import Path
 
 root = Path(__file__).parent / "01_TOOL"
-official = root / "DD254_Interactive_v190.HTM"
+official = root / "DD254_Interactive_v1.9.HTM"
 previous_demo = root / "DD254_Interactive_v189_DEMO.HTM"
-output = root / "DD254_Interactive_v190_DEMO.HTM"
+output = root / "DD254_Interactive_v1.9_DEMO.HTM"
 
 official_bytes = official.read_bytes()
 demo_bytes = previous_demo.read_bytes()
