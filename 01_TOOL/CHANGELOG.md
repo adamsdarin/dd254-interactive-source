@@ -4,6 +4,13 @@ Written 2026-08-11 from the record of the sessions that produced these versions.
 
 ## v1.9 — authority-correct Contracting Officer Package — 2026-08-26
 
+### Public demo session isolation
+
+The demonstration build now uses per-page IndexedDB databases and session-scoped
+browser storage. Each refresh, reopen, or new tab starts from only the fictitious
+data baked into the demo; visitor changes persist only for the current page session.
+The shipped offline tool is unchanged.
+
 **Corrected.** Replaced obsolete or misapplied clause mappings throughout the
 live clause panel, subcontract flow-down guidance and generated Contracting
 Officer Package. DFARS 252.204-7005 is no longer presented as a SAP/SCI clause;

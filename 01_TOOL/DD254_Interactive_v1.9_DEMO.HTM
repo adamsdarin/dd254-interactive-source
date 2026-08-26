@@ -2,6 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+/* Demo-only storage isolation. Every page load gets a new browser session. */
+(function(){
+  const prefix='dd254_';
+  function clearDd254(store){
+    try{
+      const keys=[];
+      for(let i=0;i<store.length;i++){ const k=store.key(i)||''; if(k.indexOf(prefix)===0) keys.push(k); }
+      keys.forEach(function(k){ store.removeItem(k); });
+    }catch(e){}
+  }
+  clearDd254(localStorage);   /* remove data saved by earlier demo versions */
+  clearDd254(sessionStorage); /* refresh/reopen always starts clean */
+  window.DD254_DEMO_SESSION_ID=(function(){
+    try{ return crypto.randomUUID(); }
+    catch(e){ return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2); }
+  })();
+  try{ indexedDB.deleteDatabase('dd254_dashboard'); indexedDB.deleteDatabase('dd254_templates'); }catch(e){}
+  window.addEventListener('pagehide',function(){
+    try{
+      indexedDB.deleteDatabase('dd254_dashboard_'+window.DD254_DEMO_SESSION_ID);
+      indexedDB.deleteDatabase('dd254_templates_'+window.DD254_DEMO_SESSION_ID);
+    }catch(e){}
+  });
+})();
+</script>
 <!-- ── CONTENT SECURITY POLICY ───────────────────────────────────────────────
      The claim "this file never talks to the network" should not have to be
      taken on trust. connect-src 'none' makes the browser ENFORCE it: fetch,
@@ -20,7 +46,7 @@
 -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; media-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DD Form 254 – Interactive Guided Form v190</title>
+<title>DD Form 254 – Interactive Guided Form v1.9 Demo</title>
 <style>:root{--navy:#2b3440;--navy2:#3a4552;--steel:#4a5866;--steel2:#566573;--accent:#5a6b7c;--accent2:#e8ecef;--req-red:#c0392b;--req-bg:#fdf0ef;--warn-amber:#d4840a;--warn-bg:#fef8ec;--ok:#27ae60;--ok-bg:#edfaf3;--rule-red:#8b1a0a;--rule-bg:#fde8e6;--rule-amber:#7a4800;--rule-abg:#fef3e0;--info:#46606f;--info-bg:#e8f3fa;--border:#b0bac6;--text:#1a1e26;--label:#384558;--light:#f7f9fb;--white:#fff;--muted:#6a7888;--disabled-bg:#f0f2f4;--disabled:#a0a8b0}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Georgia',serif;font-size:12.5px;color:var(--text);background:#c8cdd5;line-height:1.4}.layout{display:flex;gap:0;max-width:1280px;margin:16px auto}.form-col{flex:1;min-width:0}.panel-col{width:320px;flex-shrink:0;position:sticky;top:16px;align-self:flex-start;height:calc(100vh - 32px);max-height:calc(100vh - 32px);overflow-y:auto}.fw{background:var(--white);box-shadow:0 4px 20px rgba(0,0,0,.3)}.fh{background:var(--navy);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.fh h1{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;line-height:1.4}.fh .omb{font-size:9.5px;color:#7a9fc0;text-align:right;white-space:nowrap}.cls-banner{background:#1a6030;color:#fff;text-align:center;padding:6px;font-size:10.5px;font-weight:bold;letter-spacing:2px;display:block}.top-bar{background:var(--navy2);padding:7px 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.top-bar select,.top-bar input{background:var(--steel);color:#fff;border:1px solid #6a7a8a;padding:3px 7px;font-size:11px;border-radius:3px}.top-bar label{font-size:11px;color:#b0bcc4}.print-bar{background:var(--steel2);padding:8px 18px;display:flex;justify-content:space-between;align-items:center}.print-bar span{font-size:10.5px;color:#c0d8f0}.pbtn{background:var(--accent);color:#fff;border:none;padding:7px 18px;border-radius:4px;font-size:11px;font-weight:bold;cursor:pointer;letter-spacing:.4px;text-transform:uppercase}.pbtn:hover{background:#46545f}.ebtn{background:#46606f;color:#fff;border:none;padding:7px 18px;border-radius:4px;font-size:11px;font-weight:bold;cursor:pointer;letter-spacing:.4px;text-transform:uppercase}.ebtn:hover{background:#38505e}.ebtn:disabled{background:#5a7a8a;cursor:wait}.sec{border-bottom:2px solid var(--navy);padding:10px 16px}.sec:last-child{border-bottom:none}.sec-hdr{background:var(--navy);color:#fff;padding:5px 16px;font-size:11px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px}.sec-row{display:flex;gap:10px;flex-wrap:wrap}.sc{flex:1;min-width:180px}.sc2{flex:2}.sc3{flex:3}.ilabel{display:flex;align-items:flex-start;gap:5px;margin-bottom:5px}.inum{background:var(--navy);color:#fff;font-size:10.5px;font-weight:bold;padding:2px 6px;border-radius:3px;min-width:26px;text-align:center;flex-shrink:0}.ititle{font-size:11px;font-weight:bold;color:var(--navy);text-transform:uppercase;letter-spacing:.3px;line-height:1.3}.inst-box{background:var(--info-bg);border-left:3px solid var(--info);border-radius:0 4px 4px 0;padding:7px 10px;margin:4px 0 6px 0;font-size:10.5px;color:#3a4552;font-family:Arial,sans-serif}.inst-box summary{cursor:pointer;font-weight:bold;color:var(--info);list-style:none;display:flex;align-items:center;gap:5px;user-select:none}.inst-box summary::before{content:'▶';font-size:9px;transition:transform .15s}details[open]>summary::before{content:'▼'}.inst-box .rule-r{background:var(--rule-bg);border:1px solid #e8a09a;border-radius:3px;padding:4px 7px;margin:4px 0;font-size:10px}.inst-box .rule-r::before{content:'🔴 REQUIRED:';font-weight:bold;color:var(--rule-red)}.inst-box .rule-w{background:var(--rule-abg);border:1px solid #e8c880;border-radius:3px;padding:4px 7px;margin:4px 0;font-size:10px}.inst-box .rule-w::before{content:'🟡 RECOMMENDED:';font-weight:bold;color:var(--rule-amber)}.inst-box .rule-n{background:#f0f0f4;border:1px solid #c0a0e0;border-radius:3px;padding:4px 7px;margin:4px 0;font-size:10px}.inst-box .rule-n::before{content:'⛔ DO NOT:';font-weight:bold;color:#4a4a5a}.inst-box p{margin:3px 0;line-height:1.5}.inst-box ul{padding-left:14px;margin:3px 0}.inst-box li{margin-bottom:2px}input[type=text],textarea,select{width:100%;border:1px solid var(--border);padding:5px 7px;font-size:11.5px;font-family:Arial,sans-serif;color:var(--text);background:#f9fafc;border-radius:3px;transition:border-color .15s}input[type=text]:focus,textarea:focus,select:focus{outline:none;border-color:var(--steel);background:#fff;box-shadow:0 0 0 2px rgba(46,80,119,.15)}input.dis,textarea.dis{background:var(--disabled-bg);color:var(--disabled);cursor:not-allowed}textarea{resize:vertical;min-height:55px}input.df{font-family:monospace;width:120px}.hint{font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;font-family:Arial,sans-serif}.req{color:var(--req-red)}.sub-lbl{font-size:11px;font-weight:bold;color:var(--label);margin:6px 0 2px;display:flex;align-items:center;gap:4px}.sub-ltr{background:var(--light);border:1px solid var(--border);padding:1px 4px;border-radius:2px;font-size:10px;color:var(--navy);font-weight:bold}.alert{padding:7px 10px;border-radius:4px;font-size:10.5px;margin-top:6px;display:none;font-family:Arial,sans-serif;line-height:1.5}.alert.show{display:block}.alert-tpl{font-size:9.5px!important;line-height:1.35!important;padding:5px 7px!important;margin-top:4px!important;word-break:normal;overflow-wrap:anywhere}.alert-r{background:var(--req-bg);border-left:3px solid var(--req-red);color:#7a1008}.alert-w{background:var(--warn-bg);border-left:3px solid var(--warn-amber);color:#5a3000}.alert-ok{background:var(--ok-bg);border-left:3px solid var(--ok);color:#0a4020}.alert-i{background:var(--info-bg);border-left:3px solid var(--info);color:#0a2a50}.alert strong{display:block;margin-bottom:1px}.yn{display:flex;gap:16px;align-items:center;margin:4px 0}.yn label{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:bold;cursor:pointer}.yn input[type=radio]{accent-color:var(--navy);width:13px;height:13px}.crev{margin-top:7px;padding:8px 10px;border:1px dashed var(--steel);border-radius:4px;background:#eef3fa;display:none}.crev.show{display:block}.cbgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:5px;align-items:start}.cbgrid.one{grid-template-columns:1fr}.cbcol{display:flex;flex-direction:column;gap:5px;min-width:0}.dash-daygroup{font-size:12px;font-weight:bold;color:#2b3440;background:#dfe6ee;border-left:4px solid #566573;border-radius:3px;padding:5px 10px;margin:8px 0 8px;letter-spacing:.3px}.cbi{display:flex;align-items:flex-start;gap:6px;padding:6px 8px;border:1px solid var(--border);border-radius:4px;background:var(--light);cursor:pointer;transition:background .1s,border-color .1s,box-shadow .1s}.cbi:hover{background:var(--accent2);border-color:var(--navy)}.cbi:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(43,52,64,.18)}.cbi.on{background:#e4ecf8;border-color:var(--steel)}.cbi.dis{opacity:.4;cursor:not-allowed;pointer-events:none;background:var(--disabled-bg)}.cbi.conflict{background:var(--req-bg);border-color:var(--req-red)}.cbi input[type=checkbox]{accent-color:var(--navy);margin-top:2px;flex-shrink:0;pointer-events:none}.cbl{flex:1;font-size:10.5px;line-height:1.3}.cbl .ck{font-weight:bold;color:var(--navy)}.cbl .cd{color:var(--label)}.cbi-rules{font-size:9.5px;margin-top:3px;display:none}.cbi.on .cbi-rules{display:block}.cbi-rules .rr{color:var(--rule-red);background:var(--rule-bg);border-radius:2px;padding:1px 4px;margin:1px 0;display:block}.cbi-rules .rw{color:var(--rule-amber);background:var(--rule-abg);border-radius:2px;padding:1px 4px;margin:1px 0;display:block}.cbi-rules .rn{color:#4a4a5a;background:#f0f0f4;border-radius:2px;padding:1px 4px;margin:1px 0;display:block}.sigbox{border:1px solid var(--border);min-height:38px;background:#fff;border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--disabled);font-size:11px;font-style:italic}.distrow{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px dotted var(--border);font-size:11.5px}.distrow:last-child{border:none}.distrow input[type=checkbox]{accent-color:var(--navy);width:13px;height:13px}.bpbtn{background:var(--navy2);color:#fff;border:none;padding:4px 10px;border-radius:3px;font-size:10.5px;cursor:pointer;margin:3px 3px 0 0}.bpbtn:hover{background:var(--steel)}.bparea{margin-top:6px}.rpanel{background:var(--white);box-shadow:-2px 0 12px rgba(0,0,0,.15);border-radius:0 6px 6px 0}.rp-hdr{background:var(--navy);color:#fff;padding:10px 14px;font-size:11.5px;font-weight:bold;text-transform:uppercase;letter-spacing:.4px;border-radius:0 6px 0 0}.rp-section{padding:10px 12px;border-bottom:1px solid #e0e6f0}.rp-section h4{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--navy);font-weight:bold;margin-bottom:6px}.check-item{display:flex;align-items:flex-start;gap:6px;padding:4px 0;border-bottom:1px dotted #e0e8f0;font-size:10px;font-family:Arial,sans-serif;color:var(--label)}.check-item:last-child{border:none}.ci-icon{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold}.ci-pending{background:#e8eaed;color:#888}.ci-warn{background:#ffeaa7;color:#d4840a}.ci-error{background:#fde8e6;color:#c0392b}.ci-ok{background:#edfaf3;color:#27ae60}.ci-text{flex:1;line-height:1.4}.ci-text.error{color:#c0392b;font-weight:bold}.ci-text.warn{color:#d4840a}.ci-text.ok{color:#27ae60}.item13-needed{background:var(--warn-bg);border-radius:4px;padding:8px 10px;font-size:10px;font-family:Arial,sans-serif;margin-top:5px}.item13-needed h5{color:var(--rule-amber);font-size:10px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px}.i13tag{display:inline-block;background:#fde8c0;border:1px solid #e8c080;border-radius:3px;padding:2px 5px;font-size:9.5px;color:#7a4000;margin:2px 2px 0 0}.ffoot{background:var(--navy);color:#6090b0;padding:7px 18px;font-size:9.5px;display:flex;justify-content:space-between}@media print{body{background:#fff}.layout{display:block;max-width:100%}.panel-col,.print-bar,.top-bar{display:none!important}.fw{box-shadow:none}.inst-box{display:none!important}.crev,.alert{display:block!important}.cbi.dis{opacity:1}}.tplcard{border:1px solid #d0d8e8;border-radius:5px;margin-bottom:6px;background:#f7f9fb;overflow:hidden}.tplcard-hdr{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:#edf1f7;gap:4px}.tplcard-label{font-size:10.5px;font-weight:bold;color:var(--navy);flex:1}
 
 /* ── WIZARD STYLES ── */
@@ -519,7 +545,7 @@ body.ws-dragging{user-select:none;}
           <button class="dash-menu-item" data-lbl="templates contract type" onclick="dashTplEdit('b13')">📄 Contract Type</button>
           <button class="dash-menu-item" data-lbl="templates dd-254 template language" onclick="dashTplEdit('ct')">📝 DD-254 Template Language</button>
           <button class="dash-menu-item" data-lbl="templates standard language" onclick="dashTplEdit('sl')">📑 Standard Language</button>
-          <button class="dash-menu-item" data-lbl="templates security managers" onclick="dashTplEdit('sm')">🛡 Security Managers</button>
+          <button class="dash-menu-item" data-lbl="templates security poc" onclick="dashTplEdit('sm')">🛡 Security POC</button>
         </div>
         <div class="dash-menu-section" data-menu-section>
           <div class="dash-menu-hdr">Reports</div>
@@ -1623,7 +1649,7 @@ function sanitizePdfText(t){return String(t==null?'':t).replace(/[\u2018\u2019\u
 </div>
 <div class="rp-section">
 <h4>DD-254 Template Language</h4>
-<input type="search" id="ctTplSearch" placeholder="Search templates — name, content, source date, security manager…" oninput="ctFilterSel(this.value)" style="font-size:10.5px;margin-bottom:4px;">
+<input type="search" id="ctTplSearch" placeholder="Search templates — name, content, source date, security POC…" oninput="ctFilterSel(this.value)" style="font-size:10.5px;margin-bottom:4px;">
 <select id="ctTplSel" onchange="buildCtPanel();ctAutoLangSync()" style="font-size:10.5px;margin-bottom:6px;"><option value="">— select a template… —</option></select>
 <div id="ctPanel" style="font-size:10px;color:#888;font-family:Arial,sans-serif;">Select a saved template above to see its insertable guidance. Nothing is applied automatically.</div>
 </div>
@@ -4068,14 +4094,14 @@ function updateStateAndUI(){
 function dashId(){ try{return crypto.randomUUID();}catch(e){ return 'd'+Date.now()+'_'+Math.random().toString(36).slice(2,8);} }
 function dashEsc(s){ return htmlEsc(s); }
 
-/* storage: IndexedDB with localStorage fallback */
+/* storage: IndexedDB with sessionStorage fallback */
 function dashDB(){
   if(DASH.ready) return DASH.ready;
   DASH.ready=new Promise(function(res){
     if(DASH.db||DASH.useLS) return res();
     if(!window.indexedDB){ DASH.useLS=true; return res(); }
     try{
-      const rq=indexedDB.open('dd254_dashboard',2);
+      const rq=indexedDB.open('dd254_dashboard_'+window.DD254_DEMO_SESSION_ID,2);
       rq.onupgradeneeded=function(){
         if(!rq.result.objectStoreNames.contains('drafts')) rq.result.createObjectStore('drafts',{keyPath:'id'});
         if(!rq.result.objectStoreNames.contains('audit')){
@@ -4090,8 +4116,8 @@ function dashDB(){
   return DASH.ready;
 }
 const DASH_MEM={};
-function lsAll(){ try{return JSON.parse(localStorage.getItem('dd254_drafts')||'{}');}catch(e){return DASH_MEM;} }
-function lsWrite(all){ try{localStorage.setItem('dd254_drafts',JSON.stringify(all));}catch(e){ Object.keys(all).forEach(function(k){DASH_MEM[k]=all[k];}); } }
+function lsAll(){ try{return JSON.parse(sessionStorage.getItem('dd254_drafts')||'{}');}catch(e){return DASH_MEM;} }
+function lsWrite(all){ try{sessionStorage.setItem('dd254_drafts',JSON.stringify(all));}catch(e){ Object.keys(all).forEach(function(k){DASH_MEM[k]=all[k];}); } }
 async function draftPut(rec){
   if(window.DD254_READONLY) return;   /* read-only tab: never write a draft */
   if(typeof bkMark==='function'&&!window.BK_UNLOADING) bkMark();
@@ -4133,14 +4159,14 @@ async function draftDel(id){
    immediately and deleted in one click. */
 const PACK_KINDS=['fac','cso','perf','cert','b13','ct','sm','sl'];
 const PACK_LABEL={fac:'Facility',cso:'CSO',perf:'Performance / Sub',cert:'Certifier',
-                  b13:'Contract Type',ct:'DD-254 Template Language',sm:'Security Managers',
+                  b13:'Contract Type',ct:'DD-254 Template Language',sm:'Security POC',
                   sl:'Standard Language'};
 /* Libraries that describe YOUR sites and YOUR subcontractors rather than a way
    of writing a DD-254. Off by default on import: a curator's facility list is
    usually wrong for everybody else. */
 const PACK_LOCAL={fac:1,perf:1};
 function packOwner(){
-  let o=''; try{ o=localStorage.getItem('dd254_owner')||''; }catch(e){}
+  let o=''; try{ o=sessionStorage.getItem('dd254_owner')||''; }catch(e){}
   return o;
 }
 function packName(t){ return String((t&&(t.label||t.name))||'').trim(); }
@@ -4244,7 +4270,7 @@ async function tplPackExport(){
   let owner=packOwner();
   if(!owner){
     owner=(await uiPrompt('Who is sharing these templates? (name or team — shown to whoever imports them)',''))||'';
-    try{ if(owner) localStorage.setItem('dd254_owner',owner); }catch(e){}
+    try{ if(owner) sessionStorage.setItem('dd254_owner',owner); }catch(e){}
   }
   const libs={}; let n=0;
   PACK_KINDS.forEach(function(k){ libs[k]=picked[k]||[]; n+=libs[k].length; });
@@ -4723,7 +4749,7 @@ function b13ActiveKeys(){
 const WS_PRESETS={reading:1100,wide:1600,full:0};   /* 0 means "use the window" */
 const WS_MIN=760;
 function wsWidthGet(){
-  let v=null; try{ v=localStorage.getItem('dd254_ws_width'); }catch(e){}
+  let v=null; try{ v=sessionStorage.getItem('dd254_ws_width'); }catch(e){}
   if(v==null||v==='') return 'auto';
   if(WS_PRESETS.hasOwnProperty(v)||v==='auto') return v;
   const n=parseInt(v,10);
@@ -4734,7 +4760,7 @@ function wsWidthSet(v){
   if(typeof v==='number'){ store=String(Math.max(WS_MIN,Math.round(v))); }
   else if(WS_PRESETS.hasOwnProperty(v)||v==='auto'){ store=v; }
   else { store='auto'; }
-  try{ localStorage.setItem('dd254_ws_width',store); }catch(e){}
+  try{ sessionStorage.setItem('dd254_ws_width',store); }catch(e){}
   wsApply();
   return wsWidthGet();
 }
@@ -4773,13 +4799,13 @@ function wsApply(){
    several hundred sizes in this file are inline pixel values that a cascade
    cannot reach. Scoped to the chrome; the form sheet is never zoomed. */
 function uiScaleGet(){
-  let v=null; try{ v=localStorage.getItem('dd254_ui_scale'); }catch(e){}
+  let v=null; try{ v=sessionStorage.getItem('dd254_ui_scale'); }catch(e){}
   const n=parseInt(v||'100',10);
   return (isFinite(n)&&n>=90&&n<=175)?n:100;
 }
 function uiScaleSet(v){
   const n=parseInt(v,10);
-  try{ localStorage.setItem('dd254_ui_scale',String((isFinite(n)&&n>=90&&n<=175)?n:100)); }catch(e){}
+  try{ sessionStorage.setItem('dd254_ui_scale',String((isFinite(n)&&n>=90&&n<=175)?n:100)); }catch(e){}
   uiScaleApply();
   return uiScaleGet();
 }
@@ -4845,10 +4871,10 @@ function wsDragInit(){
   wsApply();
 }
 
-function b13ViewGet(){ return localStorage.getItem('dd254_b13_view')==='sections'?'sections':'block'; }
+function b13ViewGet(){ return sessionStorage.getItem('dd254_b13_view')==='sections'?'sections':'block'; }
 function b13ViewSet(v){
   const m=(v==='sections')?'sections':'block';
-  try{ localStorage.setItem('dd254_b13_view',m); }catch(e){}
+  try{ sessionStorage.setItem('dd254_b13_view',m); }catch(e){}
   const host=document.getElementById('b13Compose');
   if(host) host.style.display=(m==='sections')?'block':'none';
   const note=document.getElementById('b13RawNote');
@@ -5471,7 +5497,7 @@ const AUD_WAL_KEY='dd254_audit_pending';     /* synchronous recovery journal */
    so it outlives any individual draft and is the one record that must not be
    quietly lossy.
 
-   It used to live in localStorage, capped at 5,000 entries, with the oldest
+   It used to live in sessionStorage, capped at 5,000 entries, with the oldest
    silently shifted off the front. At a thousand forms a year that ceiling
    arrives in a few months and takes the earliest history with it — the exact
    history that matters when tracing a revision back to an original years
@@ -5515,25 +5541,25 @@ function audOkay(){
   if(typeof storageMeter==='function') storageMeter();
 }
 function audWalRead(){
-  try{ const a=JSON.parse(localStorage.getItem(AUD_WAL_KEY)||'[]'); return Array.isArray(a)?a:[]; }
+  try{ const a=JSON.parse(sessionStorage.getItem(AUD_WAL_KEY)||'[]'); return Array.isArray(a)?a:[]; }
   catch(e){ return []; }
 }
 function audWalStage(entries){
   if(!entries.length) return true;
-  try{ localStorage.setItem(AUD_WAL_KEY,JSON.stringify(audMerge([audWalRead(),entries]))); return true; }
+  try{ sessionStorage.setItem(AUD_WAL_KEY,JSON.stringify(audMerge([audWalRead(),entries]))); return true; }
   catch(e){ audFail(); return false; }
 }
 function audWalClear(uids){
   try{
     const gone={}; uids.forEach(function(x){gone[x]=1;});
     const keep=audWalRead().filter(function(e){return !gone[e.uid];});
-    if(keep.length) localStorage.setItem(AUD_WAL_KEY,JSON.stringify(keep));
-    else localStorage.removeItem(AUD_WAL_KEY);
+    if(keep.length) sessionStorage.setItem(AUD_WAL_KEY,JSON.stringify(keep));
+    else sessionStorage.removeItem(AUD_WAL_KEY);
   }catch(e){ audFail(); }
 }
 function audAll(){
   if(AUD_CACHE) return AUD_CACHE;
-  try{ AUD_CACHE=audMerge([JSON.parse(localStorage.getItem(AUD_KEY)||'[]')]); }catch(e){ AUD_CACHE=[]; }
+  try{ AUD_CACHE=audMerge([JSON.parse(sessionStorage.getItem(AUD_KEY)||'[]')]); }catch(e){ AUD_CACHE=[]; }
   return AUD_CACHE;
 }
 function audUseDb(){
@@ -5587,7 +5613,7 @@ function audTrim(a){
 function audPersistDelta(puts,deletes){
   puts=puts||[]; deletes=deletes||[];
   if(!audUseDb()){
-    try{ localStorage.setItem(AUD_KEY,JSON.stringify(audAll())); audOkay(); return Promise.resolve(true); }
+    try{ sessionStorage.setItem(AUD_KEY,JSON.stringify(audAll())); audOkay(); return Promise.resolve(true); }
     catch(e){ audFail(); return Promise.resolve(false); }
   }
   audWalStage(puts);
@@ -5598,11 +5624,11 @@ function audPersistDelta(puts,deletes){
 function audFlush(){
   const snap=audAll().slice();
   if(!audUseDb()){
-    try{localStorage.setItem(AUD_KEY,JSON.stringify(snap));audOkay();return Promise.resolve(true);}
+    try{sessionStorage.setItem(AUD_KEY,JSON.stringify(snap));audOkay();return Promise.resolve(true);}
     catch(e){audFail();return Promise.resolve(false);}
   }
   AUD_WRITE=AUD_WRITE.catch(function(){return false;}).then(function(){return audDbReplace(snap);})
-    .then(function(ok){if(ok){try{localStorage.removeItem(AUD_WAL_KEY);}catch(e){}audOkay();}else audFail();return ok;});
+    .then(function(ok){if(ok){try{sessionStorage.removeItem(AUD_WAL_KEY);}catch(e){}audOkay();}else audFail();return ok;});
   return AUD_WRITE;
 }
 function audLog(draftId,title,action,detail){
@@ -5616,31 +5642,31 @@ function audLog(draftId,title,action,detail){
   }catch(e){ audFail(); return ''; }
 }
 /* Loaded once, after the drafts database is open. Entries written by earlier
-   versions are carried across and the localStorage copy is released, so the
+   versions are carried across and the sessionStorage copy is released, so the
    log stops competing with the templates for the 5 MB budget. */
 async function audInit(){
   await dashDB();
   const db=audUseDb()?await audDbAll():[];
   let oldTpl=[];
   try{ if(typeof TDB!=='undefined'&&TDB&&TDB.db&&!TDB.useLS) oldTpl=(await tdbGet('audit'))||[]; }catch(e){oldTpl=[];}
-  let ls=[]; try{ls=JSON.parse(localStorage.getItem(AUD_KEY)||'[]');}catch(e){ls=[];}
+  let ls=[]; try{ls=JSON.parse(sessionStorage.getItem(AUD_KEY)||'[]');}catch(e){ls=[];}
   const wal=audWalRead();
   AUD_CACHE=audMerge([db,oldTpl,ls,wal]); audTrim(AUD_CACHE);
   if(audUseDb()){
     const ok=await audDbReplace(AUD_CACHE);
     if(ok){
-      try{localStorage.removeItem(AUD_KEY);localStorage.removeItem(AUD_WAL_KEY);}catch(e){}
+      try{sessionStorage.removeItem(AUD_KEY);sessionStorage.removeItem(AUD_WAL_KEY);}catch(e){}
       try{if(oldTpl.length&&typeof tdbDel==='function') await tdbDel('audit');}catch(e){}
       audOkay();
     }else audFail();
   } else {
-    try{localStorage.setItem(AUD_KEY,JSON.stringify(AUD_CACHE));audOkay();}catch(e){audFail();}
+    try{sessionStorage.setItem(AUD_KEY,JSON.stringify(AUD_CACHE));audOkay();}catch(e){audFail();}
   }
   if(typeof storageMeter==='function') storageMeter();
 }
 window.addEventListener('pagehide',function(){
   /* IndexedDB writes already have a synchronous journal. The fallback is a
-     whole localStorage array, so give it one final synchronous flush. */
+     whole sessionStorage array, so give it one final synchronous flush. */
   if(!audUseDb()) audFlush();
 });
 function audExport(){
@@ -5719,7 +5745,7 @@ async function audClear(){
     return false;
   }
 
-  const who=(function(){ try{ return localStorage.getItem('dd254_owner')||''; }catch(e){ return ''; } })();
+  const who=(function(){ try{ return sessionStorage.getItem('dd254_owner')||''; }catch(e){ return ''; } })();
   const marker={uid:audUid(),ts:new Date().toISOString(),id:'',title:'',
     action:'audit log cleared',
     detail:before.length+' entries covering '+period+' were exported and removed'+(who?' by '+who:'')+'.'};
@@ -5727,8 +5753,8 @@ async function audClear(){
   AUD_CACHE=[marker];
   /* The recovery journal is emptied in the same breath. Left in place, startup
      replay would merge the cleared entries straight back in. */
-  try{ localStorage.removeItem(AUD_WAL_KEY); }catch(e){}
-  try{ localStorage.removeItem(AUD_KEY); }catch(e){}
+  try{ sessionStorage.removeItem(AUD_WAL_KEY); }catch(e){}
+  try{ sessionStorage.removeItem(AUD_KEY); }catch(e){}
   await audFlush();
   if(typeof storageMeter==='function') storageMeter();
   if(typeof uiAlert==='function') uiAlert('Audit log cleared.\n\n'+before.length+' entries were exported to CSV and removed. The log now holds one entry recording that.');
@@ -6445,13 +6471,13 @@ async function portfolioCsv(onlyIds){
    A merge is the wrong answer for a compliance record, so the second tab goes
    read-only instead. The holder heartbeats every LOCK_BEAT ms; a lock older
    than LOCK_TTL is treated as dead, so a crashed or force-quit tab cannot lock
-   the user out permanently. If localStorage is unavailable the lock fails OPEN —
+   the user out permanently. If sessionStorage is unavailable the lock fails OPEN —
    degraded to today's behaviour rather than bricking the tool. */
 const LOCK_KEY='dd254_tab_lock', LOCK_TTL=8000, LOCK_BEAT=2500;
 window.DD254_TAB_ID='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 window.DD254_READONLY=false;
-function lockRead(){ try{ return JSON.parse(localStorage.getItem(LOCK_KEY)||'null'); }catch(e){ return null; } }
-function lockWrite(){ try{ localStorage.setItem(LOCK_KEY,JSON.stringify({id:window.DD254_TAB_ID,ts:Date.now()})); return true; }catch(e){ return false; } }
+function lockRead(){ try{ return JSON.parse(sessionStorage.getItem(LOCK_KEY)||'null'); }catch(e){ return null; } }
+function lockWrite(){ try{ sessionStorage.setItem(LOCK_KEY,JSON.stringify({id:window.DD254_TAB_ID,ts:Date.now()})); return true; }catch(e){ return false; } }
 function lockAlive(l){ return !!(l&&l.id&&(Date.now()-(l.ts||0))<LOCK_TTL); }
 function lockMine(l){ return !!(l&&l.id===window.DD254_TAB_ID); }
 function lockOverlay(on,otherAge){
@@ -6491,7 +6517,7 @@ function lockInit(){
   if(lockAlive(l)&&!lockMine(l)) lockGoReadOnly(); else lockWrite();
   setInterval(lockBeat,LOCK_BEAT);
   window.addEventListener('beforeunload',function(){
-    try{ const cur=lockRead(); if(lockMine(cur)) localStorage.removeItem(LOCK_KEY); }catch(e){}
+    try{ const cur=lockRead(); if(lockMine(cur)) sessionStorage.removeItem(LOCK_KEY); }catch(e){}
   });
   try{ window.addEventListener('storage',function(e){ if(e&&e.key===LOCK_KEY) lockBeat(); }); }catch(e){}
 }
@@ -6518,13 +6544,13 @@ function bkCounts(templates,drafts){
   return {templates:BK_KINDS.reduce(function(a,k){return a+((templates[k]||[]).length);},0),
           drafts:(drafts||[]).length};
 }
-function bkDirty(){ try{return +(localStorage.getItem('dd254_dirty_n')||0);}catch(e){return 0;} }
-function bkMark(){ if(window.BK_RESTORING) return; try{localStorage.setItem('dd254_dirty_n',String(bkDirty()+1));}catch(e){} bkStatus(); }
-function bkClear(){ try{localStorage.setItem('dd254_dirty_n','0'); localStorage.setItem('dd254_last_backup',new Date().toISOString());}catch(e){} bkStatus(); }
+function bkDirty(){ try{return +(sessionStorage.getItem('dd254_dirty_n')||0);}catch(e){return 0;} }
+function bkMark(){ if(window.BK_RESTORING) return; try{sessionStorage.setItem('dd254_dirty_n',String(bkDirty()+1));}catch(e){} bkStatus(); }
+function bkClear(){ try{sessionStorage.setItem('dd254_dirty_n','0'); sessionStorage.setItem('dd254_last_backup',new Date().toISOString());}catch(e){} bkStatus(); }
 function storageMeter(){
   const el=document.getElementById('storageMeter'); if(!el) return;
   let chars=0;
-  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i)||''; chars+=k.length+(localStorage.getItem(k)||'').length; } }catch(e){}
+  try{ for(let i=0;i<sessionStorage.length;i++){ const k=sessionStorage.key(i)||''; chars+=k.length+(sessionStorage.getItem(k)||'').length; } }catch(e){}
   const capChars=2500000;               /* ≈5 MB of UTF-16 — conservative */
   const pct=Math.min(999,Math.round(chars/capChars*100));
   const mb=(chars*2/1048576).toFixed(1);
@@ -6541,7 +6567,7 @@ function storageMeter(){
 }
 function bkStatus(){
   const el=document.getElementById('backupStatus'); if(!el) return;
-  const n=bkDirty(); let last=''; try{last=localStorage.getItem('dd254_last_backup')||'';}catch(e){}
+  const n=bkDirty(); let last=''; try{last=sessionStorage.getItem('dd254_last_backup')||'';}catch(e){}
   const lastTxt=last?last.replace('T',' ').substring(0,16):'never';
   /* The threshold is a Settings preference; default 1 is the behaviour this
      had before Settings existed. Below the threshold the count is still shown
@@ -6781,7 +6807,7 @@ async function dismissAdd(text){
   const rec=await draftGet(DASH.current); if(!rec) return false;
   rec.dismissed=rec.dismissed||{};
   rec.dismissed[dismissKey(text)]={text:text,reason:reason,ts:new Date().toISOString(),
-    by:(function(){ try{ return localStorage.getItem('dd254_owner')||''; }catch(e){ return ''; } })()};
+    by:(function(){ try{ return sessionStorage.getItem('dd254_owner')||''; }catch(e){ return ''; } })()};
   await draftPut(rec);
   dismissLoad(rec);
   audLog(rec.id,rec.title,'flag dismissed',text+' — '+reason);
@@ -7290,7 +7316,7 @@ async function dashRecountAll(){
 }
 async function dashNotesReport(){
   const drafts=(await draftAll()).sort(function(a,b){return (b.updatedAt||'').localeCompare(a.updatedAt||'');});
-  let owner=''; try{ owner=localStorage.getItem('dd254_owner')||''; }catch(e){}
+  let owner=''; try{ owner=sessionStorage.getItem('dd254_owner')||''; }catch(e){}
   const todayStr=new Date().toISOString().split('T')[0];
   const esc=dashEsc;
   const body=drafts.map(function(r){
@@ -7627,8 +7653,8 @@ async function dashRenderCards(openId){
 async function dashBackupAll(){
   const drafts=await draftAll();
   let owner='';
-  try{ owner=localStorage.getItem('dd254_owner')||''; }catch(e){}
-  if(!owner){ owner=(await uiPrompt('Your name (identifies your drafts in team/manager rollups):',''))||''; try{ if(owner) localStorage.setItem('dd254_owner',owner); }catch(e){} }
+  try{ owner=sessionStorage.getItem('dd254_owner')||''; }catch(e){}
+  if(!owner){ owner=(await uiPrompt('Your name (identifies your drafts in team/manager rollups):',''))||''; try{ if(owner) sessionStorage.setItem('dd254_owner',owner); }catch(e){} }
   const blob=new Blob([JSON.stringify({tool:'DD254 Dashboard',version:'2.72',owner:owner,exported:new Date().toISOString(),drafts:drafts,facilities:tplLoad(TPL_FAC),csos:tplLoad(TPL_CSO),perfs:tplLoad(TPL_PERF),certs:tplLoad(TPL_CERT)},null,1)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -8179,18 +8205,18 @@ const FN_FIELDS=[
 const FN_DEFAULT=['i6b','i7b','i2a','sol'];
 function fnFieldsGet(){
   let v=null;
-  try{ v=JSON.parse(localStorage.getItem('dd254_fname_fields')||'null'); }catch(e){}
+  try{ v=JSON.parse(sessionStorage.getItem('dd254_fname_fields')||'null'); }catch(e){}
   if(!Array.isArray(v)||!v.length) return FN_DEFAULT.slice();
   const known=FN_FIELDS.map(function(f){ return f.key; });
   const out=v.filter(function(k){ return known.indexOf(k)>=0; });
   return out.length?out:FN_DEFAULT.slice();
 }
 function fnFieldsSet(arr){
-  try{ localStorage.setItem('dd254_fname_fields',JSON.stringify(arr||[])); }catch(e){}
+  try{ sessionStorage.setItem('dd254_fname_fields',JSON.stringify(arr||[])); }catch(e){}
   return fnFieldsGet();
 }
-function fnSepGet(){ return localStorage.getItem('dd254_fname_sep')==='_'?'_':'-'; }
-function fnSepSet(v){ try{ localStorage.setItem('dd254_fname_sep',v==='_'?'_':'-'); }catch(e){} return fnSepGet(); }
+function fnSepGet(){ return sessionStorage.getItem('dd254_fname_sep')==='_'?'_':'-'; }
+function fnSepSet(v){ try{ sessionStorage.setItem('dd254_fname_sep',v==='_'?'_':'-'); }catch(e){} return fnSepGet(); }
 /* One field, cleaned and capped. The separator is deliberately NOT stripped
    from the value: contract numbers legitimately contain hyphens, and removing
    them to keep field boundaries machine-readable would turn N00178-24-F-1234
@@ -8281,16 +8307,16 @@ function tplKeyOf(kind){ return kind==='fac'?TPL_FAC:(kind==='cso'?TPL_CSO:(kind
 const TPL_MEM={};
 /* ── TEMPLATE STORAGE: local IndexedDB (write-through cache) ──
    Purely local browser storage — no network, no external calls.
-   Migrates template stores out of the ~5MB localStorage into the
+   Migrates template stores out of the ~5MB sessionStorage into the
    same class of local database the drafts already use. */
 const TPL_CACHE={};
 const TDB={db:null,ready:null,useLS:false};
 const TPL_WAL_KEY='dd254_tpl_pending';
 let TPL_WRITE=Promise.resolve();
 window.IO_UNDO={};
-function lsTplRead(k){ try{return JSON.parse(localStorage.getItem(k)||'[]');}catch(e){return TPL_MEM[k]||[];} }
+function lsTplRead(k){ try{return JSON.parse(sessionStorage.getItem(k)||'[]');}catch(e){return TPL_MEM[k]||[];} }
 function tplWalRead(){
-  try{ const x=JSON.parse(localStorage.getItem(TPL_WAL_KEY)||'{}'); return (x&&typeof x==='object')?x:{}; }
+  try{ const x=JSON.parse(sessionStorage.getItem(TPL_WAL_KEY)||'{}'); return (x&&typeof x==='object')?x:{}; }
   catch(e){ return {}; }
 }
 function tplWalStage(key,value){
@@ -8298,7 +8324,7 @@ function tplWalStage(key,value){
   try{
     const pending=tplWalRead();
     pending[key]={id:id,ts:new Date().toISOString(),value:JSON.parse(JSON.stringify(value))};
-    localStorage.setItem(TPL_WAL_KEY,JSON.stringify(pending));
+    sessionStorage.setItem(TPL_WAL_KEY,JSON.stringify(pending));
     return id;
   }catch(e){ return ''; }
 }
@@ -8307,8 +8333,8 @@ function tplWalClear(key,id){
     const pending=tplWalRead();
     if(!pending[key]||pending[key].id!==id) return;
     delete pending[key];
-    if(Object.keys(pending).length) localStorage.setItem(TPL_WAL_KEY,JSON.stringify(pending));
-    else localStorage.removeItem(TPL_WAL_KEY);
+    if(Object.keys(pending).length) sessionStorage.setItem(TPL_WAL_KEY,JSON.stringify(pending));
+    else sessionStorage.removeItem(TPL_WAL_KEY);
   }catch(e){}
 }
 function tdbOpen(){
@@ -8316,7 +8342,7 @@ function tdbOpen(){
   TDB.ready=new Promise(function(res){
     try{
       if(typeof indexedDB==='undefined'){ TDB.useLS=true; return res(); }
-      const rq=indexedDB.open('dd254_templates',1);
+      const rq=indexedDB.open('dd254_templates_'+window.DD254_DEMO_SESSION_ID,1);
       rq.onupgradeneeded=function(){ rq.result.createObjectStore('stores'); };
       rq.onsuccess=function(){ TDB.db=rq.result; res(); };
       rq.onerror=function(){ TDB.useLS=true; res(); };
@@ -8376,7 +8402,7 @@ async function tdbInit(){
           const ok=await tdbPut(k,ls);
           if(ok){
             const back=await tdbGet(k);
-            if(back&&back.length===ls.length){ try{localStorage.removeItem(k);}catch(e){} }
+            if(back&&back.length===ls.length){ try{sessionStorage.removeItem(k);}catch(e){} }
           }
         }
         v=ls;
@@ -8387,7 +8413,7 @@ async function tdbInit(){
     const kinds=['fac','cso','perf','cert','b13','ct','sm','sl'];
     for(const kd of kinds){
       if((await tdbGet('undo_'+kd))!=null) IO_UNDO[kd]=true;
-      else { try{ if(localStorage.getItem('dd254_io_undo_'+kd)) IO_UNDO[kd]=true; }catch(e){} }
+      else { try{ if(sessionStorage.getItem('dd254_io_undo_'+kd)) IO_UNDO[kd]=true; }catch(e){} }
     }
   }
   await tplWalReplay();
@@ -8399,19 +8425,19 @@ async function tdbInit(){
 function ioSetUndo(kind,payload){
   IO_UNDO[kind]=true;
   if(TDB.db&&!TDB.useLS){
-    tdbPut('undo_'+kind,payload).then(function(ok){ if(!ok){ try{localStorage.setItem('dd254_io_undo_'+kind,JSON.stringify(payload));}catch(e){IO_UNDO[kind]=false;} } });
+    tdbPut('undo_'+kind,payload).then(function(ok){ if(!ok){ try{sessionStorage.setItem('dd254_io_undo_'+kind,JSON.stringify(payload));}catch(e){IO_UNDO[kind]=false;} } });
     return;
   }
-  try{ localStorage.setItem('dd254_io_undo_'+kind,JSON.stringify(payload)); }catch(e){ IO_UNDO[kind]=false; }
+  try{ sessionStorage.setItem('dd254_io_undo_'+kind,JSON.stringify(payload)); }catch(e){ IO_UNDO[kind]=false; }
 }
 async function ioGetUndo(kind){
   if(TDB.db&&!TDB.useLS){ const v=await tdbGet('undo_'+kind); if(v!=null) return v; }
-  try{ const x=localStorage.getItem('dd254_io_undo_'+kind); return x?JSON.parse(x):null; }catch(e){ return null; }
+  try{ const x=sessionStorage.getItem('dd254_io_undo_'+kind); return x?JSON.parse(x):null; }catch(e){ return null; }
 }
 function ioClearUndo(kind){
   delete IO_UNDO[kind];
   if(TDB.db&&!TDB.useLS){ try{ TDB.db.transaction('stores','readwrite').objectStore('stores').delete('undo_'+kind); }catch(e){} }
-  try{ localStorage.removeItem('dd254_io_undo_'+kind); }catch(e){}
+  try{ sessionStorage.removeItem('dd254_io_undo_'+kind); }catch(e){}
 }
 tdbOpen(); tdbInit();
 
@@ -8436,7 +8462,7 @@ function ctB13Mig(arr){
   return arr;
 }
 function tplSaveLS(key,arr){
-  try{ localStorage.setItem(key,JSON.stringify(arr)); return true; }
+  try{ sessionStorage.setItem(key,JSON.stringify(arr)); return true; }
   catch(e){
     TPL_MEM[key]=JSON.parse(JSON.stringify(arr));
     if(!window.TPL_STORAGE_FAIL){
@@ -9176,7 +9202,7 @@ const TPL_IO=(function(){
     col('Prime Contract',function(t){return ioDD(t).primeContract||'';},function(t,v){ioDD(t).primeContract=ioS(v);}),
     col('Task Order',function(t){return ioDD(t).taskOrder||'';},function(t,v){ioDD(t).taskOrder=ioS(v);}),
     col('Source Date',function(t){return t.srcDate||'';},function(t,v){t.srcDate=ioS(v);}),
-    col('Security Manager',function(t){return t.smName||'';},function(t,v){t.smName=ioS(v);}),
+    col('Security POC',function(t){return t.smName||'';},function(t,v){t.smName=ioS(v);}),
     col('SM E-mail',function(t){return t.smEmail||'';},function(t,v){t.smEmail=ioS(v);}),
     col('SM Program',function(t){return t.smProgram||'';},function(t,v){t.smProgram=ioS(v);}),
     col('Block 13',function(t){return ioDD(t).i13||'';},function(t,v){ioDD(t).i13=ioS(v);})];
@@ -9354,7 +9380,7 @@ async function ioXlsxTable(buf){
 }
 
 function ioNewId(){ return 'io'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-function ioHasUndo(kind){ if(IO_UNDO[kind]) return true; try{return !!localStorage.getItem('dd254_io_undo_'+kind);}catch(e){return false;} }
+function ioHasUndo(kind){ if(IO_UNDO[kind]) return true; try{return !!sessionStorage.getItem('dd254_io_undo_'+kind);}catch(e){return false;} }
 async function tplIoUndo(kind){
   try{
     const o=await ioGetUndo(kind); if(!o) return;
@@ -9615,7 +9641,7 @@ async function dashTplEdit(kind){
       +'<input type="text" value="'+tplEsc((t.data&&t.data.taskOrder)||'')+'" placeholder="Task order…" title="If this task order has its own DD Form 254, put its number here. Applying the template fills the task order field and ticks the standalone box, so the exported Block 2a reads prime | Task Order number." style="width:160px;font-size:11px;" onchange="ctSetTask('+i+',this.value)">'
       +'</div>'
       +'<div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;">'
-      +'<input type="text" value="'+tplEsc(t.smName||'')+'" list="ctSmList" placeholder="🛡 Security manager…" title="Assign a security manager — type to search the Security Manager templates" style="width:160px;font-size:11px;" onchange="ctSetSm('+i+',this.value)">'
+      +'<input type="text" value="'+tplEsc(t.smName||'')+'" list="ctSmList" placeholder="🛡 Security POC…" title="Assign a Security POC — type to search the Security POC templates" style="width:160px;font-size:11px;" onchange="ctSetSm('+i+',this.value)">'
       +'<span id="ctSmInfo_'+i+'" style="font-size:9.5px;color:#5a6a80;">'+tplEsc(t.smName?((t.smEmail||'—')+(t.smProgram?' · '+t.smProgram:'')):'')+'</span>'
       +'</div>'
       +'<div style="flex:1;"><div id="ctSum_'+i+'" style="font-size:10.5px;color:#4a5866;line-height:1.5;">'+ctSummary(t)+'</div><div id="ctUpd_'+i+'" style="font-size:9.5px;color:#8a94a0;margin-top:2px;font-style:italic;">'+ctUpdText(t)+'</div></div>'
@@ -9653,7 +9679,7 @@ async function dashTplEdit(kind){
   }
   window.TPL_EDIT=arr; window.TPL_EDIT_KIND=kind;
   host.innerHTML='<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">'
-    +'<h3 style="margin:0;color:#2b3440;font-size:15px;">'+(kind==='fac'?'🏢 Facility Templates (Blocks 6a / 6b / 6c)':(kind==='perf'?'📍 Performance location / Sub-contractor Templates (Blocks 7 & 8)':(kind==='cert'?'✍ Certifier Templates — the official who certifies the DD-254 (Items 17a/b/c/e/f/g)':(kind==='ct'?'📝 DD-254 Template Language — Blocks 10 / 11 / 12 / 13 / 14 / 15 / 16 / 18 (insertable from the form side panel)':(kind==='b13'?'📄 Contract Type Templates — Blocks 10 / 11 / 12 / 13 / 14 / 15 / 16 / 18 (offered when a new DD-254 is created)':(kind==='sl'?'📑 Standard Language — recurring Block 13 text your organisation adds to its DD-254s':(kind==='sm'?'🛡 Security Manager Templates — name / e-mail / program':'🏛 CSO Templates (Blocks 6c / 7c / 8c)')))))))+'</h3>'
+    +'<h3 style="margin:0;color:#2b3440;font-size:15px;">'+(kind==='fac'?'🏢 Facility Templates (Blocks 6a / 6b / 6c)':(kind==='perf'?'📍 Performance location / Sub-contractor Templates (Blocks 7 & 8)':(kind==='cert'?'✍ Certifier Templates — the official who certifies the DD-254 (Items 17a/b/c/e/f/g)':(kind==='ct'?'📝 DD-254 Template Language — Blocks 10 / 11 / 12 / 13 / 14 / 15 / 16 / 18 (insertable from the form side panel)':(kind==='b13'?'📄 Contract Type Templates — Blocks 10 / 11 / 12 / 13 / 14 / 15 / 16 / 18 (offered when a new DD-254 is created)':(kind==='sl'?'📑 Standard Language — recurring Block 13 text your organisation adds to its DD-254s':(kind==='sm'?'🛡 Security POC Templates — name / e-mail / program':'🏛 CSO Templates (Blocks 6c / 7c / 8c)')))))))+'</h3>'
     +((kind==='fac'||kind==='perf'||kind==='b13'||kind==='ct'||kind==='sm'||kind==='sl')?'<input type="search" id="tplFilter" placeholder="🔎 Search templates…" oninput="dashTplFilter(this.value)" style="font-size:11px;padding:3px 7px;width:190px;">':'')
     +'<button class="dash-btn" style="background:#4a5866;" onclick="dashTplAdd()">＋ Add</button>'
     +'<button class="dash-btn" style="background:#46606f;" onclick="tplExport()">⬇ Export (.json)</button>'
@@ -10336,10 +10362,10 @@ function toggleNgc(){
 let WIZ_STEP=0; const WIZ_TOTAL=8;
 /* 'step' walks one card at a time, 'scroll' puts the whole form on one page.
    Remembered between sessions because it is a working preference, not a mode. */
-let WIZ_VIEW=(function(){ try{ return localStorage.getItem('dd254_wiz_view')==='scroll'?'scroll':'step'; }catch(e){ return 'step'; } })();
+let WIZ_VIEW=(function(){ try{ return sessionStorage.getItem('dd254_wiz_view')==='scroll'?'scroll':'step'; }catch(e){ return 'step'; } })();
 function wizSetView(v){
   WIZ_VIEW=(v==='scroll')?'scroll':'step';
-  try{ localStorage.setItem('dd254_wiz_view',WIZ_VIEW); }catch(e){}
+  try{ sessionStorage.setItem('dd254_wiz_view',WIZ_VIEW); }catch(e){}
   document.body.classList.toggle('wiz-scroll',WIZ_VIEW==='scroll');
   const b=document.getElementById('wizViewBtn');
   if(b) b.textContent=(WIZ_VIEW==='scroll')?'\u25a4 One page':'\u25a5 Step by step';
@@ -10469,8 +10495,8 @@ function apply508(){
   document.querySelectorAll('.cbi input[type="checkbox"]').forEach(function(cb){ cb.tabIndex=-1; });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', apply508); else apply508();
-function seenSteps(){ try{return JSON.parse(localStorage.getItem('dd254_seen_steps')||'[]');}catch(e){return [];} }
-function markSeen(n){ try{const s=seenSteps(); if(s.indexOf(n)===-1){s.push(n); localStorage.setItem('dd254_seen_steps',JSON.stringify(s));} }catch(e){} }
+function seenSteps(){ try{return JSON.parse(sessionStorage.getItem('dd254_seen_steps')||'[]');}catch(e){return [];} }
+function markSeen(n){ try{const s=seenSteps(); if(s.indexOf(n)===-1){s.push(n); sessionStorage.setItem('dd254_seen_steps',JSON.stringify(s));} }catch(e){} }
 /* Which step each outstanding error belongs to. The validation panel already
    knows WHAT is wrong; the dots are the only place that says WHERE, so a step
    you have not opened yet can still tell you it needs attention. Read from the
@@ -10636,8 +10662,8 @@ document.addEventListener('click',function(e){
  * owns dd254_wiz_view, and still does). The registry delegates to them; it
  * does not write those keys itself. One writer per key is the whole point.
  * ------------------------------------------------------------------ */
-function lsGet(k,d){ try{ const v=localStorage.getItem(k); return (v===null||v==='')?d:v; }catch(e){ return d; } }
-function lsPut(k,v){ try{ localStorage.setItem(k,String(v)); }catch(e){} }
+function lsGet(k,d){ try{ const v=sessionStorage.getItem(k); return (v===null||v==='')?d:v; }catch(e){ return d; } }
+function lsPut(k,v){ try{ sessionStorage.setItem(k,String(v)); }catch(e){} }
 
 /* Theme. Applied to <html> rather than <body> so the attribute is set before
    the body paints and the dashboard does not flash white on load. */
@@ -10652,7 +10678,7 @@ function themeSet(v){
 /* Backup reminder threshold. Default 1 reproduces the previous behaviour
    exactly — the nag fired on the first unsaved change — so upgrading changes
    nothing until someone deliberately relaxes it. 0 is not offered: silencing
-   the backup warning entirely in a tool whose drafts live in localStorage is
+   the backup warning entirely in a tool whose drafts live in sessionStorage is
    a foot-gun, not a preference. */
 function bkEveryGet(){ const n=parseInt(lsGet('dd254_bk_every','1'),10); return (isFinite(n)&&n>=1)?Math.min(n,50):1; }
 function bkEverySet(v){ const n=parseInt(v,10); lsPut('dd254_bk_every',(isFinite(n)&&n>=1)?Math.min(n,50):1); if(typeof bkStatus==='function') bkStatus(); return bkEveryGet(); }
@@ -10837,8 +10863,9 @@ if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</scrip
    registered. Nothing in this file refers to a real facility, contract or
    person, and it must not be used to prepare an actual DD Form 254.
 
-   Seeding only happens when a library is empty, so anything typed during a
-   demonstration survives a reload rather than being overwritten on every load. */
+   Each page load uses isolated session storage and empty per-load databases. The
+   fictitious libraries are reseeded every time; visitor edits last only until
+   refresh, close, or reopening the link. */
 (function(){
   const B=[
     ['Aurora Dynamics','7AUR1','1400 Kestrel Way, Building 3','Fairfax, VA 22030'],
@@ -10856,7 +10883,7 @@ if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</scrip
     ['R. Vance','Facility Security Officer','202-555-0154','r.vance@example.com'],
     ['T. Okafor','Program Security Officer','202-555-0165','t.okafor@example.com'],
     ['M. Lindqvist','Contracting Officer Representative','202-555-0176','m.lindqvist@example.com'],
-    ['J. Serrano','Security Manager','202-555-0187','j.serrano@example.com']
+    ['J. Serrano','Security POC','202-555-0187','j.serrano@example.com']
   ];
   function uid(){ try{ return crypto.randomUUID(); }catch(e){ return 'demo-'+Math.random().toString(36).slice(2,10); } }
   function seed(key,rows){
@@ -10930,7 +10957,7 @@ if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</scrip
     if(document.getElementById('demoBanner')) return;
     const d=document.createElement('div');
     d.id='demoBanner';
-    d.textContent='DEMONSTRATION BUILD — fictitious template data. Not for preparing an actual DD Form 254.';
+    d.textContent='DEMONSTRATION BUILD — resets on every refresh; fictitious data only. Not for preparing an actual DD Form 254.';
     d.style.cssText='position:sticky;top:0;z-index:9000;background:#7a4038;color:#fff;'
       +'font-family:Arial,sans-serif;font-size:11.5px;font-weight:bold;letter-spacing:.4px;'
       +'text-align:center;padding:5px 10px;';
