@@ -20,7 +20,7 @@ The shipped offline tool is unchanged.
 The demo advisor labels were shortened from NISS-verification phrasing to
 Actual FCL and Actual Safeguarding.
 
-The public demo now offers an exit-intent feedback prompt and a persistent
+The public demo now offers a dashboard feedback request, an exit-intent prompt, and a persistent
 Feedback button. Feedback opens a pre-addressed mail draft and is never sent or
 stored by the page itself.
 

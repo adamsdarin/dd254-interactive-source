@@ -514,6 +514,13 @@ body.ws-dragging{user-select:none;}
     <div style="font-size:20px;font-weight:bold;">DD-254 Workspace Dashboard</div>
     <div style="font-size:11.5px;color:#9ab8d8;margin-top:4px;">Drafts autosave to this browser as you work. Clearing browser site data erases them — take a backup regularly. UNCLASSIFIED / CUI only.</div>
   </div>
+  <div id="dashFeedbackRequest" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#eef3fa;border:1px solid #b8c7d8;border-left:4px solid #46606f;border-radius:6px;padding:11px 14px;margin-bottom:14px;">
+    <div>
+      <div style="font-size:12.5px;font-weight:bold;color:#2b3440;">Help improve the DD-254 Interactive demo</div>
+      <div style="font-size:11px;color:#526477;margin-top:2px;">Tell us what worked, what was confusing, or what you would change.</div>
+    </div>
+    <button type="button" class="pbtn" style="font-size:11px;padding:8px 14px;white-space:nowrap;" onclick="window.demoFeedbackOpen&&window.demoFeedbackOpen()">Share Feedback</button>
+  </div>
   <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
     <button class="pbtn dash-btn-primary" style="font-size:14px;padding:12px 26px;" onclick="dashNewDraft('sol')">＋ New Solicitation</button>
     <button class="pbtn pbtn-tertiary" style="font-size:13px;padding:12px 22px;" onclick="dashNewDraft('orig')">＋ Original (no solicitation)</button>
@@ -10983,6 +10990,7 @@ if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</scrip
     const d=document.getElementById('demoFeedbackDialog');
     if(d){ d.style.display='flex'; const first=d.querySelector('button'); if(first) first.focus(); }
   }
+  window.demoFeedbackOpen=function(){show(true);};
   function build(){
     const launch=document.createElement('button');
     launch.type='button'; launch.id='demoFeedbackButton'; launch.textContent='Feedback';
