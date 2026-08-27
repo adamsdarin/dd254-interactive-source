@@ -20,9 +20,9 @@ The shipped offline tool is unchanged.
 The demo advisor labels were shortened from NISS-verification phrasing to
 Actual FCL and Actual Safeguarding.
 
-The public demo now offers a dashboard feedback request, an exit-intent prompt, and a persistent
-Feedback button. Feedback opens a pre-addressed mail draft and is never sent or
-stored by the page itself.
+The public demo now offers a dashboard feedback request and a persistent Feedback
+button. Both open a new email directly to darinadams@darinadams.org; nothing is
+sent or stored by the page itself.
 
 **Corrected.** Replaced obsolete or misapplied clause mappings throughout the
 live clause panel, subcontract flow-down guidance and generated Contracting

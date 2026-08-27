@@ -10975,46 +10975,21 @@ if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</scrip
 })();
 </script>
 <script>
-/* Demo-only feedback prompt. mailto opens the visitor's own mail client; the
-   page sends nothing by itself and retains no feedback data. */
+/* Demo-only feedback links. They open the visitor's configured email client;
+   the page sends nothing by itself and retains no feedback data. */
 (function(){
-  let shown=false, armed=false;
   const address='darinadams@darinadams.org';
   const subject='DD-254 Interactive v1.9 demo feedback';
   const body=['Thanks for trying the DD-254 Interactive demo.','','What worked well?','','What could be improved?','','Anything confusing or incorrect?','','Browser/device (optional):'].join('\n');
-  function mail(){ window.location.href='mailto:'+address+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body); }
-  function close(){ const d=document.getElementById('demoFeedbackDialog'); if(d) d.style.display='none'; }
-  function show(force){
-    if(shown&&!force) return;
-    shown=true;
-    const d=document.getElementById('demoFeedbackDialog');
-    if(d){ d.style.display='flex'; const first=d.querySelector('button'); if(first) first.focus(); }
-  }
-  window.demoFeedbackOpen=function(){show(true);};
+  const href='mailto:'+address+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  window.demoFeedbackOpen=function(){ window.location.href=href; };
   function build(){
     const launch=document.createElement('button');
     launch.type='button'; launch.id='demoFeedbackButton'; launch.textContent='Feedback';
-    launch.setAttribute('aria-label','Give feedback on the DD-254 Interactive demo');
+    launch.setAttribute('aria-label','Email feedback about the DD-254 Interactive demo');
     launch.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9100;border:0;border-radius:999px;padding:9px 15px;background:#2b3440;color:#fff;font:600 12px Arial,sans-serif;box-shadow:0 2px 9px rgba(0,0,0,.28);cursor:pointer;';
-    launch.onclick=function(){show(true);};
-    const overlay=document.createElement('div');
-    overlay.id='demoFeedbackDialog'; overlay.setAttribute('role','dialog'); overlay.setAttribute('aria-modal','true'); overlay.setAttribute('aria-labelledby','demoFeedbackTitle');
-    overlay.style.cssText='display:none;position:fixed;inset:0;z-index:9200;background:rgba(20,25,32,.62);align-items:center;justify-content:center;padding:18px;font-family:Arial,sans-serif;';
-    const card=document.createElement('div');
-    card.style.cssText='width:min(430px,100%);background:#fff;color:#1a1e26;border-radius:8px;padding:22px;box-shadow:0 12px 38px rgba(0,0,0,.38);';
-    const title=document.createElement('h2'); title.id='demoFeedbackTitle'; title.textContent='Before you go—would you share feedback?'; title.style.cssText='font-size:18px;margin:0 0 9px;color:#2b3440;';
-    const copy=document.createElement('p'); copy.textContent='Your feedback will help improve the DD-254 Interactive tool. Choosing Email Feedback opens your email application; nothing is sent until you choose Send.'; copy.style.cssText='font-size:13px;line-height:1.5;margin:0 0 17px;';
-    const actions=document.createElement('div'); actions.style.cssText='display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;';
-    const no=document.createElement('button'); no.type='button'; no.textContent='No thanks'; no.style.cssText='border:1px solid #aeb7c2;background:#fff;color:#2b3440;border-radius:4px;padding:8px 13px;cursor:pointer;'; no.onclick=close;
-    const yes=document.createElement('button'); yes.type='button'; yes.textContent='Email Feedback'; yes.style.cssText='border:0;background:#2b3440;color:#fff;border-radius:4px;padding:8px 13px;font-weight:bold;cursor:pointer;'; yes.onclick=mail;
-    actions.appendChild(no); actions.appendChild(yes); card.appendChild(title); card.appendChild(copy); card.appendChild(actions); overlay.appendChild(card);
-    overlay.addEventListener('click',function(e){if(e.target===overlay) close();});
-    document.addEventListener('keydown',function(e){if(e.key==='Escape') close();});
-    document.body.appendChild(launch); document.body.appendChild(overlay);
-    setTimeout(function(){armed=true;},5000);
-    document.addEventListener('mouseout',function(e){
-      if(armed&&!e.relatedTarget&&e.clientY<=0) show(false);
-    });
+    launch.onclick=window.demoFeedbackOpen;
+    document.body.appendChild(launch);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
 })();
