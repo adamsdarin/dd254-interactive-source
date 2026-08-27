@@ -514,12 +514,8 @@ body.ws-dragging{user-select:none;}
     <div style="font-size:20px;font-weight:bold;">DD-254 Workspace Dashboard</div>
     <div style="font-size:11.5px;color:#9ab8d8;margin-top:4px;">Drafts autosave to this browser as you work. Clearing browser site data erases them — take a backup regularly. UNCLASSIFIED / CUI only.</div>
   </div>
-  <div id="dashFeedbackRequest" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;background:#eef3fa;border:1px solid #b8c7d8;border-left:4px solid #46606f;border-radius:6px;padding:11px 14px;margin-bottom:14px;">
-    <div>
-      <div style="font-size:12.5px;font-weight:bold;color:#2b3440;">Help improve the DD-254 Interactive demo</div>
-      <div style="font-size:11px;color:#526477;margin-top:2px;">Tell us what worked, what was confusing, or what you would change.</div>
-    </div>
-    <button type="button" class="pbtn" style="font-size:11px;padding:8px 14px;white-space:nowrap;" onclick="window.demoFeedbackOpen&&window.demoFeedbackOpen()">Share Feedback</button>
+  <div id="dashFeedbackRequest" style="background:#eef3fa;border:1px solid #b8c7d8;border-left:4px solid #46606f;border-radius:6px;padding:11px 14px;margin-bottom:14px;">
+    <div style="font-size:12.5px;font-weight:bold;color:#2b3440;">If you have feedback, contact me at darinadams@darinadams.org.</div>
   </div>
   <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
     <button class="pbtn dash-btn-primary" style="font-size:14px;padding:12px 26px;" onclick="dashNewDraft('sol')">＋ New Solicitation</button>
@@ -10972,25 +10968,5 @@ if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</scrip
     else document.body.appendChild(d);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',banner); else banner();
-})();
-</script>
-<script>
-/* Demo-only feedback links. They open the visitor's configured email client;
-   the page sends nothing by itself and retains no feedback data. */
-(function(){
-  const address='darinadams@darinadams.org';
-  const subject='DD-254 Interactive v1.9 demo feedback';
-  const body=['Thanks for trying the DD-254 Interactive demo.','','What worked well?','','What could be improved?','','Anything confusing or incorrect?','','Browser/device (optional):'].join('\n');
-  const href='mailto:'+address+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
-  window.demoFeedbackOpen=function(){ window.location.href=href; };
-  function build(){
-    const launch=document.createElement('button');
-    launch.type='button'; launch.id='demoFeedbackButton'; launch.textContent='Feedback';
-    launch.setAttribute('aria-label','Email feedback about the DD-254 Interactive demo');
-    launch.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9100;border:0;border-radius:999px;padding:9px 15px;background:#2b3440;color:#fff;font:600 12px Arial,sans-serif;box-shadow:0 2px 9px rgba(0,0,0,.28);cursor:pointer;';
-    launch.onclick=window.demoFeedbackOpen;
-    document.body.appendChild(launch);
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
 })();
 </script>
