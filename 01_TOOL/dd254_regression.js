@@ -15,7 +15,11 @@ const dom=new JSDOM(fs.readFileSync('dd254.htm','utf8'),{
     try{
       const nodeCrypto=require('crypto');
       const cryptoBridge={
-        getRandomValues:nodeCrypto.webcrypto.getRandomValues.bind(nodeCrypto.webcrypto),
+        getRandomValues:function(array){
+          const bytes=nodeCrypto.randomBytes(array.byteLength);
+          new Uint8Array(array.buffer,array.byteOffset,array.byteLength).set(bytes);
+          return array;
+        },
         randomUUID:nodeCrypto.randomUUID.bind(nodeCrypto),
         subtle:{digest:async function(algorithm,data){
           if(String(algorithm).toUpperCase()!=='SHA-256') throw new Error('Unsupported digest: '+algorithm);
