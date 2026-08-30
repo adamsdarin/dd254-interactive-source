@@ -14,12 +14,16 @@ const dom=new JSDOM(fs.readFileSync('dd254.htm','utf8'),{
        implementations before any application script decides they are absent. */
     try{
       const nodeCrypto=require('crypto');
-      const cryptoBridge={subtle:{digest:async function(algorithm,data){
-        if(String(algorithm).toUpperCase()!=='SHA-256') throw new Error('Unsupported digest: '+algorithm);
-        const bytes=Buffer.from(Array.from(new Uint8Array(data)));
-        const out=nodeCrypto.createHash('sha256').update(bytes).digest();
-        return out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength);
-      }}};
+      const cryptoBridge={
+        getRandomValues:nodeCrypto.webcrypto.getRandomValues.bind(nodeCrypto.webcrypto),
+        randomUUID:nodeCrypto.randomUUID.bind(nodeCrypto),
+        subtle:{digest:async function(algorithm,data){
+          if(String(algorithm).toUpperCase()!=='SHA-256') throw new Error('Unsupported digest: '+algorithm);
+          const bytes=Buffer.from(Array.from(new Uint8Array(data)));
+          const out=nodeCrypto.createHash('sha256').update(bytes).digest();
+          return out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength);
+        }}
+      };
       Object.defineProperty(win,'crypto',{value:cryptoBridge,configurable:true});
     }catch(e){}
     if(typeof TextEncoder!=='undefined') win.TextEncoder=TextEncoder;
