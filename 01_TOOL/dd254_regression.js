@@ -12,7 +12,16 @@ const dom=new JSDOM(fs.readFileSync('dd254.htm','utf8'),{
        and crypto APIs. The suite exercises real SHA-256, Blob text/bytes and
        File attachment paths, so give the page Node's standards-compatible
        implementations before any application script decides they are absent. */
-    try{ Object.defineProperty(win,'crypto',{value:require('crypto').webcrypto,configurable:true}); }catch(e){}
+    try{
+      const nodeCrypto=require('crypto');
+      const cryptoBridge={subtle:{digest:async function(algorithm,data){
+        if(String(algorithm).toUpperCase()!=='SHA-256') throw new Error('Unsupported digest: '+algorithm);
+        const bytes=Buffer.from(Array.from(new Uint8Array(data)));
+        const out=nodeCrypto.createHash('sha256').update(bytes).digest();
+        return out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength);
+      }}};
+      Object.defineProperty(win,'crypto',{value:cryptoBridge,configurable:true});
+    }catch(e){}
     if(typeof TextEncoder!=='undefined') win.TextEncoder=TextEncoder;
     if(typeof TextDecoder!=='undefined') win.TextDecoder=TextDecoder;
     /* Keep jsdom's own Blob/File identity so its FileReader accepts them, then
@@ -58,7 +67,6 @@ const titles=()=>cards().map(c=>{
   return h.textContent.replace(/[└✏]/g,'').trim();
 });
 setTimeout(async()=>{
-try{ Object.defineProperty(w,'crypto',{value:require('crypto').webcrypto,configurable:true}); }catch(e){}
 E("window.uiConfirm=async function(){return true;};window.alert=function(m){window.__A=m;};");
 
 H('1. Block 18 in the language template');
