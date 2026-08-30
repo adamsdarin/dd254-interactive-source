@@ -1,28 +1,172 @@
-# DD-254 Interactive — change notes, v155 → v1.9
+# DD-254 Interactive — change notes, v155 → v195
 
 Written 2026-08-11 from the record of the sessions that produced these versions.
 
-## v1.9 — authority-correct Contracting Officer Package — 2026-08-26
+## v195 — issuance, custody and revision safeguards — 2026-08-29
 
-### Active-build parity with the public demo
+**GitHub release channel.** The complete v195 / Tool v2.121 codebase is shipped
+under the stable public-release filename `DD254_Interactive_v1.9.HTM`. The
+public demonstration build also retains the plain-text dashboard feedback
+contact; it adds no feedback button, mail action, modal or exit prompt.
 
-The active v1.9 build now uses Security POC throughout the template interface and
-shortens the advisor headings to Actual FCL and Actual Safeguarding. Demo-only
-session reset and fictitious seed data remain excluded from the active build.
+**Fixed — bulk e-mail audience isolation.** A selected issuance no longer
+combines unrelated recipients into one message. Records are grouped only when
+their normalized To line, CC line and CUI status are identical. The bulk window
+creates one prepared e-mail per audience group and names the DD-254s that belong
+in each message. A CUI and non-CUI record never share a message, even when their
+addresses match. This prevents one contractor's form or attachment list from
+being exposed to another selected record's audience.
 
-### Public demo session isolation
+**Fixed — Block 18f follows its checkbox.** Unchecking 18f immediately clears
+its hidden recipient text. Legacy hidden 18f text is ignored by the live form,
+templates, stored workspaces, official export data, distribution rows and
+prepared e-mail. Checked 18f addresses still join Item 6/7/8 CSOs on CC.
 
-The demonstration build now uses per-page IndexedDB databases and session-scoped
-browser storage. Each refresh, reopen, or new tab starts from only the fictitious
-data baked into the demo; visitor changes persist only for the current page session.
-The shipped offline tool is unchanged.
+**Fixed — CUI handling is derived from the work.** The dashboard marking,
+distribution warning and prepared subject now recognize Item 10j, Item 11l,
+CUI designation fields, distribution statements, LDCs and the selected
+DD-254 template—not only the marking selector. If those indicators are present
+while the marking remains UNCLASSIFIED, validation shows an informational
+warning and e-mail still receives the `(CUI)(CUI)(CUI)` safeguard.
 
-The demo advisor labels were shortened from NISS-verification phrasing to
-Actual FCL and Actual Safeguarding.
+**Fixed — failure paths preserve custody.** A draft write that exhausts or
+loses persistent browser storage now stops claiming success, keeps the newest
+copy visible in the open tab, and raises a persistent red warning. A later
+unrelated transaction cannot clear that warning while an emergency copy still
+exists. Full Backup now clears its change counter only after the operator
+confirms that the file finished downloading and was saved.
 
-The public demo dashboard now displays a plain-text feedback contact at
-darinadams@darinadams.org. It has no feedback buttons, mailto behavior, modal, or
-exit-intent prompt.
+**Added — full revision reporting.** Compare now walks the entire retained
+parent chain, uses human-readable field names, reports Item 13 by reference
+section, preserves complete previous and revised text, identifies a missing
+ancestor, and exports a paginated PDF change report. The export is written to
+the audit history.
+
+**Guarded — mail handoff length.** If a prepared `mailto:` exceeds the
+conservative browser handoff budget, the Open e-mail link is disabled and the
+window offers Copy To and Copy CC instead of attempting an unreliable launch.
+
+**Corrected — visual contract.** Items 16 and 17 remain intentionally outside
+preparer validation, so their unsupported required-field asterisks were
+removed. The dynamic PDF still contains the official signing fields.
+
+**Testing and release parity.** Regression coverage was expanded for every
+path above and passed `951 PASS / 0 FAIL`. The official and demonstration
+builds, demo script, user manual, security fact sheet, test instructions,
+build facts and rebuild manifest were updated together at Tool v2.121.
+
+## v194 — Block 18f recipients on prepared e-mail — 2026-08-28
+
+**Changed.** E-mail addresses entered in Block 18f — Others as necessary —
+now join the Item 6/7/8 CSO addresses on **CC** when the operator opens a
+prepared issuance e-mail. The requestor and Item 6/7/8 FSO fields remain on
+**To**. The manual FSO list and addresses found only in Item 13 remain outside
+this narrower issuance audience.
+
+**Single and bulk parity.** The same recipient builder serves one-record and
+bulk issuance, so Block 18f behaves identically in both windows. Addresses are
+still deduplicated case-insensitively across all selected DD-254s and both
+recipient lines. An address already claimed on To is not repeated on CC, and
+all recipients remain separated by a semicolon followed by one space.
+
+**Testing and documentation.** Regression coverage now exercises Block 18f in
+single and bulk `mailto:` links, cross-line and cross-record duplicate removal,
+the exact delimiter, and the visible recipient guidance. The complete suite
+passed `933 PASS / 0 FAIL`. The official and demonstration builds, demo script,
+user manual and rebuild metadata were updated together. Both builds passed
+syntax and live-browser smoke checks at Tool v2.120, and the demo remained
+identical to the official build except for its deliberate fictitious seed.
+
+## v193 — bulk issuance and safer prepared e-mail — 2026-08-28
+
+**Added.** The dashboard selection bar now offers **Issue selected**. When two
+or more cards are selected, either that button or changing one selected card to
+Issued starts one bulk issuance for the whole group. The tool preflights every
+selected DD-254 first. An already-issued or terminal record, an unresolved
+validation error without its own override, or an open approval hold stops the
+entire group before anything changes. Open operational holds and missing NISS
+verification are presented once for the group and still require an explicit
+decision.
+
+**Added.** The bulk distribution window keeps each DD-254 in its own section,
+with its own Item 18 rows and attachments, while offering one prepared e-mail.
+Requestors and Item 6/7/8 FSOs are combined on **To**; Item 6/7/8 CSOs are
+combined on **CC**. Addresses are deduplicated case-insensitively across every
+selected record and both recipient lines. Distribution and audit entries are
+still stored separately on each DD-254. **Cancel all** leaves every record
+unissued, and the selected draft updates are committed in one storage
+transaction so a write failure cannot issue only part of the group.
+
+**Changed.** Every populated address on both **To** and **CC** is now separated
+with a semicolon followed by one space (`; `). v192 used commas in the prepared
+`mailto:` link, which some mail applications could read as one combined
+address.
+
+**Added.** If the form is marked CUI, or its selected DD-254 template is marked
+CUI, the prepared subject starts with exactly `(CUI)(CUI)(CUI)`. In a bulk
+issuance, one CUI record applies that visual warning to the combined message.
+The distribution window continues to remind the operator to encrypt the
+message and applicable attachments. The tool still does not connect to a
+mailbox or send a message.
+
+**Testing and documentation.** Regression now verifies the exact separator,
+single and bulk CUI subject warnings, cross-record and cross-line deduplication,
+the selected-status bulk path, separate per-record distribution, hard-stop
+preflight, and Cancel-all behavior. The complete run passed `933 PASS / 0
+FAIL`; both official and demonstration builds passed browser smoke and syntax
+checks, the two builds remained identical except for the deliberate demo seed,
+and the rebuild kit reproduced v193 byte-for-byte. The demonstration script and
+user manual were updated for v193.
+
+## v192 — direct Outlook/default-mail handoff — 2026-08-27
+
+**Fixed.** The v191 **Open e-mail** control created and clicked a hidden link in
+script. Embedded browsers could interpret that synthetic click as a request for
+a new web window even when Windows had Outlook registered for `mailto:`.
+
+**Changed.** The issued-distribution dialog now renders the prepared `mailto:`
+as the visible link the user clicks. There is no hidden anchor, synthetic click,
+`window.open`, or target requesting a new tab. Windows can therefore hand the
+message directly to its registered e-mail application. Recipient mapping and
+case-insensitive To/CC deduplication are unchanged from v191.
+
+**Guarded.** When the saved DD-254 contains no requestor, Item 6/7/8 FSO, or
+Item 6/7/8 CSO e-mail address, the link has no destination and explains what is
+missing rather than attempting an empty compose window.
+
+**Testing and documentation.** Regression coverage now asserts that the actual
+visible control is the mailto anchor, has no new-window target, and becomes
+inert without recipients. The complete run passed `927 PASS / 0 FAIL`; both
+official and demonstration builds passed browser smoke testing, and the rebuild
+kit reproduced v192 byte-for-byte.
+
+## v191 — prepared e-mail at issuance — 2026-08-27
+
+**Added.** The Record distribution window shown during the transition to
+Issued now includes **Open e-mail**. It opens a prepared message in Outlook when
+Outlook is the computer's registered mail handler, or in the computer's other
+default e-mail application.
+
+**Recipient mapping.** The saved DD-254's requestor plus the FSO e-mail fields
+from Items 6, 7 and every Item 8 location are placed on **To**. E-mail addresses
+found in the Item 6, 7 and Item 8 CSO text are placed on **CC**. Addresses are
+deduplicated case-insensitively across the entire message; an address already
+on To is not repeated on CC. The manual FSO list, Item 13 and Item 18f are not
+silently added to this narrower issuance message.
+
+**Safety boundary.** The feature uses a `mailto:` handoff. The offline tool
+does not connect to a mailbox, send a message, or mark distribution as complete.
+The user reviews and sends in the mail application, then records distribution
+separately in the existing dialog.
+
+**Testing and documentation.** Added regression coverage for role mapping,
+source boundaries, case-insensitive cross-line deduplication, the encoded mail
+handoff and the issued-dialog control. Updated the demonstration build,
+demonstration script and user manual for v191. The complete run passed
+`927 PASS / 0 FAIL`; both official and demonstration builds passed browser
+smoke testing, and the rebuild kit reproduced v191 byte-for-byte.
+
+## v190 — authority-correct Contracting Officer Package — 2026-08-26
 
 **Corrected.** Replaced obsolete or misapplied clause mappings throughout the
 live clause panel, subcontract flow-down guidance and generated Contracting
@@ -47,10 +191,10 @@ subcontract performance still require contracting-officer review.
 
 **Testing and documentation.** Added focused regression coverage for the
 corrected citations, CUI gaps, Item 12, minimum distribution and stale-clause
-exclusions. Updated the demo instructions and user-manual source for v1.9; the
+exclusions. Updated the demo instructions and user-manual source for v190; the
 release facts, final assertion count and rebuild manifest are regenerated from
 the verified official file. The complete run passed `923 PASS / 0 FAIL`, and
-the rebuild kit reproduced the v1.9 file byte-for-byte.
+the rebuild kit reproduced the v190 file byte-for-byte.
 
 ## v189 — sign the dynamic PDF, not the drafting screen — 2026-08-26
 
@@ -139,8 +283,8 @@ complete v188 run passed `916 PASS / 0 FAIL`.
 ## How to read this, and what it is not
 
 **These notes are reconstructed, not derived.** There is no version control on
-this project. Official builds v176 through v184, v186 and v187 exist on disk;
-v185 and builds before v176 do not. Hashes for absent builds are the values
+this project. Official builds v176 through v184 and v186 through v195 exist on
+disk; v185 and builds before v176 do not. Hashes for absent builds are the values
 recorded when those versions shipped and **cannot be re-checked today**. Treat
 this as a release log, not as proof of an artifact that is no longer present.
 
@@ -191,9 +335,14 @@ declarations in the suite source — the same rule `make_build_facts.py` follows
 | v187 | `a3607f369d2a0e85` | 906 | A cleared compliance hold stays cleared |
 | v188 | `a4d96fcac53ea7a3` | 916 | Cited, nonblocking access and Item 11 performance advisors |
 | v189 | `a44bd7ee258211fd` | 918 | Items 17h and 17i move from the browser to the dynamic PDF signing workflow |
-| v1.9 | `9f032a083f0cef8f` | 923 | Authority-correct CO package, clause applicability review, CUI/lifecycle/distribution checks |
+| v190 | `9f032a083f0cef8f` | 923 | Authority-correct CO package, clause applicability review, CUI/lifecycle/distribution checks |
+| v191 | `4faf344ac8bc2dcf` | 927 | Prepared issuance e-mail with role-based, deduplicated To and CC recipients |
+| v192 | `5a0e6308227bfc21` | 927 | Direct browser-native mailto handoff to Outlook or the default mail application |
+| v193 | `175e6d41ff33c0e1` | 933 | Bulk issuance, semicolon-space recipients and triple CUI subject warning |
+| v194 | `7fa87f0970a15ae9` | 933 | Block 18f e-mail addresses join CSOs on CC for single and bulk issuance |
+| v195 | `01cd3d9b88cf1833` | 951 | Audience-safe bulk issuance, durable draft warnings, full-chain PDF change reports |
 
-Net: **+357 assertions**, 566 → 923. Size 1,933,671 → 2,130,196 bytes.
+Net: **+385 assertions**, 566 → 951. Final v195 size and hash are recorded in `BUILD_FACTS.md`.
 
 ---
 
@@ -1075,8 +1224,6 @@ Not versioned with the build, but changed alongside it.
   Item 13 paths that supersede them.
 - **Generated report pop-ups were security-tested as documents and openers,**
   but were not each manually printed from a visible browser session.
-- **The Item 16/17 asterisks** remain in the markup with nothing validating
-  them.
 - **Advisory findings do not replace blocking validation.** v188 adds broader
   Item 10 and 11 cross-checks, but intentionally leaves them informational
   until the cited rule, local facts and desired enforcement are separately
@@ -1086,7 +1233,3 @@ Not versioned with the build, but changed alongside it.
 - **A reference finding can be set aside with an audited reason** when guidance
   legitimately mentions an unchecked sibling Item. No blanket exception was
   added that would hide a real reverse-reference error.
-- **The revision-diff report** discussed after v170 was scoped but not built.
-  `dashCompare` already diffs a draft against its parent on screen; what is
-  missing is an export, a whole-chain view, human-readable field labels, and
-  section-level Item 13 diffing.

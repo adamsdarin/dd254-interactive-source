@@ -79,10 +79,9 @@ These cost real time. Worth reading before touching the file.
 
 ## Open items
 
-- The Item 16/17a–17g asterisks are still in the markup though nothing validates
-  them. Deliberate, documented, but the screen and the rules disagree. Items
-  17h and 17i no longer appear in the browser because they are completed in the
-  generated dynamic PDF.
+- Items 16 and 17 are not preparer workflow gates and therefore carry no red
+  required-field asterisks in the browser. Items 17h and 17i do not appear in
+  the browser because they are completed in the generated dynamic PDF.
 - The v188 Access Eligibility and Item 11 Performance Advisors add broad
   cross-item checks, but they are intentionally nonblocking. Promoting any
   advisory to validation remains an FSO and authority-review decision, not an
@@ -103,5 +102,6 @@ A tool change creates a documents task whenever it changes any of these:
 | Assertion count | Security fact sheet, rebuild guide |
 | Component sizes | Security fact sheet, rebuild guide |
 
-Finish the tool change, then hand the specifics over. Do not update documents
-from this project — they will drift from the ones being maintained in the other.
+Finish the tool change, then hand the specifics over. When the release request
+explicitly requires tool/document parity, update the release copies together
+and verify the generated manual before publishing.

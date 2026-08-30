@@ -17,19 +17,19 @@ proportionate ask. This procedure makes it a proportionate one, by separating
 the file into four parts and letting you replace three of them with copies you
 obtain yourself.
 
-The figures below are generated from the shipped v1.9 file by
+The figures below are generated from the shipped v195 file by
 `make_build_facts.py`. Component lengths are the characters captured by each
-extractor; shares use the 2,130,196-byte shipped file as their denominator.
+extractor; shares use the 2,168,043-byte shipped file as their denominator.
 `split.py` independently records the exact extracted-part lengths and hashes in
 `manifest.json`.
 
 | Part | In the file | Share | Where you get your own |
 |---|---:|---:|---|
-| DD Form 254, flat | 738,164 chars | 34.7% | `esd.whs.mil` |
-| pdf-lib | 525,598 chars | 24.7% | `github.com/Hopding/pdf-lib`, or your internal npm mirror |
-| **Application code** | **560,855 chars** | **26.3%** | **The only code you must read** |
-| Markup and CSS | 222,295 chars | 10.4% | Delivered in the application part |
-| DD Form 254, dynamic XFA | 83,284 chars | 3.9% | `esd.whs.mil` |
+| DD Form 254, flat | 738,164 chars | 34.0% | `esd.whs.mil` |
+| pdf-lib | 525,598 chars | 24.2% | `github.com/Hopding/pdf-lib`, or your internal npm mirror |
+| **Application code** | **598,673 chars** | **27.6%** | **The only code you must read** |
+| Markup and CSS | 222,324 chars | 10.3% | Delivered in the application part |
+| DD Form 254, dynamic XFA | 83,284 chars | 3.8% | `esd.whs.mil` |
 
 After this procedure, the library came from your mirror, both government forms
 came from the government, and the only thing originating outside your boundary
@@ -52,18 +52,18 @@ markers, and write files.
 ## Step 1 — Verify what you were given
 
 ```
-certutil -hashfile DD254_Interactive_v1.9.HTM SHA256
+certutil -hashfile DD254_Interactive_v195.HTM SHA256
 ```
 
-Expected: `9f032a083f0cef8f88866d6b8738a049abaa8a18b01a791fcd4eac8eac512c57`
-(2,130,196 bytes)
+Expected: `01cd3d9b88cf1833cff3bdb42c57de338a1900b1934df5ae14c5a5d1fe463396`
+(2,168,043 bytes)
 
 A mismatch means the file is not the one this guide describes. Stop.
 
 ## Step 2 — Split it
 
 ```
-python split.py DD254_Interactive_v1.9.HTM parts
+python split.py DD254_Interactive_v195.HTM parts
 ```
 
 Produces `parts/` containing four files and a `manifest.json` recording the size
@@ -136,9 +136,9 @@ government's unmodified files.
 ## Step 6 — Review the application code
 
 `parts/04_application.html` is the only part that originated with the author.
-It is about 771 KB after the three replaceable components are carved out:
-roughly 555 KB of unobfuscated, commented JavaScript plus 223 KB of markup and
-CSS in the shipped-file accounting.
+It is about 793 KB after the three replaceable components are carved out. The
+separate shipped-file accounting reports roughly 577 KB of unobfuscated,
+commented application code and 222 KB of markup and CSS.
 
 Start with the searches that exclude whole classes of risk. Expect a small
 number of hits rather than none — the file's own header comment names these APIs
@@ -168,8 +168,13 @@ policy is narrower than it looks:
 - `script-src 'unsafe-inline'` permits any injected `<script>` or `onerror=`
   handler to run. Against injection the policy is inert.
 - No shipped directive covers top-level navigation, so `window.open('https://…'
-  + data)` and `location = …` are unrestricted. The tool uses this deliberately
-  once, for a SAM.gov lookup carrying a form value in the query string.
+  + data)`, ordinary links and `mailto:` handoffs are unrestricted. The tool
+  uses this deliberately for a SAM.gov lookup carrying a form value in the query
+  string and, on a user's click during issuance, a prepared message handed to
+  the computer's registered mail application. The latter carries the saved
+  requestor and Item 6/7/8 FSO and CSO e-mail addresses, plus e-mail addresses
+  explicitly entered in Block 18f; the page cannot send it. Multiple recipients
+  are separated by a semicolon followed by one space.
 
 **Look at the generated-report paths early.** The worksheet, briefing and
 contracting-officer package build HTML documents from form data. v171 changed
@@ -205,7 +210,7 @@ npm install jsdom fake-indexeddb
 node dd254_regression.js
 ```
 
-Expect 918 assertions passing and 0 failing, covering validation rules, storage,
+Expect 951 assertions passing and 0 failing, covering validation rules, storage,
 import/export, PDF generation and the workflow. No network access required. This is what tells you the
 substitutions in steps 4 and 5 did not break anything.
 
@@ -216,11 +221,13 @@ than accept it. On an isolated VM with no other tabs open, start a capture
 (Wireshark, `netsh trace`, or DevTools Network with "preserve log"), then open
 your rebuilt file, fill a form, run every export, and use the dashboard.
 
-You should see no outbound traffic attributable to the page, with one exception
-you can trigger on purpose: press the SAM.gov lookup and you should see that
-navigation and nothing else. Anything further means the claim is false and you
-should reject the tool — which is exactly why this step is worth more than any
-assurance in writing.
+You should see no outbound traffic attributable to the page, with one web
+exception you can trigger on purpose: press the SAM.gov lookup and you should
+see that navigation and nothing else. **Open e-mail** is a separate, explicit
+handoff to the registered mail application; if you exercise it during this test,
+that application may make its own connections. Anything further attributable to
+the page means the claim is false and you should reject the tool — which is
+exactly why this step is worth more than any assurance in writing.
 
 ---
 

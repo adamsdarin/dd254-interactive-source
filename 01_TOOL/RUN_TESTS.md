@@ -34,7 +34,7 @@ the failing names are listed at the end.
 | 6  | Single-tab lock, read-only guards, take-over |
 | 7  | Dashboard search, portfolio capability export, card border, CAGE line |
 | 8  | Holds — required reason, badges, resolve, Issued challenge |
-| 9  | Distribution capture at issuance and the log |
+| 9  | Distribution capture at issuance, prepared e-mail recipients and the log |
 | 10 | Dialog attachment reminder and the CUI encryption warning |
 | 11 | FSO e-mail fields on Items 6, 7 and 8 |
 | 12 | Facility and Performance/Sub templates carrying the e-mail |
@@ -80,7 +80,13 @@ the failing names are listed at the end.
 | 73 | Template save truth, transaction failure and recovery-journal replay |
 | 74 | Standalone task-order composition in Block 2a |
 | 75 | Safe validation DOM rendering and the sole dynamic official export |
-| 76 | Nonblocking Item 10/11 advisors and conditional-alert authority references |
+| 76 | Task-order templates |
+| 77–81 | Bulk performance locations, editor layout, scalable workspace and live stylesheets |
+| 82–84c | Audit cleanup, safe viewer rendering, Manage/guidance search, bulk selection, card menus and tile clicks |
+| 87 | Cleared compliance holds remain cleared |
+| 88 | Nonblocking Item 10/11 advisors |
+| 89 | Conditional-alert authority references |
+| 90 | v195 custody, audience isolation, CUI derivation, backup confirmation and revision-report safeguards |
 
 ## Findings from the full sweep — both now fixed
 
@@ -125,8 +131,9 @@ Both are fixed, and both have tests pinning the fix.
   then asks `pypdf` to extract representative values from Blocks 2a, 6a and 13.
   The user-facing dynamic XFA route separately has both packet-mapping and
   actual-PDF construction assertions.
-- `browser_smoke.js` has no package dependency. It launches installed Chrome or
-  Edge with a temporary profile, clicks the real Item 10f tile, proves the
-  Settings and Item 13 remove/undo paths, checks validation text cannot create
-  markup, confirms a template through durable readback, and verifies that the
-  dynamic XFA button is the only user-facing official PDF route.
+- `browser_smoke.js` launches installed Chrome or Edge with a temporary
+  profile. It clicks the real Item 10f tile, proves the Settings and Item 13
+  remove/undo paths, checks validation text cannot create markup, confirms a
+  template through durable readback, exercises checked and unchecked Block 18f,
+  verifies bulk audience separation and CUI subject handling, and confirms that
+  the dynamic XFA button is the only user-facing official PDF route.

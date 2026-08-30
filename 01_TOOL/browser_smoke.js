@@ -117,7 +117,7 @@ class CDP {
       const signingXml=DD254XFA.buildXfaDatasets(collect254Data());
       const signingBase=Uint8Array.from(atob(DD254_XFA_B64),ch=>ch.charCodeAt(0));
       const signingPdf=await DD254XFA.injectXfaDatasets(PDFLib,signingBase,signingXml);
-      const signingExportOk=/<signedDate><\/signedDate>/.test(signingXml) && signingPdf.length>10000;
+      const signingExportOk=/<signedDate><\\/signedDate>/.test(signingXml) && signingPdf.length>10000;
       window.__validationInjected=false;
       const phone=document.getElementById('i16e');
       phone.value='<img id="live-validation-injection-probe" src=x onerror="window.__validationInjected=true">1';
@@ -136,33 +136,50 @@ class CDP {
       const tile=document.getElementById('cb10f'); tile.click();
       const box=document.getElementById('b13s_10f');
       if(!box) return {error:'10f section did not appear after tile click',settingsOk};
-      box.value='LIVE SAP SENTINEL 174'; box.dispatchEvent(new Event('input',{bubbles:true}));
-      const inserted=document.getElementById('item13').value.includes('LIVE SAP SENTINEL 174');
+      box.value='LIVE SAP SENTINEL 195'; box.dispatchEvent(new Event('input',{bubbles:true}));
+      const inserted=document.getElementById('item13').value.includes('LIVE SAP SENTINEL 195');
       tile.click();
-      const removed=!document.getElementById('item13').value.includes('LIVE SAP SENTINEL 174');
+      const removed=!document.getElementById('item13').value.includes('LIVE SAP SENTINEL 195');
       const undo=byText(document.getElementById('b13Undo'),/Put back/);
       const undoOffered=!!undo; if(undo) undo.click();
       const restored=document.getElementById('c10f').checked
-        && document.getElementById('item13').value.includes('LIVE SAP SENTINEL 174');
+        && document.getElementById('item13').value.includes('LIVE SAP SENTINEL 195');
+
+      const d18=document.getElementById('dist18f'), d18t=document.getElementById('dist18fOther');
+      d18.checked=true; dist18fToggle(true); d18t.value='live18f@example.mil';
+      d18.checked=false; dist18fToggle(false);
+      const block18fOk=d18t.value==='' && !document.getElementById('dist18fRev').classList.contains('show')
+        && dashDistEmails({workspace:{checks:{dist18f:false},texts:{dist18fOther:'hidden@example.mil'}}}).other18f.length===0;
+      const cuiRecord={id:'live-cui',title:'Live CUI',requestedBy:'req@gov.mil',workspace:{checks:{c10j:true},selects:{},texts:{i6fsoEmail:'fso@example.mil'}}};
+      const plainRecord={id:'live-plain',title:'Live Plain',requestedBy:'req@gov.mil',workspace:{checks:{},selects:{},texts:{i6fsoEmail:'fso@example.mil'}}};
+      const groups=dashIssueMailGroups([plainRecord,cuiRecord]);
+      const issuanceDetail={cls:dashClsOf(cuiRecord),subject:dashIssueMail(cuiRecord).subject,
+        groups:groups.length,cuiGroups:groups.filter(g=>g.mail.cui).length};
+      const issuanceSafetyOk=issuanceDetail.cls==='CUI' && /^\\(CUI\\)\\(CUI\\)\\(CUI\\)/.test(issuanceDetail.subject)
+        && groups.length===2 && groups.filter(g=>g.mail.cui).length===1;
+      const preparerCueOk=['i16a','i16b','i16c','i16d','i16e','i16f','i17a','i17b','i17c','i17d','i17e','i17f','i17g']
+        .every(id=>{const el=document.getElementById(id),lab=el&&el.closest('label');return !lab||!lab.querySelector('.req');});
 
       for(let i=0;i<100&&!window.TDB_READY;i++) await new Promise(r=>setTimeout(r,20));
       await tplSave(TPL_CSO,[{label:'Browser save baseline'}]);
       await dashTplEdit('cso');
-      window.TPL_EDIT[0].label='Browser durable save 174'; dashTplTouch();
+      window.TPL_EDIT[0].label='Browser durable save 195'; dashTplTouch();
       const savePromise=dashTplSaveNow();
       const showedSaving=/Saving/.test(document.getElementById('tplSaveState').textContent);
       const saveOk=await savePromise;
       const durable=(TDB.db&&!TDB.useLS)?(await tdbGet(TPL_CSO)):lsTplRead(TPL_CSO);
       const stored=(durable||[])[0]||{};
       const templateSaveOk=showedSaving && saveOk && /Saved/.test(document.getElementById('tplSaveState').textContent)
-        && stored.label==='Browser durable save 174';
+        && stored.label==='Browser durable save 195';
       return {version:document.getElementById('toolVer').textContent,settingsOk,exportUiOk,signingUiOk,signingExportOk,validationSafe,
-        advisoryUiOk,inserted,removed,undoOffered,restored,templateSaveOk};
+        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk};
     })()`;
     const result = await cdp.send('Runtime.evaluate', {
       expression, awaitPromise: true, returnByValue: true
     });
-    if (result.exceptionDetails) throw new Error(result.exceptionDetails.text || 'browser evaluation failed');
+    if (result.exceptionDetails) throw new Error(
+      (result.exceptionDetails.exception && result.exceptionDetails.exception.description)
+      || result.exceptionDetails.text || 'browser evaluation failed');
     const value = result.result.value;
 
     /* Every other check above drives a tile with element.click() — a script
@@ -199,7 +216,8 @@ class CDP {
     const exceptions = cdp.events.filter(x => x.method === 'Runtime.exceptionThrown');
     const ok = value && /^Tool v\d+\.\d+$/.test(value.version || '') && value.settingsOk && value.exportUiOk
       && value.signingUiOk && value.signingExportOk && value.validationSafe && value.advisoryUiOk && value.inserted && value.removed && value.undoOffered
-      && value.restored && value.templateSaveOk && value.checkboxGlyphClickWorks && exceptions.length === 0;
+      && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk
+      && value.checkboxGlyphClickWorks && exceptions.length === 0;
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.length }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));
   } finally {

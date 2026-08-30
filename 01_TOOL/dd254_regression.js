@@ -81,7 +81,7 @@ t('capture reads Block 18 off the form', ()=>{
   E("showFormView();resetFormFields();['18a','18b','18c','18d','18e','18f'].forEach(k=>{document.getElementById('dist'+k).checked=false;});");
   E("['18a','18b','18d'].forEach(k=>{document.getElementById('dist'+k).checked=true;});document.getElementById('dist18fOther').value='ACO Bldg 4';");
   const d=E('ctCaptureData()');
-  return d.c18['18a']&&d.c18['18b']&&d.c18['18d']&&!d.c18['18c']&&!d.c18['18f']&&d.t18f==='ACO Bldg 4';});
+  return d.c18['18a']&&d.c18['18b']&&d.c18['18d']&&!d.c18['18c']&&!d.c18['18f']&&d.t18f==='';});
 t('summary counts 18 and attachments', ()=>{
   const s=E("ctSummary({data:Object.assign(ctBlankData(),{c18:{'18a':true,'18c':true},t18f:'x',attText:'a\\nb'})})");
   return /18: 2 sel/.test(s) && /2 attach/.test(s);});
@@ -357,6 +357,50 @@ t('parties derive from Item 18 on that draft', ()=>{
   const p=E("dashDistParties({workspace:{checks:{dist18a:true,dist18c:true,dist18f:true},texts:{dist18fOther:'ACO Bldg 4'}},requestedBy:'po@x.mil'})");
   return p.length===4 && p[0].key==='18a' && p[2].key==='18f' && /ACO Bldg 4/.test(p[2].to) && p[3].key==='req' && p[3].to==='po@x.mil';});
 t('no Item 18 boxes means no parties', ()=> E("dashDistParties({workspace:{checks:{},texts:{}}})").length===0);
+t('issue e-mail maps requestor and Item 6/7/8 FSOs to To, then CSOs and Block 18f to CC', ()=>{
+  const r={title:'Alpha',requestedBy:'REQ@gov.mil',workspace:{checks:{dist18f:true},texts:{
+    i6fsoEmail:'prime@acme.com; req@GOV.mil',i7fsoEmail:'sub@beta.com',fsoEmails:'manual@other.com',
+    i6c:'cso1@dcsa.mil REQ@gov.mil',i7c:'cso2@dcsa.mil',item13:'item13@other.com',dist18fOther:'18f@other.com'
+  },perf:[{email:'SUB@BETA.COM loc@plant.com',cso:'CSO2@dcsa.mil cso3@dcsa.mil'}]}};
+  const m=E("dashIssueMail("+JSON.stringify(r)+")");
+  return m.to.join('|')==='REQ@gov.mil|prime@acme.com|sub@beta.com|loc@plant.com'
+      && m.cc.join('|')==='cso1@dcsa.mil|cso2@dcsa.mil|cso3@dcsa.mil|18f@other.com'
+      && !/manual@other|item13@other/i.test(m.to.concat(m.cc).join('|')); });
+t('issue e-mail mailto separates every To and CC address with semicolon-space and carries an identifying subject', ()=>{
+  const m=E("dashIssueMail({title:'Contract 47',requestedBy:'req@gov.mil',workspace:{checks:{dist18f:true},texts:{i6fsoEmail:'fso@acme.com',i7fsoEmail:'sub@beta.com',i6c:'cso@dcsa.mil',i7c:'cso2@dcsa.mil',dist18fOther:'other@example.mil'},perf:[]}})");
+  const u=decodeURIComponent(m.href);
+  return u.indexOf('mailto:req@gov.mil; fso@acme.com; sub@beta.com?cc=cso@dcsa.mil; cso2@dcsa.mil; other@example.mil&subject=Issued DD Form 254 — Contract 47')===0; });
+t('a CUI issuance prefixes the subject with the triple visual warning', ()=>{
+  const m=E("dashIssueMail({title:'CUI Contract',requestedBy:'req@gov.mil',workspace:{selects:{clsSel:'CUI'},texts:{},perf:[]}})");
+  return m.cui===true && m.subject==='(CUI)(CUI)(CUI) Issued DD Form 254 — CUI Contract'
+      && decodeURIComponent(m.href).includes('subject=(CUI)(CUI)(CUI) Issued DD Form 254 — CUI Contract'); });
+t('bulk issue e-mail separates differing audiences and keeps semicolon-space separators', ()=>{
+  const a={title:'A',requestedBy:'req@gov.mil',workspace:{selects:{},checks:{dist18f:true},texts:{i6fsoEmail:'fso1@a.com',i6c:'cso1@gov.mil',dist18fOther:'other@gov.mil; req@gov.mil'},perf:[]}};
+  const b={title:'B',requestedBy:'REQ@gov.mil',workspace:{selects:{clsSel:'CUI'},checks:{dist18f:true},texts:{i7fsoEmail:'fso2@b.com',i7c:'CSO1@gov.mil cso2@gov.mil',dist18fOther:'OTHER@gov.mil extra@gov.mil'},perf:[]}};
+  const g=E("dashIssueMailGroups("+JSON.stringify([a,b])+")"), urls=g.map(function(x){return decodeURIComponent(x.mail.href);});
+  return g.length===2 && urls.every(function(u){return /mailto:[^?]+; [^?]+/.test(u);})
+      && urls.some(function(u){return /fso1@a\.com/.test(u)&&!/fso2@b\.com/.test(u);})
+      && urls.some(function(u){return /fso2@b\.com/.test(u)&&!/fso1@a\.com/.test(u)&&/\(CUI\)\(CUI\)\(CUI\)/.test(u);}); });
+await ta('issue dialog uses the actual clicked anchor for the default-mail handoff', async()=>{
+  E("window.__issueMailDlg=dashDistDialog({id:'MAIL1',title:'Mail test',requestedBy:'req@gov.mil',workspace:{selects:{},checks:{dist18f:true},radios:{},texts:{i6fsoEmail:'fso@acme.com',i6c:'cso@dcsa.mil',dist18fOther:'other@example.mil'},perf:[]}})");
+  await new Promise(r=>setTimeout(r,80));
+  const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
+  const b=d.querySelector('#ddEmail'), txt=d.textContent;
+  const href=decodeURIComponent(b.getAttribute('href')||'');
+  const ok=!!b && b.tagName==='A' && /^mailto:req@gov\.mil; fso@acme\.com\?cc=cso@dcsa\.mil; other@example\.mil/.test(href)
+      && b.getAttribute('target')===null && E("typeof dashOpenIssueMail")==='undefined'
+      && /Open e-mail/.test(b.textContent) && /requestor and Item 6\/7\/8 FSOs/.test(txt)
+      && /Item 6\/7\/8 CSOs plus e-mail addresses in Block 18f/.test(txt) && /Duplicate addresses are removed/.test(txt)
+      && /semicolon and space/.test(txt)
+      && /does not open a web window/.test(txt) && /To: 2 · CC: 2/.test(txt);
+  d.querySelector('#ddSkip').click(); await E("window.__issueMailDlg"); return ok; });
+await ta('an empty issue audience leaves the e-mail link inert and explains why', async()=>{
+  E("window.__A='';window.__emptyMailDlg=dashDistDialog({id:'MAIL0',title:'No mail',workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
+  await new Promise(r=>setTimeout(r,80));
+  const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
+  const b=d.querySelector('#ddEmail'); b.click();
+  const ok=!b.hasAttribute('href') && b.getAttribute('aria-disabled')==='true' && /No requestor/.test(w.__A||'');
+  d.querySelector('#ddSkip').click(); await E("window.__emptyMailDlg"); return ok; });
 await ta('Issued opens the dialog and records what is ticked', async()=>{
   await wipe();
   await E("draftPut({id:'D1',title:'Delta',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],niss:{on:true,date:'2026-01-01',by:'DA'},\
@@ -420,6 +464,10 @@ t('a stale template reference does not throw', ()=>
   E("dashDistAttachments({workspace:{selects:{ctTplSel:'no-such'},checks:{},radios:{},texts:{}}})").tpl.length===0);
 t('empty draft yields nothing', ()=> E("dashDistAttachments({}).all").length===0);
 t('CUI detection reads the stored banner', ()=> E("dashDistIsCUI("+JSON.stringify(ATT)+")")===true && E("dashDistIsCUI({workspace:{selects:{clsSel:''}}})")===false);
+t('CUI detection also reads the selected DD-254 template', ()=>{
+  E("tplSave(TPL_CT,[{label:'CUI mail template',ioId:'cui-mail-template',data:Object.assign(ctBlankData(),{cls:'CUI'})}])");
+  return E("dashDistIsCUI({workspace:{selects:{clsSel:'',ctTplSel:'cui-mail-template'}}})")===true
+      && E("dashIssueMail({title:'Template CUI',workspace:{selects:{ctTplSel:'cui-mail-template'},texts:{},perf:[]}}).subject").indexOf('(CUI)(CUI)(CUI) ')===0; });
 t('the rule list is shared by both callers', ()=>{
   const v=E("dd254AutoAttachments(function(k){return k==='11i';},function(){return '';})");
   return v.length===1 && /TEMPEST/.test(v[0]);});
@@ -665,7 +713,7 @@ t('dead functions are gone, live ones remain', ()=>
   ['applyFacTpl','dashNewRevision','dashToggleCardMenu','uiPick'].every(n=>E("typeof "+n)==='undefined')
   && ['applyFacTplFromSearch','dashSpawn','uiConfirm','uiPrompt'].every(n=>E("typeof "+n)==='function'));
 t('XFA export still emits every block', ()=>{
-  E("showFormView();resetFormFields();document.getElementById('dist18a').checked=true;document.getElementById('dist18fOther').value='X';");
+  E("showFormView();resetFormFields();document.getElementById('dist18a').checked=true;document.getElementById('dist18f').checked=true;document.getElementById('dist18fOther').value='X';");
   const x=E("DD254XFA.buildXfaDatasets(collect254Data())");
   return /eighteen_a/.test(x)&&/eighteen_other/.test(x)&&/seventeen_AAC/.test(x)&&/five_retention/.test(x);});
 t('core validation and Item 11 exclusions still fire', ()=>{
@@ -2080,20 +2128,17 @@ t('the Item 17 certification block never errors and never highlights', ()=>{ CLE
 t('a form is clean with Items 16 and 17 entirely empty', ()=>{ CLEAN();
   ['i16a','i16b','i16c','i17a','i17b','i17c','i17d','i17f'].forEach(id=>V(id,'')); RUN();
   return ERRS().length===0; });
-t('every asterisked field is covered by a rule, or is a known exception', ()=>{
-  /* Items 16 and 17 keep their asterisks in the markup but are deliberately not
-     validated — the GCA and the certifying official complete them after the
-     preparer hands the form over. If the asterisks are ever removed from the
-     markup, delete them from this exclusion list too. */
-  const EXCLUDE=/^(i16[a-f]|i17[a-i])$/;
+t('every asterisked field is covered by a validation rule', ()=>{
   const missing=[];
   w.document.querySelectorAll('.req').forEach(sp=>{
     const lab=sp.closest('label'); if(!lab||!lab.htmlFor) return;
     const id=lab.htmlFor;
-    if(EXCLUDE.test(id)) return;
     if(!RUNSRC.includes("'"+id+"'")) missing.push(id);
   });
   return missing.length?('unvalidated: '+missing.join(', ')):true; });
+t('Items 16 and 17 carry no required-field cue because they are not workflow-gated', ()=>{
+  const ids=['i16a','i16b','i16c','i16d','i16e','i16f','i17a','i17b','i17c','i17d','i17e','i17f','i17g','i17h','i17i'];
+  return ids.every(function(id){const el=w.document.getElementById(id), lab=el&&el.closest('label'); return !lab||!lab.querySelector('.req');}); });
 await ta('autosave never demotes a record that was already issued', async()=>{
   const id='t37-lock';
   await E("draftPut({id:'"+id+"',status:'Issued',issuedAt:'2026-01-05T00:00:00Z',meta:{errors:9,warns:0},workspace:{}})");
@@ -2242,7 +2287,7 @@ t('language for an unchecked box is not carried over', ()=>{
   const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+",null)");
   return ws.texts.item13==='Intro'; });
 t('12, 14, 15 and 16 all travel with the template', ()=>{
-  const d=E("(function(){var d=ctBlankData();d.i12route='thru';d.i12specify='AFLCMC/PA';d.i14='yes';d.i14text='More';d.i15='no';d.i16.a='AFLCMC';d.t18f='Others';return d;})()");
+  const d=E("(function(){var d=ctBlankData();d.i12route='thru';d.i12specify='AFLCMC/PA';d.i14='yes';d.i14text='More';d.i15='no';d.i16.a='AFLCMC';d.c18['18f']=true;d.t18f='Others';return d;})()");
   const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+",null)");
   return ws.radios.i12route==='thru' && ws.texts.i12specify==='AFLCMC/PA'
       && ws.radios.i14==='yes' && ws.texts.i14text==='More' && ws.radios.i15==='no'
@@ -5292,10 +5337,11 @@ await ta('checking two cards shows the selection bar with the right count', asyn
   const bar=w.document.getElementById('dashSelBar');
   const displayWhileSelected=bar.style.display; // captured before dashSelClear() mutates the same live element
   const count=w.document.getElementById('dashSelCount').textContent;
+  const issueButton=Array.from(bar.querySelectorAll('button')).some(function(b){return /Issue selected/.test(b.textContent) && /dashBulkIssueSelected/.test(b.getAttribute('onclick')||'');});
   const selected=Array.from(E("DASH.selected")||[]);
   E("dashSelClear()");
   return (displayWhileSelected==='flex' && count==='2 selected'
-    && selected.includes('bs1') && selected.includes('bs2') && !selected.includes('bs3')) ? true : {displayWhileSelected,count,selected};
+    && issueButton && selected.includes('bs1') && selected.includes('bs2') && !selected.includes('bs3')) ? true : {displayWhileSelected,count,issueButton,selected};
 });
 await ta('select-all selects every visible card, and unchecking one clears the header checkbox', async()=>{
   w.document.getElementById('dashSelAll').click();
@@ -5331,6 +5377,48 @@ await ta('a plain, unfiltered portfolio export is unaffected by the selection fe
   const titlesInCsv=rows.slice(2).map(function(r){return r[0];}).filter(Boolean);
   return (titlesInCsv.includes('Bulk One') && titlesInCsv.includes('Bulk Two') && titlesInCsv.includes('Bulk Three'))
     ? true : {titlesInCsv};
+});
+await ta('changing one selected status to Issued opens one bulk window and issues every selected record', async()=>{
+  await wipe();
+  E("tplSave(TPL_CT,[{label:'Bulk CUI',ioId:'bulk-cui',data:Object.assign(ctBlankData(),{cls:'CUI'})}])");
+  await E("draftPut({id:'bi1',title:'Bulk Issue One',requestedBy:'req@gov.mil',status:'Draft',meta:{},dist:[],holds:[],niss:{on:true},workspace:{selects:{},checks:{dist18a:true},radios:{},texts:{i6fsoEmail:'fso1@a.com',i6c:'cso1@gov.mil'},perf:[]}})");
+  await E("draftPut({id:'bi2',title:'Bulk Issue Two',requestedBy:'REQ@gov.mil',status:'Draft',meta:{},dist:[],holds:[],niss:{on:true},workspace:{selects:{ctTplSel:'bulk-cui'},checks:{dist18b:true,dist18f:true},radios:{},texts:{i7fsoEmail:'fso2@b.com',i7c:'CSO1@gov.mil cso2@gov.mil',dist18fOther:'other@gov.mil'},perf:[]}})");
+  await E("dashRenderCards();DASH.selected=new Set(['bi1','bi2']);dashSelBarUpdate()");
+  const oldAlert=w.uiAlert; w.uiAlert=async function(m){w.__bulkDone=m;};
+  const pr=E("dashSetStatus('bi1','Issued')"); await new Promise(r=>setTimeout(r,120));
+  const d=w.document.getElementById('dashBulkDistDlg'); if(!d){w.uiAlert=oldAlert;return 'no bulk dialog';}
+  const links=Array.from(d.querySelectorAll('[id^="bddEmail_"]')).map(function(a){return decodeURIComponent(a.getAttribute('href')||'');});
+  const screenOk=/Bulk issuance — 2 DD-254s/.test(d.textContent) && /CUI — SEND ENCRYPTED/.test(d.textContent)
+    && /Prepared e-mails — 2 audience groups/.test(d.textContent) && /Never attach a record to a different audience group/.test(d.textContent)
+    && /Bulk Issue One/.test(d.textContent) && /Bulk Issue Two/.test(d.textContent) && /checked Block 18f/.test(d.textContent)
+    && links.length===2
+    && links.some(function(h){return h.indexOf('mailto:req@gov.mil; fso1@a.com?cc=cso1@gov.mil&subject=Issued DD Form 254 — Bulk Issue One')===0;})
+    && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com\?cc=CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil&subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two$/i.test(h);})
+    && !links.some(function(h){return /fso1@a\.com/.test(h)&&/fso2@b\.com/.test(h);});
+  d.querySelector('#bddSave').click(); await pr; w.uiAlert=oldAlert;
+  const a=await E("draftGet('bi1')"), b=await E("draftGet('bi2')");
+  return screenOk && a.status==='Issued' && b.status==='Issued' && a.dist.length===2 && b.dist.length===3
+    && E("DASH.selected.size")===0 && /2 DD-254s were issued together/.test(w.__bulkDone||'');
+});
+await ta('one hard failure stops the entire selected issuance before the distribution window', async()=>{
+  await wipe();
+  await E("draftPut({id:'bf1',title:'Clean record',status:'Draft',meta:{errors:0},holds:[],niss:{on:true},workspace:{}})");
+  await E("draftPut({id:'bf2',title:'Record with error',status:'Draft',meta:{errors:2},holds:[],niss:{on:true},workspace:{}})");
+  const oldAlert=w.uiAlert; w.__bulkStop=''; w.uiAlert=async function(m){w.__bulkStop=m;};
+  const result=await E("dashBulkIssue(['bf1','bf2'])"); w.uiAlert=oldAlert;
+  const a=await E("draftGet('bf1')"), b=await E("draftGet('bf2')");
+  return result===false && a.status==='Draft' && b.status==='Draft' && !w.document.getElementById('dashBulkDistDlg')
+    && /Nothing was issued/.test(w.__bulkStop) && /Record with error/.test(w.__bulkStop);
+});
+await ta('cancelling the bulk distribution window leaves every selected record unissued', async()=>{
+  await wipe();
+  await E("draftPut({id:'bc1',title:'Cancel One',status:'Draft',meta:{},holds:[],niss:{on:true},workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
+  await E("draftPut({id:'bc2',title:'Cancel Two',status:'Ready to sign',meta:{},holds:[],niss:{on:true},workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
+  const pr=E("dashBulkIssue(['bc1','bc2'])"); await new Promise(r=>setTimeout(r,120));
+  const d=w.document.getElementById('dashBulkDistDlg'); if(!d) return 'no bulk dialog';
+  d.querySelector('#bddCancel').click(); const result=await pr;
+  const a=await E("draftGet('bc1')"), b=await E("draftGet('bc2')");
+  return result===false && a.status==='Draft' && b.status==='Ready to sign' && !a.issuedAt && !b.issuedAt;
 });
 
 H('84a. Draft card overflow menu');
@@ -5514,6 +5602,110 @@ t('authority footers do not become errors or warnings', ()=>{
   const all=E('(window.DD254_ERRORS||[]).concat(window.DD254_WARNS||[])');
   const bad=all.filter(function(x){return /Authority:|Workflow control:/.test(x);});
   return bad.length===0 ? true : bad;
+});
+
+H('90. v195 custody, issuance and revision safeguards');
+t('unchecking 18f clears its hidden recipient text and hides the detail row', ()=>{
+  E("resetFormFields();document.getElementById('dist18f').checked=true;dist18fToggle(true);document.getElementById('dist18fOther').value='legacy@example.mil';document.getElementById('dist18f').checked=false;dist18fToggle(false);");
+  const field=w.document.getElementById('dist18fOther'), row=w.document.getElementById('dist18fRev');
+  return field.value==='' && !row.className.includes('show');
+});
+t('unchecked legacy 18f text is excluded from stored e-mail audiences', ()=>{
+  const em=E("dashDistEmails({requestedBy:'req@gov.mil',workspace:{checks:{dist18f:false},texts:{dist18fOther:'hidden@example.mil'}}})");
+  return em.other18f.length===0 && !em.all.some(function(x){return /hidden@/i.test(x);});
+});
+t('unchecked legacy 18f text is excluded from official export data', ()=>{
+  E("resetFormFields();document.getElementById('dist18f').checked=false;document.getElementById('dist18fOther').value='hidden@example.mil';");
+  const d=E('collect254Data(false)'); return d.v.dist18f_other==='';
+});
+t('checked 18f text remains in the issue e-mail CC line', ()=>{
+  const m=E("dashIssueMail({requestedBy:'req@gov.mil',workspace:{checks:{dist18f:true},texts:{dist18fOther:'other@example.mil'}}})");
+  return m.cc.join('|')==='other@example.mil';
+});
+t('CUI is derived from access boxes, designation fields, LDCs and templates', ()=>{
+  E("tplSave(TPL_CT,[{label:'Derived CUI',ioId:'derived-cui',data:Object.assign(ctBlankData(),{c10:{'10j':true}})}])");
+  const samples=[
+    {checks:{c10j:true}},{checks:{c11l:true}},{texts:{cuiCat:'CTI'}},
+    {checks:{ldcNoDissem:true}},{selects:{distStmt:'C'}},{selects:{ctTplSel:'derived-cui'}}
+  ];
+  return !E('dd254WorkspaceHasCUI({})') && samples.every(function(ws){return E('dd254WorkspaceHasCUI('+JSON.stringify(ws)+')');});
+});
+t('derived CUI drives both the dashboard badge and the e-mail subject', ()=>{
+  const r={title:'Derived',requestedBy:'req@gov.mil',workspace:{checks:{c10j:true},texts:{},selects:{}}};
+  const cls=E('dashClsOf('+JSON.stringify(r)+')'), m=E('dashIssueMail('+JSON.stringify(r)+')');
+  return cls==='CUI' && m.cui && /^\(CUI\)\(CUI\)\(CUI\)/.test(m.subject);
+});
+t('a CUI selection with an unclassified marking warns but does not create that warning as an error', ()=>{
+  E("resetFormFields();document.getElementById('c10j').checked=true;document.getElementById('clsSel').value='';run();");
+  const warnings=w.DD254_WARNS||[], errors=w.DD254_ERRORS||[];
+  return warnings.some(function(x){return /CUI content is present/.test(x);}) && !errors.some(function(x){return /CUI content is present/.test(x);});
+});
+t('bulk issuance groups identical recipients together and isolates different recipients', ()=>{
+  const base=function(id,fso){return {id:id,title:id,requestedBy:'req@gov.mil',workspace:{checks:{},selects:{},texts:{i6fsoEmail:fso,i6c:'cso@gov.mil'}}};};
+  const same=E('dashIssueMailGroups('+JSON.stringify([base('a','fso@a.com'),base('b','fso@a.com')])+')');
+  const split=E('dashIssueMailGroups('+JSON.stringify([base('a','fso@a.com'),base('c','fso@c.com')])+')');
+  return same.length===1 && same[0].records.length===2 && split.length===2;
+});
+t('the same recipients are separated when only one record is CUI', ()=>{
+  const a={id:'a',title:'A',requestedBy:'req@gov.mil',workspace:{checks:{},selects:{},texts:{i6fsoEmail:'fso@a.com'}}};
+  const b=JSON.parse(JSON.stringify(a)); b.id='b'; b.title='B'; b.workspace.checks.c10j=true;
+  const g=E('dashIssueMailGroups('+JSON.stringify([a,b])+')');
+  return g.length===2 && g.filter(function(x){return x.mail.cui;}).length===1;
+});
+t('an oversized mail handoff is detected before the browser is asked to open it', ()=>{
+  const list=Array.from({length:120},function(_,i){return 'person'+i+'@example.mil';}).join('; ');
+  const m=E('dashIssueMail({requestedBy:'+JSON.stringify(list)+',workspace:{checks:{},texts:{}}})');
+  return m.href.length>1900 && E('dashMailHrefTooLong('+JSON.stringify(m)+')')===true;
+});
+await ta('a failed fallback write remains visible in the open tab and raises the persistent warning', async()=>{
+  const oldUse=E('DASH.useLS'), oldSet=w.Storage.prototype.setItem, oldAlert=w.uiAlert; let alertText='';
+  w.uiAlert=async function(m){alertText=String(m);}; E('DASH.useLS=true;window.DRAFT_STORAGE_FAIL=false;window.DRAFT_STORAGE_WARNED=false;');
+  w.Storage.prototype.setItem=function(k,v){if(k==='dd254_drafts') throw new Error('quota test'); return oldSet.call(this,k,v);};
+  let threw=false; try{await E("draftPut({id:'ls-emergency',title:'Latest emergency copy',workspace:{}})");}catch(e){threw=true;}
+  await new Promise(r=>setTimeout(r,25));
+  const got=await E("draftGet('ls-emergency')"), meter=w.document.getElementById('storageMeter').textContent;
+  w.Storage.prototype.setItem=oldSet; w.uiAlert=oldAlert;
+  E("delete DASH_MEM['ls-emergency'];DASH.useLS="+JSON.stringify(oldUse)+";window.DRAFT_STORAGE_FAIL=false;window.DRAFT_STORAGE_WARNED=false;storageMeter();");
+  const ok=threw && got && got.title==='Latest emergency copy' && /DRAFT NOT SAVED/.test(meter) && /open tab only/.test(alertText);
+  return ok?true:{threw:threw,got:got&&got.title,meter:meter,alertText:alertText};
+});
+await ta('a later successful persistent write clears the draft-storage failure state', async()=>{
+  const oldUse=E('DASH.useLS'); E("DASH.useLS=true;window.DRAFT_STORAGE_FAIL=true;window.DRAFT_STORAGE_WARNED=true;");
+  await E("draftPut({id:'ls-recovered',title:'Recovered',workspace:{}})");
+  const ok=!E('window.DRAFT_STORAGE_FAIL') && !E('window.DRAFT_STORAGE_WARNED');
+  E("var _ls=lsAll();delete _ls['ls-recovered'];lsWrite(_ls);DASH.useLS="+JSON.stringify(oldUse)+";");
+  return ok;
+});
+await ta('the backup reminder clears only after the operator confirms the download', async()=>{
+  const oldConfirm=w.uiConfirm; w.localStorage.setItem('dd254_dirty_n','3');
+  w.uiConfirm=async function(){return false;}; const first=await E('fullBackup()'), kept=E('bkDirty()');
+  w.uiConfirm=async function(){return true;}; const second=await E('fullBackup()'), cleared=E('bkDirty()');
+  w.uiConfirm=oldConfirm;
+  return first===false && kept===3 && second===true && cleared===0;
+});
+t('revision rows use human labels and preserve long values without truncation', ()=>{
+  const old='A'.repeat(240), now='B'.repeat(260), rows=E('dashDiffRows({texts:{i2a:'+JSON.stringify(old)+'}},{texts:{i2a:'+JSON.stringify(now)+'}})');
+  return rows.length===1 && rows[0].field==='Item 2a — Prime Contract Number' && rows[0].was.length===240 && rows[0].now.length===260;
+});
+t('Item 13 changes are reported by reference section', ()=>{
+  const a='Standard\n\nReference 10a:\n\nOld COMSEC text', b='Standard\n\nReference 10a:\n\nNew COMSEC text';
+  const rows=E('dashDiffRows({texts:{item13:'+JSON.stringify(a)+'}},{texts:{item13:'+JSON.stringify(b)+'}})');
+  return rows.length===1 && rows[0].field==='Item 13 — Reference 10a' && /Old COMSEC/.test(rows[0].was) && /New COMSEC/.test(rows[0].now);
+});
+await ta('revision comparison traverses the full retained chain', async()=>{
+  await wipe();
+  await E("draftPut({id:'rev0',title:'Original',workspace:{texts:{i2a:'A'},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("draftPut({id:'rev1',parentId:'rev0',title:'Revision 1',workspace:{texts:{i2a:'B'},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("draftPut({id:'rev2',parentId:'rev1',title:'Revision 2',workspace:{texts:{i2a:'C'},checks:{},radios:{},selects:{},perf:[]}})");
+  const model=await E("dashCompareModel('rev2')");
+  return model.chain.length===3 && model.edges.length===2 && model.total===2;
+});
+await ta('the full-chain revision report exports as a PDF and logs the export', async()=>{
+  const bytes=await E("dashComparePdf('rev2')");
+  await new Promise(r=>setTimeout(r,30));
+  const sig=bytes&&Array.from(bytes.slice(0,4)).map(function(x){return String.fromCharCode(x);}).join('');
+  const logged=E("audAll().some(function(a){return a.id==='rev2'&&a.action==='revision-report-exported';})");
+  return sig==='%PDF' && bytes.length>1000 && logged;
 });
 
 console.log('\n================================');

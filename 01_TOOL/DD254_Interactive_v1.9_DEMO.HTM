@@ -13,8 +13,8 @@
       keys.forEach(function(k){ store.removeItem(k); });
     }catch(e){}
   }
-  clearDd254(localStorage);   /* remove data saved by earlier demo versions */
-  clearDd254(sessionStorage); /* refresh/reopen always starts clean */
+  clearDd254(localStorage);
+  clearDd254(sessionStorage);
   window.DD254_DEMO_SESSION_ID=(function(){
     try{ return crypto.randomUUID(); }
     catch(e){ return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2); }
@@ -548,7 +548,7 @@ body.ws-dragging{user-select:none;}
           <button class="dash-menu-item" data-lbl="templates contract type" onclick="dashTplEdit('b13')">📄 Contract Type</button>
           <button class="dash-menu-item" data-lbl="templates dd-254 template language" onclick="dashTplEdit('ct')">📝 DD-254 Template Language</button>
           <button class="dash-menu-item" data-lbl="templates standard language" onclick="dashTplEdit('sl')">📑 Standard Language</button>
-          <button class="dash-menu-item" data-lbl="templates security poc" onclick="dashTplEdit('sm')">🛡 Security POC</button>
+          <button class="dash-menu-item" data-lbl="templates security managers" onclick="dashTplEdit('sm')">🛡 Security Managers</button>
         </div>
         <div class="dash-menu-section" data-menu-section>
           <div class="dash-menu-hdr">Reports</div>
@@ -584,6 +584,7 @@ body.ws-dragging{user-select:none;}
       <input type="checkbox" id="dashSelAll" onchange="dashSelAllVisible(this.checked)"> Select all
     </label>
     <span id="dashSelCount" style="font-weight:bold;"></span>
+    <button class="dash-btn" onclick="dashBulkIssueSelected()">📤 Issue selected</button>
     <button class="dash-btn" onclick="portfolioCsvSelected()">📊 Export selected (.csv)</button>
     <button class="dash-btn" onclick="dashSelClear()">Clear selection</button>
   </div>
@@ -605,7 +606,7 @@ body.ws-dragging{user-select:none;}
 <div class="fw">
 <div class="cls-banner" id="clsBanner">UNCLASSIFIED</div>
 <div class="fh">
-<h1>Department of Defense<br>Contract Security Classification Specification<br><span style="font-size:10px;font-weight:normal;color:#7090b0;">DD Form 254 · APR 2018 · OMB 0704-0567 · <span id="toolVer">Tool v2.115</span> (Exp. Aug 31, 2028)</span></h1>
+<h1>Department of Defense<br>Contract Security Classification Specification<br><span style="font-size:10px;font-weight:normal;color:#7090b0;">DD Form 254 · APR 2018 · OMB 0704-0567 · <span id="toolVer">Tool v2.121</span> (Exp. Aug 31, 2028)</span></h1>
 <div class="omb">The requirements of the National Industrial<br>Security Program (NISP) apply to all security<br>aspects of this effort involving classified information.</div>
 </div>
 
@@ -1129,11 +1130,11 @@ This advisor compares Items 1a, 1b, 10, and 11 with a verification snapshot. Its
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px;margin-bottom:9px;">
 <label class="sub-lbl" for="advEntityType" style="margin:0;">Entity / activity type
 <select id="advEntityType" onchange="run()" style="margin-top:3px;font-size:10.5px;"><option value="">Not recorded</option><option value="us">U.S. contractor</option><option value="foreign">Foreign contractor / government</option><option value="nato">NATO activity</option></select></label>
-<label class="sub-lbl" for="advActualFcl" style="margin:0;">Actual FCL
+<label class="sub-lbl" for="advActualFcl" style="margin:0;">Actual FCL verified in NISS
 <select id="advActualFcl" onchange="run()" style="margin-top:3px;font-size:10.5px;"><option value="">Not verified in NISS</option><option value="C">Confidential</option><option value="S">Secret</option><option value="TS">Top Secret</option></select></label>
 <label class="sub-lbl" for="advFclStatus" style="margin:0;">FCL status
 <select id="advFclStatus" onchange="run()" style="margin-top:3px;font-size:10.5px;"><option value="">Not recorded</option><option value="interim">Interim</option><option value="final">Final</option></select></label>
-<label class="sub-lbl" for="advActualSfg" style="margin:0;">Actual Safeguarding
+<label class="sub-lbl" for="advActualSfg" style="margin:0;">Actual safeguarding verified in NISS
 <select id="advActualSfg" onchange="run()" style="margin-top:3px;font-size:10.5px;"><option value="">Not verified in NISS</option><option value="NONE">None</option><option value="C">Confidential</option><option value="S">Secret</option><option value="TS">Top Secret</option></select></label>
 <label class="sub-lbl" for="advOnsiteLevel" style="margin:0;">Highest selected-category level handled on site
 <select id="advOnsiteLevel" onchange="run()" style="margin-top:3px;font-size:10.5px;"><option value="">Not determined</option><option value="NONE">None — access elsewhere only</option><option value="C">Confidential</option><option value="S">Secret</option><option value="TS">Top Secret</option></select></label>
@@ -1434,7 +1435,7 @@ Item 11 Performance Advisor <span style="display:inline-block;margin-left:6px;pa
 /* The single version of record. Section banners used to carry the release they
    were written in, which read like competing version declarations; they were
    only ever history and have been removed. */
-const TOOL_VERSION='2.116';
+const TOOL_VERSION='2.121';
 /* The one shared normaliser for text drawn into a PDF with pdf-lib's standard
    (WinAnsi) fonts \u2014 this used to be a second, looser implementation that a
    duplicate inside the flat-PDF module shadowed for its own callers, leaving
@@ -1498,7 +1499,7 @@ function sanitizePdfText(t){return String(t==null?'':t).replace(/[\u2018\u2019\u
 </div>
 </div><!-- /step5 --><div class="wizard-step" id="step6"><div class="sec-hdr">GCA, Certification &amp; Signatures</div>
 <div class="sec">
-<div class="ilabel"><span class="inum">16</span><span class="ititle">Government Contracting Activity (GCA) and POC <span class="req">*</span></span></div>
+<div class="ilabel"><span class="inum">16</span><span class="ititle">Government Contracting Activity (GCA) and POC</span></div>
 <details class="inst-box">
 <summary>Instructions for Item 16</summary>
 <div class="rule-n">Do NOT revise the DD Form 254 solely to update POC information (16d or 16f). POC changes alone are not a valid reason for revision.</div>
@@ -1508,10 +1509,10 @@ function sanitizePdfText(t){return String(t==null?'':t).replace(/[\u2018\u2019\u
 <div class="sec-row">
 <div class="sc sc2">
 <div style="display:flex;gap:8px;">
-<div style="flex:3;"><label class="sub-lbl" for="i16a"><span class="sub-ltr">16a</span> GCA Name <span class="req">*</span></label><input type="text" id="i16a" placeholder="e.g., Defense Logistics Agency Aviation"></div>
-<div style="flex:1;"><label class="sub-lbl" for="i16b"><span class="sub-ltr">16b</span> AAC <span class="req">*</span></label><input type="text" id="i16b" placeholder="6-char" maxlength="6"></div>
+<div style="flex:3;"><label class="sub-lbl" for="i16a"><span class="sub-ltr">16a</span> GCA Name</label><input type="text" id="i16a" placeholder="e.g., Defense Logistics Agency Aviation"></div>
+<div style="flex:1;"><label class="sub-lbl" for="i16b"><span class="sub-ltr">16b</span> AAC</label><input type="text" id="i16b" placeholder="6-char" maxlength="6"></div>
 </div>
-<label class="sub-lbl" for="i16c" style="margin-top:6px;"><span class="sub-ltr">16c</span> Address (include ZIP) <span class="req">*</span></label>
+<label class="sub-lbl" for="i16c" style="margin-top:6px;"><span class="sub-ltr">16c</span> Address (include ZIP)</label>
 <textarea id="i16c" placeholder="Address, City, State  ZIP" style="min-height:42px;"></textarea>
 </div>
 <div class="sc">
@@ -1526,7 +1527,7 @@ function sanitizePdfText(t){return String(t==null?'':t).replace(/[\u2018\u2019\u
 </div>
 </div>
 <div class="sec">
-<div class="ilabel"><span class="inum">17</span><span class="ititle">Certification and Signatures <span class="req">*</span></span></div>
+<div class="ilabel"><span class="inum">17</span><span class="ititle">Certification and Signatures</span></div>
 <details class="inst-box">
 <summary>Instructions for Item 17</summary>
 <p>Contracting Officer or authorized representative certifies that security requirements are complete and adequate.</p>
@@ -1538,19 +1539,19 @@ function sanitizePdfText(t){return String(t==null?'':t).replace(/[\u2018\u2019\u
 <div class="sec-row">
 <div class="sc sc2">
 <div style="display:flex;gap:8px;">
-<div style="flex:3;"><label class="sub-lbl" for="i17a"><span class="sub-ltr">17a</span> Certifying Official Name (Last, First, MI) <span class="req">*</span></label><select id="certTplSel" onchange="applyCertTpl(this)" style="margin-bottom:3px;font-size:10.5px;background:#eef1f4;"><option value="">— apply certifying-official template… —</option></select>
+<div style="flex:3;"><label class="sub-lbl" for="i17a"><span class="sub-ltr">17a</span> Certifying Official Name (Last, First, MI)</label><select id="certTplSel" onchange="applyCertTpl(this)" style="margin-bottom:3px;font-size:10.5px;background:#eef1f4;"><option value="">— apply certifying-official template… —</option></select>
 <input type="text" id="i17a" placeholder="Smith, John A."></div>
-<div style="flex:2;"><label class="sub-lbl" for="i17b"><span class="sub-ltr">17b</span> Title <span class="req">*</span></label><input type="text" id="i17b" placeholder="Contracting Officer"></div>
+<div style="flex:2;"><label class="sub-lbl" for="i17b"><span class="sub-ltr">17b</span> Title</label><input type="text" id="i17b" placeholder="Contracting Officer"></div>
 </div>
-<label class="sub-lbl" for="i17c" style="margin-top:6px;"><span class="sub-ltr">17c</span> Mailing Address, ZIP <span class="req">*</span></label>
+<label class="sub-lbl" for="i17c" style="margin-top:6px;"><span class="sub-ltr">17c</span> Mailing Address, ZIP</label>
 <textarea id="i17c" style="min-height:42px;" placeholder="Address, City, State  ZIP"></textarea>
 </div>
 <div class="sc">
-<label class="sub-lbl" for="i17d"><span class="sub-ltr">17d</span> AAC <span class="req">*</span></label>
+<label class="sub-lbl" for="i17d"><span class="sub-ltr">17d</span> AAC</label>
 <input type="text" id="i17d" placeholder="6-char AAC" maxlength="6">
 <label class="sub-lbl" for="i17e" style="margin-top:5px;"><span class="sub-ltr">17e</span> CAGE of Prime <span style="font-weight:normal;">(subcontracts only)</span></label>
 <input class="cage-up" type="text" id="i17e" placeholder="Leave blank for prime forms" maxlength="5">
-<label class="sub-lbl" for="i17f" style="margin-top:5px;"><span class="sub-ltr">17f</span> Phone <span class="req">*</span></label>
+<label class="sub-lbl" for="i17f" style="margin-top:5px;"><span class="sub-ltr">17f</span> Phone</label>
 <input id="i17f" type="text" placeholder="(xxx) xxx-xxxx">
 <label class="sub-lbl" for="i17g" style="margin-top:5px;"><span class="sub-ltr">17g</span> Email</label>
 <input type="text" id="i17g" placeholder="certifying.official@agency.mil">
@@ -1572,7 +1573,7 @@ function sanitizePdfText(t){return String(t==null?'':t).replace(/[\u2018\u2019\u
 <div class="distrow"><input type="checkbox" id="dist18d"> <span><strong>18d.</strong> U.S. Activity Responsible for Overseas Security Administration — <em>required if Item 11f is checked</em></span></div>
 <div class="distrow"><input type="checkbox" id="dist18e"> <span><strong>18e.</strong> Administrative Contracting Officer (ACO)</span></div>
 <div class="distrow">
-<input type="checkbox" id="dist18f" onchange="toggleRev('dist18fRev',this.checked);run()">
+<input type="checkbox" id="dist18f" onchange="dist18fToggle(this.checked)">
 <span><strong>18f.</strong> Other as necessary (specify in Item 13)</span>
 </div>
 <div class="crev" id="dist18fRev"><input type="text" id="dist18fOther" placeholder="Additional distribution addresses (or note in Item 13)"></div>
@@ -1652,7 +1653,7 @@ function sanitizePdfText(t){return String(t==null?'':t).replace(/[\u2018\u2019\u
 </div>
 <div class="rp-section">
 <h4>DD-254 Template Language</h4>
-<input type="search" id="ctTplSearch" placeholder="Search templates — name, content, source date, security POC…" oninput="ctFilterSel(this.value)" style="font-size:10.5px;margin-bottom:4px;">
+<input type="search" id="ctTplSearch" placeholder="Search templates — name, content, source date, security manager…" oninput="ctFilterSel(this.value)" style="font-size:10.5px;margin-bottom:4px;">
 <select id="ctTplSel" onchange="buildCtPanel();ctAutoLangSync()" style="font-size:10.5px;margin-bottom:6px;"><option value="">— select a template… —</option></select>
 <div id="ctPanel" style="font-size:10px;color:#888;font-family:Arial,sans-serif;">Select a saved template above to see its insertable guidance. Nothing is applied automatically.</div>
 </div>
@@ -1728,6 +1729,16 @@ function ck(id){return document.getElementById(id);}
 function ch(id){const e=ck(id);return e&&e.checked;}
 function show(id,val){const e=ck(id);if(e)e.classList.toggle('show',!!val);}
 function toggleRev(id,v){const e=ck(id);if(e)e.classList.toggle('show',v);}
+/* Block 18f is an instruction to distribute, not a scratch-pad switch. Once it
+   is withdrawn, its hidden recipient text must not survive into e-mail, the
+   dashboard or the generated form. Clearing here keeps every downstream
+   consumer aligned with the box the operator can actually see. */
+function dist18fToggle(on){
+  const e=ck('dist18fOther');
+  if(!on&&e) e.value='';
+  toggleRev('dist18fRev',!!on);
+  run();
+}
 function updateBanner(){
 const v=ck('clsSel').value;
 const banners=[ck('clsBanner'),ck('clsBannerBottom')];
@@ -2759,6 +2770,13 @@ if(S.c['11e']&&S.c['11c']) warns.push('11e + 11c: Recommend using 11m instead of
 if(S.c['11e']&&S.c['11d']) warns.push('11e + 11d: Recommend using 11m instead of 11e; must explain in Item 13 if both kept');
 if(S.c['11e']&&S.c['11b']) warns.push('11e + 11b: Not recommended; must explain in Item 13 if both kept');
 if(S.c['11l']&&!S.c['10j']) warns.push('Item 11l: Should only be checked when Item 10j is also checked');
+(function(){
+  const val=function(id){return String(((ck(id)||{}).value)||'').trim();};
+  const designated=val('cuiCtrlBy')||val('cuiCat')||val('cuiPoc')||val('distStmt')||val('distCat')
+    ||(typeof ldcChecked==='function'&&ldcChecked().length);
+  if((S.c['10j']||S.c['11l']||designated)&&val('clsSel')!=='CUI')
+    warns.push('CUI content is present, but the DD Form 254 marking is UNCLASSIFIED. Select CUI before export or remove the CUI selections/designation. E-mail warnings will still treat this draft as CUI.');
+})();
 if(S.c['11f']) warns.push('Item 11f: Ensure Item 13 identifies U.S. activity, city, and country of overseas performance');
 if(S.c['11f']&&!ck('dist18d')?.checked) warns.push('Item 18d: Should be checked for overseas access (11f)');
 if(S.c['10g']) warns.push('10g NATO: Item 13 must note NATO access briefing/debriefing is required');
@@ -2805,11 +2823,9 @@ if(typeof flowIssuesLive==='function'){ const _fl=flowIssuesLive();
    unwatermarked.
 
    MAINTENANCE NOTE: this list and the asterisks in the markup are two separate
-   sources of truth, and nothing enforces the pairing — the Item 16/17 asterisks
-   remain in the markup on purpose even though nothing validates them. If a field
-   gains or loses its asterisk, edit this block to match. Folding both into one
-   declarative table (id, item, who fills it in, condition) is the change that
-   would remove the risk.
+   sources of truth. Items 16/17 deliberately carry no asterisks because this
+   preparer workflow does not gate on them. If a field gains or loses its
+   asterisk, edit this block to match.
 
    Deliberately NOT required here:
      Item 16 (GCA block) and Item 17 (certification block), in their entirety.
@@ -2821,7 +2837,7 @@ if(typeof flowIssuesLive==='function'){ const _fl=flowIssuesLive();
 */
 (function(){
   /* Any highlight left on the Item 16/17 controls by an earlier build has to be
-     cleared explicitly: they are no longer in REQ, so nothing else clears them. */
+     cleared explicitly: they are not in REQ, so nothing else clears them. */
   ['i16a','i16b','i16c','i16d','i16e','i16f','i17a','i17b','i17c','i17d','i17e','i17f','i17g']
     .forEach(function(id){ const e=ck(id); if(e) e.classList.remove('req-missing'); });
   const REQ=[
@@ -3764,7 +3780,7 @@ function collect254Data(draft){
   if(gc('iStandalone') && v.i2a && gv('iEffort')){
     v.i2a = v.i2a + ' | Task Order ' + gv('iEffort');
   }
-  v.dist18f_other=(document.querySelector('#dist18fRev input')||{}).value||'';
+  v.dist18f_other=gc('dist18f')?((document.querySelector('#dist18fRev input')||{}).value||''):'';
   const cIds=['c10a','c10b','c10c','c10d','c10e1','c10e2','c10f','c10g','c10h','c10i','c10j','c10k','c11a','c11b','c11c','c11d','c11e','c11f','c11g','c11h','c11i','c11j','c11k','c11l','c11m','dist18a','dist18b','dist18c','dist18d','dist18e','dist18f'];
   const c={}; cIds.forEach(id=>c[id]=gc(id));
   const r={spec:gr('spec'), fo:gr('fo'), fin:gr('fin'), i14:gr('i14'), i15:gr('i15'), i12route:gr('i12route')};
@@ -4097,7 +4113,7 @@ function updateStateAndUI(){
 function dashId(){ try{return crypto.randomUUID();}catch(e){ return 'd'+Date.now()+'_'+Math.random().toString(36).slice(2,8);} }
 function dashEsc(s){ return htmlEsc(s); }
 
-/* storage: IndexedDB with sessionStorage fallback */
+/* storage: IndexedDB with localStorage fallback */
 function dashDB(){
   if(DASH.ready) return DASH.ready;
   DASH.ready=new Promise(function(res){
@@ -4119,14 +4135,87 @@ function dashDB(){
   return DASH.ready;
 }
 const DASH_MEM={};
-function lsAll(){ try{return JSON.parse(sessionStorage.getItem('dd254_drafts')||'{}');}catch(e){return DASH_MEM;} }
-function lsWrite(all){ try{sessionStorage.setItem('dd254_drafts',JSON.stringify(all));}catch(e){ Object.keys(all).forEach(function(k){DASH_MEM[k]=all[k];}); } }
+function lsAll(){
+  let all={};
+  try{ all=JSON.parse(localStorage.getItem('dd254_drafts')||'{}')||{}; }catch(e){}
+  /* A failed localStorage write leaves the old value readable. Always overlay
+     the in-tab emergency copy so the operator sees the latest draft while the
+     warning is active, rather than silently reopening the stale persisted one. */
+  Object.keys(DASH_MEM).forEach(function(k){all[k]=DASH_MEM[k];});
+  return all;
+}
+function draftStorageFailure(err){
+  window.DRAFT_STORAGE_FAIL=true;
+  window.DRAFT_STORAGE_ERROR=String((err&&err.message)||err||'persistent storage write failed');
+  if(typeof storageMeter==='function') storageMeter();
+  if(!window.DRAFT_STORAGE_WARNED){
+    window.DRAFT_STORAGE_WARNED=true;
+    setTimeout(function(){
+      const msg='DRAFT NOT SAVED TO PERSISTENT STORAGE.\n\nThe latest copy is held in this open tab only and will be lost when the tab closes. Take a Full Backup now and free browser storage before continuing.';
+      if(typeof uiAlert==='function') uiAlert(msg); else alert(msg);
+    },0);
+  }
+}
+function draftStorageSuccess(){
+  /* A different transaction can finish after a failed fallback write. It does
+     not make the emergency copy durable, so it must not erase the red warning
+     while anything still exists only in this tab. lsWrite clears DASH_MEM
+     before calling here once the complete fallback store really succeeds. */
+  if(Object.keys(DASH_MEM).length){
+    window.DRAFT_STORAGE_FAIL=true;
+    if(typeof storageMeter==='function') storageMeter();
+    return;
+  }
+  window.DRAFT_STORAGE_FAIL=false;
+  window.DRAFT_STORAGE_ERROR='';
+  window.DRAFT_STORAGE_WARNED=false;
+  if(typeof storageMeter==='function') storageMeter();
+}
+function lsWrite(all){
+  try{
+    localStorage.setItem('dd254_drafts',JSON.stringify(all));
+    Object.keys(DASH_MEM).forEach(function(k){delete DASH_MEM[k];});
+    draftStorageSuccess();
+    return true;
+  }catch(e){
+    Object.keys(DASH_MEM).forEach(function(k){delete DASH_MEM[k];});
+    Object.keys(all).forEach(function(k){DASH_MEM[k]=all[k];});
+    draftStorageFailure(e);
+    return false;
+  }
+}
 async function draftPut(rec){
   if(window.DD254_READONLY) return;   /* read-only tab: never write a draft */
   if(typeof bkMark==='function'&&!window.BK_UNLOADING) bkMark();
   await dashDB();
-  if(DASH.useLS){ const all=lsAll(); all[rec.id]=rec; lsWrite(all); return; }
-  return new Promise(function(res,rej){ const tx=DASH.db.transaction('drafts','readwrite'); tx.objectStore('drafts').put(rec); tx.oncomplete=res; tx.onerror=function(){rej(tx.error);} });
+  if(DASH.useLS){ const all=lsAll(); all[rec.id]=rec; if(!lsWrite(all)) throw new Error('Draft was retained in this tab only'); return; }
+  return new Promise(function(res,rej){
+    const tx=DASH.db.transaction('drafts','readwrite'); tx.objectStore('drafts').put(rec);
+    tx.oncomplete=function(){draftStorageSuccess();res();};
+    tx.onerror=function(){draftStorageFailure(tx.error);rej(tx.error||new Error('Draft write failed'));};
+    tx.onabort=function(){draftStorageFailure(tx.error);rej(tx.error||new Error('Draft write aborted'));};
+  });
+}
+/* Bulk issuance is all-or-nothing. One IndexedDB transaction (or one
+   localStorage rewrite in fallback mode) prevents a storage error from leaving
+   only part of a selected group marked Issued. */
+async function draftPutMany(records){
+  records=(records||[]).filter(Boolean);
+  if(window.DD254_READONLY||!records.length) return;
+  if(typeof bkMark==='function'&&!window.BK_UNLOADING) bkMark();
+  await dashDB();
+  if(DASH.useLS){
+    const all=lsAll(); records.forEach(function(rec){ all[rec.id]=rec; });
+    if(!lsWrite(all)) throw new Error('Bulk draft update was retained in this tab only');
+    return;
+  }
+  return new Promise(function(res,rej){
+    const tx=DASH.db.transaction('drafts','readwrite'), os=tx.objectStore('drafts');
+    records.forEach(function(rec){ os.put(rec); });
+    tx.oncomplete=function(){draftStorageSuccess();res();};
+    tx.onerror=function(){draftStorageFailure(tx.error);rej(tx.error||new Error('Bulk draft write failed'));};
+    tx.onabort=function(){draftStorageFailure(tx.error);rej(tx.error||new Error('Bulk draft write aborted'));};
+  });
 }
 async function draftGet(id){
   await dashDB();
@@ -4141,8 +4230,13 @@ async function draftAll(){
 async function draftDel(id){
   if(typeof bkMark==='function') bkMark();
   await dashDB();
-  if(DASH.useLS){ const all=lsAll(); delete all[id]; lsWrite(all); return; }
-  return new Promise(function(res){ const tx=DASH.db.transaction('drafts','readwrite'); tx.objectStore('drafts').delete(id); tx.oncomplete=res; tx.onerror=res; });
+  if(DASH.useLS){ const all=lsAll(); delete all[id]; if(!lsWrite(all)) throw new Error('Draft delete was not saved'); return; }
+  return new Promise(function(res,rej){
+    const tx=DASH.db.transaction('drafts','readwrite'); tx.objectStore('drafts').delete(id);
+    tx.oncomplete=function(){draftStorageSuccess();res();};
+    tx.onerror=function(){draftStorageFailure(tx.error);rej(tx.error||new Error('Draft delete failed'));};
+    tx.onabort=function(){draftStorageFailure(tx.error);rej(tx.error||new Error('Draft delete aborted'));};
+  });
 }
 
 /* ── TEMPLATE PACK: share libraries between instances ──────────────────────
@@ -4162,14 +4256,14 @@ async function draftDel(id){
    immediately and deleted in one click. */
 const PACK_KINDS=['fac','cso','perf','cert','b13','ct','sm','sl'];
 const PACK_LABEL={fac:'Facility',cso:'CSO',perf:'Performance / Sub',cert:'Certifier',
-                  b13:'Contract Type',ct:'DD-254 Template Language',sm:'Security POC',
+                  b13:'Contract Type',ct:'DD-254 Template Language',sm:'Security Managers',
                   sl:'Standard Language'};
 /* Libraries that describe YOUR sites and YOUR subcontractors rather than a way
    of writing a DD-254. Off by default on import: a curator's facility list is
    usually wrong for everybody else. */
 const PACK_LOCAL={fac:1,perf:1};
 function packOwner(){
-  let o=''; try{ o=sessionStorage.getItem('dd254_owner')||''; }catch(e){}
+  let o=''; try{ o=localStorage.getItem('dd254_owner')||''; }catch(e){}
   return o;
 }
 function packName(t){ return String((t&&(t.label||t.name))||'').trim(); }
@@ -4273,7 +4367,7 @@ async function tplPackExport(){
   let owner=packOwner();
   if(!owner){
     owner=(await uiPrompt('Who is sharing these templates? (name or team — shown to whoever imports them)',''))||'';
-    try{ if(owner) sessionStorage.setItem('dd254_owner',owner); }catch(e){}
+    try{ if(owner) localStorage.setItem('dd254_owner',owner); }catch(e){}
   }
   const libs={}; let n=0;
   PACK_KINDS.forEach(function(k){ libs[k]=picked[k]||[]; n+=libs[k].length; });
@@ -4752,7 +4846,7 @@ function b13ActiveKeys(){
 const WS_PRESETS={reading:1100,wide:1600,full:0};   /* 0 means "use the window" */
 const WS_MIN=760;
 function wsWidthGet(){
-  let v=null; try{ v=sessionStorage.getItem('dd254_ws_width'); }catch(e){}
+  let v=null; try{ v=localStorage.getItem('dd254_ws_width'); }catch(e){}
   if(v==null||v==='') return 'auto';
   if(WS_PRESETS.hasOwnProperty(v)||v==='auto') return v;
   const n=parseInt(v,10);
@@ -4763,7 +4857,7 @@ function wsWidthSet(v){
   if(typeof v==='number'){ store=String(Math.max(WS_MIN,Math.round(v))); }
   else if(WS_PRESETS.hasOwnProperty(v)||v==='auto'){ store=v; }
   else { store='auto'; }
-  try{ sessionStorage.setItem('dd254_ws_width',store); }catch(e){}
+  try{ localStorage.setItem('dd254_ws_width',store); }catch(e){}
   wsApply();
   return wsWidthGet();
 }
@@ -4802,13 +4896,13 @@ function wsApply(){
    several hundred sizes in this file are inline pixel values that a cascade
    cannot reach. Scoped to the chrome; the form sheet is never zoomed. */
 function uiScaleGet(){
-  let v=null; try{ v=sessionStorage.getItem('dd254_ui_scale'); }catch(e){}
+  let v=null; try{ v=localStorage.getItem('dd254_ui_scale'); }catch(e){}
   const n=parseInt(v||'100',10);
   return (isFinite(n)&&n>=90&&n<=175)?n:100;
 }
 function uiScaleSet(v){
   const n=parseInt(v,10);
-  try{ sessionStorage.setItem('dd254_ui_scale',String((isFinite(n)&&n>=90&&n<=175)?n:100)); }catch(e){}
+  try{ localStorage.setItem('dd254_ui_scale',String((isFinite(n)&&n>=90&&n<=175)?n:100)); }catch(e){}
   uiScaleApply();
   return uiScaleGet();
 }
@@ -4874,10 +4968,10 @@ function wsDragInit(){
   wsApply();
 }
 
-function b13ViewGet(){ return sessionStorage.getItem('dd254_b13_view')==='sections'?'sections':'block'; }
+function b13ViewGet(){ return localStorage.getItem('dd254_b13_view')==='sections'?'sections':'block'; }
 function b13ViewSet(v){
   const m=(v==='sections')?'sections':'block';
-  try{ sessionStorage.setItem('dd254_b13_view',m); }catch(e){}
+  try{ localStorage.setItem('dd254_b13_view',m); }catch(e){}
   const host=document.getElementById('b13Compose');
   if(host) host.style.display=(m==='sections')?'block':'none';
   const note=document.getElementById('b13RawNote');
@@ -5329,6 +5423,11 @@ function applyWorkspace(data){
     Object.keys(data.texts).forEach(function(id){ const el=document.getElementById(id); if(el) el.value=data.texts[id]; });
   }
   if(data.checks) Object.keys(data.checks).forEach(function(id){ const el=document.getElementById(id); if(el) el.checked=data.checks[id]; });
+  /* Old drafts may carry 18f text even though the box was never selected. Do
+     not let that legacy hidden value re-enter the live form. */
+  if(!(data.checks&&data.checks.dist18f)){
+    const other18f=document.getElementById('dist18fOther'); if(other18f) other18f.value='';
+  }
   if(data.radios) Object.keys(data.radios).forEach(function(n){ const el=document.querySelector('input[name="'+n+'"][value="'+data.radios[n]+'"]'); if(el) el.checked=true; });
   if(data.selects) Object.keys(data.selects).forEach(function(id){ const el=document.getElementById(id); if(el) el.value=data.selects[id]; });
   /* Drafts saved before templates carried stable ids store ctTplSel as a list
@@ -5500,7 +5599,7 @@ const AUD_WAL_KEY='dd254_audit_pending';     /* synchronous recovery journal */
    so it outlives any individual draft and is the one record that must not be
    quietly lossy.
 
-   It used to live in sessionStorage, capped at 5,000 entries, with the oldest
+   It used to live in localStorage, capped at 5,000 entries, with the oldest
    silently shifted off the front. At a thousand forms a year that ceiling
    arrives in a few months and takes the earliest history with it — the exact
    history that matters when tracing a revision back to an original years
@@ -5544,25 +5643,25 @@ function audOkay(){
   if(typeof storageMeter==='function') storageMeter();
 }
 function audWalRead(){
-  try{ const a=JSON.parse(sessionStorage.getItem(AUD_WAL_KEY)||'[]'); return Array.isArray(a)?a:[]; }
+  try{ const a=JSON.parse(localStorage.getItem(AUD_WAL_KEY)||'[]'); return Array.isArray(a)?a:[]; }
   catch(e){ return []; }
 }
 function audWalStage(entries){
   if(!entries.length) return true;
-  try{ sessionStorage.setItem(AUD_WAL_KEY,JSON.stringify(audMerge([audWalRead(),entries]))); return true; }
+  try{ localStorage.setItem(AUD_WAL_KEY,JSON.stringify(audMerge([audWalRead(),entries]))); return true; }
   catch(e){ audFail(); return false; }
 }
 function audWalClear(uids){
   try{
     const gone={}; uids.forEach(function(x){gone[x]=1;});
     const keep=audWalRead().filter(function(e){return !gone[e.uid];});
-    if(keep.length) sessionStorage.setItem(AUD_WAL_KEY,JSON.stringify(keep));
-    else sessionStorage.removeItem(AUD_WAL_KEY);
+    if(keep.length) localStorage.setItem(AUD_WAL_KEY,JSON.stringify(keep));
+    else localStorage.removeItem(AUD_WAL_KEY);
   }catch(e){ audFail(); }
 }
 function audAll(){
   if(AUD_CACHE) return AUD_CACHE;
-  try{ AUD_CACHE=audMerge([JSON.parse(sessionStorage.getItem(AUD_KEY)||'[]')]); }catch(e){ AUD_CACHE=[]; }
+  try{ AUD_CACHE=audMerge([JSON.parse(localStorage.getItem(AUD_KEY)||'[]')]); }catch(e){ AUD_CACHE=[]; }
   return AUD_CACHE;
 }
 function audUseDb(){
@@ -5616,7 +5715,7 @@ function audTrim(a){
 function audPersistDelta(puts,deletes){
   puts=puts||[]; deletes=deletes||[];
   if(!audUseDb()){
-    try{ sessionStorage.setItem(AUD_KEY,JSON.stringify(audAll())); audOkay(); return Promise.resolve(true); }
+    try{ localStorage.setItem(AUD_KEY,JSON.stringify(audAll())); audOkay(); return Promise.resolve(true); }
     catch(e){ audFail(); return Promise.resolve(false); }
   }
   audWalStage(puts);
@@ -5627,11 +5726,11 @@ function audPersistDelta(puts,deletes){
 function audFlush(){
   const snap=audAll().slice();
   if(!audUseDb()){
-    try{sessionStorage.setItem(AUD_KEY,JSON.stringify(snap));audOkay();return Promise.resolve(true);}
+    try{localStorage.setItem(AUD_KEY,JSON.stringify(snap));audOkay();return Promise.resolve(true);}
     catch(e){audFail();return Promise.resolve(false);}
   }
   AUD_WRITE=AUD_WRITE.catch(function(){return false;}).then(function(){return audDbReplace(snap);})
-    .then(function(ok){if(ok){try{sessionStorage.removeItem(AUD_WAL_KEY);}catch(e){}audOkay();}else audFail();return ok;});
+    .then(function(ok){if(ok){try{localStorage.removeItem(AUD_WAL_KEY);}catch(e){}audOkay();}else audFail();return ok;});
   return AUD_WRITE;
 }
 function audLog(draftId,title,action,detail){
@@ -5645,31 +5744,31 @@ function audLog(draftId,title,action,detail){
   }catch(e){ audFail(); return ''; }
 }
 /* Loaded once, after the drafts database is open. Entries written by earlier
-   versions are carried across and the sessionStorage copy is released, so the
+   versions are carried across and the localStorage copy is released, so the
    log stops competing with the templates for the 5 MB budget. */
 async function audInit(){
   await dashDB();
   const db=audUseDb()?await audDbAll():[];
   let oldTpl=[];
   try{ if(typeof TDB!=='undefined'&&TDB&&TDB.db&&!TDB.useLS) oldTpl=(await tdbGet('audit'))||[]; }catch(e){oldTpl=[];}
-  let ls=[]; try{ls=JSON.parse(sessionStorage.getItem(AUD_KEY)||'[]');}catch(e){ls=[];}
+  let ls=[]; try{ls=JSON.parse(localStorage.getItem(AUD_KEY)||'[]');}catch(e){ls=[];}
   const wal=audWalRead();
   AUD_CACHE=audMerge([db,oldTpl,ls,wal]); audTrim(AUD_CACHE);
   if(audUseDb()){
     const ok=await audDbReplace(AUD_CACHE);
     if(ok){
-      try{sessionStorage.removeItem(AUD_KEY);sessionStorage.removeItem(AUD_WAL_KEY);}catch(e){}
+      try{localStorage.removeItem(AUD_KEY);localStorage.removeItem(AUD_WAL_KEY);}catch(e){}
       try{if(oldTpl.length&&typeof tdbDel==='function') await tdbDel('audit');}catch(e){}
       audOkay();
     }else audFail();
   } else {
-    try{sessionStorage.setItem(AUD_KEY,JSON.stringify(AUD_CACHE));audOkay();}catch(e){audFail();}
+    try{localStorage.setItem(AUD_KEY,JSON.stringify(AUD_CACHE));audOkay();}catch(e){audFail();}
   }
   if(typeof storageMeter==='function') storageMeter();
 }
 window.addEventListener('pagehide',function(){
   /* IndexedDB writes already have a synchronous journal. The fallback is a
-     whole sessionStorage array, so give it one final synchronous flush. */
+     whole localStorage array, so give it one final synchronous flush. */
   if(!audUseDb()) audFlush();
 });
 function audExport(){
@@ -5748,7 +5847,7 @@ async function audClear(){
     return false;
   }
 
-  const who=(function(){ try{ return sessionStorage.getItem('dd254_owner')||''; }catch(e){ return ''; } })();
+  const who=(function(){ try{ return localStorage.getItem('dd254_owner')||''; }catch(e){ return ''; } })();
   const marker={uid:audUid(),ts:new Date().toISOString(),id:'',title:'',
     action:'audit log cleared',
     detail:before.length+' entries covering '+period+' were exported and removed'+(who?' by '+who:'')+'.'};
@@ -5756,8 +5855,8 @@ async function audClear(){
   AUD_CACHE=[marker];
   /* The recovery journal is emptied in the same breath. Left in place, startup
      replay would merge the cleared entries straight back in. */
-  try{ sessionStorage.removeItem(AUD_WAL_KEY); }catch(e){}
-  try{ sessionStorage.removeItem(AUD_KEY); }catch(e){}
+  try{ localStorage.removeItem(AUD_WAL_KEY); }catch(e){}
+  try{ localStorage.removeItem(AUD_KEY); }catch(e){}
   await audFlush();
   if(typeof storageMeter==='function') storageMeter();
   if(typeof uiAlert==='function') uiAlert('Audit log cleared.\n\n'+before.length+' entries were exported to CSV and removed. The log now holds one entry recording that.');
@@ -6145,6 +6244,18 @@ function dashHoldPrompt(status){
    (or none) may be loaded — so the addresses are mined from the stored record
    instead. Same sources the on-form Email Distribution panel uses:
    6c / 7c / 8c CSO text, the manual FSO list, Item 13, and Block 18f. */
+function dd254WorkspaceHasCUI(ws){
+  ws=ws||{};
+  const tx=ws.texts||{}, ch=ws.checks||{}, sel=ws.selects||{};
+  if(sel.clsSel==='CUI'||ch.c10j||ch.c11l) return true;
+  if(['cuiCtrlBy','cuiCat','cuiPoc','distDate','distOffice'].some(function(k){return !!String(tx[k]||'').trim();})) return true;
+  if(String(sel.distStmt||'').trim()||String(sel.distCat||'').trim()) return true;
+  if(Object.keys(ch).some(function(k){return /^ldc/i.test(k)&&ch[k];})) return true;
+  try{
+    const t=ctFind(sel.ctTplSel);
+    return !!(t&&t.data&&(t.data.cls==='CUI'||(t.data.c10&&t.data.c10['10j'])||(t.data.c11&&t.data.c11['11l'])));
+  }catch(e){ return false; }
+}
 function dashDistEmails(rec){
   rec=rec||{};
   const ws=rec.workspace||{}, tx=ws.texts||{};
@@ -6152,17 +6263,92 @@ function dashDistEmails(rec){
     if(x&&!seen[k]){ seen[k]=1; out.push(x); } }); return out; };
   let cso=emailsIn(tx.i6c).concat(emailsIn(tx.i7c));
   (ws.perf||[]).forEach(function(p){ cso=cso.concat(emailsIn(p&&p.cso)); });
-  let fso=[].concat(emailsIn(tx.i6fsoEmail),emailsIn(tx.i7fsoEmail));
-  (ws.perf||[]).forEach(function(p){ fso=fso.concat(emailsIn(p&&p.email)); });
-  fso=fso.concat(emailsIn(tx.fsoEmails));
+  let fsoItems=[].concat(emailsIn(tx.i6fsoEmail),emailsIn(tx.i7fsoEmail));
+  (ws.perf||[]).forEach(function(p){ fsoItems=fsoItems.concat(emailsIn(p&&p.email)); });
+  const fso=fsoItems.concat(emailsIn(tx.fsoEmails));
+  const other18f=dd254WsChecked(ws,'dist18f')?dedupe(emailsIn(tx.dist18fOther)):[];
   const o={cso:dedupe(cso),
            fso:dedupe(fso),
+           fsoItems:dedupe(fsoItems),
            fsoPrime:dedupe(emailsIn(tx.i6fsoEmail)),
            fsoSub:dedupe(emailsIn(tx.i7fsoEmail)),
-           other:dedupe(emailsIn(tx.dist18fOther).concat(emailsIn(tx.item13))),
+           other18f:other18f,
+           other:dedupe(other18f.concat(emailsIn(tx.item13))),
            requestor:dedupe(emailsIn(rec.requestedBy))};
   o.all=dedupe([].concat(o.fso,o.cso,o.other,o.requestor));
   return o;
+}
+
+/* The issuance compose window has a deliberately narrower audience than the
+   general distribution picker. Only the requestor and the FSO fields attached
+   to Items 6, 7 and 8 belong on To; the CSO fields in those same items and any
+   e-mail addresses explicitly entered in Block 18f belong on CC. Claiming To
+   first also prevents Outlook from showing one person on both lines when a
+   contact performs more than one role. */
+function dashIssueMailMany(records){
+  records=(records||[]).filter(Boolean);
+  const seen={};
+  const claim=function(list){ const out=[]; (list||[]).forEach(function(x){
+    const k=String(x||'').toLowerCase();
+    if(x&&!seen[k]){ seen[k]=1; out.push(x); }
+  }); return out; };
+  let to=[];
+  records.forEach(function(rec){
+    const em=dashDistEmails(rec);
+    to=to.concat(claim([].concat(em.requestor||[],em.fsoItems||[])));
+  });
+  let cc=[];
+  records.forEach(function(rec){
+    const em=dashDistEmails(rec);
+    cc=cc.concat(claim([].concat(em.cso||[],em.other18f||[])));
+  });
+  const name=records.length===1
+    ? (String((records[0]&&records[0].title)||'DD Form 254').trim()||'DD Form 254')
+    : records.length+' selected records';
+  const subjectBase=records.length===1?'Issued DD Form 254 — '+name:'Issued DD Forms 254 — '+name;
+  const cui=records.some(function(rec){ return dashDistIsCUI(rec); });
+  const subject=(cui?'(CUI)(CUI)(CUI) ':'')+subjectBase;
+  const query=[];
+  if(cc.length) query.push('cc='+encodeURIComponent(cc.join('; ')));
+  query.push('subject='+encodeURIComponent(subject));
+  return {to:to,cc:cc,subject:subject,cui:cui,count:records.length,
+    href:'mailto:'+to.join('; ')+(query.length?'?'+query.join('&'):'')};
+}
+function dashIssueMail(rec){ return dashIssueMailMany([rec]); }
+/* A bulk status action may cover unrelated audiences, but one e-mail must not.
+   Records are grouped only when To, CC and CUI handling are identical. That
+   keeps the convenience for repeated task orders without exposing another
+   contractor's form or attachment list to a unioned recipient set. */
+function dashIssueMailGroups(records){
+  const groups=[], byKey={};
+  (records||[]).filter(Boolean).forEach(function(rec){
+    const one=dashIssueMail(rec);
+    const norm=function(a){return (a||[]).map(function(x){return String(x).toLowerCase();}).sort();};
+    const key=JSON.stringify({to:norm(one.to),cc:norm(one.cc),cui:!!one.cui});
+    let g=byKey[key];
+    if(!g){ g={records:[],mail:null,key:key}; byKey[key]=g; groups.push(g); }
+    g.records.push(rec);
+  });
+  groups.forEach(function(g){g.mail=dashIssueMailMany(g.records);});
+  return groups;
+}
+const DASH_MAILTO_MAX=1900;
+function dashMailHrefTooLong(mail){ return !!(mail&&mail.href&&mail.href.length>DASH_MAILTO_MAX); }
+function dashCopyMailRecipients(groupIndex,line){
+  const g=(window.DASH_BULK_MAIL_GROUPS||[])[groupIndex], list=g&&g.mail&&g.mail[line];
+  const txt=(list||[]).join('; '); if(!txt) return false;
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt);return true;}
+  }catch(e){}
+  try{
+    const ta=document.createElement('textarea'); ta.value=txt; ta.style.cssText='position:fixed;left:-9999px;';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); return true;
+  }catch(e){ return false; }
+}
+function dashCopyIssueRecipients(line){
+  const mail=window.DASH_SINGLE_MAIL||{}, txt=(mail[line]||[]).join('; '); if(!txt) return false;
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt);return true;} }catch(e){}
+  try{ const ta=document.createElement('textarea'); ta.value=txt; ta.style.cssText='position:fixed;left:-9999px;'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); return true; }catch(e){return false;}
 }
 /* Everything that has to travel with this DD-254, computed from the stored
    draft: the rules-derived list, the required attachments recorded on whichever
@@ -6180,7 +6366,9 @@ function dashDistAttachments(rec){
   const manual=String(tx.attachNotes||'').split(/\n+/).map(function(x){return x.trim();}).filter(Boolean);
   return {auto:auto,tpl:tpl,manual:manual,all:auto.concat(tpl,manual)};
 }
-function dashDistIsCUI(rec){ return (((rec||{}).workspace||{}).selects||{}).clsSel==='CUI'; }
+function dashDistIsCUI(rec){
+  return dd254WorkspaceHasCUI((rec||{}).workspace||{});
+}
 
 /* Who this particular DD-254 has to go to, taken from its own Item 18, with the
    addresses the workflow already knows filled in. 18a and 18b both draw on the
@@ -6202,7 +6390,7 @@ function dashDistParties(rec){
     if(k==='18a') return em.fsoPrime.join('; ');
     if(k==='18b') return em.fsoSub.join('; ');
     if(k==='18c')            return em.cso.join('; ');
-    if(k==='18f')            return dedupeJoin((tx.dist18fOther||'').trim(), em.other.join('; '));
+    if(k==='18f')            return dedupeJoin((tx.dist18fOther||'').trim(), em.other18f.join('; '));
     return '';
   };
   CT_18.forEach(function(k){
@@ -6215,11 +6403,11 @@ function dashDistStats(r){ return {n:(r.dist||[]).length}; }
 /* The marking on the DD Form 254 itself — UNCLASSIFIED or CUI. It drives whether
    the form and its attachments have to be e-mailed encrypted, so it belongs on
    the card rather than only inside the open form. */
-function dashClsOf(r){ return ((((r||{}).workspace||{}).selects||{}).clsSel)==='CUI' ? 'CUI' : 'UNCLASSIFIED'; }
+function dashClsOf(r){ return dashDistIsCUI(r)?'CUI':'UNCLASSIFIED'; }
 function dashClsBadge(r){
   const cui=dashClsOf(r)==='CUI';
   return '<span class="dash-badge" title="'+(cui
-      ?'Marked CUI — must be transmitted encrypted (DoDI 5200.48)'
+      ?'CUI handling detected from the marking, selections, designation or template — transmit encrypted (DoDI 5200.48)'
       :'Marked UNCLASSIFIED — the DD Form 254 itself carries no classified content')
     +'" style="background:'+(cui?'#f3e8fb':'#e7f3ea')+';color:'+(cui?'#5c1a8a':'#1a6030')
     +';letter-spacing:.4px;font-weight:bold;">'+(cui?'🔒 CUI':'UNCLASSIFIED')+'</span>';
@@ -6267,6 +6455,8 @@ async function dashDistOpen(id,isOpen){
 function dashDistDialog(rec){
   return new Promise(function(resolve){
     const parties=dashDistParties(rec);
+    const issueMail=dashIssueMail(rec);
+    window.DASH_SINGLE_MAIL=issueMail;
     const ov=document.createElement('div');
     ov.id='dashDistDlg';
     ov.style.cssText='position:fixed;inset:0;background:rgba(20,26,34,.55);z-index:6000;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;';
@@ -6284,7 +6474,7 @@ function dashDistDialog(rec){
       +(dashDistIsCUI(rec)
         ?'<div style="background:#f3e8fb;border:1px solid #5c1a8a;border-left:5px solid #5c1a8a;border-radius:4px;padding:9px 12px;margin-bottom:12px;">'
           +'<div style="font-size:11.5px;font-weight:bold;color:#5c1a8a;letter-spacing:.3px;margin-bottom:3px;">🔒 CUI — SEND ENCRYPTED</div>'
-          +'<div style="font-size:11px;color:#3a2a50;line-height:1.5;">This DD-254 is marked <b>CUI // CONTROLLED UNCLASSIFIED INFORMATION</b>. E-mail transmission must be encrypted in accordance with DoDI 5200.48 and the applicable agency CUI policy. Do not send it, or any attachment listed below, in the clear.</div>'
+          +'<div style="font-size:11px;color:#3a2a50;line-height:1.5;">The form marking, a CUI selection/designation, or its selected template indicates CUI handling. E-mail transmission must be encrypted in accordance with DoDI 5200.48 and the applicable agency CUI policy. Do not send it, or any attachment listed below, in the clear.</div>'
           +'</div>'
         :'')
       +rows
@@ -6307,7 +6497,12 @@ function dashDistDialog(rec){
           +'</div>'; })()
       +'<datalist id="ddOpts">'+((dashDistEmails(rec).all)||[]).map(function(e){return '<option value="'+dashEsc(e)+'">';}).join('')+'</datalist>'
       +(parties.length?'<div style="font-size:10.5px;color:#8a94a0;margin-top:8px;line-height:1.5;">Addresses pulled from 6c / 7c / 8c, the FSO list, Item 13, Block 18f and the requestor field. Every box is a free-text field with a picker — edit anything that is wrong.</div>':'')
+      +'<div style="font-size:10.5px;color:#46606f;background:#edf4fb;border:1px solid #c7d9eb;border-radius:4px;padding:7px 9px;margin-top:10px;line-height:1.5;"><b>Open e-mail</b> uses the saved DD-254 to place the requestor and Item 6/7/8 FSOs on <b>To</b>, and the Item 6/7/8 CSOs plus e-mail addresses in Block 18f on <b>CC</b>. Duplicate addresses are removed across both lines, and each address is separated by a semicolon and space for the mail application. It is a direct e-mail link to your computer\u2019s registered mail application; the tool does not open a web window or send automatically. <span style="white-space:nowrap;">To: '+issueMail.to.length+' · CC: '+issueMail.cc.length+'</span></div>'
+      +(dashMailHrefTooLong(issueMail)?'<div style="font-size:10.5px;color:#9e1b32;background:#fdebea;padding:6px 8px;border-radius:3px;margin-top:7px;"><b>E-mail link is too long for a reliable handoff.</b> Use Copy To and Copy CC, then compose the message in your mail application.</div>':'')
       +'<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">'
+      +'<a id="ddEmail" title="Open a prepared message in Outlook or the computer’s default e-mail application" style="background:#1565a8;color:#fff;border:none;padding:8px 15px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;">✉ Open e-mail</a>'
+      +'<button type="button" onclick="dashCopyIssueRecipients(\'to\')" style="background:#566573;color:#fff;border:none;padding:8px 10px;border-radius:4px;font-size:10.5px;cursor:pointer;">Copy To</button>'
+      +'<button type="button" onclick="dashCopyIssueRecipients(\'cc\')" style="background:#566573;color:#fff;border:none;padding:8px 10px;border-radius:4px;font-size:10.5px;cursor:pointer;">Copy CC</button>'
       +'<button id="ddSave" style="background:#15702e;color:#fff;border:none;padding:8px 15px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;">Record distribution</button>'
       +'<button id="ddSkip" style="background:#8a94a0;color:#fff;border:none;padding:8px 15px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;">Skip for now</button>'
       +'<button id="ddCancel" title="Do not issue this DD-254 after all — the status goes back where it was and nothing is recorded" style="background:#7a4038;color:#fff;border:none;padding:8px 15px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;margin-left:auto;">\u2715 Cancel the issuance</button>'
@@ -6321,6 +6516,20 @@ function dashDistDialog(rec){
       try{ navigator.clipboard.writeText(txt); }catch(e){}
       const o=cpy.textContent; cpy.textContent='✓ copied'; setTimeout(function(){cpy.textContent=o;},1200);
     };
+    const emailLink=ov.querySelector('#ddEmail');
+    if((issueMail.to.length||issueMail.cc.length)&&!dashMailHrefTooLong(issueMail)){
+      /* This must remain the element the user actually clicks. A synthetic
+         hidden-link click was treated as a web-window request by embedded
+         browsers even though Windows had Outlook registered for mailto. */
+      emailLink.href=issueMail.href;
+    } else {
+      emailLink.setAttribute('aria-disabled','true'); emailLink.style.opacity='.55';
+      emailLink.onclick=function(e){ e.preventDefault();
+        const msg=dashMailHrefTooLong(issueMail)
+          ?'This prepared e-mail is too long for a reliable mail link. Use Copy To and Copy CC, then compose it in your mail application.'
+          :'No requestor, Item 6/7/8 FSO, Item 6/7/8 CSO, or checked Block 18f e-mail address is recorded on this DD-254.';
+        if(typeof uiAlert==='function') uiAlert(msg); else alert(msg); };
+    }
     ov.querySelector('#ddSkip').onclick=function(){ done(null); };
     /* Distinct from skipping: skipping still issues and lets you log the
        distribution later, this backs the whole transition out. A sentinel
@@ -6338,6 +6547,108 @@ function dashDistDialog(rec){
     };
     /* Escape backs out rather than issuing. Dismissing a dialog should never
        be the action that puts a DD-254 out the door. */
+    ov.addEventListener('keydown',function(e){ if(e.key==='Escape') done({abort:true}); });
+  });
+}
+
+/* One distribution window for a selected issuance group. Each DD-254 keeps
+   its own Item 18 rows and audit entries; only the operator's compose action is
+   combined. This avoids turning a convenient bulk e-mail into a shared or
+   ambiguous distribution record. */
+function dashBulkDistDialog(records){
+  return new Promise(function(resolve){
+    records=(records||[]).filter(Boolean);
+    const issueGroups=dashIssueMailGroups(records), partiesById={}, known=[], knownSeen={};
+    window.DASH_BULK_MAIL_GROUPS=issueGroups;
+    const anyCui=issueGroups.some(function(g){return g.mail&&g.mail.cui;});
+    records.forEach(function(rec){
+      partiesById[rec.id]=dashDistParties(rec);
+      (dashDistEmails(rec).all||[]).forEach(function(e){
+        const k=String(e||'').toLowerCase(); if(e&&!knownSeen[k]){ knownSeen[k]=1; known.push(e); }
+      });
+    });
+    const sections=records.map(function(rec,ri){
+      const parties=partiesById[rec.id]||[], at=dashDistAttachments(rec);
+      const rows=parties.length?parties.map(function(p,pi){
+        return '<div style="display:flex;gap:6px;align-items:center;padding:5px 0;border-bottom:1px dotted #e0e8f0;">'
+          +'<input type="checkbox" id="bddSent_'+ri+'_'+pi+'" checked style="width:14px;height:14px;">'
+          +'<span style="flex:1;font-size:11.5px;color:#2b3440;">'+dashEsc(p.label)+'</span>'
+          +'<input type="text" id="bddTo_'+ri+'_'+pi+'" list="bddOpts" value="'+dashEsc(p.to||'')+'" placeholder="name / e-mail" style="width:230px;font-size:11px;padding:4px 6px;">'
+          +'<select id="bddM_'+ri+'_'+pi+'" style="font-size:11px;padding:4px 6px;width:auto;"><option>e-mail</option><option>portal</option><option>mail</option><option>hand</option></select>'
+          +'</div>';
+      }).join(''):'<div style="font-size:11px;color:#8a6a00;background:#fdf3d8;padding:7px 9px;border-radius:4px;">No Item 18 party or requestor is available to record for this DD-254.</div>';
+      const attachments=at.all.length
+        ? '<div style="font-size:10.5px;color:#3a4552;margin-top:7px;"><b>📎 Attach before sending ('+at.all.length+')</b>'
+          +at.all.map(function(x){return '<div style="padding:2px 0 0 15px;">• '+dashEsc(x)+'</div>';}).join('')+'</div>'
+        : '<div style="font-size:10.5px;color:#8a94a0;margin-top:7px;">📎 No attachments are triggered or recorded.</div>';
+      return '<section style="border:1px solid #ccd6df;border-left:5px solid #46606f;border-radius:5px;padding:10px 12px;margin-top:10px;">'
+        +'<div style="font-size:12px;font-weight:bold;color:#2b3440;margin-bottom:4px;">'+(ri+1)+'. '+dashEsc(rec.title||'Untitled DD-254')
+        +(dashDistIsCUI(rec)?' <span style="color:#5c1a8a;">— CUI</span>':'')+'</div>'+rows+attachments+'</section>';
+    }).join('');
+    const groupPanels=issueGroups.map(function(g,gi){
+      const mail=g.mail||{}, long=dashMailHrefTooLong(mail), has=(mail.to||[]).length||(mail.cc||[]).length;
+      const names=g.records.map(function(r){return dashEsc(r.title||'Untitled DD-254');}).join(' · ');
+      return '<div style="border:1px solid #c7d9eb;border-left:5px solid '+(mail.cui?'#5c1a8a':'#1565a8')+';border-radius:4px;padding:9px 11px;margin-top:8px;background:#f8fbfe;">'
+        +'<div style="font-size:11.5px;font-weight:bold;color:#2b3440;">E-mail '+(gi+1)+' of '+issueGroups.length+(mail.cui?' — CUI':'')+'</div>'
+        +'<div style="font-size:10.5px;color:#5a6a80;margin:2px 0 6px;line-height:1.4;">'+names+'</div>'
+        +'<div style="font-size:10.5px;color:#46606f;margin-bottom:6px;">To: '+(mail.to||[]).length+' · CC: '+(mail.cc||[]).length+' · identical audience for '+g.records.length+' record'+(g.records.length===1?'':'s')+'</div>'
+        +(long?'<div style="font-size:10.5px;color:#9e1b32;background:#fdebea;padding:6px 8px;border-radius:3px;margin-bottom:6px;"><b>E-mail link is too long for a reliable handoff.</b> Copy To and CC below, then attach only the records named in this group.</div>':'')
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
+        +'<a id="bddEmail_'+gi+'" style="background:#1565a8;color:#fff;border:none;padding:7px 12px;border-radius:4px;font-size:11px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;'+((!has||long)?'opacity:.55;':'')+'">✉ Open e-mail '+(gi+1)+'</a>'
+        +'<button type="button" onclick="dashCopyMailRecipients('+gi+',\'to\')" style="background:#566573;color:#fff;border:none;padding:7px 10px;border-radius:4px;font-size:10.5px;cursor:pointer;">Copy To</button>'
+        +'<button type="button" onclick="dashCopyMailRecipients('+gi+',\'cc\')" style="background:#566573;color:#fff;border:none;padding:7px 10px;border-radius:4px;font-size:10.5px;cursor:pointer;">Copy CC</button>'
+        +'</div></div>';
+    }).join('');
+    const ov=document.createElement('div');
+    ov.id='dashBulkDistDlg';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(20,26,34,.55);z-index:6000;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;';
+    ov.innerHTML='<div style="background:#fff;border-radius:8px;max-width:790px;width:96%;max-height:86vh;overflow:auto;padding:18px 20px;box-shadow:0 8px 30px rgba(0,0,0,.35);">'
+      +'<div style="font-size:14px;font-weight:bold;color:#2b3440;margin-bottom:3px;">Bulk issuance — '+records.length+' DD-254s</div>'
+      +'<div style="font-size:11.5px;color:#5a6a80;margin-bottom:10px;line-height:1.5;">Review each DD-254 below. The tool creates a separate prepared e-mail whenever the selected records do not have exactly the same To, CC and CUI audience. Never attach a record to a different audience group. Distribution is still recorded separately on each DD-254.</div>'
+      +(anyCui?'<div style="background:#f3e8fb;border:1px solid #5c1a8a;border-left:5px solid #5c1a8a;border-radius:4px;padding:9px 12px;margin-bottom:10px;"><div style="font-size:11.5px;font-weight:bold;color:#5c1a8a;">🔒 CUI — SEND ENCRYPTED</div><div style="font-size:11px;color:#3a2a50;line-height:1.5;">At least one audience group contains a CUI-marked record, a CUI selection/designation, or a CUI template. Its subject begins <b>(CUI)(CUI)(CUI)</b>. Encrypt that message and every applicable attachment.</div></div>':'')
+      +'<div style="font-size:11.5px;font-weight:bold;color:#2b3440;margin-top:3px;">Prepared e-mails — '+issueGroups.length+' audience group'+(issueGroups.length===1?'':'s')+'</div>'
+      +groupPanels
+      +sections
+      +'<datalist id="bddOpts">'+known.map(function(e){return '<option value="'+dashEsc(e)+'">';}).join('')+'</datalist>'
+      +'<div style="font-size:10.5px;color:#46606f;background:#edf4fb;border:1px solid #c7d9eb;border-radius:4px;padding:7px 9px;margin-top:10px;line-height:1.5;">Within each e-mail, requestors and Item 6/7/8 FSOs are on <b>To</b>; Item 6/7/8 CSOs plus checked Block 18f e-mail addresses are on <b>CC</b>. Duplicate addresses are removed across both lines. Each address is separated by a semicolon and space.</div>'
+      +'<div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">'
+      +'<button id="bddSave" style="background:#15702e;color:#fff;border:none;padding:8px 15px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;">Issue all and record distribution</button>'
+      +'<button id="bddSkip" style="background:#8a94a0;color:#fff;border:none;padding:8px 15px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;">Issue all · log later</button>'
+      +'<button id="bddCancel" style="background:#7a4038;color:#fff;border:none;padding:8px 15px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;margin-left:auto;">✕ Cancel all</button>'
+      +'<div style="flex-basis:100%;font-size:10.5px;color:#8a94a0;">Cancel leaves every selected DD-254 unissued. “Log later” issues every selected DD-254 without recording a distribution.</div>'
+      +'</div></div>';
+    document.body.appendChild(ov);
+    const done=function(v){ try{ov.remove();}catch(e){} resolve(v); };
+    issueGroups.forEach(function(g,gi){
+      const emailLink=ov.querySelector('#bddEmail_'+gi), mail=g.mail||{}; if(!emailLink) return;
+      if(((mail.to||[]).length||(mail.cc||[]).length)&&!dashMailHrefTooLong(mail)) emailLink.href=mail.href;
+      else{
+        emailLink.setAttribute('aria-disabled','true');
+        emailLink.onclick=function(e){
+          e.preventDefault();
+          const msg=dashMailHrefTooLong(mail)
+            ?'This prepared e-mail is too long for a reliable mail link. Use Copy To and Copy CC, then attach only the records listed in this audience group.'
+            :'No requestor, Item 6/7/8 FSO, Item 6/7/8 CSO, or checked Block 18f e-mail address is recorded for this audience group.';
+          if(typeof uiAlert==='function') uiAlert(msg); else alert(msg);
+        };
+      }
+    });
+    ov.querySelector('#bddCancel').onclick=function(){ done({abort:true}); };
+    ov.querySelector('#bddSkip').onclick=function(){ done(null); };
+    ov.querySelector('#bddSave').onclick=function(){
+      const byId={};
+      records.forEach(function(rec,ri){
+        const out=[];
+        (partiesById[rec.id]||[]).forEach(function(p,pi){
+          const c=ov.querySelector('#bddSent_'+ri+'_'+pi); if(!c||!c.checked) return;
+          out.push({ts:new Date().toISOString(),party:p.label,
+            to:(ov.querySelector('#bddTo_'+ri+'_'+pi)||{}).value||'',
+            method:(ov.querySelector('#bddM_'+ri+'_'+pi)||{}).value||''});
+        });
+        byId[rec.id]=out;
+      });
+      done({byId:byId});
+    };
     ov.addEventListener('keydown',function(e){ if(e.key==='Escape') done({abort:true}); });
   });
 }
@@ -6474,13 +6785,13 @@ async function portfolioCsv(onlyIds){
    A merge is the wrong answer for a compliance record, so the second tab goes
    read-only instead. The holder heartbeats every LOCK_BEAT ms; a lock older
    than LOCK_TTL is treated as dead, so a crashed or force-quit tab cannot lock
-   the user out permanently. If sessionStorage is unavailable the lock fails OPEN —
+   the user out permanently. If localStorage is unavailable the lock fails OPEN —
    degraded to today's behaviour rather than bricking the tool. */
 const LOCK_KEY='dd254_tab_lock', LOCK_TTL=8000, LOCK_BEAT=2500;
 window.DD254_TAB_ID='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 window.DD254_READONLY=false;
-function lockRead(){ try{ return JSON.parse(sessionStorage.getItem(LOCK_KEY)||'null'); }catch(e){ return null; } }
-function lockWrite(){ try{ sessionStorage.setItem(LOCK_KEY,JSON.stringify({id:window.DD254_TAB_ID,ts:Date.now()})); return true; }catch(e){ return false; } }
+function lockRead(){ try{ return JSON.parse(localStorage.getItem(LOCK_KEY)||'null'); }catch(e){ return null; } }
+function lockWrite(){ try{ localStorage.setItem(LOCK_KEY,JSON.stringify({id:window.DD254_TAB_ID,ts:Date.now()})); return true; }catch(e){ return false; } }
 function lockAlive(l){ return !!(l&&l.id&&(Date.now()-(l.ts||0))<LOCK_TTL); }
 function lockMine(l){ return !!(l&&l.id===window.DD254_TAB_ID); }
 function lockOverlay(on,otherAge){
@@ -6520,7 +6831,7 @@ function lockInit(){
   if(lockAlive(l)&&!lockMine(l)) lockGoReadOnly(); else lockWrite();
   setInterval(lockBeat,LOCK_BEAT);
   window.addEventListener('beforeunload',function(){
-    try{ const cur=lockRead(); if(lockMine(cur)) sessionStorage.removeItem(LOCK_KEY); }catch(e){}
+    try{ const cur=lockRead(); if(lockMine(cur)) localStorage.removeItem(LOCK_KEY); }catch(e){}
   });
   try{ window.addEventListener('storage',function(e){ if(e&&e.key===LOCK_KEY) lockBeat(); }); }catch(e){}
 }
@@ -6547,17 +6858,18 @@ function bkCounts(templates,drafts){
   return {templates:BK_KINDS.reduce(function(a,k){return a+((templates[k]||[]).length);},0),
           drafts:(drafts||[]).length};
 }
-function bkDirty(){ try{return +(sessionStorage.getItem('dd254_dirty_n')||0);}catch(e){return 0;} }
-function bkMark(){ if(window.BK_RESTORING) return; try{sessionStorage.setItem('dd254_dirty_n',String(bkDirty()+1));}catch(e){} bkStatus(); }
-function bkClear(){ try{sessionStorage.setItem('dd254_dirty_n','0'); sessionStorage.setItem('dd254_last_backup',new Date().toISOString());}catch(e){} bkStatus(); }
+function bkDirty(){ try{return +(localStorage.getItem('dd254_dirty_n')||0);}catch(e){return 0;} }
+function bkMark(){ if(window.BK_RESTORING) return; try{localStorage.setItem('dd254_dirty_n',String(bkDirty()+1));}catch(e){} bkStatus(); }
+function bkClear(){ try{localStorage.setItem('dd254_dirty_n','0'); localStorage.setItem('dd254_last_backup',new Date().toISOString());}catch(e){} bkStatus(); }
 function storageMeter(){
   const el=document.getElementById('storageMeter'); if(!el) return;
   let chars=0;
-  try{ for(let i=0;i<sessionStorage.length;i++){ const k=sessionStorage.key(i)||''; chars+=k.length+(sessionStorage.getItem(k)||'').length; } }catch(e){}
+  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i)||''; chars+=k.length+(localStorage.getItem(k)||'').length; } }catch(e){}
   const capChars=2500000;               /* ≈5 MB of UTF-16 — conservative */
   const pct=Math.min(999,Math.round(chars/capChars*100));
   const mb=(chars*2/1048576).toFixed(1);
-  if(window.AUD_STORAGE_FAIL){ el.textContent='💽 ⚠ AUDIT HISTORY NOT SAVED — keep this tab open and take a Full Backup NOW.'; el.style.color='#c0392b'; el.style.fontWeight='bold'; }
+  if(window.DRAFT_STORAGE_FAIL){ el.textContent='💽 ⚠ DRAFT NOT SAVED — emergency copy is in this tab only. Take a Full Backup NOW.'; el.style.color='#c0392b'; el.style.fontWeight='bold'; }
+  else if(window.AUD_STORAGE_FAIL){ el.textContent='💽 ⚠ AUDIT HISTORY NOT SAVED — keep this tab open and take a Full Backup NOW.'; el.style.color='#c0392b'; el.style.fontWeight='bold'; }
   else if(window.TPL_STORAGE_FAIL){ el.textContent='💽 ⚠ STORAGE FULL — changes are NOT being saved! Take a Full Backup NOW.'; el.style.color='#c0392b'; el.style.fontWeight='bold'; }
   else if(pct>=90){ el.textContent='💽 ⚠ '+mb+' MB — '+pct+'% of ~5 MB local storage. Back up and clean up now.'; el.style.color='#c0392b'; el.style.fontWeight='bold'; }
   else if(pct>=60){ el.textContent='💽 '+mb+' MB — '+pct+'% of ~5 MB local storage (getting full)'; el.style.color='#a55f00'; el.style.fontWeight='bold'; }
@@ -6570,7 +6882,7 @@ function storageMeter(){
 }
 function bkStatus(){
   const el=document.getElementById('backupStatus'); if(!el) return;
-  const n=bkDirty(); let last=''; try{last=sessionStorage.getItem('dd254_last_backup')||'';}catch(e){}
+  const n=bkDirty(); let last=''; try{last=localStorage.getItem('dd254_last_backup')||'';}catch(e){}
   const lastTxt=last?last.replace('T',' ').substring(0,16):'never';
   /* The threshold is a Settings preference; default 1 is the behaviour this
      had before Settings existed. Below the threshold the count is still shown
@@ -6602,7 +6914,12 @@ async function fullBackup(){
   a.download='DD254_Full_Backup_'+new Date().toISOString().split('T')[0]+'.json';
   document.body.appendChild(a); a.click();
   setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(a.href);},600);
-  bkClear();
+  /* Browser download APIs report that a click was dispatched, not that the
+     operator actually received a complete file. The dirty counter is custody
+     evidence, so clear it only after the operator confirms the save. */
+  const saved=await uiConfirm('Did the Full Backup file finish downloading and save successfully?\n\nChoose Cancel if the browser blocked it, the file is still downloading, or you cannot find it. The backup reminder will stay active.');
+  if(saved) bkClear(); else bkStatus();
+  return !!saved;
 }
 function fullRestore(ev){
   const f=ev.target.files[0]; ev.target.value=''; if(!f) return;
@@ -6810,7 +7127,7 @@ async function dismissAdd(text){
   const rec=await draftGet(DASH.current); if(!rec) return false;
   rec.dismissed=rec.dismissed||{};
   rec.dismissed[dismissKey(text)]={text:text,reason:reason,ts:new Date().toISOString(),
-    by:(function(){ try{ return sessionStorage.getItem('dd254_owner')||''; }catch(e){ return ''; } })()};
+    by:(function(){ try{ return localStorage.getItem('dd254_owner')||''; }catch(e){ return ''; } })()};
   await draftPut(rec);
   dismissLoad(rec);
   audLog(rec.id,rec.title,'flag dismissed',text+' — '+reason);
@@ -6950,7 +7267,7 @@ function ctApplyDataToWorkspace(d,ws){
   if(d.i15) ws.radios.i15=d.i15;
   put('i14text',d.i14text); put('i15text',d.i15text);
   if(d.i16) ['a','b','c','d','e','f'].forEach(function(k){ put('i16'+k,d.i16[k]); });
-  put('dist18fOther',d.t18f);
+  if(d.c18&&d.c18['18f']) put('dist18fOther',d.t18f);
   return ws;
 }
 /* Checkboxes, radios and the classification select are driven with a real
@@ -7037,7 +7354,76 @@ function dashCancelPrompt(title){
     ov.addEventListener('keydown',function(e){ if(e.key==='Escape') done(null); });
   });
 }
+/* Preflight every selected record before changing any of them. Validation and
+   compliance failures are hard stops; operational holds and missing NISS
+   snapshots require one group-level acknowledgement. */
+async function dashBulkIssue(ids){
+  ids=Array.from(new Set((ids||[]).filter(Boolean)));
+  if(!ids.length){ if(typeof uiAlert==='function') await uiAlert('Nothing is selected.'); else alert('Nothing is selected.'); return false; }
+  const records=await Promise.all(ids.map(function(id){return draftGet(id);}));
+  const failures=[];
+  records.forEach(function(rec,i){
+    if(!rec){ failures.push(ids[i]+': draft no longer exists'); return; }
+    const st=rec.status||'Draft', why=[];
+    if(st==='Issued') why.push('already Issued');
+    if(DASH_TERMINAL[st]) why.push('status is '+st);
+    if(rec.meta&&rec.meta.errors>0&&!rec.statusOverride) why.push(rec.meta.errors+' unresolved validation error'+(rec.meta.errors===1?'':'s'));
+    const co=dashComplianceOpen(rec);
+    if(co.length) why.push(co.length+' open approval hold'+(co.length===1?'':'s'));
+    if(why.length) failures.push((rec.title||rec.id)+': '+why.join('; '));
+  });
+  if(failures.length){
+    const msg='Bulk issuance stopped. Nothing was issued. Correct these selected records first:\n\n• '+failures.join('\n• ');
+    if(typeof uiAlert==='function') await uiAlert(msg); else alert(msg);
+    await dashRenderCards(); return false;
+  }
+  const openHolds=[];
+  records.forEach(function(rec){ dashHoldsOpen(rec).forEach(function(h){openHolds.push((rec.title||rec.id)+': '+h.t);}); });
+  if(openHolds.length && !(await uiConfirm('✋ '+openHolds.length+' open operational hold'+(openHolds.length===1?'':'s')+' across the selected DD-254s:\n\n• '+openHolds.join('\n• ')+'\n\nIssuing with unresolved holds is a contradiction. Issue every selected DD-254 anyway?'))){
+    await dashRenderCards(); return false;
+  }
+  const noNiss=records.filter(function(rec){return !(rec.niss&&rec.niss.on);});
+  if(noNiss.length && !(await uiConfirm('⚠ No NISS verification is recorded for '+noNiss.length+' selected DD-254'+(noNiss.length===1?'':'s')+':\n\n• '+noNiss.map(function(rec){return rec.title||rec.id;}).join('\n• ')+'\n\nIssue every selected DD-254 anyway?'))){
+    await dashRenderCards(); return false;
+  }
+  const distResult=await dashBulkDistDialog(records);
+  if(distResult&&distResult.abort){ await dashRenderCards(); return false; }
+  const now=new Date().toISOString(), audit=[];
+  records.forEach(function(rec){
+    const prev=rec.status||'Draft', ownHolds=dashHoldsOpen(rec), hadNiss=!!(rec.niss&&rec.niss.on);
+    rec.status='Issued'; if(!rec.issuedAt) rec.issuedAt=now;
+    if(ownHolds.length) audit.push([rec.id,rec.title,'issued-with-open-holds',ownHolds.length+' hold(s) — bulk issuance']);
+    if(!hadNiss) audit.push([rec.id,rec.title,'issued-without-niss','bulk issuance']);
+    audit.push([rec.id,rec.title,'status',prev+' → Issued (bulk issuance)']);
+    const rows=distResult&&distResult.byId?(distResult.byId[rec.id]||[]):[];
+    if(rows.length){
+      rec.dist=(rec.dist||[]).concat(rows);
+      audit.push([rec.id,rec.title,'distributed',rows.map(function(x){return (x.party||'')+(x.to?' ('+x.to+')':'');}).join('; ')+' — bulk issuance']);
+    } else audit.push([rec.id,rec.title,'issued-without-distribution','bulk issuance']);
+    const spec254=((rec.workspace||{}).radios||{}).spec||'';
+    if(spec254==='3b'){
+      const rd=dd254ReviewDue(rec);
+      if(rd&&rd!==rec.reviewDate){ const prior=rec.reviewDate; rec.reviewDate=rd; audit.push([rec.id,rec.title,'review-set',rd+' (bulk issuance'+(prior?'; was '+prior:'')+')']); }
+    }
+    rec.updatedAt=now;
+  });
+  try{ await draftPutMany(records); }
+  catch(e){
+    const msg='Bulk issuance could not be saved. Nothing was issued.\n\n'+String((e&&e.message)||e||'Storage error');
+    if(typeof uiAlert==='function') await uiAlert(msg); else alert(msg);
+    await dashRenderCards(); return false;
+  }
+  audit.forEach(function(a){ audLog(a[0],a[1],a[2],a[3]); });
+  DASH.selected.clear();
+  await dashRenderCards();
+  if(typeof uiAlert==='function') await uiAlert(records.length+' DD-254s were issued together. Each record keeps its own distribution and audit history.');
+  return true;
+}
+
 async function dashSetStatus(id,val){
+  if(val==='Issued'&&DASH.selected&&DASH.selected.size>1&&DASH.selected.has(id)){
+    await dashBulkIssue(Array.from(DASH.selected)); return;
+  }
   const rec=await draftGet(id); if(!rec) return;
   const prev=rec.status||'Draft';
   rec.status=val;
@@ -7187,6 +7573,12 @@ async function portfolioCsvSelected(){
   if(!DASH.selected.size){ if(typeof uiAlert==='function') uiAlert('Nothing is selected.'); return; }
   await portfolioCsv(Array.from(DASH.selected));
 }
+async function dashBulkIssueSelected(){
+  const ids=Array.from(DASH.selected||[]);
+  if(!ids.length){ if(typeof uiAlert==='function') await uiAlert('Nothing is selected.'); else alert('Nothing is selected.'); return; }
+  if(ids.length===1){ await dashSetStatus(ids[0],'Issued'); return; }
+  await dashBulkIssue(ids);
+}
 function dashSetStatusFilter(s){ DASH.statusFilter=(DASH.statusFilter===s)?'':s; dashRenderCards(); }
 function dashToggleManageMenu(ev){
   if(ev) ev.stopPropagation();
@@ -7319,7 +7711,7 @@ async function dashRecountAll(){
 }
 async function dashNotesReport(){
   const drafts=(await draftAll()).sort(function(a,b){return (b.updatedAt||'').localeCompare(a.updatedAt||'');});
-  let owner=''; try{ owner=sessionStorage.getItem('dd254_owner')||''; }catch(e){}
+  let owner=''; try{ owner=localStorage.getItem('dd254_owner')||''; }catch(e){}
   const todayStr=new Date().toISOString().split('T')[0];
   const esc=dashEsc;
   const body=drafts.map(function(r){
@@ -7656,8 +8048,8 @@ async function dashRenderCards(openId){
 async function dashBackupAll(){
   const drafts=await draftAll();
   let owner='';
-  try{ owner=sessionStorage.getItem('dd254_owner')||''; }catch(e){}
-  if(!owner){ owner=(await uiPrompt('Your name (identifies your drafts in team/manager rollups):',''))||''; try{ if(owner) sessionStorage.setItem('dd254_owner',owner); }catch(e){} }
+  try{ owner=localStorage.getItem('dd254_owner')||''; }catch(e){}
+  if(!owner){ owner=(await uiPrompt('Your name (identifies your drafts in team/manager rollups):',''))||''; try{ if(owner) localStorage.setItem('dd254_owner',owner); }catch(e){} }
   const blob=new Blob([JSON.stringify({tool:'DD254 Dashboard',version:'2.72',owner:owner,exported:new Date().toISOString(),drafts:drafts,facilities:tplLoad(TPL_FAC),csos:tplLoad(TPL_CSO),perfs:tplLoad(TPL_PERF),certs:tplLoad(TPL_CERT)},null,1)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -7875,45 +8267,176 @@ async function dashSpawn(id,kind){
   await draftPut(rec); audLog(rec.id,rec.title,'spawned',kind);
   dashRenderCards();
 }
+const DASH_FIELD_LABELS={
+  fcl1a:'Item 1a — Facility Clearance Level',sfg1b:'Item 1b — Safeguarding Level',
+  i2a:'Item 2a — Prime Contract Number',iEffort:'Item 2* — Optional Task Order / BPA',i2b:'Item 2b — Subcontract Number',
+  i2c:'Item 2c — Solicitation Number',i2c_due:'Item 2c — Solicitation Due Date',
+  i3a_date:'Item 3a — Original Date',i3b_rev:'Item 3b — Revision Number',i3b_date:'Item 3b — Revision Date',i3c_date:'Item 3c — Final Date',
+  i4prev:'Item 4 — Preceding Contract Number',i5_reqdate:'Item 5 — Retention Request Date',i5ret:'Item 5 — Retention Period',
+  i6a:'Item 6a — Contractor Name and Address',i6b:'Item 6b — CAGE Code',i6c:'Item 6c — Cognizant Security Office',i6fsoEmail:'Item 6 — FSO E-mail',
+  i7a:'Item 7a — Subcontractor Name and Address',i7b:'Item 7b — CAGE Code',i7c:'Item 7c — Cognizant Security Office',i7fsoEmail:'Item 7 — FSO E-mail',
+  i9:'Item 9 — Description of Classified Work',i10k:'Item 10k — Other Access',i11m:'Item 11m — Other Performance Requirement',
+  i12:'Item 12 — Public Release Authority',i12specify:'Item 12 — THROUGH Routing Office',
+  i14text:'Item 14 — Additional Security Requirements',i15text:'Item 15 — Inspection Responsibility',
+  i16a:'Item 16a — GCA Name',i16b:'Item 16b — AAC',i16c:'Item 16c — GCA Address',i16d:'Item 16d — GCA POC',i16e:'Item 16e — GCA Phone',i16f:'Item 16f — GCA E-mail',
+  i17a:'Item 17a — Certifying Official',i17b:'Item 17b — Title',i17c:'Item 17c — Mailing Address',i17d:'Item 17d — AAC',i17e:'Item 17e — Prime CAGE',i17f:'Item 17f — Phone',i17g:'Item 17g — E-mail',
+  dist18fOther:'Item 18f — Other Distribution',cuiCtrlBy:'CUI — Controlled By',cuiCat:'CUI — Category',cuiPoc:'CUI — Point of Contact',
+  distDate:'CUI — Distribution Determination Date',distOffice:'CUI — Controlling DoD Office',clsSel:'Form Marking',ctTplSel:'DD-254 Template Language',
+  spec:'Item 3 — Form Action',fo:'Item 4 — Follow-on Contract',fin:'Item 5 — Final Form / Retention',i12route:'Item 12 — Public Release Routing',i14:'Item 14 — Additional Requirements',i15:'Item 15 — Inspections'
+};
+function dashFieldLabel(kind,key){
+  if(kind==='checks'){
+    if(/^c1[01]/.test(key)){ const k=key.slice(1); return 'Item '+dd254BoxLabel(k,true); }
+    if(/^dist18/.test(key)){ const k=key.replace(/^dist/,''); return 'Item '+k+' — '+(CT_18_LBL[k]||'Distribution'); }
+    if(/^ldc/i.test(key)) return 'CUI — Limited Dissemination Control '+key.replace(/^ldc/i,'');
+    if(key==='iStandalone') return 'Item 2 — Standalone Task Order';
+    if(key==='sapFlag') return 'SAP Contract Indicator';
+  }
+  if(DASH_FIELD_LABELS[key]) return DASH_FIELD_LABELS[key];
+  try{
+    const el=document.getElementById(key), lab=el&&document.querySelector('label[for="'+key+'"]');
+    if(lab){ const t=String(lab.textContent||'').replace(/\s*\*\s*$/,'').replace(/\s+/g,' ').trim(); if(t) return t; }
+    if(typeof A11Y_LABELS!=='undefined'&&A11Y_LABELS[key]) return A11Y_LABELS[key];
+  }catch(e){}
+  return String(key||'Field').replace(/_/g,' ');
+}
+function dashItem13Parts(text){
+  const s=String(text||''), out={}, hits=[], rx=/(^|\n)(?:reference|refs?\.?)\s*([0-9]{1,2}[a-z](?:\(\d\))?)\s*:/ig; let m;
+  while((m=rx.exec(s))){ hits.push({start:m.index+(m[1]?m[1].length:0),bodyAt:m.index+m[0].length,id:m[2]}); if(rx.lastIndex===m.index) rx.lastIndex++; }
+  if(!hits.length){ out['Item 13 — Full Text']=s.trim(); return out; }
+  const intro=s.slice(0,hits[0].start).trim(); if(intro) out['Item 13 — Introductory / Standard Language']=intro;
+  hits.forEach(function(h,i){
+    let body=s.slice(h.bodyAt,i+1<hits.length?hits[i+1].start:s.length).trim();
+    const tail=/\n{2,}(?=(?:classified mailing address|controlled by\s*:))/i.exec(body);
+    if(tail){ const rest=body.slice(tail.index).trim(); body=body.slice(0,tail.index).trim(); out['Item 13 — Mailing / CUI Tail']=(out['Item 13 — Mailing / CUI Tail']?out['Item 13 — Mailing / CUI Tail']+'\n\n':'')+rest; }
+    const k='Item 13 — Reference '+h.id;
+    out[k]=(out[k]?out[k]+'\n\n':'')+body;
+  });
+  return out;
+}
 function dashDiffRows(pa,pb){
-  const rows=[];
-  pa=pa||{}; pb=pb||{};
-  function grp(name,ga,gb,fmt){
-    ga=ga||{}; gb=gb||{};
-    const ks={}; Object.keys(ga).forEach(function(k){ks[k]=1;}); Object.keys(gb).forEach(function(k){ks[k]=1;});
+  const rows=[]; pa=pa||{}; pb=pb||{};
+  function grp(kind,ga,gb,fmt){
+    ga=ga||{}; gb=gb||{}; const ks={};
+    Object.keys(ga).forEach(function(k){ks[k]=1;}); Object.keys(gb).forEach(function(k){ks[k]=1;});
     Object.keys(ks).sort().forEach(function(k){
+      if(kind==='texts'&&k==='item13') return;
       const x=fmt(ga[k]), y=fmt(gb[k]);
-      if(x!==y) rows.push({field:(name?name+' ':'')+k, was:x, now:y});
+      if(x!==y) rows.push({field:dashFieldLabel(kind,k),was:x,now:y});
     });
   }
-  grp('',pa.texts,pb.texts,function(v){return (v||'').trim();});
-  grp('',pa.selects,pb.selects,function(v){return v||'';});
-  grp('',pa.radios,pb.radios,function(v){return v||'';});
-  grp('',pa.checks,pb.checks,function(v){return v?'checked':'—';});
-  const perfF=function(p){return (p||[]).map(function(x){return [x.loc,x.cage,x.cso].join(' | ');}).join(' ;; ');};
-  if(perfF(pa.perf)!==perfF(pb.perf)) rows.push({field:'Item 8 locations',was:perfF(pa.perf)||'(none)',now:perfF(pb.perf)||'(none)'});
+  grp('texts',pa.texts,pb.texts,function(v){return String(v||'').trim();});
+  grp('selects',pa.selects,pb.selects,function(v){return String(v||'');});
+  grp('radios',pa.radios,pb.radios,function(v){return String(v||'');});
+  grp('checks',pa.checks,pb.checks,function(v){return v?'checked':'not checked';});
+  const a13=dashItem13Parts((pa.texts||{}).item13), b13=dashItem13Parts((pb.texts||{}).item13), k13={};
+  Object.keys(a13).forEach(function(k){k13[k]=1;}); Object.keys(b13).forEach(function(k){k13[k]=1;});
+  Object.keys(k13).sort().forEach(function(k){ const x=a13[k]||'',y=b13[k]||''; if(x!==y) rows.push({field:k,was:x,now:y}); });
+  const perfF=function(p){return (p||[]).map(function(x,i){return 'Location '+(i+1)+': '+[x.loc,x.cage,x.cso,x.email,x.cma].filter(Boolean).join(' | ');}).join('\n');};
+  if(perfF(pa.perf)!==perfF(pb.perf)) rows.push({field:'Item 8 — Performance Locations',was:perfF(pa.perf)||'(none)',now:perfF(pb.perf)||'(none)'});
   return rows;
 }
+async function dashCompareModel(id){
+  const all=await draftAll(), byId={}; all.forEach(function(r){byId[r.id]=r;});
+  let cur=byId[id]||await draftGet(id), missing='', guard=0; const chain=[], seen={};
+  while(cur&&guard++<100&&!seen[cur.id]){
+    seen[cur.id]=1; chain.unshift(cur);
+    if(!cur.parentId) break;
+    const p=byId[cur.parentId];
+    if(!p){ missing=cur.parentId; break; }
+    cur=p;
+  }
+  const edges=[]; let total=0;
+  for(let i=1;i<chain.length;i++){ const rows=dashDiffRows(chain[i-1].workspace,chain[i].workspace); total+=rows.length; edges.push({from:chain[i-1],to:chain[i],rows:rows}); }
+  return {record:chain[chain.length-1]||null,chain:chain,edges:edges,total:total,missingParent:missing};
+}
+function dashDiffRowsHtml(rows){
+  return rows.length?rows.map(function(r){
+    return '<tr><td style="padding:6px 8px;font-weight:bold;color:#3a4552;vertical-align:top;min-width:165px;">'+dashEsc(r.field)+'</td>'
+      +'<td style="padding:6px 8px;color:#7a4038;background:#f7eeec;white-space:pre-wrap;word-break:break-word;vertical-align:top;">'+dashEsc(String(r.was)||'(empty)')+'</td>'
+      +'<td style="padding:6px 8px;color:#2a5a3a;background:#eef4ef;white-space:pre-wrap;word-break:break-word;vertical-align:top;">'+dashEsc(String(r.now)||'(empty)')+'</td></tr>';
+  }).join(''):'<tr><td colspan="3" style="padding:14px;text-align:center;color:#6a7888;">No differences in this revision step.</td></tr>';
+}
 async function dashCompare(id){
-  const rec=await draftGet(id); if(!rec) return;
-  if(!rec.parentId) return alert('This draft has no parent to compare against.');
-  const par=await draftGet(rec.parentId);
-  if(!par) return alert('The parent draft has been deleted; comparison unavailable.');
-  const rows=dashDiffRows(par.workspace,rec.workspace);
+  const model=await dashCompareModel(id), rec=model.record; if(!rec) return;
+  if(model.chain.length<2){
+    const msg=model.missingParent?'The prior draft ('+model.missingParent+') is missing; comparison cannot reconstruct the chain.':'This draft has no parent to compare against.';
+    return alert(msg);
+  }
   const host=document.getElementById('dashDiff'); if(!host) return;
-  const rowsHtml=rows.length?rows.map(function(r){
-    return '<tr><td style="padding:4px 8px;font-weight:bold;color:#3a4552;white-space:nowrap;">'+dashEsc(r.field)+'</td>'
-      +'<td style="padding:4px 8px;color:#7a4038;background:#f7eeec;">'+dashEsc(String(r.was).substring(0,160)||'(empty)')+'</td>'
-      +'<td style="padding:4px 8px;color:#2a5a3a;background:#eef4ef;">'+dashEsc(String(r.now).substring(0,160)||'(empty)')+'</td></tr>';
-  }).join(''):'<tr><td colspan="3" style="padding:14px;text-align:center;color:#6a7888;">No differences from parent.</td></tr>';
-  host.innerHTML='<div style="background:#fff;max-width:860px;margin:40px auto;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.4);max-height:80vh;display:flex;flex-direction:column;">'
-    +'<div style="padding:12px 18px;background:#2b3440;color:#fff;border-radius:8px 8px 0 0;display:flex;justify-content:space-between;align-items:center;">'
-    +'<strong style="font-size:13px;">Δ '+dashEsc(rec.title||'Revision')+' — changes vs. '+dashEsc(par.title||'parent')+' ('+rows.length+')</strong>'
-    +'<button onclick="document.getElementById(\'dashDiff\').style.display=\'none\'" style="background:#566573;color:#fff;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;">Close</button></div>'
-    +'<div style="overflow:auto;padding:10px;"><table style="width:100%;border-collapse:collapse;font-size:11px;font-family:Arial,sans-serif;">'
-    +'<thead><tr style="color:#6a7888;text-align:left;"><th style="padding:4px 8px;">Field</th><th style="padding:4px 8px;">Parent</th><th style="padding:4px 8px;">This revision</th></tr></thead>'
-    +'<tbody>'+rowsHtml+'</tbody></table></div></div>';
+  const sections=model.edges.map(function(e,i){
+    return '<section style="margin:0 0 16px;border:1px solid #ccd6df;border-radius:5px;overflow:hidden;">'
+      +'<div style="padding:8px 10px;background:#edf2f6;color:#2b3440;font-size:11.5px;font-weight:bold;">Revision step '+(i+1)+' — '+dashEsc(e.from.title||'Prior')+' → '+dashEsc(e.to.title||'Revised')+' ('+e.rows.length+' change'+(e.rows.length===1?'':'s')+')</div>'
+      +'<table style="width:100%;border-collapse:collapse;font-size:11px;font-family:Arial,sans-serif;table-layout:fixed;"><thead><tr style="color:#6a7888;text-align:left;"><th style="padding:5px 8px;width:21%;">Field</th><th style="padding:5px 8px;width:39.5%;">Previous</th><th style="padding:5px 8px;width:39.5%;">Revised</th></tr></thead><tbody>'+dashDiffRowsHtml(e.rows)+'</tbody></table></section>';
+  }).join('');
+  host.innerHTML='<div style="background:#fff;max-width:1040px;margin:24px auto;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.4);max-height:90vh;display:flex;flex-direction:column;">'
+    +'<div style="padding:12px 18px;background:#2b3440;color:#fff;border-radius:8px 8px 0 0;display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;">'
+    +'<strong style="font-size:13px;">Revision history — '+dashEsc(rec.title||'DD-254')+' · '+model.edges.length+' step'+(model.edges.length===1?'':'s')+' · '+model.total+' change'+(model.total===1?'':'s')+'</strong>'
+    +'<span style="display:flex;gap:7px;"><button id="dashPdfBtn" style="background:#1565a8;color:#fff;border:none;border-radius:4px;padding:5px 12px;cursor:pointer;font-weight:bold;">Export PDF change report</button><button onclick="document.getElementById(\'dashDiff\').style.display=\'none\'" style="background:#566573;color:#fff;border:none;border-radius:4px;padding:5px 12px;cursor:pointer;">Close</button></span></div>'
+    +(model.missingParent?'<div style="padding:8px 12px;background:#fdebea;color:#9e1b32;font-size:11px;">Earlier parent '+dashEsc(model.missingParent)+' is missing. The report starts at the earliest retained record.</div>':'')
+    +'<div style="overflow:auto;padding:12px;">'+sections+'</div></div>';
   host.style.display='block';
+  const pdfBtn=host.querySelector('#dashPdfBtn'); if(pdfBtn) pdfBtn.onclick=function(){dashComparePdf(id);};
+}
+function dashPdfWrap(font,size,text,width){
+  const out=[];
+  String(sanitizePdfText(text||'')).replace(/\r/g,'').split('\n').forEach(function(para){
+    if(!para){out.push('');return;}
+    let line='';
+    para.split(/\s+/).forEach(function(word){
+      const want=line?line+' '+word:word;
+      if(font.widthOfTextAtSize(want,size)<=width){line=want;return;}
+      if(line){out.push(line);line='';}
+      while(word&&font.widthOfTextAtSize(word,size)>width){
+        let cut=Math.max(1,Math.floor(word.length*width/font.widthOfTextAtSize(word,size)));
+        while(cut>1&&font.widthOfTextAtSize(word.slice(0,cut),size)>width) cut--;
+        out.push(word.slice(0,cut)); word=word.slice(cut);
+      }
+      line=word;
+    });
+    if(line) out.push(line);
+  });
+  return out;
+}
+async function dashComparePdf(id){
+  const model=await dashCompareModel(id), rec=model.record; if(!rec||model.chain.length<2) return alert('A revision chain is required before a change report can be exported.');
+  try{
+    const PDFDocument=PDFLib.PDFDocument, StandardFonts=PDFLib.StandardFonts, rgb=PDFLib.rgb;
+    const doc=await PDFDocument.create(), regular=await doc.embedFont(StandardFonts.Helvetica), bold=await doc.embedFont(StandardFonts.HelveticaBold);
+    doc.setTitle('DD Form 254 Revision Change Report — '+(rec.title||'DD-254'));
+    doc.setSubject('Revision lineage and field-level changes'); doc.setCreator('DD Form 254 Interactive Tool v'+TOOL_VERSION);
+    let page=null,y=0; const margin=42,width=528;
+    const newPage=function(){ page=doc.addPage([612,792]); y=750; return page; };
+    const need=function(h){ if(!page||y-h<42) newPage(); };
+    const drawLines=function(text,font,size,color,indent){
+      indent=indent||0; const lines=dashPdfWrap(font,size,text,width-indent), leading=size+3;
+      lines.forEach(function(line){ need(leading); if(line) page.drawText(line,{x:margin+indent,y:y,font:font,size:size,color:color}); y-=leading; });
+    };
+    newPage();
+    drawLines('DD FORM 254 REVISION CHANGE REPORT',bold,15,rgb(.12,.20,.29)); y-=4;
+    drawLines(rec.title||'Untitled DD-254',bold,12,rgb(.12,.20,.29));
+    drawLines('Generated '+new Date().toISOString().replace('T',' ').substring(0,19)+'Z · Tool v'+TOOL_VERSION,regular,8,rgb(.38,.43,.50));
+    drawLines('Lineage: '+model.chain.map(function(r){return r.title||r.id;}).join(' -> '),regular,9,rgb(.25,.31,.38));
+    if(model.missingParent) drawLines('WARNING: earlier parent '+model.missingParent+' is missing; this report starts at the earliest retained record.',bold,9,rgb(.62,.11,.08));
+    y-=8;
+    model.edges.forEach(function(edge,ei){
+      need(44); drawLines('Revision step '+(ei+1)+': '+(edge.from.title||'Prior')+' -> '+(edge.to.title||'Revised')+' ('+edge.rows.length+' changes)',bold,11,rgb(.08,.34,.54)); y-=3;
+      if(!edge.rows.length){drawLines('No differences in this revision step.',regular,9,rgb(.38,.43,.50),8);y-=5;return;}
+      edge.rows.forEach(function(r){
+        need(50); drawLines(r.field,bold,9,rgb(.14,.20,.27),8);
+        drawLines('Previous: '+(String(r.was)||'(empty)'),regular,8,rgb(.46,.16,.13),16);
+        drawLines('Revised: '+(String(r.now)||'(empty)'),regular,8,rgb(.12,.38,.20),16);
+        y-=5;
+      });
+      y-=6;
+    });
+    const pages=doc.getPages(); pages.forEach(function(p,i){ p.drawText('Page '+(i+1)+' of '+pages.length,{x:500,y:22,font:regular,size:8,color:rgb(.42,.47,.52)}); });
+    const bytes=await doc.save(), blob=new Blob([bytes],{type:'application/pdf'}), a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='DD254_Revision_Changes_'+String(rec.title||rec.id).replace(/[^A-Za-z0-9._-]+/g,'_').replace(/^_+|_+$/g,'')+'.pdf';
+    document.body.appendChild(a); a.click(); setTimeout(function(){a.remove();URL.revokeObjectURL(a.href);},600);
+    try{audLog(rec.id,rec.title,'revision-report-exported',model.edges.length+' steps, '+model.total+' changes');}catch(e){}
+    return bytes;
+  }catch(e){ alert('The PDF change report could not be created: '+String((e&&e.message)||e)); return null; }
 }
 async function dashSetReview(id,val){
   const rec=await draftGet(id); if(!rec) return;
@@ -8208,18 +8731,18 @@ const FN_FIELDS=[
 const FN_DEFAULT=['i6b','i7b','i2a','sol'];
 function fnFieldsGet(){
   let v=null;
-  try{ v=JSON.parse(sessionStorage.getItem('dd254_fname_fields')||'null'); }catch(e){}
+  try{ v=JSON.parse(localStorage.getItem('dd254_fname_fields')||'null'); }catch(e){}
   if(!Array.isArray(v)||!v.length) return FN_DEFAULT.slice();
   const known=FN_FIELDS.map(function(f){ return f.key; });
   const out=v.filter(function(k){ return known.indexOf(k)>=0; });
   return out.length?out:FN_DEFAULT.slice();
 }
 function fnFieldsSet(arr){
-  try{ sessionStorage.setItem('dd254_fname_fields',JSON.stringify(arr||[])); }catch(e){}
+  try{ localStorage.setItem('dd254_fname_fields',JSON.stringify(arr||[])); }catch(e){}
   return fnFieldsGet();
 }
-function fnSepGet(){ return sessionStorage.getItem('dd254_fname_sep')==='_'?'_':'-'; }
-function fnSepSet(v){ try{ sessionStorage.setItem('dd254_fname_sep',v==='_'?'_':'-'); }catch(e){} return fnSepGet(); }
+function fnSepGet(){ return localStorage.getItem('dd254_fname_sep')==='_'?'_':'-'; }
+function fnSepSet(v){ try{ localStorage.setItem('dd254_fname_sep',v==='_'?'_':'-'); }catch(e){} return fnSepGet(); }
 /* One field, cleaned and capped. The separator is deliberately NOT stripped
    from the value: contract numbers legitimately contain hyphens, and removing
    them to keep field boundaries machine-readable would turn N00178-24-F-1234
@@ -8310,16 +8833,16 @@ function tplKeyOf(kind){ return kind==='fac'?TPL_FAC:(kind==='cso'?TPL_CSO:(kind
 const TPL_MEM={};
 /* ── TEMPLATE STORAGE: local IndexedDB (write-through cache) ──
    Purely local browser storage — no network, no external calls.
-   Migrates template stores out of the ~5MB sessionStorage into the
+   Migrates template stores out of the ~5MB localStorage into the
    same class of local database the drafts already use. */
 const TPL_CACHE={};
 const TDB={db:null,ready:null,useLS:false};
 const TPL_WAL_KEY='dd254_tpl_pending';
 let TPL_WRITE=Promise.resolve();
 window.IO_UNDO={};
-function lsTplRead(k){ try{return JSON.parse(sessionStorage.getItem(k)||'[]');}catch(e){return TPL_MEM[k]||[];} }
+function lsTplRead(k){ try{return JSON.parse(localStorage.getItem(k)||'[]');}catch(e){return TPL_MEM[k]||[];} }
 function tplWalRead(){
-  try{ const x=JSON.parse(sessionStorage.getItem(TPL_WAL_KEY)||'{}'); return (x&&typeof x==='object')?x:{}; }
+  try{ const x=JSON.parse(localStorage.getItem(TPL_WAL_KEY)||'{}'); return (x&&typeof x==='object')?x:{}; }
   catch(e){ return {}; }
 }
 function tplWalStage(key,value){
@@ -8327,7 +8850,7 @@ function tplWalStage(key,value){
   try{
     const pending=tplWalRead();
     pending[key]={id:id,ts:new Date().toISOString(),value:JSON.parse(JSON.stringify(value))};
-    sessionStorage.setItem(TPL_WAL_KEY,JSON.stringify(pending));
+    localStorage.setItem(TPL_WAL_KEY,JSON.stringify(pending));
     return id;
   }catch(e){ return ''; }
 }
@@ -8336,8 +8859,8 @@ function tplWalClear(key,id){
     const pending=tplWalRead();
     if(!pending[key]||pending[key].id!==id) return;
     delete pending[key];
-    if(Object.keys(pending).length) sessionStorage.setItem(TPL_WAL_KEY,JSON.stringify(pending));
-    else sessionStorage.removeItem(TPL_WAL_KEY);
+    if(Object.keys(pending).length) localStorage.setItem(TPL_WAL_KEY,JSON.stringify(pending));
+    else localStorage.removeItem(TPL_WAL_KEY);
   }catch(e){}
 }
 function tdbOpen(){
@@ -8405,7 +8928,7 @@ async function tdbInit(){
           const ok=await tdbPut(k,ls);
           if(ok){
             const back=await tdbGet(k);
-            if(back&&back.length===ls.length){ try{sessionStorage.removeItem(k);}catch(e){} }
+            if(back&&back.length===ls.length){ try{localStorage.removeItem(k);}catch(e){} }
           }
         }
         v=ls;
@@ -8416,7 +8939,7 @@ async function tdbInit(){
     const kinds=['fac','cso','perf','cert','b13','ct','sm','sl'];
     for(const kd of kinds){
       if((await tdbGet('undo_'+kd))!=null) IO_UNDO[kd]=true;
-      else { try{ if(sessionStorage.getItem('dd254_io_undo_'+kd)) IO_UNDO[kd]=true; }catch(e){} }
+      else { try{ if(localStorage.getItem('dd254_io_undo_'+kd)) IO_UNDO[kd]=true; }catch(e){} }
     }
   }
   await tplWalReplay();
@@ -8428,19 +8951,19 @@ async function tdbInit(){
 function ioSetUndo(kind,payload){
   IO_UNDO[kind]=true;
   if(TDB.db&&!TDB.useLS){
-    tdbPut('undo_'+kind,payload).then(function(ok){ if(!ok){ try{sessionStorage.setItem('dd254_io_undo_'+kind,JSON.stringify(payload));}catch(e){IO_UNDO[kind]=false;} } });
+    tdbPut('undo_'+kind,payload).then(function(ok){ if(!ok){ try{localStorage.setItem('dd254_io_undo_'+kind,JSON.stringify(payload));}catch(e){IO_UNDO[kind]=false;} } });
     return;
   }
-  try{ sessionStorage.setItem('dd254_io_undo_'+kind,JSON.stringify(payload)); }catch(e){ IO_UNDO[kind]=false; }
+  try{ localStorage.setItem('dd254_io_undo_'+kind,JSON.stringify(payload)); }catch(e){ IO_UNDO[kind]=false; }
 }
 async function ioGetUndo(kind){
   if(TDB.db&&!TDB.useLS){ const v=await tdbGet('undo_'+kind); if(v!=null) return v; }
-  try{ const x=sessionStorage.getItem('dd254_io_undo_'+kind); return x?JSON.parse(x):null; }catch(e){ return null; }
+  try{ const x=localStorage.getItem('dd254_io_undo_'+kind); return x?JSON.parse(x):null; }catch(e){ return null; }
 }
 function ioClearUndo(kind){
   delete IO_UNDO[kind];
   if(TDB.db&&!TDB.useLS){ try{ TDB.db.transaction('stores','readwrite').objectStore('stores').delete('undo_'+kind); }catch(e){} }
-  try{ sessionStorage.removeItem('dd254_io_undo_'+kind); }catch(e){}
+  try{ localStorage.removeItem('dd254_io_undo_'+kind); }catch(e){}
 }
 tdbOpen(); tdbInit();
 
@@ -8465,7 +8988,7 @@ function ctB13Mig(arr){
   return arr;
 }
 function tplSaveLS(key,arr){
-  try{ sessionStorage.setItem(key,JSON.stringify(arr)); return true; }
+  try{ localStorage.setItem(key,JSON.stringify(arr)); return true; }
   catch(e){
     TPL_MEM[key]=JSON.parse(JSON.stringify(arr));
     if(!window.TPL_STORAGE_FAIL){
@@ -8834,7 +9357,7 @@ function ctCaptureData(){
     i14:ctCk('i14yes')?'yes':(ctCk('i14no')?'no':''), i14text:ctGv('i14text'),
     i15:ctCk('i15yes')?'yes':(ctCk('i15no')?'no':''), i15text:ctGv('i15text'),
     i16:{a:ctGv('i16a'),b:ctGv('i16b'),c:ctGv('i16c'),d:ctGv('i16d'),e:ctGv('i16e'),f:ctGv('i16f')},
-    c18:{}, t18f:ctGv('dist18fOther'), attText:''};
+    c18:{}, t18f:ctCk('dist18f')?ctGv('dist18fOther'):'', attText:''};
   CT_10.forEach(function(k){ d.c10[k]=ctCk('c'+k); });
   CT_11.forEach(function(k){ d.c11[k]=ctCk('c'+k); });
   CT_18.forEach(function(k){ d.c18[k]=ctCk('dist'+k); });
@@ -8856,7 +9379,7 @@ function ctSummary(t){
   if(d.i15||d.i15text) bits.push('15 ✓');
   if(d.i16&&(d.i16.a||d.i16.b||d.i16.c||d.i16.d||d.i16.e||d.i16.f)) bits.push('16 ✓');
   const n18=CT_18.filter(function(k){return d.c18&&d.c18[k];}).length;
-  if(n18||d.t18f) bits.push('18: '+n18+' sel'+(d.t18f?' · 18f addr':''));
+  if(n18) bits.push('18: '+n18+' sel'+(d.c18&&d.c18['18f']&&d.t18f?' · 18f addr':''));
   const nAtt=ctAttLines(d).length;
   if(nAtt) bits.push('\ud83d\udcce '+nAtt+' attach');
   return bits.join(' &nbsp;·&nbsp; ');
@@ -9146,7 +9669,7 @@ function ctApplyYN(idx,item){ const d=ctData(idx); const v=d?d[item]:''; if(!v) 
 function ctApply18(idx){ const d=ctData(idx); if(!d||!d.c18) return;
   /* click() rather than .checked= so 18f's reveal toggle and the a18d / a18bReq validators fire */
   CT_18.forEach(function(k){ const e=ck('dist'+k); if(!e) return; if(e.checked!==!!d.c18[k]) e.click(); });
-  const o=ck('dist18fOther'); if(o&&d.t18f) o.value=d.t18f;
+  const o=ck('dist18fOther'); if(o) o.value=(d.c18['18f']&&d.t18f)?d.t18f:'';
   run(); ctFlash(ck('dist18a')); }
 function ctApply16(idx){ const d=ctData(idx); if(!d||!d.i16) return;
   ['a','b','c','d','e','f'].forEach(function(k){ const e=ck('i16'+k); if(e&&d.i16[k]) e.value=d.i16[k]; });
@@ -9205,7 +9728,7 @@ const TPL_IO=(function(){
     col('Prime Contract',function(t){return ioDD(t).primeContract||'';},function(t,v){ioDD(t).primeContract=ioS(v);}),
     col('Task Order',function(t){return ioDD(t).taskOrder||'';},function(t,v){ioDD(t).taskOrder=ioS(v);}),
     col('Source Date',function(t){return t.srcDate||'';},function(t,v){t.srcDate=ioS(v);}),
-    col('Security POC',function(t){return t.smName||'';},function(t,v){t.smName=ioS(v);}),
+    col('Security Manager',function(t){return t.smName||'';},function(t,v){t.smName=ioS(v);}),
     col('SM E-mail',function(t){return t.smEmail||'';},function(t,v){t.smEmail=ioS(v);}),
     col('SM Program',function(t){return t.smProgram||'';},function(t,v){t.smProgram=ioS(v);}),
     col('Block 13',function(t){return ioDD(t).i13||'';},function(t,v){ioDD(t).i13=ioS(v);})];
@@ -9383,7 +9906,7 @@ async function ioXlsxTable(buf){
 }
 
 function ioNewId(){ return 'io'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-function ioHasUndo(kind){ if(IO_UNDO[kind]) return true; try{return !!sessionStorage.getItem('dd254_io_undo_'+kind);}catch(e){return false;} }
+function ioHasUndo(kind){ if(IO_UNDO[kind]) return true; try{return !!localStorage.getItem('dd254_io_undo_'+kind);}catch(e){return false;} }
 async function tplIoUndo(kind){
   try{
     const o=await ioGetUndo(kind); if(!o) return;
@@ -9644,7 +10167,7 @@ async function dashTplEdit(kind){
       +'<input type="text" value="'+tplEsc((t.data&&t.data.taskOrder)||'')+'" placeholder="Task order…" title="If this task order has its own DD Form 254, put its number here. Applying the template fills the task order field and ticks the standalone box, so the exported Block 2a reads prime | Task Order number." style="width:160px;font-size:11px;" onchange="ctSetTask('+i+',this.value)">'
       +'</div>'
       +'<div style="display:flex;flex-direction:column;gap:2px;align-items:flex-start;">'
-      +'<input type="text" value="'+tplEsc(t.smName||'')+'" list="ctSmList" placeholder="🛡 Security POC…" title="Assign a Security POC — type to search the Security POC templates" style="width:160px;font-size:11px;" onchange="ctSetSm('+i+',this.value)">'
+      +'<input type="text" value="'+tplEsc(t.smName||'')+'" list="ctSmList" placeholder="🛡 Security manager…" title="Assign a security manager — type to search the Security Manager templates" style="width:160px;font-size:11px;" onchange="ctSetSm('+i+',this.value)">'
       +'<span id="ctSmInfo_'+i+'" style="font-size:9.5px;color:#5a6a80;">'+tplEsc(t.smName?((t.smEmail||'—')+(t.smProgram?' · '+t.smProgram:'')):'')+'</span>'
       +'</div>'
       +'<div style="flex:1;"><div id="ctSum_'+i+'" style="font-size:10.5px;color:#4a5866;line-height:1.5;">'+ctSummary(t)+'</div><div id="ctUpd_'+i+'" style="font-size:9.5px;color:#8a94a0;margin-top:2px;font-style:italic;">'+ctUpdText(t)+'</div></div>'
@@ -9682,7 +10205,7 @@ async function dashTplEdit(kind){
   }
   window.TPL_EDIT=arr; window.TPL_EDIT_KIND=kind;
   host.innerHTML='<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">'
-    +'<h3 style="margin:0;color:#2b3440;font-size:15px;">'+(kind==='fac'?'🏢 Facility Templates (Blocks 6a / 6b / 6c)':(kind==='perf'?'📍 Performance location / Sub-contractor Templates (Blocks 7 & 8)':(kind==='cert'?'✍ Certifier Templates — the official who certifies the DD-254 (Items 17a/b/c/e/f/g)':(kind==='ct'?'📝 DD-254 Template Language — Blocks 10 / 11 / 12 / 13 / 14 / 15 / 16 / 18 (insertable from the form side panel)':(kind==='b13'?'📄 Contract Type Templates — Blocks 10 / 11 / 12 / 13 / 14 / 15 / 16 / 18 (offered when a new DD-254 is created)':(kind==='sl'?'📑 Standard Language — recurring Block 13 text your organisation adds to its DD-254s':(kind==='sm'?'🛡 Security POC Templates — name / e-mail / program':'🏛 CSO Templates (Blocks 6c / 7c / 8c)')))))))+'</h3>'
+    +'<h3 style="margin:0;color:#2b3440;font-size:15px;">'+(kind==='fac'?'🏢 Facility Templates (Blocks 6a / 6b / 6c)':(kind==='perf'?'📍 Performance location / Sub-contractor Templates (Blocks 7 & 8)':(kind==='cert'?'✍ Certifier Templates — the official who certifies the DD-254 (Items 17a/b/c/e/f/g)':(kind==='ct'?'📝 DD-254 Template Language — Blocks 10 / 11 / 12 / 13 / 14 / 15 / 16 / 18 (insertable from the form side panel)':(kind==='b13'?'📄 Contract Type Templates — Blocks 10 / 11 / 12 / 13 / 14 / 15 / 16 / 18 (offered when a new DD-254 is created)':(kind==='sl'?'📑 Standard Language — recurring Block 13 text your organisation adds to its DD-254s':(kind==='sm'?'🛡 Security Manager Templates — name / e-mail / program':'🏛 CSO Templates (Blocks 6c / 7c / 8c)')))))))+'</h3>'
     +((kind==='fac'||kind==='perf'||kind==='b13'||kind==='ct'||kind==='sm'||kind==='sl')?'<input type="search" id="tplFilter" placeholder="🔎 Search templates…" oninput="dashTplFilter(this.value)" style="font-size:11px;padding:3px 7px;width:190px;">':'')
     +'<button class="dash-btn" style="background:#4a5866;" onclick="dashTplAdd()">＋ Add</button>'
     +'<button class="dash-btn" style="background:#46606f;" onclick="tplExport()">⬇ Export (.json)</button>'
@@ -10278,8 +10801,9 @@ function emailDistSets(){
     const f=perfFields(b);
     if(f.cso) cso=cso.concat(emailsIn(f.cso.value));
   });
+  const use18f=!!((document.getElementById('dist18f')||{}).checked);
   const req=[].concat(emailsIn(g('item13')),
-    emailsIn((document.querySelector('#dist18fRev input')||{}).value||''));
+    use18f?emailsIn((document.querySelector('#dist18fRev input')||{}).value||''):[]);
   /* FSO addresses now come from the form itself: the contractor (Item 6), the
      subcontractor (Item 7) and each performance location (Item 8). The manual
      box stays as a catch-all for anyone who is not an Item 18 party. One dedupe
@@ -10365,10 +10889,10 @@ function toggleNgc(){
 let WIZ_STEP=0; const WIZ_TOTAL=8;
 /* 'step' walks one card at a time, 'scroll' puts the whole form on one page.
    Remembered between sessions because it is a working preference, not a mode. */
-let WIZ_VIEW=(function(){ try{ return sessionStorage.getItem('dd254_wiz_view')==='scroll'?'scroll':'step'; }catch(e){ return 'step'; } })();
+let WIZ_VIEW=(function(){ try{ return localStorage.getItem('dd254_wiz_view')==='scroll'?'scroll':'step'; }catch(e){ return 'step'; } })();
 function wizSetView(v){
   WIZ_VIEW=(v==='scroll')?'scroll':'step';
-  try{ sessionStorage.setItem('dd254_wiz_view',WIZ_VIEW); }catch(e){}
+  try{ localStorage.setItem('dd254_wiz_view',WIZ_VIEW); }catch(e){}
   document.body.classList.toggle('wiz-scroll',WIZ_VIEW==='scroll');
   const b=document.getElementById('wizViewBtn');
   if(b) b.textContent=(WIZ_VIEW==='scroll')?'\u25a4 One page':'\u25a5 Step by step';
@@ -10498,8 +11022,8 @@ function apply508(){
   document.querySelectorAll('.cbi input[type="checkbox"]').forEach(function(cb){ cb.tabIndex=-1; });
 }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', apply508); else apply508();
-function seenSteps(){ try{return JSON.parse(sessionStorage.getItem('dd254_seen_steps')||'[]');}catch(e){return [];} }
-function markSeen(n){ try{const s=seenSteps(); if(s.indexOf(n)===-1){s.push(n); sessionStorage.setItem('dd254_seen_steps',JSON.stringify(s));} }catch(e){} }
+function seenSteps(){ try{return JSON.parse(localStorage.getItem('dd254_seen_steps')||'[]');}catch(e){return [];} }
+function markSeen(n){ try{const s=seenSteps(); if(s.indexOf(n)===-1){s.push(n); localStorage.setItem('dd254_seen_steps',JSON.stringify(s));} }catch(e){} }
 /* Which step each outstanding error belongs to. The validation panel already
    knows WHAT is wrong; the dots are the only place that says WHERE, so a step
    you have not opened yet can still tell you it needs attention. Read from the
@@ -10665,8 +11189,8 @@ document.addEventListener('click',function(e){
  * owns dd254_wiz_view, and still does). The registry delegates to them; it
  * does not write those keys itself. One writer per key is the whole point.
  * ------------------------------------------------------------------ */
-function lsGet(k,d){ try{ const v=sessionStorage.getItem(k); return (v===null||v==='')?d:v; }catch(e){ return d; } }
-function lsPut(k,v){ try{ sessionStorage.setItem(k,String(v)); }catch(e){} }
+function lsGet(k,d){ try{ const v=localStorage.getItem(k); return (v===null||v==='')?d:v; }catch(e){ return d; } }
+function lsPut(k,v){ try{ localStorage.setItem(k,String(v)); }catch(e){} }
 
 /* Theme. Applied to <html> rather than <body> so the attribute is set before
    the body paints and the dashboard does not flash white on load. */
@@ -10681,7 +11205,7 @@ function themeSet(v){
 /* Backup reminder threshold. Default 1 reproduces the previous behaviour
    exactly — the nag fired on the first unsaved change — so upgrading changes
    nothing until someone deliberately relaxes it. 0 is not offered: silencing
-   the backup warning entirely in a tool whose drafts live in sessionStorage is
+   the backup warning entirely in a tool whose drafts live in localStorage is
    a foot-gun, not a preference. */
 function bkEveryGet(){ const n=parseInt(lsGet('dd254_bk_every','1'),10); return (isFinite(n)&&n>=1)?Math.min(n,50):1; }
 function bkEverySet(v){ const n=parseInt(v,10); lsPut('dd254_bk_every',(isFinite(n)&&n>=1)?Math.min(n,50):1); if(typeof bkStatus==='function') bkStatus(); return bkEveryGet(); }
@@ -10866,9 +11390,8 @@ if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</scrip
    registered. Nothing in this file refers to a real facility, contract or
    person, and it must not be used to prepare an actual DD Form 254.
 
-   Each page load uses isolated session storage and empty per-load databases. The
-   fictitious libraries are reseeded every time; visitor edits last only until
-   refresh, close, or reopening the link. */
+   Seeding only happens when a library is empty, so anything typed during a
+   demonstration survives a reload rather than being overwritten on every load. */
 (function(){
   const B=[
     ['Aurora Dynamics','7AUR1','1400 Kestrel Way, Building 3','Fairfax, VA 22030'],
@@ -10886,7 +11409,7 @@ if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</scrip
     ['R. Vance','Facility Security Officer','202-555-0154','r.vance@example.com'],
     ['T. Okafor','Program Security Officer','202-555-0165','t.okafor@example.com'],
     ['M. Lindqvist','Contracting Officer Representative','202-555-0176','m.lindqvist@example.com'],
-    ['J. Serrano','Security POC','202-555-0187','j.serrano@example.com']
+    ['J. Serrano','Security Manager','202-555-0187','j.serrano@example.com']
   ];
   function uid(){ try{ return crypto.randomUUID(); }catch(e){ return 'demo-'+Math.random().toString(36).slice(2,10); } }
   function seed(key,rows){

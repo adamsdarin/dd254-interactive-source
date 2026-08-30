@@ -99,6 +99,12 @@
 ### 9. Distribution capture and log
   PASS  parties derive from Item 18 on that draft
   PASS  no Item 18 boxes means no parties
+  PASS  issue e-mail maps requestor and Item 6/7/8 FSOs to To, then CSOs and Block 18f to CC
+  PASS  issue e-mail mailto separates every To and CC address with semicolon-space and carries an identifying subject
+  PASS  a CUI issuance prefixes the subject with the triple visual warning
+  PASS  bulk issue e-mail separates differing audiences and keeps semicolon-space separators
+  PASS  issue dialog uses the actual clicked anchor for the default-mail handoff
+  PASS  an empty issue audience leaves the e-mail link inert and explains why
   PASS  Issued opens the dialog and records what is ticked
   PASS  skip is allowed and audit-logged
   PASS  issued with nothing logged is badged
@@ -117,6 +123,7 @@
   PASS  a stale template reference does not throw
   PASS  empty draft yields nothing
   PASS  CUI detection reads the stored banner
+  PASS  CUI detection also reads the selected DD-254 template
   PASS  the rule list is shared by both callers
   PASS  dialog shows the CUI banner and the attachment block
   PASS  no CUI banner on an unclassified draft
@@ -484,7 +491,8 @@
   PASS  the Item 16 GCA block never errors and never highlights
   PASS  the Item 17 certification block never errors and never highlights
   PASS  a form is clean with Items 16 and 17 entirely empty
-  PASS  every asterisked field is covered by a rule, or is a known exception
+  PASS  every asterisked field is covered by a validation rule
+  PASS  Items 16 and 17 carry no required-field cue because they are not workflow-gated
   PASS  autosave never demotes a record that was already issued
   PASS  autosave still holds an unissued record at Draft
   PASS  cancelled records survive autosave too
@@ -1068,6 +1076,9 @@
   PASS  exporting the selection includes only the selected drafts
   PASS  clearing the selection unchecks every card and hides the bar
   PASS  a plain, unfiltered portfolio export is unaffected by the selection feature
+  PASS  changing one selected status to Issued opens one bulk window and issues every selected record
+  PASS  one hard failure stops the entire selected issuance before the distribution window
+  PASS  cancelling the bulk distribution window leaves every selected record unissued
 
 ### 84a. Draft card overflow menu
   PASS  Copy, Reset workflow, Compare and the override live in the card menu, closed by default
@@ -1104,6 +1115,25 @@
   PASS  the local subcontractor e-mail safeguard is labeled as a workflow control
   PASS  authority footers do not become errors or warnings
 
+### 90. v195 custody, issuance and revision safeguards
+  PASS  unchecking 18f clears its hidden recipient text and hides the detail row
+  PASS  unchecked legacy 18f text is excluded from stored e-mail audiences
+  PASS  unchecked legacy 18f text is excluded from official export data
+  PASS  checked 18f text remains in the issue e-mail CC line
+  PASS  CUI is derived from access boxes, designation fields, LDCs and templates
+  PASS  derived CUI drives both the dashboard badge and the e-mail subject
+  PASS  a CUI selection with an unclassified marking warns but does not create that warning as an error
+  PASS  bulk issuance groups identical recipients together and isolates different recipients
+  PASS  the same recipients are separated when only one record is CUI
+  PASS  an oversized mail handoff is detected before the browser is asked to open it
+  PASS  a failed fallback write remains visible in the open tab and raises the persistent warning
+  PASS  a later successful persistent write clears the draft-storage failure state
+  PASS  the backup reminder clears only after the operator confirms the download
+  PASS  revision rows use human labels and preserve long values without truncation
+  PASS  Item 13 changes are reported by reference section
+  PASS  revision comparison traverses the full retained chain
+  PASS  the full-chain revision report exports as a PDF and logs the export
+
 ================================
-  PASS 923   FAIL 0
+  PASS 951   FAIL 0
 ================================

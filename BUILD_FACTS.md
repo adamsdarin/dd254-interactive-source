@@ -1,15 +1,15 @@
 # Build facts — generated, do not hand-edit
 
-Produced by `01_TOOL/make_build_facts.py` on 2026-08-26.
+Produced by `01_TOOL/make_build_facts.py` on 2026-08-30.
 The documents stream reads this instead of asking for numbers.
 
 | | |
 |---|---|
 | **File** | `DD254_Interactive_v1.9.HTM` |
-| **Tool version** | `2.116` |
-| **Size** | 2,130,123 bytes |
-| **SHA-256** | `ead98abd907e8da1b0ec60d2c2e8728ecf20de2e3a0220c57e628b4770d0b4a6` |
-| **Regression assertions** | 923 |
+| **Tool version** | `2.121` |
+| **Size** | 2,168,043 bytes |
+| **SHA-256** | `2f4d2fee09837d1e435498be47ce6fd2d62ab4158234f3d9d074c19f13536ca2` |
+| **Regression assertions** | 951 |
 
 ## Component split
 
@@ -19,13 +19,13 @@ would download; both figures are given so neither is misleading.
 
 | Component | In the file | Decoded | Share of file |
 |---|---|---|---|
-| pdf-lib (MIT) | 525,598 chars | — | 24.7% |
-| DD Form 254, flat | 738,164 chars | 553,623 bytes | 34.7% |
-| DD Form 254, dynamic XFA | 83,284 chars | 62,461 bytes | 3.9% |
-| **Application code** | **560,830 chars** | — | **26.3%** |
-| Markup and CSS | 222,247 chars | — | 10.4% |
+| pdf-lib (MIT) | 525,598 chars | — | 24.2% |
+| DD Form 254, flat | 738,164 chars | 553,623 bytes | 34.0% |
+| DD Form 254, dynamic XFA | 83,284 chars | 62,461 bytes | 3.8% |
+| **Application code** | **598,673 chars** | — | **27.6%** |
+| Markup and CSS | 222,324 chars | — | 10.3% |
 
-Not the author's code: **63.2%** of the file.
+Not the author's code: **62.1%** of the file.
 
 ## Component hashes
 

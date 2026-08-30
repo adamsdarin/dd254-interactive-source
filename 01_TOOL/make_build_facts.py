@@ -168,7 +168,7 @@ if _man['sha256']!=sha(raw):
 # they are derived from the build and are correct whether or not anyone wrote
 # a change note. Only the exit code fails, so the omission is loud without
 # leaving stale artifacts behind.
-_ver=re.search(r'_v(\d+(?:\.\d+)*)\.HTM$',os.path.basename(BUILD),re.I)
+_ver=re.search(r'_v(\d+)\.HTM$',os.path.basename(BUILD),re.I)
 _ver=_ver.group(1) if _ver else None
 _log=os.path.join(HERE,'CHANGELOG.md')
 if _ver:
