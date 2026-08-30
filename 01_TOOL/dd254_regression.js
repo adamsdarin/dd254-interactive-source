@@ -14,13 +14,16 @@ const dom=new JSDOM(fs.readFileSync('dd254.htm','utf8'),{
        implementations before any application script decides they are absent. */
     try{
       const nodeCrypto=require('crypto');
+      let cryptoSeq=0;
       const cryptoBridge={
         getRandomValues:function(array){
-          const bytes=nodeCrypto.randomBytes(array.byteLength);
-          new Uint8Array(array.buffer,array.byteOffset,array.byteLength).set(bytes);
+          for(let i=0;i<array.length;i++) array[i]=(cryptoSeq++*73+41)&255;
           return array;
         },
-        randomUUID:nodeCrypto.randomUUID.bind(nodeCrypto),
+        randomUUID:function(){
+          cryptoSeq++;
+          return '00000000-0000-4000-8000-'+cryptoSeq.toString(16).padStart(12,'0').slice(-12);
+        },
         subtle:{digest:async function(algorithm,data){
           if(String(algorithm).toUpperCase()!=='SHA-256') throw new Error('Unsupported digest: '+algorithm);
           const bytes=Buffer.from(Array.from(new Uint8Array(data)));
