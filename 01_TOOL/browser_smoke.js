@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 const cp = require('child_process');
 const { pathToFileURL } = require('url');
+const WebSocketImpl = globalThis.WebSocket || require('ws');
 
 const buildArg = process.argv[2];
 if (!buildArg) {
@@ -42,7 +43,7 @@ class CDP {
   constructor(url) {
     this.next = 1; this.pending = new Map(); this.events = [];
     this.opened = new Promise((resolve, reject) => {
-      this.ws = new WebSocket(url);
+      this.ws = new WebSocketImpl(url);
       this.ws.onopen = resolve;
       this.ws.onerror = () => reject(new Error('DevTools WebSocket failed'));
       this.ws.onmessage = event => {
@@ -62,7 +63,7 @@ class CDP {
     this.ws.send(JSON.stringify({ id, method, params }));
     return answer;
   }
-  close() { this.ws.close(); }
+  close() { if (this.ws) this.ws.close(); }
 }
 
 (async () => {
