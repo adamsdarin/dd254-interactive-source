@@ -12,27 +12,7 @@ const dom=new JSDOM(fs.readFileSync('dd254.htm','utf8'),{
        and crypto APIs. The suite exercises real SHA-256, Blob text/bytes and
        File attachment paths, so give the page Node's standards-compatible
        implementations before any application script decides they are absent. */
-    try{
-      const nodeCrypto=require('crypto');
-      let cryptoSeq=0;
-      const cryptoBridge={
-        getRandomValues:function(array){
-          for(let i=0;i<array.length;i++) array[i]=(cryptoSeq++*73+41)&255;
-          return array;
-        },
-        randomUUID:function(){
-          cryptoSeq++;
-          return '00000000-0000-4000-8000-'+cryptoSeq.toString(16).padStart(12,'0').slice(-12);
-        },
-        subtle:{digest:async function(algorithm,data){
-          if(String(algorithm).toUpperCase()!=='SHA-256') throw new Error('Unsupported digest: '+algorithm);
-          const bytes=Buffer.from(Array.from(new Uint8Array(data)));
-          const out=nodeCrypto.createHash('sha256').update(bytes).digest();
-          return out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength);
-        }}
-      };
-      Object.defineProperty(win,'crypto',{value:cryptoBridge,configurable:true});
-    }catch(e){}
+    try{ Object.defineProperty(win,'crypto',{value:require('crypto').webcrypto,configurable:true}); }catch(e){}
     if(typeof TextEncoder!=='undefined') win.TextEncoder=TextEncoder;
     if(typeof TextDecoder!=='undefined') win.TextDecoder=TextDecoder;
     /* Keep jsdom's own Blob/File identity so its FileReader accepts them, then
@@ -78,6 +58,7 @@ const titles=()=>cards().map(c=>{
   return h.textContent.replace(/[└✏]/g,'').trim();
 });
 setTimeout(async()=>{
+try{ Object.defineProperty(w,'crypto',{value:require('crypto').webcrypto,configurable:true}); }catch(e){}
 E("window.uiConfirm=async function(){return true;};window.alert=function(m){window.__A=m;};");
 
 H('1. Block 18 in the language template');
@@ -1875,6 +1856,14 @@ await ta('a real CSV file upload goes through FileReader', async()=>{
   const a=E("tplLoad(TPL_CSO)");
   return a.length===1 && a[0].label==='Uploaded' && a[0].email==='up@dcsa.mil';});
 
+const suiteCrypto=w.crypto;
+const nodeCrypto=require('crypto');
+const hashCrypto={subtle:{digest:async function(algorithm,data){
+  if(String(algorithm).toUpperCase()!=='SHA-256') throw new Error('Unsupported digest: '+algorithm);
+  const out=nodeCrypto.createHash('sha256').update(Buffer.from(Array.from(new Uint8Array(data)))).digest();
+  return out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength);
+}}};
+try{ Object.defineProperty(w,'crypto',{value:hashCrypto,configurable:true}); }catch(e){}
 await ta('a real file attaches to the validation log and is hashed', async()=>{
   E("VLOG.entries=[];VLOG.files=[];VLOG.remarks='';");
   const file=new w.File([new Uint8Array([1,2,3,4,5])],'evidence.txt',{type:'text/plain'});
@@ -1887,6 +1876,7 @@ await ta('SHA-256 matches the reference value for those bytes', async()=>{
   const h=await E("vlogSha256(new Uint8Array([1,2,3,4,5]).buffer)");
   const crypto=require('crypto');
   return h===crypto.createHash('sha256').update(Buffer.from([1,2,3,4,5])).digest('hex');});
+try{ Object.defineProperty(w,'crypto',{value:suiteCrypto,configurable:true}); }catch(e){}
 
 await ta('the manager rollup imports team backups read-only', async()=>{
   await wipe();
