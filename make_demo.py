@@ -1,17 +1,25 @@
+"""Build the demo from the current official HTML and the tracked fictitious seed."""
 from pathlib import Path
+import importlib.util
+import sys
 
-root = Path(__file__).parent / "01_TOOL"
-official = root / "DD254_Interactive_v1.9.HTM"
-previous_demo = root / "DD254_Interactive_v189_DEMO.HTM"
-output = root / "DD254_Interactive_v1.9_DEMO.HTM"
+ROOT = Path(__file__).resolve().parent
+spec = importlib.util.spec_from_file_location('dd254_split', ROOT / '01_TOOL/rebuild_kit/split.py')
+split = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(split)
 
-official_bytes = official.read_bytes()
-demo_bytes = previous_demo.read_bytes()
-marker = "/* ── DEMONSTRATION BUILD ─".encode("utf-8")
-marker_at = demo_bytes.index(marker)
-suffix_at = demo_bytes.rfind(b"<script>", 0, marker_at)
-if suffix_at < 0:
-    raise SystemExit("demo training block not found")
+def build_demo(check=False):
+    official = Path(split.newest_build(ROOT / '01_TOOL'))
+    output = official.with_name(official.stem + '_DEMO.HTM')
+    payload = official.read_bytes() + (ROOT / '01_TOOL/demo_seed.html').read_bytes()
+    if check:
+        if not output.exists() or output.read_bytes() != payload:
+            raise SystemExit('Demo does not match the current official build and demo_seed.html')
+        print('Demo parity verified:', output.name)
+    else:
+        output.write_bytes(payload)
+        print('Built', output.name, len(payload), 'bytes')
+    return output
 
-output.write_bytes(official_bytes + demo_bytes[suffix_at:])
-print(f"wrote {output.name}: {len(official_bytes):,} official bytes + {len(demo_bytes) - suffix_at:,} demo-only bytes")
+if __name__ == '__main__':
+    build_demo('--check' in sys.argv)

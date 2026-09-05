@@ -1,6 +1,6 @@
 {
-  "source": "DD254_Interactive_v1.9.HTM",
-  "sha256": "2f4d2fee09837d1e435498be47ce6fd2d62ab4158234f3d9d074c19f13536ca2",
+  "source": "DD254_Interactive_v1.10.0.HTM",
+  "sha256": "d6b3d0ee535f73f91cc5004d3f24b4a62e0e39211c2f750ed74bcf8177cbdcb3",
   "parts": {
     "01_pdflib.js": {
       "chars": 525598,
@@ -10,20 +10,20 @@
     "02_dd254_flat.b64": {
       "chars": 738164,
       "sha256": "d6ffb9119c24bda280e64c4a091d61af2fdb990f9553b90836144aa28eaea266",
-      "note": "Official DD Form 254 from esd.whs.mil, base64. Re-encode your own download to replace.",
+      "note": "Flat print-to-PDF derivative of DD Form 254; exact rendering procedure is undocumented. Not a byte-identical Government download.",
       "decoded_sha256": "ff0b984f0a217339904eb037c4c27f344c5dd42804df2d9ed614cca35d025cf0",
       "decoded_bytes": 553623
     },
     "03_dd254_xfa.b64": {
       "chars": 83284,
       "sha256": "77ef0f1bd8125105f223b7422c90aa944bdfc7794936c0ae5eb173b70e1e7cad",
-      "note": "Official DD Form 254 from esd.whs.mil, base64. Re-encode your own download to replace.",
+      "note": "DD Form 254 dynamic XFA, sourced from esd.whs.mil, base64. Verify against your own official download.",
       "decoded_sha256": "86d380749d592f2a900c695bf651de2ebfb962b2d8b0071b244b90045ff217b1",
       "decoded_bytes": 62461
     },
     "04_application.html": {
-      "chars": 814174,
-      "sha256": "66239c8757c007aa25523498ec367a1ecf5037802631cedb787d1ff1644427a8",
+      "chars": 817274,
+      "sha256": "7fff9a51fe3cd901e1fcf1656bd3b0fd75cd7b0d3eeaf025c944b7362858c178",
       "note": "Application code, markup and CSS. THIS is the part to review."
     }
   }

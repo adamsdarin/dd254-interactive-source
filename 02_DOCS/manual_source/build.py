@@ -10,6 +10,7 @@ from reportlab.platypus import (BaseDocTemplate, PageTemplate, Frame, Paragraph,
                                 Spacer, Table, TableStyle, PageBreak, NextPageTemplate)
 from reportlab.platypus.flowables import HRFlowable
 from content import DOC, TITLE, SUB, VER
+from pathlib import Path
 
 NAVY=colors.HexColor('#2b3440'); STEEL=colors.HexColor('#4a5866')
 LINE=colors.HexColor('#b0bac6'); MUT=colors.HexColor('#6a7888')
@@ -88,7 +89,7 @@ for kind,val in DOC:
     elif kind=='note': story.append(Spacer(1,2)); story.append(shaded(val,AMBBG,AMB)); story.append(Spacer(1,5))
     elif kind=='tbl':  story.append(Spacer(1,2)); story.append(table(val)); story.append(Spacer(1,6))
 
-doc=BaseDocTemplate('DD254_User_Manual.pdf',pagesize=letter,
+doc=BaseDocTemplate(str(Path(__file__).with_name('DD254_User_Manual.pdf')),pagesize=letter,
     leftMargin=0.75*inch,rightMargin=0.75*inch,topMargin=0.7*inch,bottomMargin=0.85*inch,
     title='DD-254 Interactive — User Manual',author='DD-254 Interactive')
 fr=Frame(doc.leftMargin,doc.bottomMargin,doc.width,doc.height,id='n')

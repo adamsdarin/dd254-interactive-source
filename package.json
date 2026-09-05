@@ -1,0 +1,8 @@
+{
+  "name": "dd254-verification",
+  "version": "1.10.0",
+  "private": true,
+  "description": "Development-only verification dependencies. The shipped HTML has no runtime dependencies.",
+  "engines": { "node": ">=24" },
+  "devDependencies": { "fake-indexeddb": "6.2.5", "jsdom": "29.1.1" }
+}

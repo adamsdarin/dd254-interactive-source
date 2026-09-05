@@ -33,8 +33,12 @@ def newest_build(where):
            if 'DEMO' not in os.path.basename(f).upper()]
     if not found: sys.exit('no build found in %s'%where)
     def vnum(p):
-        m=re.search(r'_v(\d+)\.HTM$',os.path.basename(p),re.I)
-        return int(m.group(1)) if m else -1
+        name=os.path.basename(p)
+        semantic=re.search(r'_v(\d+(?:\.\d+)+)\.HTM$',name,re.I)
+        if semantic:
+            return (1,tuple(int(part) for part in semantic.group(1).split('.')))
+        legacy=re.search(r'_v(\d+)\.HTM$',name,re.I)
+        return (0,(int(legacy.group(1)),)) if legacy else (-1,())
     return max(found,key=vnum)
 
 def split(src,out):
@@ -77,7 +81,10 @@ def split(src,out):
         m=re.search(const+r'\s*=\s*"([A-Za-z0-9+/=]+)"',s)
         assert m,const+' not found'
         b64=m.group(1)
-        emit(fn,b64,'Official DD Form 254 from esd.whs.mil, base64. Re-encode your own download to replace.',base64.b64decode(b64))
+        note=('Flat print-to-PDF derivative of DD Form 254; exact rendering procedure is undocumented. Not a byte-identical Government download.'
+              if const=='DD254_BASE_B64' else
+              'DD Form 254 dynamic XFA, sourced from esd.whs.mil, base64. Verify against your own official download.')
+        emit(fn,b64,note,base64.b64decode(b64))
         s=s[:m.start(1)]+'@@'+const+'@@'+s[m.end(1):]
 
     # 4. everything else — the part that needs human review

@@ -12,7 +12,10 @@ The manual is generated, not hand-edited. To change it:
        pip install reportlab
        python3 build.py
 
-   It writes `DD254_User_Manual.pdf` beside the scripts.
+   It writes `DD254_User_Manual.pdf` beside the scripts. Copy that file unchanged to
+   `../DD254_Interactive_User_Manual.pdf`, then run
+   `python .github/scripts/check_documentation.py` from the repository root.
+   Render and visually review the pages before releasing.
 
 ## Rules that matter
 

@@ -17,23 +17,15 @@ proportionate ask. This procedure makes it a proportionate one, by separating
 the file into four parts and letting you replace three of them with copies you
 obtain yourself.
 
-The figures below are generated from the shipped v195 file by
-`make_build_facts.py`. Component lengths are the characters captured by each
-extractor; shares use the 2,168,043-byte shipped file as their denominator.
-`split.py` independently records the exact extracted-part lengths and hashes in
-`manifest.json`.
+Read the current filename, tool version, byte size, SHA-256, passing assertion
+count and component shares in [`../../BUILD_FACTS.md`](../../BUILD_FACTS.md).
+Those facts are generated from the same build as `manifest.json`; this guide
+does not maintain a second copy of those changing numbers.
 
-| Part | In the file | Share | Where you get your own |
-|---|---:|---:|---|
-| DD Form 254, flat | 738,164 chars | 34.0% | `esd.whs.mil` |
-| pdf-lib | 525,598 chars | 24.2% | `github.com/Hopding/pdf-lib`, or your internal npm mirror |
-| **Application code** | **598,673 chars** | **27.6%** | **The only code you must read** |
-| Markup and CSS | 222,324 chars | 10.3% | Delivered in the application part |
-| DD Form 254, dynamic XFA | 83,284 chars | 3.8% | `esd.whs.mil` |
-
-After this procedure, the library came from your mirror, both government forms
-came from the government, and the only thing originating outside your boundary
-is source you have read.
+The dynamic XFA is sourced from the official DD Form 254. The embedded flat PDF
+is a print-to-PDF derivative whose exact rendering procedure is undocumented;
+it is not a byte-identical Government download. It remains an internal legacy
+test oracle. The user-facing official export uses the dynamic XFA.
 
 ---
 
@@ -43,16 +35,16 @@ is source you have read.
 - A text editor
 - Optional: Node.js and `jsdom` to run the included test suite
 
-The two scripts are ~40 lines each. Read them first; they are short enough to
-audit in a couple of minutes and they do nothing but read files, split on
-markers, and write files.
+Read split.py and rebuild.py before running them. They read local files, split
+on markers and write the reconstructed output. The manifest records both the
+source hash and component hashes.
 
 ---
 
 ## Step 1 — Verify what you were given
 
 ```
-certutil -hashfile DD254_Interactive_v195.HTM SHA256
+certutil -hashfile DD254_Interactive_v1.10.0.HTM SHA256
 ```
 
 Expected: `01cd3d9b88cf1833cff3bdb42c57de338a1900b1934df5ae14c5a5d1fe463396`
@@ -63,7 +55,7 @@ A mismatch means the file is not the one this guide describes. Stop.
 ## Step 2 — Split it
 
 ```
-python split.py DD254_Interactive_v195.HTM parts
+python split.py DD254_Interactive_v1.10.0.HTM parts
 ```
 
 Produces `parts/` containing four files and a `manifest.json` recording the size
@@ -210,7 +202,7 @@ npm install jsdom fake-indexeddb
 node dd254_regression.js
 ```
 
-Expect 951 assertions passing and 0 failing, covering validation rules, storage,
+Expect the passing assertion count recorded in BUILD_FACTS.md and 0 failing, covering validation rules, storage,
 import/export, PDF generation and the workflow. No network access required. This is what tells you the
 substitutions in steps 4 and 5 did not break anything.
 

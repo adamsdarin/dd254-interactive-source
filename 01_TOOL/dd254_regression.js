@@ -35,10 +35,12 @@ const dom=new JSDOM(fs.readFileSync('dd254.htm','utf8'),{
   }
 });
 const w=dom.window;
+console.log('BUILD_SHA256 '+require('crypto').createHash('sha256').update(fs.readFileSync('dd254.htm')).digest('hex'));
+const waitFor=async(fn,label,ms=5000)=>{const end=Date.now()+ms;while(Date.now()<end){const value=fn();if(value)return value;await new Promise(r=>setTimeout(r,25));}throw new Error('Timed out waiting for '+label);};
 let pass=0,fail=0; const failures=[];
 const E=s=>w.eval(s);
 const t=(n,f)=>{ try{ const r=f(); if(r===true){pass++;console.log('  PASS  '+n);} else {fail++;failures.push(n);console.log('  FAIL  '+n+'  -> '+JSON.stringify(r));} }catch(e){ fail++; failures.push(n); console.log('  THROW '+n+'  -> '+e.message); } };
-const ta=async(n,f)=>{ try{ const r=await f(); if(r===true){pass++;console.log('  PASS  '+n);} else {fail++;failures.push(n);console.log('  FAIL  '+n+'  -> '+JSON.stringify(r));} }catch(e){ fail++; failures.push(n); console.log('  THROW '+n+'  -> '+e.message); } };
+const ta=async(n,f)=>{ let timer; try{ const r=await Promise.race([f(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Asynchronous test exceeded 30 seconds: '+n)),30000);})]); if(r===true){pass++;console.log('  PASS  '+n);} else {fail++;failures.push(n);console.log('  FAIL  '+n+'  -> '+JSON.stringify(r));} }catch(e){ fail++; failures.push(n); console.log('  THROW '+n+'  -> '+e.message); if(/Asynchronous test exceeded/.test(e.message)){dom.window.close();process.exit(1);} } finally{clearTimeout(timer);} };
 const H=n=>console.log('\n### '+n);
 const wipe=async()=>E("(async function(){var a=await draftAll();for(const d of a)await draftDel(d.id);})()");
 /* Scope to the live dashboard. The manager rollup renders its own .dash-card
@@ -289,7 +291,7 @@ await ta('Blocked demands a reason, refuses empty, records it', async()=>{
   await E("draftPut({id:'H1',title:'Hotel',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],workspace:{checks:{},texts:{},radios:{},selects:{}}})");
   await E("dashRenderCards()");
   const pr=E("dashSetStatus('H1','Blocked')");
-  await new Promise(r=>setTimeout(r,100));
+  await waitFor(()=>w.document.getElementById('dashHoldDlg'),'hold dialog');
   const d=w.document.getElementById('dashHoldDlg'); if(!d) return 'no dialog';
   const titled=d.textContent.includes('A reason is required to set Blocked');
   d.querySelector('#hpSave').click();
@@ -310,12 +312,12 @@ await ta('cancel reverts the status', async()=>{
      first — setting Blocked over Blocked is a no-op and raises no dialog. */
   await E("dashSetStatus('H1','Draft')");
   const pr=E("dashSetStatus('H1','Blocked')");
-  await new Promise(r=>setTimeout(r,100));
+  await waitFor(()=>w.document.getElementById('dashHoldDlg'),'hold dialog');
   w.document.getElementById('dashHoldDlg').querySelector('#hpCancel').click(); await pr;
   const r=await E("draftGet('H1')"); return r.status==='Draft' && r.holds.length===1;});
 await ta('a second hold records the raising status', async()=>{
   const pr=E("dashSetStatus('H1','Blocked')");
-  await new Promise(r=>setTimeout(r,100));
+  await waitFor(()=>w.document.getElementById('dashHoldDlg'),'hold dialog');
   const d=w.document.getElementById('dashHoldDlg'); d.querySelector('#hpTxt').value='Waiting on CAGE';
   d.querySelector('#hpSave').click(); await pr;
   const r=await E("draftGet('H1')"); return r.holds.length===2 && r.holds[1].s==='Blocked';});
@@ -332,7 +334,7 @@ await ta('Issued is challenged while a hold is open', async()=>{
   await E("dashSetStatus('H1','Issued')");
   let r=await E("draftGet('H1')"); const reverted=r.status==='Blocked';
   E("window.uiConfirm=async function(){return true;};");
-  const pr=E("dashSetStatus('H1','Issued')"); await new Promise(x=>setTimeout(x,120));
+  const pr=E("dashSetStatus('H1','Issued')"); await waitFor(()=>w.document.getElementById('dashDistDlg'),'distribution dialog');
   const dd=w.document.getElementById('dashDistDlg'); if(dd) dd.querySelector('#ddSkip').click();
   await pr; r=await E("draftGet('H1')");
   return reverted && r.status==='Issued' && E("audAll()").some(x=>x.action==='issued-with-open-holds');});
@@ -341,7 +343,7 @@ await ta('only Blocked raises a hold prompt', async()=>{
   await E("dashSetStatus('HP1','Ready to sign')");
   const noDlg=!w.document.getElementById('dashHoldDlg');
   const pr=E("dashSetStatus('HP1','Blocked')");
-  await new Promise(r=>setTimeout(r,100));
+  await waitFor(()=>w.document.getElementById('dashHoldDlg'),'hold dialog');
   const dlg=!!w.document.getElementById('dashHoldDlg');
   if(dlg) w.document.getElementById('dashHoldDlg').querySelector('#hpCancel').click();
   await pr;
@@ -1512,7 +1514,7 @@ await ta('the stage chip reflects the stage', async()=>{
   return /ORIGINAL/.test(cards()[0].innerHTML);});
 await ta('a full backup round-trips through restore', async()=>{
   await wipe();
-  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  E("DASH.current=null;window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
   E("tplSave(TPL_CSO,[{label:'BK-CSO'}]);tplSave(TPL_FAC,[{label:'BK-FAC',cage:'9BK99'}]);");
   await E("draftPut({id:'B1',title:'Backup me',status:'Draft',stage:'orig',todos:[],dist:[],holds:[],meta:{},workspace:{texts:{i6a:'Backup Co'},checks:{},radios:{},selects:{},perf:[]}})");
   let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p);};
@@ -5686,7 +5688,7 @@ await ta('a later successful persistent write clears the draft-storage failure s
   return ok;
 });
 await ta('the backup reminder clears only after the operator confirms the download', async()=>{
-  const oldConfirm=w.uiConfirm; w.localStorage.setItem('dd254_dirty_n','3');
+  const oldConfirm=w.uiConfirm; E('DASH.current=null;TPL_DIRTY=false;TPL_TOUCH_T=null;'); w.localStorage.setItem('dd254_dirty_n','3');
   w.uiConfirm=async function(){return false;}; const first=await E('fullBackup()'), kept=E('bkDirty()');
   w.uiConfirm=async function(){return true;}; const second=await E('fullBackup()'), cleared=E('bkDirty()');
   w.uiConfirm=oldConfirm;
@@ -5715,6 +5717,63 @@ await ta('the full-chain revision report exports as a PDF and logs the export', 
   const sig=bytes&&Array.from(bytes.slice(0,4)).map(function(x){return String.fromCharCode(x);}).join('');
   const logged=E("audAll().some(function(a){return a.id==='rev2'&&a.action==='revision-report-exported';})");
   return sig==='%PDF' && bytes.length>1000 && logged;
+});
+
+
+H('102. Notes and backup snapshot custody');
+await ta('quick edits on two dashboard cards both persist', async()=>{
+  await wipe();
+  await E("draftPut({id:'note-a',title:'A',workspace:{},notes:'old A'})");
+  await E("draftPut({id:'note-b',title:'B',workspace:{},notes:'old B'})");
+  E("dashNotesInput('note-a','new A');dashNotesInput('note-b','new B');");
+  await new Promise(r=>setTimeout(r,750)); await E('DASH_NOTES_WRITE');
+  return (await E("draftGet('note-a')")).notes==='new A' && (await E("draftGet('note-b')")).notes==='new B';
+});
+await ta('a rerender preserves notes waiting for the save timer', async()=>{
+  E("dashNotesInput('note-a','Visible pending note')");
+  const pending=E("dashNotesValue({id:'note-a',notes:'stale'})");
+  await E('dashNotesFlush()'); return pending==='Visible pending note';
+});
+await ta('Full Backup contains notes typed immediately before the click', async()=>{
+  const oldURL=w.URL.createObjectURL, oldConfirm=w.uiConfirm; let captured;
+  w.URL.createObjectURL=function(blob){captured=blob;return 'blob:backup-test';}; w.uiConfirm=async()=>true;
+  E("DASH.current=null;TPL_DIRTY=false;TPL_TOUCH_T=null;dashNotesInput('note-a','Last keystroke')");
+  const result=await E('fullBackup()'); const data=JSON.parse(await captured.text());
+  w.URL.createObjectURL=oldURL;w.uiConfirm=oldConfirm;
+  return result && data.drafts.find(r=>r.id==='note-a').notes==='Last keystroke';
+});
+await ta('changes made during backup confirmation keep their reminder', async()=>{
+  const oldConfirm=w.uiConfirm; w.localStorage.setItem('dd254_dirty_n','4');
+  w.uiConfirm=async()=>{E('bkMark()');return true;};
+  await E('fullBackup()'); const left=E('bkDirty()');w.uiConfirm=oldConfirm;
+  return left===1;
+});
+await ta('an IndexedDB write failure keeps the latest record recoverable in Full Backup', async()=>{
+  await E("draftPut({id:'idb-emergency',title:'Persisted title',workspace:{}})");
+  const db=E('DASH.db'), oldTransaction=db.transaction, oldAlert=w.uiAlert, oldURL=w.URL.createObjectURL, oldConfirm=w.uiConfirm;
+  let captured,threw=false;w.uiAlert=async()=>{};w.uiConfirm=async()=>true;
+  db.transaction=function(stores,mode){if(stores==='drafts'&&mode==='readwrite')throw new Error('simulated IDB failure');return oldTransaction.apply(this,arguments);};
+  try{await E("draftPut({id:'idb-emergency',title:'Newest unsaved title',workspace:{}})");}catch(e){threw=true;}
+  db.transaction=oldTransaction;
+  const recovered=await E("draftGet('idb-emergency')");
+  w.URL.createObjectURL=function(blob){captured=blob;return 'blob:emergency-test';};
+  await E('fullBackup()'); const backup=JSON.parse(await captured.text());
+  const ok=threw && recovered.title==='Newest unsaved title' && backup.drafts.find(r=>r.id==='idb-emergency').title==='Newest unsaved title';
+  await E("draftPut({id:'idb-emergency',title:'Recovered',workspace:{}})");
+  const cleared=!E('window.DRAFT_STORAGE_FAIL');
+  w.uiAlert=oldAlert;w.URL.createObjectURL=oldURL;w.uiConfirm=oldConfirm;
+  return ok&&cleared;
+});
+await ta('an unreadable draft database refuses a misleading empty backup', async()=>{
+  const db=E('DASH.db'),oldTransaction=db.transaction,oldAlert=w.uiAlert,oldURL=w.URL.createObjectURL;
+  let downloads=0,message='';w.uiAlert=async m=>{message=m;};w.URL.createObjectURL=()=>{downloads++;return 'blob:should-not-exist';};
+  db.transaction=function(stores,mode){
+    if(stores==='drafts'&&!mode)return {objectStore(){return {getAll(){const rq={};setTimeout(()=>{rq.error=new Error('read failed');rq.onerror();},0);return rq;}};}};
+    return oldTransaction.apply(this,arguments);
+  };
+  w.localStorage.setItem('dd254_dirty_n','5');const result=await E('fullBackup()');
+  db.transaction=oldTransaction;w.uiAlert=oldAlert;w.URL.createObjectURL=oldURL;
+  return result===false&&downloads===0&&E('bkDirty()')===5&&/could not read/.test(message);
 });
 
 console.log('\n================================');

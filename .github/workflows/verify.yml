@@ -18,8 +18,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     # A hung step otherwise runs to the six-hour job limit. The regression
-    # suite has been observed to stall on Linux -- see KNOWN_ISSUES in
-    # SETUP.md -- and a stall must fail fast and legibly, not quietly consume
+    # suite must fail fast and legibly if an unexpected stall returns, not consume
     # a runner and leave an ambiguous red X hours later.
     timeout-minutes: 25
     steps:
@@ -27,17 +26,16 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # Only the two harness dependencies, and not saved to a manifest: the
-      # shipped tool has no dependencies at all and must not acquire the
-      # appearance of any. jsdom and fake-indexeddb exist for the test run.
+      # Locked development dependencies make the harness reproducible.
+      # The distributed HTML still needs no package installation.
       - name: Install test harness
-        run: npm install --no-save jsdom fake-indexeddb
+        run: npm ci --ignore-scripts
 
       - name: Locate the build
         id: build
@@ -50,11 +48,17 @@ jobs:
       - name: Syntax-check every script block
         run: python3 .github/scripts/check_scripts.py
 
+      - name: Release selection and demo parity
+        run: python3 .github/scripts/check_release_tools.py
+
       # pdf_content_regression.py extracts text from a generated PDF and
       # asserts on it. Without pypdf that check degrades silently rather than
       # failing, which is the worst kind of green.
       - name: Install PDF extraction dependency
         run: python3 -m pip install --quiet pypdf
+
+      - name: Manual matches the release
+        run: python3 .github/scripts/check_documentation.py
 
       - name: Regression suite
         timeout-minutes: 10
@@ -79,7 +83,9 @@ jobs:
 
       - name: Headless browser smoke test
         timeout-minutes: 8
-        run: node 01_TOOL/browser_smoke.js "${{ steps.build.outputs.path }}"
+        run: |
+          node 01_TOOL/browser_smoke.js "${{ steps.build.outputs.path }}"
+          node 01_TOOL/browser_smoke.js "${{ steps.build.outputs.demo }}"
 
       - name: pdf-lib is the unmodified upstream release
         run: python3 01_TOOL/rebuild_kit/verify_pdflib.py
@@ -91,7 +97,7 @@ jobs:
         if: always()
         run: |
           {
-            echo "### Build verified"
+            echo "### Verification result: ${{ job.status }}"
             echo ""
             echo "| | |"
             echo "|---|---|"

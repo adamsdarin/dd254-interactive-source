@@ -20,13 +20,13 @@ and no network traffic. Download one file, open it, work offline.
 | | |
 |---|---|
 | **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive/releases/latest) → `DD254_Interactive_vNNN.HTM` |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.10.0.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_vNNN.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.10.0.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -97,7 +97,13 @@ still describes the committed build. The logs are public.
 
 ## Documentation
 
-[`02_DOCS/DD254_Interactive_User_Manual.pdf`](02_DOCS/) — user manual.
+- [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
+- [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.10.0.md)
+
+The live demonstration is published separately to `adamsdarin/dd254-interactive`.
+The source, verification workflow and downloadable releases are in
+`adamsdarin/dd254-interactive-source`.
 
 ## Licence
 

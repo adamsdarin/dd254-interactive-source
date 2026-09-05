@@ -5,11 +5,9 @@ that count only from a recorded successful run, never by counting declarations.
 
 ## Running it
 
-Put `dd254_regression.js` in a folder with the tool renamed to `dd254.htm`, then:
+Use Node.js 24 or newer. From the repository root, install the locked test-only dependencies with `npm ci --ignore-scripts` and install `pypdf` in your Python environment. Copy the current official build (selected by `.github/scripts/newest_build.py`) to `01_TOOL/dd254.htm`, then run `node dd254_regression.js` from `01_TOOL`.
 
-    npm install jsdom@29 fake-indexeddb
-    python -m pip install pypdf
-    node dd254_regression.js
+The harness prints the exact build SHA-256. Save the complete successful output to `01_TOOL/TEST_RESULT.txt` before regenerating build facts. It times out a stuck asynchronous assertion with its name.
 
 The PDF-content assertion invokes `pdf_content_regression.py`. Set
 `DD254_PYTHON` to the Python executable that has `pypdf` when `python` (Windows)
@@ -87,6 +85,7 @@ the failing names are listed at the end.
 | 88 | Nonblocking Item 10/11 advisors |
 | 89 | Conditional-alert authority references |
 | 90 | v195 custody, audience isolation, CUI derivation, backup confirmation and revision-report safeguards |
+| Additional v1.10.0 cases | Rapid notes on separate drafts, redraw preservation, immediate backup, later-edit reminders, emergency recovery and unreadable-store refusal |
 
 ## Findings from the full sweep — both now fixed
 

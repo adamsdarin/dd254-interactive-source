@@ -38,6 +38,7 @@ sha=lambda b: hashlib.sha256(b if isinstance(b,bytes) else b.encode('utf-8')).he
 
 blocks=re.findall(r'<script\b[^>]*>(.*?)</script>',s,re.S|re.I)
 pdflib=[b for b in blocks if 'pdf-lib.min.js.map' in b][0]
+pdflib_bytes=len(pdflib.encode('utf-8'))
 # Hashed exactly as embedded — do not .strip() it.
 #
 # This file and rebuild_kit/manifest.json both publish a hash for the same
@@ -55,7 +56,7 @@ pdflib=[b for b in blocks if 'pdf-lib.min.js.map' in b][0]
 def b64(c):
     m=re.search(c+r'\s*=\s*"([A-Za-z0-9+/=]+)"',s); return m.group(1)
 flat,xfa=b64('DD254_BASE_B64'),b64('DD254_XFA_B64')
-app=sum(len(b) for b in blocks if 'pdf-lib.min.js.map' not in b
+app=sum(len(b.encode('utf-8')) for b in blocks if 'pdf-lib.min.js.map' not in b
         and 'DD254_BASE_B64' not in b and 'DD254_XFA_B64' not in b)
 tot=len(raw)
 mk=lambda n: '%.1f%%'%(100*n/tot)
@@ -67,8 +68,14 @@ mk=lambda n: '%.1f%%'%(100*n/tot)
 res=os.path.join(HERE,'TEST_RESULT.txt')
 nass='NOT RUN — see note below'
 if os.path.exists(res):
-    m=re.search(r'PASS\s+(\d+)\s+FAIL\s+(\d+)',io.open(res,encoding='utf-8').read())
-    if m: nass=('%s (with %s failing)'%(m.group(1),m.group(2))) if m.group(2)!='0' else m.group(1)
+    recorded=io.open(res,encoding='utf-8').read()
+    m=re.search(r'PASS\s+(\d+)\s+FAIL\s+(\d+)',recorded)
+    tested=re.search(r'(?m)^BUILD_SHA256 ([a-f0-9]{64})$',recorded)
+    if not m or m.group(2)!='0' or not tested or tested.group(1)!=sha(raw):
+        sys.exit('TEST_RESULT.txt must contain a passing run of this exact build (BUILD_SHA256). Re-run the suite before generating release facts.')
+    nass=m.group(1)
+else:
+    sys.exit('TEST_RESULT.txt is required. Run the regression suite first.')
 
 ver=re.search(r"TOOL_VERSION='([^']+)'",s)
 out=f"""# Build facts — generated, do not hand-edit
@@ -92,13 +99,13 @@ would download; both figures are given so neither is misleading.
 
 | Component | In the file | Decoded | Share of file |
 |---|---|---|---|
-| pdf-lib (MIT) | {len(pdflib):,} chars | — | {mk(len(pdflib))} |
+| pdf-lib (MIT) | {pdflib_bytes:,} UTF-8 bytes | — | {mk(pdflib_bytes)} |
 | DD Form 254, flat | {len(flat):,} chars | {len(base64.b64decode(flat)):,} bytes | {mk(len(flat))} |
 | DD Form 254, dynamic XFA | {len(xfa):,} chars | {len(base64.b64decode(xfa)):,} bytes | {mk(len(xfa))} |
-| **Application code** | **{app:,} chars** | — | **{mk(app)}** |
-| Markup and CSS | {tot-len(pdflib)-len(flat)-len(xfa)-app:,} chars | — | {mk(tot-len(pdflib)-len(flat)-len(xfa)-app)} |
+| **Application code** | **{app:,} UTF-8 bytes** | — | **{mk(app)}** |
+| Markup and CSS | {tot-len(pdflib.encode('utf-8'))-len(flat)-len(xfa)-app:,} UTF-8 bytes | — | {mk(tot-len(pdflib.encode('utf-8'))-len(flat)-len(xfa)-app)} |
 
-Not the author's code: **{mk(len(pdflib)+len(flat)+len(xfa))}** of the file.
+Not the author's code: **{mk(pdflib_bytes+len(flat)+len(xfa))}** of the file.
 
 ## Component hashes
 
@@ -168,7 +175,7 @@ if _man['sha256']!=sha(raw):
 # they are derived from the build and are correct whether or not anyone wrote
 # a change note. Only the exit code fails, so the omission is loud without
 # leaving stale artifacts behind.
-_ver=re.search(r'_v(\d+)\.HTM$',os.path.basename(BUILD),re.I)
+_ver=re.search(r'_v(\d+(?:\.\d+)*)\.HTM$',os.path.basename(BUILD),re.I)
 _ver=_ver.group(1) if _ver else None
 _log=os.path.join(HERE,'CHANGELOG.md')
 if _ver:

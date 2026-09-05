@@ -105,6 +105,19 @@ else:
     elif "NOT RUN" in row.group(1).upper():
         problems.append("BUILD_FACTS.md reports the test suite as NOT RUN -- "
                         "run the suite and regenerate")
+    result_path=os.path.join(TOOL,'TEST_RESULT.txt')
+    recorded=io.open(result_path,encoding='utf-8').read() if os.path.exists(result_path) else ''
+    tested=re.search(r'(?m)^BUILD_SHA256 ([a-f0-9]{64})$',recorded)
+    result=re.search(r'PASS\s+(\d+)\s+FAIL\s+(\d+)',recorded)
+    if not tested or tested.group(1)!=build_sha:
+        problems.append('TEST_RESULT.txt was not recorded against the current build')
+    if not result or result.group(2)!='0':
+        problems.append('TEST_RESULT.txt has no successful regression summary')
+    elif row and row.group(1).strip()!=result.group(1):
+        problems.append('BUILD_FACTS.md assertion count disagrees with TEST_RESULT.txt')
+    version=re.search(r"TOOL_VERSION='([^']+)'",raw.decode('utf-8'))
+    if not version or ('| **Tool version** | `'+version.group(1)+'` |') not in facts:
+        problems.append('BUILD_FACTS.md tool version disagrees with the build')
     if not problems:
         print("BUILD_FACTS.md : matches the build")
 

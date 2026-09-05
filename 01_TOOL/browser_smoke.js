@@ -172,8 +172,14 @@ class CDP {
       const stored=(durable||[])[0]||{};
       const templateSaveOk=showedSaving && saveOk && /Saved/.test(document.getElementById('tplSaveState').textContent)
         && stored.label==='Browser durable save 195';
+      await draftPut({id:'live-note-a',title:'A',workspace:{},notes:'old A'});
+      await draftPut({id:'live-note-b',title:'B',workspace:{},notes:'old B'});
+      dashNotesInput('live-note-a','First quick note');dashNotesInput('live-note-b','Second quick note');
+      await dashNotesFlush();
+      const notesOk=(await draftGet('live-note-a')).notes==='First quick note'
+        && (await draftGet('live-note-b')).notes==='Second quick note';
       return {version:document.getElementById('toolVer').textContent,settingsOk,exportUiOk,signingUiOk,signingExportOk,validationSafe,
-        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk};
+        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,notesOk};
     })()`;
     const result = await cdp.send('Runtime.evaluate', {
       expression, awaitPromise: true, returnByValue: true
@@ -214,11 +220,41 @@ class CDP {
     });
     value.checkboxGlyphClickWorks = afterClick.result.value === true;
 
+    /* Exercise a real download, including notes entered immediately beforehand.
+       Reading the file on disk catches blocked/empty downloads that Blob mocks miss. */
+    const downloadDir = path.join(profile, 'downloads');
+    fs.mkdirSync(downloadDir);
+    await cdp.send('Browser.setDownloadBehavior', {behavior:'allow',downloadPath:downloadDir});
+    const startBackup = await cdp.send('Runtime.evaluate', {
+      expression: `(async function(){
+        DASH.current=null; document.body.classList.add('dash-mode'); await dashRenderCards('live-note-a');
+        const note=document.getElementById('notesIn_live-note-a');
+        if(!note) throw new Error('Dashboard note input missing');
+        note.value='REAL DOWNLOAD latest note'; note.dispatchEvent(new Event('input',{bubbles:true}));
+        const button=Array.from(document.querySelectorAll('button')).find(b=>/Full Backup \\(\\.json\\)/.test(b.textContent));
+        if(!button) throw new Error('Full Backup button missing');
+        button.click(); return true;
+      })()`,awaitPromise:true,returnByValue:true
+    });
+    if(startBackup.exceptionDetails) throw new Error('Backup UI failed: '+JSON.stringify(startBackup.exceptionDetails));
+    const downloaded = await waitFor(() => fs.readdirSync(downloadDir).find(n=>/^DD254_Full_Backup_.*\.json$/.test(n)), 15000, 'full backup download');
+    const payload = JSON.parse(fs.readFileSync(path.join(downloadDir,downloaded),'utf8'));
+    value.backupDownloadOk = payload.tool==='DD254 Full Backup'
+      && payload.drafts.some(r=>r.id==='live-note-a'&&r.notes==='REAL DOWNLOAD latest note')
+      && payload.drafts.some(r=>r.id==='live-note-b'&&r.notes==='Second quick note');
+    await waitFor(async()=>{
+      const r=await cdp.send('Runtime.evaluate',{expression:`(function(){
+        const msg=Array.from(document.querySelectorAll('.ui-modal-msg')).find(e=>/Did the Full Backup file finish/.test(e.textContent));
+        if(!msg) return false;
+        Array.from(msg.parentElement.querySelectorAll('button')).find(b=>b.textContent==='OK').click();return true;
+      })()`,returnByValue:true});return r.result.value;
+    },5000,'backup save confirmation');
+
     const exceptions = cdp.events.filter(x => x.method === 'Runtime.exceptionThrown');
     const ok = value && /^Tool v\d+\.\d+$/.test(value.version || '') && value.settingsOk && value.exportUiOk
       && value.signingUiOk && value.signingExportOk && value.validationSafe && value.advisoryUiOk && value.inserted && value.removed && value.undoOffered
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk
-      && value.checkboxGlyphClickWorks && exceptions.length === 0;
+      && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.length }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));
   } finally {
@@ -227,7 +263,8 @@ class CDP {
     await pause(250);
     /* This is the exact mkdtemp result above, never a caller-provided path. */
     if (path.dirname(profile) === path.resolve(os.tmpdir()) && path.basename(profile).startsWith('dd254-browser-')) {
-      fs.rmSync(profile, { recursive: true, force: true });
+      try{fs.rmSync(profile, { recursive: true, force: true, maxRetries:10, retryDelay:200 });}
+      catch(err){console.warn('Temporary browser profile is still locked: '+profile);}
     }
   }
 })().catch(err => { console.error('LIVE BROWSER: FAIL ' + err.stack); process.exit(1); });

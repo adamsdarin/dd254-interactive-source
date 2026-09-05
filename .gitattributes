@@ -1,0 +1,13 @@
+# Release artifacts and byte-compared demo sources must survive checkout intact.
+*.HTM -text
+01_TOOL/demo_seed.html -text
+*.pdf binary
+*.pptx binary
+*.png binary
+*.jpg binary
+*.md text eol=lf
+*.py text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.txt text eol=lf

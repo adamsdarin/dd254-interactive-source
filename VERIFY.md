@@ -176,7 +176,7 @@ transit.** It says nothing about who built it or from what. For that:
   produced by GitHub's own infrastructure, not by the author). Verify with:
 
   ```bash
-  gh attestation verify DD254_Interactive_vNNN.HTM --repo adamsdarin/dd254-interactive
+  gh attestation verify DD254_Interactive_vNNN.HTM --repo adamsdarin/dd254-interactive-source
   ```
 
   This ties the file in your hands to a specific commit and a public build log.
@@ -233,3 +233,12 @@ this project before. The check exists because of it.
 [SECURITY.md](SECURITY.md). Please report it — including "your provenance
 documentation is wrong," which is the finding this page is most likely to
 produce.
+
+## Release parity
+
+`python make_demo.py --check` verifies that the current demo is the exact official
+build plus the tracked fictitious seed. Semantic release numbers are compared
+numerically, and previous official files are preserved. The regression result
+records the tested HTML SHA-256; published build facts reject a stale or failing
+test result. Test dependencies are pinned in `package-lock.json` and installed
+with `npm ci --ignore-scripts` (Node 24).

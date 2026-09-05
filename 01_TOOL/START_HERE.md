@@ -10,9 +10,8 @@ that were already argued out.
 
 Changing the DD-254 Interactive tool: features, validation rules, fixes, tests.
 
-**Not** for the manual, the handbook, the deck or the security documents. Those
-live in the documents project. See "Where the two streams touch" at the bottom —
-they are not fully independent, and pretending otherwise causes stale documents.
+The corresponding documentation is in `../02_DOCS`. A release request that includes
+documentation must update and verify the tool and its documents together.
 
 ## Current state
 
@@ -29,14 +28,14 @@ The tool is one HTML file. No build step, no dependencies, no server.
 2. Make the change.
 3. **Syntax-check every `<script>` block** — extract each and `node --check` it.
    A comment-block error kills a whole block silently and the tool half-works.
-4. Run `dd254_regression.js` (needs `jsdom` and `fake-indexeddb`, and the HTML
+4. Run `dd254_regression.js` (needs the locked dev dependencies from root `npm ci --ignore-scripts`, and the HTML
    named `dd254.htm` beside it).
 5. Run `browser_smoke.js` against the versioned file. It drives the real Item
    10 tile, Settings, Item 13 removal and undo in headless Chrome/Edge.
 6. **Then run any changed export live** — see the warning below.
 7. Ship as the next version number and preserve earlier official builds unless
    the owner explicitly authorises archival or deletion.
-8. **Add a `## vNNN` entry to `CHANGELOG.md`** — what changed, what was added,
+8. **Add a `## v1.10.0`-style entry to `CHANGELOG.md`** — what changed, what was added,
    what was deliberately not done. Every change to the HTML gets one.
 9. Run `python3 make_build_facts.py`. It regenerates `BUILD_FACTS.md` and
    `rebuild_kit/manifest.json` together, and exits non-zero if step 7 was
@@ -62,7 +61,7 @@ These cost real time. Worth reading before touching the file.
   did not.
 - **`async function foo` and `function foo` both match `function foo`.** An
   anchored replace on the latter splits the keyword and kills the script block.
-- **The suite takes about a minute** and background processes get killed between
+- **The suite normally takes a few minutes** and background processes get killed between
   tool calls. Run it in one window.
 
 ## Conventions that are load-bearing

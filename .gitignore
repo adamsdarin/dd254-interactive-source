@@ -9,8 +9,14 @@ package/
 
 # Test harness
 node_modules/
-package-lock.json
 dd254.htm
+.work/
+01_TOOL/baseline-test.txt
+01_TOOL/debug-test.txt
+02_DOCS/training_source/.build/
+# Rough-draft training is delivered locally; it is not a public software asset.
+02_DOCS/training_source/
+02_DOCS/training/
 
 # Python
 __pycache__/

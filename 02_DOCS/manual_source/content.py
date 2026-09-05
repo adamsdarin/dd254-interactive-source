@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Covers build v195 (tool version 2.121)"
+VER="Covers release v1.10.0 (tool version 2.122)"
 
 DOC = [
+("h1","Release v1.10.0 changes"),
+("p","Dashboard notes now preserve quick edits across multiple cards and keep pending text visible when the dashboard redraws. Full Backup saves pending notes, the active form and template edits before building its snapshot. If you make further changes while the backup is being created or confirmed, their reminder remains active."),
+("p","A failed individual IndexedDB draft write now keeps the newest copy in the open tab and includes it in Full Backup. A failed database read stops the backup instead of producing a misleading empty portfolio. Keep the tab open when the storage warning appears; an emergency copy is not persistent storage."),
+("p","The warning beside the classification selector now describes the tool's processing limit accurately. Release downloads, test results, the demonstration build and the component manifest are checked together. Previous versioned files remain available."),
+
 ("h1","1. What this tool is"),
 ("p","DD-254 Interactive is a single HTML file that runs entirely inside your browser. There is no server, no login and no network traffic: everything you type stays on the machine you typed it on, in that browser's local storage. Opening the file from a different browser, a different Windows profile, or a colleague's laptop shows an empty workspace."),
 ("p","Two consequences follow, and they govern everything else in this manual:"),
 ("n","Your drafts and templates are only as safe as your last backup. Nothing is stored anywhere else. Section 9 explains how."),
 ("n","The tool is single-user by design. Two people cannot collaborate inside one file. Managers consolidate a team by importing each person's backup read-only — section 8."),
-("warn","The DD Form 254 itself may only be UNCLASSIFIED or CUI. Classified content is conveyed through attachments referenced in Items 13 and 14, never typed into the form. Never attach classified material to the validation log."),
+("warn","This tool supports UNCLASSIFIED or CUI entries only and is not approved for classified processing. A DD Form 254 can itself contain classified information under the official form instructions; prepare such a form on an approved system. Never enter classified content or upload classified attachments in this tool."),
 
 ("h1","2. Before you start"),
 ("h2","2.1 Set the classification marking"),
@@ -331,7 +336,7 @@ DOC = [
 ("n","Assign a <b>Security manager</b>; it searches the Security Managers library."),
 ("n","<b>Edit blocks</b> to set the form\u2019s own classification (UNCLASSIFIED or CUI) and fill Items 10 and 11 (each ticked box opens a text area for Block 13 language tied to that box), 12, 13, 14, 15, 16, 18, and a free-text list of required attachments."),
 ("p","Every box in Items 10, 11 and 18 is shown with its full name, not just its number \u2014 10j reads <i>Controlled Unclassified Information (CUI)</i>. The wording is read from the form itself, so a template can never label a box differently from the DD-254 it will be applied to."),
-("note","The classification here is the marking on the DD Form 254 itself, which may only be UNCLASSIFIED or CUI. Applying a template sets it on the form and repaints the banner, and the marking then shows on the dashboard card. A spreadsheet row asking for anything higher falls back to UNCLASSIFIED rather than storing a marking the form cannot carry."),
+("note","The classification here is the marking supported by this tool: UNCLASSIFIED or CUI. That is a tool restriction, not a rule that every DD Form 254 must be unclassified. Applying a template sets it on the form and repaints the banner, and the marking then shows on the dashboard card. A spreadsheet row asking for anything higher falls back to UNCLASSIFIED rather than storing a marking the form cannot carry."),
 ("p","<b>Capture from form</b> snapshots the open form instead. It never overwrites your per-checkbox language or the attachment list, because neither exists on the form."),
 ("warn","Capture takes Block 13 as one block of text. If you had previously applied a different template to that form, its language is now in Block 13 and will be captured. Capture from a clean form, or check Block 13 straight afterwards."),
 ("p","On the form, select an entry in the Template language panel to see its content as cards. <b>Insert all of this template</b> sits at the top and applies every section in one go \u2014 the classification, the Item 10, 11 and 18 boxes, the Item 12 routing, Blocks 13, 14, 15 and 16. Fields the template leaves blank are not touched, so nothing already on the form is wiped, and it asks first if Block 13 already has text. Beneath it each section still has its own insert or apply button if you want only part of it. Nothing is applied automatically. Per-checkbox language inserts itself into Block 13 as you tick the matching box and removes itself if you untick it. The required attachments appear in the attachment reminder and again in the distribution dialog."),
@@ -419,7 +424,7 @@ DOC = [
 ("h1","8. Data safety"),
 ("h2","8.1 Full backup"),
 ("p","<b>Templates</b>, then <b>Full Backup</b> writes a single JSON file containing every template library, every draft, and the audit log. The dashboard header counts changes since your last backup and turns red when you are behind."),
-("p","After the download starts, the tool asks whether the Full Backup finished and was saved successfully. The change counter clears only when you confirm it. Choose Cancel if the browser blocked the download, it is still running, or you cannot find the file; the reminder stays active."),
+("p","After the download starts, the tool asks whether the Full Backup finished and was saved successfully. Only the backed-up changes clear when you confirm; later edits keep their reminder. Choose Cancel if the browser blocked the download, it is still running, or you cannot find the file; the reminder stays active."),
 ("p","Backups carry a SHA-256 checksum and entry counts. On restore both are verified: a truncated download or an edited file is refused rather than silently loaded. Older backups without a checksum require explicit confirmation. The audit log merges on restore rather than overwriting, de-duplicated by timestamp."),
 ("warn","Restoring a Full Backup REPLACES every template list. Drafts are merged by ID, but templates are not. Take a backup of the current state before restoring another one."),
 ("h2","8.2 Sharing templates with colleagues"),
@@ -437,7 +442,7 @@ DOC = [
 ("n","<b>Undo last change</b> in any library reverts that library\u2019s import. One level, as everywhere else."),
 ("n","Every import and export is written to the audit log, including who the pack came from."),
 ("h2","8.3 Storage"),
-("p","The dashboard footer shows local storage in use. Drafts and templates live in the browser's local database; if that is unavailable the tool falls back to a much smaller store. If a draft write fails, the tool stops claiming that it was saved, keeps the newest emergency copy visible in the open tab, and shows a red <b>DRAFT NOT SAVED</b> warning that cannot be cleared by an unrelated successful transaction. Keep the tab open, take a Full Backup immediately, and free browser storage before continuing. Closing the tab loses anything held only in the emergency copy."),
+("p","The dashboard footer shows local storage in use. Drafts and templates live in the browser's local database; if that is unavailable the tool falls back to a much smaller store. If an individual draft write fails, the tool stops claiming that it was saved, keeps the newest emergency copy visible in the open tab, and shows a red <b>DRAFT NOT SAVED</b> warning that cannot be cleared by an unrelated successful transaction. Keep the tab open, take a Full Backup immediately, and free browser storage before continuing. Closing the tab loses anything held only in the emergency copy."),
 
 ("h2","8.4 The audit log and chain of custody"),
 ("p","The audit log is no longer capped at 5,000 entries and no longer competes for the small storage bucket \u2014 it lives in the drafts database. If a cap is ever reached, the log records that entries were removed rather than losing them silently."),
@@ -462,7 +467,7 @@ DOC = [
 ("n","<b>It installs nothing.</b> No administrator rights, no registry entries, no services, no scheduled tasks. It is a document opened in a browser tab."),
 ("n","<b>Data stays on the machine</b>, in browser IndexedDB with localStorage as a fallback. There is no account, no licence check and no telemetry."),
 ("p","Reference hyperlinks to public government sites \u2014 acquisition.gov, dcsa.mil, esd.whs.mil and others \u2014 open only when you click them. The page itself never contacts them."),
-("note","Roughly 63% of the file is not application code: an open-source PDF library and two official DD Form 254 PDFs, both verifiable against their own sources. The separate security fact sheet gives hashes, verification commands and a procedure for reconstructing the file from independently sourced parts."),
+("note","The file embeds an unmodified open-source PDF library, the official dynamic DD Form 254 PDF and a flattened derivative used by internal verification. The flat derivative is not the original Government download. BUILD_FACTS.md and the security fact sheet provide current sizes, hashes and provenance; the rebuild kit verifies reconstruction from the extracted parts."),
 ("p","<b>Accessibility.</b> Every form control carries an accessible name, and the Item 10, 11 and 18 names are read from the form at runtime so a screen reader hears exactly what is printed beside the box. Interactive elements are keyboard operable."),
 ("h1","11. Notes and limitations"),
 ("h2","11.1 On cited rules and advisory findings"),

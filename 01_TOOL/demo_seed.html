@@ -1,0 +1,115 @@
+<script>
+/* ── DEMONSTRATION BUILD ─────────────────────────────────────────
+   Identical to the shipped tool except for this block. Every template library
+   is seeded with four fictitious entries so the workflow can be shown without
+   anyone typing setup data first.
+
+   Every value here is invented. Companies, addresses and contract numbers are
+   made up; telephone numbers use the 555-01xx range reserved for fiction and
+   e-mail addresses use example.com, which is reserved by RFC 2606 and cannot be
+   registered. Nothing in this file refers to a real facility, contract or
+   person, and it must not be used to prepare an actual DD Form 254.
+
+   Seeding only happens when a library is empty, so anything typed during a
+   demonstration survives a reload rather than being overwritten on every load. */
+(function(){
+  const B=[
+    ['Aurora Dynamics','7AUR1','1400 Kestrel Way, Building 3','Fairfax, VA 22030'],
+    ['Meridian Systems','3MER5','88 Halyard Drive','Huntsville, AL 35801'],
+    ['Calder Aerospace','9CAL2','2201 Foundry Road, Suite 400','Wichita, KS 67209'],
+    ['Northwind Defense','4NWD8','65 Beacon Point Parkway','Groton, CT 06340']
+  ];
+  const CSOS=[
+    ['DCSA Mid-Atlantic (demo)','2001 Rockledge Pike, Suite 200, Linthicum, MD 21090','202-555-0110','midatlantic.demo@example.com'],
+    ['DCSA Southeast (demo)','700 Marshland Court, Marietta, GA 30060','202-555-0121','southeast.demo@example.com'],
+    ['DCSA Central (demo)','4400 Prairie Center Drive, Overland Park, KS 66210','202-555-0132','central.demo@example.com'],
+    ['DCSA Northeast (demo)','130 Harbour Street, Boston, MA 02210','202-555-0143','northeast.demo@example.com']
+  ];
+  const PEOPLE=[
+    ['R. Vance','Facility Security Officer','202-555-0154','r.vance@example.com'],
+    ['T. Okafor','Program Security Officer','202-555-0165','t.okafor@example.com'],
+    ['M. Lindqvist','Contracting Officer Representative','202-555-0176','m.lindqvist@example.com'],
+    ['J. Serrano','Security Manager','202-555-0187','j.serrano@example.com']
+  ];
+  function uid(){ try{ return crypto.randomUUID(); }catch(e){ return 'demo-'+Math.random().toString(36).slice(2,10); } }
+  function seed(key,rows){
+    try{
+      const cur=tplLoad(key)||[];
+      if(cur.length) return false;
+      tplSave(key,rows.map(function(r){ r.ioId=r.ioId||uid(); return r; }));
+      return true;
+    }catch(e){ return false; }
+  }
+  function ctData(over){
+    const d=(typeof ctBlankData==='function')?ctBlankData():{c10:{},l10:{},c11:{},l11:{},c18:{},i16:{}};
+    Object.keys(over||{}).forEach(function(k){ d[k]=over[k]; });
+    return d;
+  }
+  function demoSeed(){
+    seed(TPL_FAC, B.map(function(b,i){
+      return {label:b[0]+' ('+b[1]+')', text:b[0]+'\n'+b[2]+'\n'+b[3], cage:b[1],
+              email:'fso.'+b[1].toLowerCase()+'@example.com'};
+    }));
+    seed(TPL_CSO, CSOS.map(function(c){
+      return {label:c[0], name:c[0], address:c[1], phone:c[2], email:c[3]};
+    }));
+    seed(TPL_PERF, B.map(function(b,i){
+      return {label:b[0]+' — '+b[3].split(',')[0]+' ('+b[1]+')',
+              name:b[0]+'\n'+b[2]+'\n'+b[3], org:(i<2?'Aurora Group (demo)':'Calder Holdings (demo)'),
+              cage:b[1], cso:CSOS[i][0], email:'fso.'+b[1].toLowerCase()+'@example.com',
+              cma:(i%2===0)?('PO Box '+(1200+i*7)+'\n'+b[3]):''};
+    }));
+    seed(TPL_CERT, PEOPLE.map(function(p,i){
+      return {label:p[0]+' — '+p[1], name:p[0], title:p[1],
+              address:B[i][2]+', '+B[i][3], cage:B[i][1], phone:p[2], email:p[3]};
+    }));
+    seed(TPL_SM, PEOPLE.map(function(p,i){
+      return {label:p[0], name:p[0], email:p[3], program:['Programme ALDER (demo)','Programme BIRCH (demo)','Programme CEDAR (demo)','Programme DAMSON (demo)'][i]};
+    }));
+    seed(TPL_SL, [
+      {label:'Derivative classification', text:'Reference 11c:\n\nAll classified material generated or derived under this effort shall be marked in accordance with the applicable security classification guide. The contractor shall not classify by compilation without written GCA concurrence.'},
+      {label:'Subcontracting notice', text:'Reference 10a:\n\nFurther disclosure of classified information, to include subcontracting at any tier, requires prior written approval of the Government Contracting Activity.'},
+      {label:'Visit authorisation', text:'Reference 11a:\n\nClassified visits shall be arranged through the Defense Information System for Security. Visit requests shall cite this contract number and identify the accrediting security office.'},
+      {label:'Return or destruction', text:'Reference 13:\n\nUpon completion or termination, all classified material shall be returned to the Government Contracting Activity or destroyed under NISPOM procedures, and a certificate of destruction retained.'}
+    ]);
+    seed(TPL_B13, [
+      {label:'CPFF Research — SECRET (demo)', data:ctData({cls:'',c10:{'10a':true,'10b':true},c11:{'11a':true,'11c':true},i14:'no',i15:'yes',i15text:'Inspections by the cognizant security office.'})},
+      {label:'FFP Services — CONFIDENTIAL (demo)', data:ctData({c11:{'11e':true},i14:'no',i15:'no'})},
+      {label:'IDIQ Task Order — SECRET/CUI (demo)', data:ctData({cls:'CUI',c10:{'10b':true},c11:{'11c':true,'11l':true},i14:'yes',i14text:'CUI handling per 32 CFR Part 117.'})},
+      {label:'Subcontract flow-down — SECRET (demo)', data:ctData({c10:{'10a':true},c11:{'11b':true,'11c':true},i14:'no',i15:'yes',i15text:'Prime retains inspection responsibility.'})}
+    ]);
+    seed(TPL_CT, [
+      {label:'Aurora Dynamics — Programme ALDER (demo)', srcDate:'2026-02-02', smName:'R. Vance', smEmail:'r.vance@example.com', smProgram:'Programme ALDER (demo)',
+       data:ctData({primeContract:'HQ0034-25-D-0101', taskOrder:'', c10:{'10a':true}, l10:{'10a':'Reference 10a:\n\nAccess to classified COMSEC information requires a final U.S. Government clearance at the appropriate level.'}})},
+      {label:'Task Order 0042 — Meridian (demo)', srcDate:'2026-03-14', smName:'T. Okafor', smEmail:'t.okafor@example.com', smProgram:'Programme BIRCH (demo)',
+       data:ctData({primeContract:'HQ0034-25-D-0101', taskOrder:'0042', c11:{'11c':true}, l11:{'11c':'Reference 11c:\n\nThe contractor will reference the applicable security classification guide when generating or deriving classified material.'}})},
+      {label:'Calder Aerospace — Programme CEDAR (demo)', srcDate:'2026-04-01', smName:'M. Lindqvist', smEmail:'m.lindqvist@example.com', smProgram:'Programme CEDAR (demo)',
+       data:ctData({primeContract:'N00178-25-D-2204', c11:{'11l':true}, l11:{'11l':'Reference 11l:\n\nControlled Unclassified Information generated under this contract shall be marked and safeguarded per 32 CFR Part 117 and the CUI designation block below.'}})},
+      {label:'Northwind Defense — Programme DAMSON (demo)', srcDate:'2026-05-20', smName:'J. Serrano', smEmail:'j.serrano@example.com', smProgram:'Programme DAMSON (demo)',
+       data:ctData({primeContract:'SP4701-25-C-3310', taskOrder:'0007', c10:{'10b':true}, l10:{'10b':'Reference 10b:\n\nRestricted Data access is limited to personnel briefed under the applicable programme access requirements.'}})}
+    ]);
+    if(typeof buildTplSelects==='function') buildTplSelects();
+    if(typeof dashRenderCards==='function') dashRenderCards();
+  }
+  let tries=0;
+  (function wait(){
+    if(window.TDB_READY){ try{ demoSeed(); }catch(e){} return; }
+    if(tries++>60) return;
+    setTimeout(wait,100);
+  })();
+  /* Says what this file is, on every screen, so a demonstration build cannot be
+     mistaken for the tool that prepares real forms. */
+  function banner(){
+    if(document.getElementById('demoBanner')) return;
+    const d=document.createElement('div');
+    d.id='demoBanner';
+    d.textContent='DEMONSTRATION BUILD — resets on every refresh; fictitious data only. Not for preparing an actual DD Form 254.';
+    d.style.cssText='position:sticky;top:0;z-index:9000;background:#7a4038;color:#fff;'
+      +'font-family:Arial,sans-serif;font-size:11.5px;font-weight:bold;letter-spacing:.4px;'
+      +'text-align:center;padding:5px 10px;';
+    if(document.body.firstChild) document.body.insertBefore(d,document.body.firstChild);
+    else document.body.appendChild(d);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',banner); else banner();
+})();
+</script>

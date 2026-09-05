@@ -1,4 +1,33 @@
-# DD-254 Interactive — change notes, v155 → v195
+# DD-254 Interactive — change notes
+
+## v1.10.0 — notes, backup custody and reproducible releases — 2026-09-04
+
+Tool version 2.122; follows the v195 / Tool 2.121 release. Earlier versioned
+official and demo files remain unchanged.
+
+- Dashboard notes preserve rapid edits across multiple records. Pending text
+  remains visible across dashboard redraws, and Full Backup flushes it.
+- Full Backup captures active form/template edits before reading the stores.
+  Confirming an older snapshot no longer clears reminders for later edits.
+- A failed individual IndexedDB write retains the newest draft in the open tab
+  and makes that emergency copy available to Full Backup. A failed database
+  read refuses the backup instead of describing an empty portfolio as success.
+- Classification help accurately states this tool's UNCLASSIFIED/CUI limit.
+  It no longer claims that an actual DD Form 254 cannot be classified.
+- The displayed tool version comes directly from TOOL_VERSION.
+- Semantic release selection, a tracked demo seed and a parity check make demo
+  regeneration reproducible. Build facts require a passing test log with the
+  exact HTML hash and now measure component shares using UTF-8 bytes.
+- The test harness uses pinned dependencies and Node 24. Hold-dialog tests wait
+  for their controls; asynchronous assertions fail with a named deadline.
+- Corrected flat-form provenance, release/download links, maintainer instructions
+  and the documentation inventory. Updated both generated manual copies and
+  added a security fact sheet and release assessment.
+
+Validation: 957 regression assertions; official/demo browser smoke checks,
+script syntax, demo parity, split/rebuild round trip, manifest agreement and
+upstream pdf-lib verification are required before release. No classification
+determination or approval gate was added or relaxed.
 
 Written 2026-08-11 from the record of the sessions that produced these versions.
 
