@@ -483,6 +483,7 @@ body.ws-dragging{user-select:none;}
 #astraPanel{margin:12px 0;padding:16px;border:1px solid #b9c9d8;border-radius:8px;background:var(--bg,#fff);color:var(--text,#1d3349);font:13px/1.5 Arial,sans-serif}
 #astraPanel h2{font-size:17px;margin:0 0 6px}.astra-edition{font-size:11px;font-weight:normal}
 #astraPanel details{border-top:1px solid #bdcad6;padding:9px 0}#astraPanel summary{cursor:pointer;font-weight:bold;padding:4px 0}
+#astraReview summary::before{content:none!important}
 .astra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}.astra-grid label{display:block;font-size:12px}
 .astra-grid input,.astra-grid textarea,.astra-grid select{display:block;box-sizing:border-box;width:100%;padding:7px;border:1px solid #9fb3c5;border-radius:4px;background:#fff;color:#172d42;font:13px Arial,sans-serif}
 .astra-grid textarea{resize:vertical}.astra-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}.astra-actions label{font-size:12px}
@@ -11491,7 +11492,8 @@ function astraValidate(v){
 }
 function astraValidateRecords(records){(records||[]).forEach(r=>astraValidate(r&&r.workspace&&r.workspace.astra));}
 function astraSnapshot(){return astraClone(ASTRA);}
-function astraLoad(value){astraValidate(value);ASTRA=value?astraClone(value):astraBlank();astraRender();}
+function astraHasData(a){return a.guidanceVersion!==ASTRA_GUIDANCE.id||Object.values(a.package).some(v=>String(v||'').trim())||Object.keys(ASTRA_LABELS).some(k=>a[k].length);}
+function astraLoad(value){astraValidate(value);ASTRA=value?astraClone(value):astraBlank();if(document.getElementById('astraReview')?.open)astraRender();else astraRefresh();}
 function astraRow(kind,id,data){data=data||ASTRA;return kind==='package'?data.package:(data[kind]||[]).find(r=>r.id===id);}
 function astraAudit(action,id,before,after){ASTRA.history.push({at:new Date().toISOString(),action:action,id:id,before:astraClone(before==null?null:before),after:astraClone(after==null?null:after)});}
 function astraTouch(){if(typeof dashTouch==='function')dashTouch();}
@@ -11660,7 +11662,7 @@ function astraRender(){
 }
 function astraRefresh(){
   const host=document.getElementById('astraFindings');if(!host)return;
-  const findings=astraFindings(ASTRA,collectWorkspace());
+  const findings=astraHasData(ASTRA)?astraFindings(ASTRA,collectWorkspace()):[];
   const summary=document.querySelector('#astraReview > summary');if(summary)summary.textContent='Codex Astra - contract and policy review ('+findings.length+' review items'+(findings.some(x=>x.includes('overdue since'))?', overdue actions':'')+')';
   host.innerHTML='<strong>Review recommendations ('+findings.length+')</strong>'+(findings.length?'<ul>'+findings.map(s=>'<li>'+htmlEsc(astraDisplay(s,ASTRA))+'</li>').join('')+'</ul>':'<p>No inconsistency detected in the recorded review data. Missing optional records are not evidence of approval or compliance.</p>');
   document.querySelectorAll('[data-cost]').forEach(el=>{const r=astraRow('requirements',el.dataset.cost);if(r)el.textContent=astraCost(r).text;});
@@ -11725,6 +11727,7 @@ async function astraPreflight(records){
 }
 document.addEventListener('DOMContentLoaded',function(){
   astraRender();const host=document.getElementById('astraPanel');
+  document.getElementById('astraReview').addEventListener('toggle',function(){if(this.open)astraRender();});
   host.addEventListener('focusin',e=>{if(e.target.dataset.field)e.target.dataset.previous=e.target.type==='checkbox'?String(e.target.checked):e.target.value;});
   host.addEventListener('input',e=>{const x=e.target;if(!x.dataset.field||x.tagName==='SELECT'||x.type==='checkbox')return;astraSet(x.dataset.kind,x.dataset.row,x.dataset.field,x.value,false);});
   host.addEventListener('change',e=>{const x=e.target;if(!x.dataset.field)return;astraSet(x.dataset.kind,x.dataset.row,x.dataset.field,x.type==='checkbox'?x.checked:x.value,true,x.type==='checkbox'?x.dataset.previous==='true':x.dataset.previous);});

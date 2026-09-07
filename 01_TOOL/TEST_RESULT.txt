@@ -1,4 +1,4 @@
-BUILD_SHA256 ae72ff140bf6c5ae64ea07a9fe473b2890db33c56dccb0302112a225fbb50152
+BUILD_SHA256 b15f8d4e9132dc95d0ff4bd0d85ea51510c1d7d4e7e453e6f80d7838e926953f
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels

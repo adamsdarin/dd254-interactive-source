@@ -31,6 +31,8 @@ account, network call or storage service.
   and clears inherited receipts, recorded decisions and action completion.
 - Added schema validation before restore writes, full-backup coverage, manual,
   security guidance, PRD implementation map and release evidence.
+- The optional review panel renders on opening and skips unnecessary form
+  scans for empty review records during portfolio recounts.
 
 Validation change: a SAP Final no longer mechanically requires Item 5 Yes
 solely because Final was selected. Item 5 remains required for the ordinary
