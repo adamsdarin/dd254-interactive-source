@@ -20,6 +20,17 @@ Then drive the versioned file in a real browser:
 Exit code 0 means everything passed; 1 means at least one assertion failed, and
 the failing names are listed at the end.
 
+## Codex Astra coverage
+
+The added suite exercises legacy workspace import, additive schema validation,
+source escaping, browser-database persistence, newest-edit backup capture,
+contract and document mismatches, cost estimates, decision/closeout evidence,
+changed dependencies, guarded Item 13 insertion, selected-report privacy and
+the ordinary/SAP Final distinction. The real-browser smoke test also drives
+the new controls, confirms the Item 13 preview, downloads the review PDF,
+extracts its text and restores the saved review record. Run it against both
+the official and generated demo files.
+
 ## What it covers
 
 | Section | Area |

@@ -1,6 +1,6 @@
 # DD254 Interactive — security fact sheet
 
-Release v1.10.0 / Tool v2.122, 4 September 2026.
+Codex Astra v1.11.0 / Tool v2.123, 7 September 2026.
 
 This is an offline, single-user drafting aid. The official HTML embeds its
 JavaScript, PDF library and form assets. It uses local browser storage and
@@ -35,6 +35,28 @@ Backup includes pending form, template and note edits, refuses an unreadable
 draft store, and preserves the reminder for changes made after its snapshot.
 The download confirmation is the operator's report, not proof from the browser
 that a file exists on disk.
+
+## Codex Astra review evidence
+
+The optional review panel stores sources, contract-package references,
+attachments, requirements, issues, closeout actions and local review history
+as `workspace.astra` in the existing draft store. Schema version 1 is additive;
+older workspaces start empty. Unsupported versions or malformed record lists
+are rejected before restore writes. Full Backup includes current Astra edits.
+Older application versions do not understand these fields; do not round-trip
+new review work through them.
+
+The separate review PDF and CO package use only the current draft's selected
+records. They include contract-package metadata, reference text and cost
+assumptions; review the selection before sharing. Embedded attachment bytes
+and local event history are excluded from these reports. Full Backup retains
+the history. This release adds no automatic sending or remote lookup.
+
+Recorded responses, delivery, acknowledgment and impact reviews are operator
+statements, not authenticated signatures or immutable evidence. A resolved
+question does not clear an approval hold. Closeout reminders require an open
+application; the current draft is rechecked when opened and its review panel
+refreshes every minute while visible.
 
 ## Boundaries
 

@@ -250,10 +250,53 @@ class CDP {
       })()`,returnByValue:true});return r.result.value;
     },5000,'backup save confirmation');
 
+
+    // The new review path is exercised through its actual controls and downloads.
+    await cdp.send('Runtime.evaluate',{expression:`(async function(){
+      const ok=document.querySelector('.ui-modal-ov .pbtn-primary');if(ok)ok.click();
+      resetFormFields();DASH.current='live-astra';showFormView();run();
+      document.getElementById('astraReview').open=true;
+      const add=kind=>document.querySelector('#astraPanel [data-action="add"][data-kind="'+kind+'"]').click();
+      const fill=(kind,key,value)=>{const el=document.querySelector('#astraPanel [data-kind="'+kind+'"][data-field="'+key+'"]');el.focus();el.value=value;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));};
+      add('sources');fill('sources','title','LIVE ASTRA SOURCE');fill('sources','edition','2026-09-06');fill('sources','locator','Example 1');fill('sources','scope','Fictional test only');
+      add('requirements');fill('requirements','title','Live requirement');fill('requirements','task','Use the identified guidance');fill('requirements','sourceId',ASTRA.sources[0].id);fill('requirements','owner','Security reviewer');
+      fill('requirements','people','2');fill('requirements','hours','4');fill('requirements','rate','100');fill('requirements','events','1');fill('requirements','currency','USD');
+      add('documents');fill('documents','title','Guidance attachment');fill('documents','version','B');fill('documents','citedVersion','A');
+      await dashSaveNow();return true;
+    })()`,awaitPromise:true,returnByValue:true}).then(r=>{if(r.exceptionDetails)throw new Error(JSON.stringify(r.exceptionDetails));});
+    const astraState=await cdp.send('Runtime.evaluate',{expression:`(function(){
+      return {cost:astraCost(ASTRA.requirements[0]).value,source:collectWorkspace().astra.sources[0].title,mismatch:document.getElementById('astraFindings').textContent.includes('differs from cited version A'),singleFile:document.querySelector('meta[http-equiv="Content-Security-Policy"]').content.includes("connect-src 'none'")};
+    })()`,returnByValue:true});
+    value.astraControlsOk=astraState.result.value.cost===800&&astraState.result.value.source==='LIVE ASTRA SOURCE'&&astraState.result.value.mismatch&&astraState.result.value.singleFile;
+    await cdp.send('Runtime.evaluate',{expression:`document.getElementById('item13').value='BROWSER USER INTRO';document.querySelector('#astraPanel [data-action="insert"]').click();`});
+    await waitFor(async()=>{const r=await cdp.send('Runtime.evaluate',{expression:`!!document.querySelector('.ui-modal-ov .pbtn-primary')`,returnByValue:true});return r.result.value;},5000,'Item 13 review dialog');
+    await cdp.send('Runtime.evaluate',{expression:`document.querySelector('.ui-modal-ov .pbtn-primary').click();`});
+    value.astraComposerOk=await waitFor(async()=>{const r=await cdp.send('Runtime.evaluate',{expression:`(function(){const text=document.getElementById('item13').value;return text.startsWith('BROWSER USER INTRO')&&text.includes('Use the identified guidance')&&!text.includes('800.00');})()`,returnByValue:true});return r.result.value;},5000,'reviewed Item 13 insertion');
+    await cdp.send('Runtime.evaluate',{expression:`document.querySelector('#astraPanel [data-action="pdf"]').click();`});
+    const astraFile=await waitFor(()=>fs.readdirSync(downloadDir).find(n=>/^DD254_Astra_Review_.*\.pdf$/.test(n)),15000,'Astra PDF download');
+    const astraPDF=path.join(downloadDir,astraFile);
+    const python=process.env.DD254_PYTHON||'python';
+    const pdfCheck=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),astraPDF,'LIVE ASTRA SOURCE','800.00 USD','CODEX ASTRA REVIEW RECORD'],{encoding:'utf8'});
+    if(pdfCheck.status!==0)throw new Error('Astra PDF content failed: '+pdfCheck.stdout+pdfCheck.stderr);
+    value.astraPdfDownloadOk=true;
+    const exportReceipt=await cdp.send('Runtime.evaluate',{expression:`({sent:ASTRA.documents[0].sentDate,ack:ASTRA.documents[0].ackDate})`,returnByValue:true});
+    value.astraExportDoesNotAcknowledge=!exportReceipt.result.value.sent&&!exportReceipt.result.value.ack;
+    // Save a test artifact only when a local reviewer requests it. CI has no output dependency.
+    if(process.env.DD254_CAPTURE_DIR){
+      const dir=path.resolve(process.env.DD254_CAPTURE_DIR);fs.mkdirSync(dir,{recursive:true});
+      fs.copyFileSync(astraPDF,path.join(dir,'Astra_Review_browser.pdf'));
+      await cdp.send('Emulation.setDeviceMetricsOverride',{width:1280,height:1100,deviceScaleFactor:1,mobile:false});
+      await cdp.send('Runtime.evaluate',{expression:`document.getElementById('astraReview').scrollIntoView({block:'start'});`});
+      const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});fs.writeFileSync(path.join(dir,'astra-browser.png'),Buffer.from(shot.data,'base64'));
+    }
+    const persisted=await cdp.send('Runtime.evaluate',{expression:`(async function(){const rec=await draftGet('live-astra');resetFormFields();applyWorkspace(rec.workspace);return ASTRA.sources[0].title;})()`,awaitPromise:true,returnByValue:true});
+    value.astraPersistenceOk=persisted.result.value==='LIVE ASTRA SOURCE';
+
     const exceptions = cdp.events.filter(x => x.method === 'Runtime.exceptionThrown');
     const ok = value && /^Tool v\d+\.\d+$/.test(value.version || '') && value.settingsOk && value.exportUiOk
       && value.signingUiOk && value.signingExportOk && value.validationSafe && value.advisoryUiOk && value.inserted && value.removed && value.undoOffered
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk
+      && value.astraControlsOk && value.astraComposerOk && value.astraPdfDownloadOk && value.astraExportDoesNotAcknowledge && value.astraPersistenceOk
       && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.length }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));

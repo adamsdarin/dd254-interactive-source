@@ -44,18 +44,18 @@ source hash and component hashes.
 ## Step 1 — Verify what you were given
 
 ```
-certutil -hashfile DD254_Interactive_v1.10.0.HTM SHA256
+certutil -hashfile DD254_Interactive_v1.11.0.HTM SHA256
 ```
 
-Expected: `01cd3d9b88cf1833cff3bdb42c57de338a1900b1934df5ae14c5a5d1fe463396`
-(2,168,043 bytes)
+Compare the result and byte count with the current `BUILD_FACTS.md` and
+`manifest.json`. Both are derived from the verified release file.
 
 A mismatch means the file is not the one this guide describes. Stop.
 
 ## Step 2 — Split it
 
 ```
-python split.py DD254_Interactive_v1.10.0.HTM parts
+python split.py DD254_Interactive_v1.11.0.HTM parts
 ```
 
 Produces `parts/` containing four files and a `manifest.json` recording the size

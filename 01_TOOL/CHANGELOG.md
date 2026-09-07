@@ -1,5 +1,47 @@
 # DD-254 Interactive — change notes
 
+## v1.11.0 — Codex Astra — 2026-09-07
+
+Tool version 2.123. A single-file release with additive review records stored
+inside each existing browser workspace; no new server, runtime dependency,
+account, network call or storage service.
+
+- Qualified general and SAP completion/retention guidance across Items 3/5,
+  help, templates and the CO package. Sources retain edition, locator, scope
+  and review date; existing contracts keep their recorded clause basis.
+- Added contract attachment reconciliation, document version/supersession
+  references, existing-file hash references, and separately recorded delivery
+  and acknowledgment evidence.
+- Added policy questions with competing sources, reviewer, recorded response,
+  scoped resolution and history. Changed evidence prompts renewed review.
+- Added requirements with authority, site, implementation and inspection
+  ownership, criteria, effort/cost assumptions and estimate status. Unknown
+  cost remains unknown; a zero estimate needs a written basis.
+- Added previewed Item 13 insertion. It preserves surrounding text, excludes
+  cost/decision notes and refuses to overwrite previously inserted wording
+  that the preparer changed, removed or duplicated. Items 14/15 remain separate.
+- Added impact review for requirements and attachments, including named changed
+  dependencies, and closeout actions with dates, authorization and evidence.
+  Reminders refresh in the open review panel and on reopening a draft.
+- Added a selected-record review PDF and CO-package review evidence. Reports
+  contain this draft only, omit unselected records and embedded attachments,
+  and never record sending, receipt, incorporation or approval automatically.
+- Single/bulk issuance shows advisory review findings after mandatory checks.
+  Approval holds remain independent. Workflow reset archives prior Astra events
+  and clears inherited receipts, recorded decisions and action completion.
+- Added schema validation before restore writes, full-backup coverage, manual,
+  security guidance, PRD implementation map and release evidence.
+
+Validation change: a SAP Final no longer mechanically requires Item 5 Yes
+solely because Final was selected. Item 5 remains required for the ordinary
+extended-retention path. SAP disposition and continuation require the recorded
+applicable authority; this change does not resolve or bypass an approval hold.
+
+The regression count and exact bytes are recorded in BUILD_FACTS.md. Official
+and demo browser tests cover real controls, official PDF export, Astra Item 13
+insertion, selected review PDF content and browser persistence. Prior release
+files remain available. No Government acceptance or field pilot is claimed.
+
 ## v1.10.0 — notes, backup custody and reproducible releases — 2026-09-04
 
 Tool version 2.122; follows the v195 / Tool 2.121 release. Earlier versioned

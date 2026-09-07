@@ -1,4 +1,4 @@
-BUILD_SHA256 d6b3d0ee535f73f91cc5004d3f24b4a62e0e39211c2f750ed74bcf8177cbdcb3
+BUILD_SHA256 ae72ff140bf6c5ae64ea07a9fe473b2890db33c56dccb0302112a225fbb50152
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1143,6 +1143,39 @@ BUILD_SHA256 d6b3d0ee535f73f91cc5004d3f24b4a62e0e39211c2f750ed74bcf8177cbdcb3
   PASS  an IndexedDB write failure keeps the latest record recoverable in Full Backup
   PASS  an unreadable draft database refuses a misleading empty backup
 
+### Codex Astra single-file review workflows
+  PASS  Astra starts with additive browser-only metadata on old workspaces
+  PASS  Astra rejects future schema before modifying live form
+  PASS  Astra real input controls capture a source without duplicating official fields
+  PASS  Astra backup snapshot owns its records rather than sharing mutable references
+  PASS  Astra source records survive the actual draft database round trip
+  PASS  Astra preserves unknown additive fields without inferring decisions
+  PASS  Astra refuses malformed or duplicate source identities
+  PASS  Astra source text is rendered as text and cannot inject HTML
+  PASS  Astra distinguishes available versus cited attachment versions
+  PASS  Astra detects DD254 contract attachment revision mismatch
+  PASS  Astra delivery and acknowledgment remain independent of report generation
+  PASS  Astra cost is unknown when incomplete and computes the documented example
+  PASS  Astra refuses negative and unsubstantiated zero cost estimates
+  PASS  Astra issue cannot claim a resolution without its recorded basis
+  PASS  Astra records scoped resolution and identifies changed form evidence
+  PASS  Astra issue resolution never clears a separate approval hold
+  PASS  Astra closeout completion requires authorization evidence and date
+  PASS  Astra completed closeout becomes a review item after evidence changes
+  PASS  Astra Item 13 insertion preserves surrounding text and excludes internal costs
+  PASS  Astra will not overwrite user edits to previously inserted Item 13 wording
+  PASS  Astra requirements do not automatically change Items 14 or 15
+  PASS  Astra selected report excludes unselected question content and history
+  PASS  Astra report selection does not mislabel excluded but existing source as missing
+  PASS  Astra impact review requires reviewer and basis
+  PASS  Astra source change identifies a linked requirement impact
+  PASS  Astra performance-site change identifies affected delivery record
+  PASS  Astra workflow reset preserves evidence history but does not inherit receipts or decisions
+  PASS  Astra ordinary and SAP completion explanations preserve their different scope
+  PASS  Astra program continuation does not demand an extended-retention answer by default
+  PASS  Astra actual review PDF contains selected content and excludes hidden records
+  PASS  Astra full backup captures edits made immediately before download
+
 ================================
-  PASS 957   FAIL 0
+  PASS 988   FAIL 0
 ================================
