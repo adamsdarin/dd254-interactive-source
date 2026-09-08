@@ -25,8 +25,8 @@ python .github/scripts/check_release_tools.py
 python .github/scripts/check_documentation.py
 python .github/scripts/check_manifest.py
 python 01_TOOL/rebuild_kit/verify_pdflib.py
-node 01_TOOL/browser_smoke.js 01_TOOL/DD254_Interactive_v1.11.0.HTM
-node 01_TOOL/browser_smoke.js 01_TOOL/DD254_Interactive_v1.11.0_DEMO.HTM
+node 01_TOOL/browser_smoke.js 01_TOOL/DD254_Interactive_v1.12.0.HTM
+node 01_TOOL/browser_smoke.js 01_TOOL/DD254_Interactive_v1.12.0_DEMO.HTM
 ```
 
 Use the current filenames for later releases. Inspect user-facing exports if

@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v1.11.0
+# DD‑254 Interactive — Codex Astra v1.12.0
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -20,13 +20,13 @@ and no network traffic. Download one file, open it, work offline.
 | | |
 |---|---|
 | **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.11.0.HTM` |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.12.0.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v1.11.0.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.12.0.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -95,23 +95,29 @@ still describes the committed build. The logs are public.
 
 ---
 
-## Codex Astra review workspace
+## Complete the form with fewer repeated steps
 
-Open a draft and expand **Codex Astra - contract and policy review** above the
-source log. Record source applicability, reconcile the contract attachment,
-track questions and decisions, prepare reviewed Item 13 wording, document
-inspection and cost assumptions, and review changes and closeout actions.
-All working records stay in the existing browser database. The separate review
-PDF exports only the selected records for the current draft.
+- Reuse Item 6 or 7 details as an Item 8 performance site with one action. Existing sites and manual edits are preserved.
+- Jump from a validation finding directly to its field. Relevant text fields also show their existing validation messages beside the entry.
+- Review and insert missing Item 13 template sections for selected Items 10/11 together, preserving existing sections.
+- Find and select unfinished bracketed template prompts in Item 13.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.11.0.md)
-map the original PRD to this release. Docker and Kubernetes remain a future phase.
+The previous review workspace is now **Optional supporting records**, collapsed
+below the source log. Its stored records remain available; it no longer adds an
+issuance confirmation. Existing validation and approval holds still apply.
+
+These shortcuts use the existing form and browser database. Templates require
+contract-specific review; the tool does not establish classification, verify
+eligibility or decide authority. No server or new storage service is required.
+
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.12.0.md)
+describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.11.0.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.12.0.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)
 - [Original enhancement requirements (Word PRD, draft 0.2)](02_DOCS/product_planning/DD254_Tool_Enhancement_PRD.docx)
 

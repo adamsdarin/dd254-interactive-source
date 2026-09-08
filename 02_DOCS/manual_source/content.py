@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.11.0 (tool version 2.123)"
+VER="Codex Astra v1.12.0 (tool version 2.124)"
 
 DOC = [
-("h1","Codex Astra v1.11.0 changes"),
-("p","Open a draft and expand <b>Codex Astra - contract and policy review</b> above the source log. This optional panel adds source applicability, contract attachment reconciliation, recorded policy questions, requirement and inspection ownership, cost review, and change/closeout evidence. Section 12 explains the workflow. All records use the existing browser database and Full Backup."),
+("h1","Codex Astra v1.12.0 changes"),
+("p","Open a draft and expand <b>Optional supporting records</b> below the source log. This optional panel adds source applicability, contract attachment reconciliation, recorded policy questions, requirement and inspection ownership, cost review, and change/closeout evidence. Section 12 explains the workflow. All records use the existing browser database and Full Backup."),
 ("p","The separate review PDF exports only the selected records for the current draft. The CO preparatory package includes that same review evidence. Neither export records delivery or approval. Existing approval holds remain in force."),
+("h2","Drafting shortcuts in v1.12.0"),
+("b","At Item 8, choose <b>Use Item 6 contractor as a performance site</b> or the Item 7 equivalent when that entity is a classified performance location. The action copies the entered location, CAGE, CSO and FSO e-mail, plus Item 7 CMA when present. It fills an empty row or adds one. Matching location/CAGE entries are not duplicated or overwritten. This does not verify eligibility or safeguarding."),
+("b","Choose <b>Go to field</b> beside a validation finding to open its form step and focus the entry. <b>Go to next incomplete field</b> opens the first detected, navigable finding. Relevant text fields display their existing error messages beside the entry. These controls use the existing validator; they are not a complete legal review."),
+("b","At Item 13, choose <b>Review language for missing selected sections</b>. One preview collects existing saved or built-in templates for selected Items 10/11 whose sections are empty. Confirm to insert them together, or cancel to leave the form unchanged. Populated sections and unselected items are skipped. Changes during preview require a new preview."),
+("b","<b>Find next unfinished prompt</b> selects the next recognized bracketed template prompt, such as [INSERT APPLICABLE AUTHORITY], in the Item 13 editor. Repeated clicks move through the prompts. This advisory recognizes common template markers; it cannot identify every missing fact or validate an authority. Complete and verify the text yourself."),
+("p","Optional supporting records now open collapsed below the source log and no longer introduce a separate issuance confirmation. Existing validation and approval holds remain in force. All changes operate in the same single HTML file and existing browser storage."),
+
 ("h2","Retained v1.10.0 safeguards"),
 ("p","Dashboard notes now preserve quick edits across multiple cards and keep pending text visible when the dashboard redraws. Full Backup saves pending notes, the active form and template edits before building its snapshot. If you make further changes while the backup is being created or confirmed, their reminder remains active."),
 ("p","A failed individual IndexedDB draft write now keeps the newest copy in the open tab and includes it in Full Backup. A failed database read stops the backup instead of producing a misleading empty portfolio. Keep the tab open when the storage warning appears; an emergency copy is not persistent storage."),
@@ -484,8 +491,8 @@ DOC = [
 ("b","A <b>Full copy</b> carries the source's holds, distribution log and NISS verification. <b>Copy and reset the workflow</b> keeps the form and NISS verification but clears the workflow events. Neither carries the issue date."),
 ("h2","11.3 Keeping this manual honest"),
 ("p","This manual is generated from a content file and a build script kept alongside the PDF. Every release that changes the HTML must update this source and rebuild both published copies of the manual; never patch the PDF by hand."),
-('h1', '12. Codex Astra: contract and policy review'),
-('p', 'Open a draft, then expand <b>Codex Astra - contract and policy review</b> above the source log. Each group opens independently. Add only the records relevant to that draft. The summary counts detected review items, including overdue actions; an empty panel is not evidence that the package is complete.'),
+('h1', '12. Optional supporting records'),
+('p', 'Open a draft, then expand <b>Optional supporting records</b> below the source log. Each group opens independently. Add only the records relevant to that draft. The summary counts detected review items, including overdue actions; an empty panel is not evidence that the package is complete.'),
 ('h2', '12.1 Sources and contract attachment'),
 ('n', 'Add a source with its title, issuing body, edition/effective date, paragraph or page, reference URL, applicability and review date. Source status starts Unknown. Record the version actually used; the tool does not download or verify a newer edition.'),
 ('n', 'Under Contract attachment reconciliation, record the contract/subcontract, modification or solicitation reference, attachment identifier, attached DD254 revision/date and incorporation reference. Use Original, the revision number, or Final consistently. The panel compares the number, revision and date with the working form and calls out missing incorporation evidence.'),
@@ -507,11 +514,11 @@ DOC = [
 ('p', 'Overdue actions appear when the draft is opened or review refreshed. The visible review panel refreshes every minute. There are no background notifications from a closed file. Do not enter a detailed classified-material inventory. Use references suitable for this application and retain authoritative material records in their authorized system.'),
 ('h2', '12.6 Reports, issuance and local history'),
 ('p', "Each record has <b>Include in separate review report</b>. Before sharing, select the sources, documents, requirements, questions and actions appropriate to the recipient. The review PDF and CO package always include this draft's recorded contract-package metadata. They exclude unselected record content, attachment bytes and local event history. A link to an excluded record is identified as a reference not included; it is not silently attached."),
-('p', 'Single and bulk issuance show Astra review recommendations after existing mandatory checks. Cancel to reconcile, or explicitly continue with advisory findings. Approval holds continue to block through their existing workflow. Exporting a form or report records neither contract incorporation nor receipt.'),
+('p', 'Supporting records no longer add a separate single or bulk issuance confirmation. Existing validation and approval holds continue through their established workflow. Exporting a form or report records neither contract incorporation nor receipt.'),
 ('p', 'Local history keeps earlier field values and recorded actions. The panel shows the latest 30 events; Full Backup retains the complete history. History is user-recorded and is not immutable. A workflow reset or spawned revision keeps source/context records, archives the prior Astra events, and clears inherited delivery acknowledgments, decisions and completed action states for review.'),
 ('h2', '12.7 Moving to this version'),
 ('n', 'In the old version, take a Full Backup and confirm the downloaded file exists. Keep the old HTML and backup until the new workspace is verified.'),
-('n', 'Open Codex Astra v1.11.0 in Chrome or Edge and restore the backup. Browser file/origin isolation may mean you start with an empty workspace. Old drafts receive empty Astra records, without inferred approvals or receipts.'),
+('n', 'Open Codex Astra v1.12.0 in Chrome or Edge and restore the backup. Browser file/origin isolation may mean you start with an empty workspace. Old drafts receive empty Astra records, without inferred approvals or receipts.'),
 ('n', 'Inspect representative drafts, attachments and templates, then use Recount validation (all drafts) and take a new Full Backup. The new metadata is included in normal draft saves and full backups.'),
 ('warn', "Do not round-trip new Astra records through an older application version: it does not understand these fields. This release rejects unsupported newer Astra schemas before importing records. Browser storage and downloaded backups remain the operator's responsibility."),
 ('h2', '12.8 Hosting remains a separate future phase'),

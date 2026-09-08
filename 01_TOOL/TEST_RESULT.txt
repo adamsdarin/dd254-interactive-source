@@ -1,4 +1,4 @@
-BUILD_SHA256 b15f8d4e9132dc95d0ff4bd0d85ea51510c1d7d4e7e453e6f80d7838e926953f
+BUILD_SHA256 6fc80d51218ddc965fd627ff6ca2db4c7dea226686ee129d5fb2e722bd3824ed
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1176,6 +1176,21 @@ BUILD_SHA256 b15f8d4e9132dc95d0ff4bd0d85ea51510c1d7d4e7e453e6f80d7838e926953f
   PASS  Astra actual review PDF contains selected content and excludes hidden records
   PASS  Astra full backup captures edits made immediately before download
 
+### Completion-focused drafting
+  PASS  one action reuses five subcontractor fields in Item 8
+  PASS  reusing a site twice does not duplicate it or overwrite edited site details
+  PASS  copying a contractor preserves an existing different performance location
+  PASS  read-only mode prevents site reuse
+  PASS  validation jump selects the affected step and actual field
+  PASS  required narrative errors appear beside the narrative field and disappear when corrected
+  PASS  one preview inserts two missing selected sections while preserving existing prose
+  PASS  bulk insertion never proposes an unselected item or a populated section
+  PASS  cancelled template preview leaves Item 13 unchanged
+  PASS  changed template during preview is rejected without overwriting the form
+  PASS  unfinished contract prompts are detected without treating a citation as a prompt
+  PASS  find prompt selects the exact editable placeholder
+  PASS  supporting records are retained below the source log
+
 ================================
-  PASS 988   FAIL 0
+  PASS 1001   FAIL 0
 ================================

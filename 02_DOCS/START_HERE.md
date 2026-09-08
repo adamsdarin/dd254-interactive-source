@@ -9,7 +9,7 @@ Shipped documents:
 
 - `DD254_Interactive_User_Manual.pdf` — operating instructions.
 - `DD254_Tool_Security_Fact_Sheet.md` — behavior, recovery and security boundaries.
-- `RELEASE_ASSESSMENT_v1.11.0.md` — review findings and change rationale.
+- `RELEASE_ASSESSMENT_v1.12.0.md` — review findings and change rationale.
 - `../BUILD_FACTS.md` — generated sizes, versions, hashes and regression count.
 - `../01_TOOL/rebuild_kit/REBUILD_GUIDE.md` — verification and reconstruction.
 - `../SETUP.md` — release and production-demonstration procedure.

@@ -292,13 +292,32 @@ class CDP {
     const persisted=await cdp.send('Runtime.evaluate',{expression:`(async function(){const rec=await draftGet('live-astra');resetFormFields();applyWorkspace(rec.workspace);return ASTRA.sources[0].title;})()`,awaitPromise:true,returnByValue:true});
     value.astraPersistenceOk=persisted.result.value==='LIVE ASTRA SOURCE';
 
+
+    async function completionEval(expression){const r=await cdp.send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw new Error(JSON.stringify(r.exceptionDetails));return r.result.value;}
+    await completionEval(`(()=>{resetFormFields();showFormView();showStep(1);const vals={i6a:'EXAMPLE contractor\\n10 Example Road',i6b:'1ABC5',i6c:'EXAMPLE security office',i6fsoEmail:'fso@example.test'};Object.entries(vals).forEach(([id,v])=>{const e=document.getElementById(id);e.value=v;e.dispatchEvent(new Event('input',{bubbles:true}));});run();document.getElementById('completionReuse6').click();})()`);
+    value.completionReuseOk=await completionEval(`(()=>{const p=collectWorkspace().perf;return p.length===1&&p[0].cage==='1ABC5'&&p[0].cso==='EXAMPLE security office'&&p[0].email==='fso@example.test';})()`);
+    async function completionShot(name,selector){if(!process.env.DD254_CAPTURE_DIR)return;const rect=await completionEval(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:Math.max(0,r.left+scrollX),y:Math.max(0,r.top+scrollY),width:r.width,height:r.height,scale:1};})()`);const shot=await cdp.send('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:rect});fs.writeFileSync(path.join(process.env.DD254_CAPTURE_DIR,name),Buffer.from(shot.data,'base64'));}
+    await completionShot('completion-reuse.png','#perfBlocks');
+    await completionEval(`(()=>{document.getElementById('cb10a').click();document.getElementById('cb11b').click();TPL_EDITS['10a']='Reference 10a:\\nEXAMPLE saved contract language A';TPL_EDITS['11b']='Reference 11b:\\nEXAMPLE saved contract language B';document.getElementById('item13').value='Existing preparer text. [INSERT APPLICABLE AUTHORITY]';run();showStep(5);document.getElementById('completionPrompt').click();})()`);
+    value.completionPromptOk=await completionEval(`window.getSelection().toString()==='[INSERT APPLICABLE AUTHORITY]'`);
+    await completionShot('completion-item13.png','#step5');
+    await completionEval(`document.getElementById('completionInsert').click()`);
+    await waitFor(()=>completionEval(`!!document.querySelector('.ui-modal-ov .pbtn-primary')`),5000,'combined template preview');
+    await completionShot('completion-preview.png','.ui-modal-msg');
+    await completionEval(`document.querySelector('.ui-modal-ov .pbtn-primary').click()`);
+    value.completionInsertOk=await waitFor(()=>completionEval(`b13Text().includes('Existing preparer text.')&&b13SectionGet('10a').includes('EXAMPLE saved contract language A')&&b13SectionGet('11b').includes('EXAMPLE saved contract language B')&&completionTemplates().length===0`),5000,'two preserved template insertions');
+    await completionEval(`document.querySelector('#errorsPanel .completion-jump').click()`);
+    value.completionJumpOk=await completionEval(`document.activeElement.id==='fcl1a'&&WIZ_STEP===0`);
+    await completionShot('completion-inline.png','#step0');
+
     const exceptions = cdp.events.filter(x => x.method === 'Runtime.exceptionThrown');
     const ok = value && /^Tool v\d+\.\d+$/.test(value.version || '') && value.settingsOk && value.exportUiOk
       && value.signingUiOk && value.signingExportOk && value.validationSafe && value.advisoryUiOk && value.inserted && value.removed && value.undoOffered
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk
       && value.astraControlsOk && value.astraComposerOk && value.astraPdfDownloadOk && value.astraExportDoesNotAcknowledge && value.astraPersistenceOk
+      && value.completionReuseOk && value.completionPromptOk && value.completionInsertOk && value.completionJumpOk
       && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
-    if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.length }));
+    if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.map(e=>e.params.exceptionDetails) }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));
   } finally {
     if (cdp) cdp.close();

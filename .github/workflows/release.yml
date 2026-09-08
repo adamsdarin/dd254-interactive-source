@@ -13,7 +13,7 @@
 # That link is not something the author can forge, which is exactly why it is
 # worth more than anything written in a document.
 #
-# Trigger: git tag v1.11.0 && git push origin v1.11.0
+# Trigger: git tag v1.12.0 && git push origin v1.12.0
 name: release
 
 on:
@@ -74,7 +74,7 @@ jobs:
           DEMO="$(python3 .github/scripts/newest_build.py --demo)"
           cp "$BUILD" "$DEMO" dist/
           cp 02_DOCS/DD254_Interactive_User_Manual.pdf dist/
-          cp BUILD_FACTS.md VERIFY.md 02_DOCS/DD254_Tool_Security_Fact_Sheet.md 02_DOCS/RELEASE_ASSESSMENT_v1.11.0.md 02_DOCS/product_planning/IMPLEMENTATION_v1.11.0.md dist/
+          cp BUILD_FACTS.md VERIFY.md 02_DOCS/DD254_Tool_Security_Fact_Sheet.md 02_DOCS/RELEASE_ASSESSMENT_v1.12.0.md 02_DOCS/product_planning/IMPLEMENTATION_v1.12.0.md dist/
           # The review kit, so a reviewer can start from the split parts
           # without running anything first.
           (cd 01_TOOL/rebuild_kit && python3 split.py >/dev/null)

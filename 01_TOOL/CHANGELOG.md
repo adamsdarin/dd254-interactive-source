@@ -1,3 +1,7 @@
+## v1.12.0 - 8 September 2026
+
+Added Item 6/7 performance-site reuse, direct validation navigation, inline findings, combined reviewed Item 13 insertion and unfinished-template-prompt selection. Supporting records now sit below the source log and add no extra issuance confirmation. Existing storage, records and approval holds are retained. Verified: 1001 regression assertions and both native Chrome builds pass.
+
 # DD-254 Interactive — change notes
 
 ## v1.11.0 — Codex Astra — 2026-09-07

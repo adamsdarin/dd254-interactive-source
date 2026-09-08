@@ -5887,6 +5887,43 @@ await ta('Astra full backup captures edits made immediately before download',asy
  const data=JSON.parse(await blob.text());return data.drafts.find(r=>r.id==='astra-backup').workspace.astra.sources[0].title==='LATEST ASTRA SOURCE';
 });
 
+H('Completion-focused drafting');
+t('one action reuses five subcontractor fields in Item 8',()=>{
+ E("resetFormFields();showFormView();['a','b','c','fsoEmail','cma'].forEach((k,i)=>document.getElementById('i7'+k).value=['Example subcontractor\\n10 Example Road','1ABC5','Example CSO','fso@example.test','PO Box 12'][i]);window.copyBefore=collectWorkspace();completionReuse('7');");
+ const p=E('collectWorkspace().perf');return p.length===1&&p[0].loc==='Example subcontractor\n10 Example Road'&&p[0].cage==='1ABC5'&&p[0].cso==='Example CSO'&&p[0].email==='fso@example.test'&&p[0].cma==='PO Box 12';
+});
+t('reusing a site twice does not duplicate it or overwrite edited site details',()=>{
+ E("document.querySelector('.cso-8c').value='MANUALLY EDITED CSO';completionReuse('7');");return E('collectWorkspace().perf.length')===1&&E("document.querySelector('.cso-8c').value")==='MANUALLY EDITED CSO';
+});
+t('copying a contractor preserves an existing different performance location',()=>{
+ E("document.getElementById('i6a').value='Different prime site';document.getElementById('i6b').value='2ABC5';completionReuse('6');");return E('collectWorkspace().perf.length')===2&&E('collectWorkspace().perf[0].cso')==='MANUALLY EDITED CSO'&&E('collectWorkspace().perf[1].loc')==='Different prime site';
+});
+t('read-only mode prevents site reuse',()=>{E("window.DD254_READONLY=true;document.getElementById('i6a').value='DO NOT COPY';");const ok=E("completionReuse('6')");E('window.DD254_READONLY=false');return ok===false&&E('collectWorkspace().perf.length')===2;});
+t('validation jump selects the affected step and actual field',()=>{
+ E("resetFormFields();showFormView();run();window.jump=document.querySelector('#errorsPanel .completion-jump');jump.click();");return E('document.activeElement.id')==='fcl1a'&&E('WIZ_STEP')===0;
+});
+t('required narrative errors appear beside the narrative field and disappear when corrected',()=>{
+ E("document.querySelector('input[name=i14][value=yes]').checked=true;run();");const before=E("document.getElementById('i14text').nextElementSibling.textContent");E("document.getElementById('i14text').value='Contract-specific requirements recorded';run();");return /must be described/.test(before)&&!E("document.getElementById('i14text').nextElementSibling.classList.contains('completion-inline')");
+});
+await ta('one preview inserts two missing selected sections while preserving existing prose',async()=>{
+ E("resetFormFields();document.getElementById('c10a').checked=true;document.getElementById('c11b').checked=true;TPL_EDITS['10a']='Reference 10a:\\nExample selected language A';TPL_EDITS['11b']='Reference 11b:\\nExample selected language B';document.getElementById('item13').value='PRESERVE MY INTRODUCTION';run();");
+ const ok=await E('completionInsertSelected()');return ok&&E('b13Text()').includes('PRESERVE MY INTRODUCTION')&&E("b13SectionGet('10a')").includes('Example selected language A')&&E("b13SectionGet('11b')").includes('Example selected language B');
+});
+t('bulk insertion never proposes an unselected item or a populated section',()=>E('completionTemplates().length')===0);
+await ta('cancelled template preview leaves Item 13 unchanged',async()=>{
+ E("b13SectionSet('10a','',true);window.beforeCancel=b13Text();window.uiConfirm=async()=>false;");const ok=await E('completionInsertSelected()');E('window.uiConfirm=async()=>true');return !ok&&E('b13Text()===beforeCancel');
+});
+await ta('changed template during preview is rejected without overwriting the form',async()=>{
+ E("window.beforeRace=b13Text();window.uiConfirm=async()=>{TPL_EDITS['10a']='CHANGED DURING REVIEW';return true;};");const ok=await E('completionInsertSelected()');E('window.uiConfirm=async()=>true');return !ok&&E('b13Text()===beforeRace');
+});
+t('unfinished contract prompts are detected without treating a citation as a prompt',()=>{
+ E("document.getElementById('item13').value='[INSERT APPLICABLE AUTHORITY] [32 CFR 117.13] [DESCRIBE REQUIREMENTS]';run();");return E('completionPrompts().length')===2&&/2 unfinished/.test(E("document.getElementById('completionPromptHint').textContent"));
+});
+t('find prompt selects the exact editable placeholder',()=>{
+ E("completionNextPrompt();");return E("window.getSelection().toString()")==='[INSERT APPLICABLE AUTHORITY]'&&E('WIZ_STEP')===5;
+});
+t('supporting records are retained below the source log',()=>E("document.getElementById('vlogBox').nextElementSibling.id")==='astraReview');
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

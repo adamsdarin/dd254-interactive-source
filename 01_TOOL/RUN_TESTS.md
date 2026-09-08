@@ -147,3 +147,5 @@ Both are fixed, and both have tests pinning the fix.
   template through durable readback, exercises checked and unchecked Block 18f,
   verifies bulk audience separation and CUI subject handling, and confirms that
   the dynamic XFA button is the only user-facing official PDF route.
+
+The v1.12.0 completion tests exercise performance-site reuse and manual-edit preservation, direct field navigation, inline error clearing, combined Item 13 insertion, cancellation and stale-preview guards, and unfinished prompt selection. Native Chrome exercises the visible controls in both builds.
