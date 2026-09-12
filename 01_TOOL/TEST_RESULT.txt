@@ -1,4 +1,4 @@
-BUILD_SHA256 6fc80d51218ddc965fd627ff6ca2db4c7dea226686ee129d5fb2e722bd3824ed
+BUILD_SHA256 46f73c5ac4d2aecec20f8ad26119f529456d4c38fc06d5acf1efd577b8f3c782
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1121,11 +1121,11 @@ BUILD_SHA256 6fc80d51218ddc965fd627ff6ca2db4c7dea226686ee129d5fb2e722bd3824ed
   PASS  unchecked legacy 18f text is excluded from stored e-mail audiences
   PASS  unchecked legacy 18f text is excluded from official export data
   PASS  checked 18f text remains in the issue e-mail CC line
-  PASS  CUI is derived from access boxes, designation fields, LDCs and templates
-  PASS  derived CUI drives both the dashboard badge and the e-mail subject
-  PASS  a CUI selection with an unclassified marking warns but does not create that warning as an error
+  PASS  the form marking and the contract CUI indicators are answered separately
+  PASS  contract CUI never becomes the form marking, the badge or the subject line
+  PASS  a CUI contract with an unclassified marking is reported without prescribing a marking
   PASS  bulk issuance groups identical recipients together and isolates different recipients
-  PASS  the same recipients are separated when only one record is CUI
+  PASS  the same recipients are separated when only one record is marked CUI
   PASS  an oversized mail handoff is detected before the browser is asked to open it
   PASS  a failed fallback write remains visible in the open tab and raises the persistent warning
   PASS  a later successful persistent write clears the draft-storage failure state
@@ -1191,6 +1191,25 @@ BUILD_SHA256 6fc80d51218ddc965fd627ff6ca2db4c7dea226686ee129d5fb2e722bd3824ed
   PASS  find prompt selects the exact editable placeholder
   PASS  supporting records are retained below the source log
 
+### 91. v196 marking, Item 13 duplication, source provenance and retention
+  PASS  Item 13 states one classified mailing address when Item 7 and Item 8 are the same CAGE
+  PASS  a genuinely different Item 8 CAGE still gets its own classified mailing address
+  PASS  a suppressed duplicate that actually disagrees is reported rather than hidden
+  PASS  Item 6 is untouched by the Item 7 and Item 8 duplicate rule
+  PASS  template source provenance records Original, a numbered Revision and Final
+  PASS  only a Final template carries a two-year retention deadline
+  PASS  the Final badge shows the return-or-destroy deadline and a revision badge does not
+  PASS  the subcontractor disposition clock runs from the Item 3c final date, then issuance
+  PASS  the disposition badge escalates from scheduled to due to overdue
+  PASS  the flattened PDF prints a shared Item 7/8 classified mailing address once
+  PASS  the SAP flag raises the countersignature requirement on a 2b subcontract
+  PASS  the SAP flag reaches a form that names its subcontractor only in Item 7a
+  PASS  no SAP flag and no subcontractor means no countersignature requirement
+  PASS  the preparer's worksheet labels every box the way the form does
+  PASS  the subcontractor signature requirement names no block on the form
+  PASS  a stored SAP subcontract is recognised by the dashboard
+  PASS  the retention clock and the biennial review clock stay separate
+
 ================================
-  PASS 1001   FAIL 0
+  PASS 1018   FAIL 0
 ================================

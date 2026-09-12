@@ -151,15 +151,35 @@ class CDP {
       d18.checked=false; dist18fToggle(false);
       const block18fOk=d18t.value==='' && !document.getElementById('dist18fRev').classList.contains('show')
         && dashDistEmails({workspace:{checks:{dist18f:false},texts:{dist18fOther:'hidden@example.mil'}}}).other18f.length===0;
-      const cuiRecord={id:'live-cui',title:'Live CUI',requestedBy:'req@gov.mil',workspace:{checks:{c10j:true},selects:{},texts:{i6fsoEmail:'fso@example.mil'}}};
+      /* A genuinely CUI-MARKED record. Item 10j says the CONTRACT involves CUI,
+         which is a different fact and must mark neither the form nor the subject. */
+      const cuiRecord={id:'live-cui',title:'Live CUI',requestedBy:'req@gov.mil',workspace:{checks:{},selects:{clsSel:'CUI'},texts:{i6fsoEmail:'fso@example.mil'}}};
+      const contractCuiRecord={id:'live-contract-cui',title:'Live Contract CUI',requestedBy:'req@gov.mil',workspace:{checks:{c10j:true},selects:{},texts:{i6fsoEmail:'fso@example.mil'}}};
       const plainRecord={id:'live-plain',title:'Live Plain',requestedBy:'req@gov.mil',workspace:{checks:{},selects:{},texts:{i6fsoEmail:'fso@example.mil'}}};
       const groups=dashIssueMailGroups([plainRecord,cuiRecord]);
+      const contractGroups=dashIssueMailGroups([plainRecord,contractCuiRecord]);
       const issuanceDetail={cls:dashClsOf(cuiRecord),subject:dashIssueMail(cuiRecord).subject,
-        groups:groups.length,cuiGroups:groups.filter(g=>g.mail.cui).length};
+        groups:groups.length,cuiGroups:groups.filter(g=>g.mail.cui).length,
+        contractCls:dashClsOf(contractCuiRecord),contractSubject:dashIssueMail(contractCuiRecord).subject,
+        contractGroups:contractGroups.length};
       const issuanceSafetyOk=issuanceDetail.cls==='CUI' && /^\\(CUI\\)\\(CUI\\)\\(CUI\\)/.test(issuanceDetail.subject)
-        && groups.length===2 && groups.filter(g=>g.mail.cui).length===1;
-      const preparerCueOk=['i16a','i16b','i16c','i16d','i16e','i16f','i17a','i17b','i17c','i17d','i17e','i17f','i17g']
-        .every(id=>{const el=document.getElementById(id),lab=el&&el.closest('label');return !lab||!lab.querySelector('.req');});
+        && groups.length===2 && groups.filter(g=>g.mail.cui).length===1
+        && issuanceDetail.contractCls==='UNCLASSIFIED'
+        && !/\\(CUI\\)/.test(issuanceDetail.contractSubject)
+        && contractGroups.length===1;
+      /* Resolved by for=, not closest(): these inputs are SIBLINGS of their
+         labels, so closest('label') is null for every one and the check this
+         replaced was vacuously true - it passed whether the asterisks existed
+         or not. labelsFound stops that being possible again. Items 16/17 carry
+         asterisks because the FORM requires them, while REQ does not gate a
+         draft on fields the GCA and certifying official complete after handover. */
+      const starred=['i16a','i16b','i16c','i17a','i17b','i17c','i17d','i17f'];
+      const unstarred=['i16d','i16e','i16f','i17e','i17g'];
+      const labFor=id=>document.querySelector('label[for="'+id+'"]');
+      const labelsFound=starred.concat(unstarred).every(id=>!!labFor(id));
+      const hasStar=id=>{const lab=labFor(id);return !!(lab&&lab.querySelector('.req'));};
+      const preparerCueOk=labelsFound && starred.every(hasStar) && unstarred.every(id=>!hasStar(id))
+        && starred.every(id=>{const el=document.getElementById(id);return el&&!el.classList.contains('req-missing');});
 
       for(let i=0;i<100&&!window.TDB_READY;i++) await new Promise(r=>setTimeout(r,20));
       await tplSave(TPL_CSO,[{label:'Browser save baseline'}]);

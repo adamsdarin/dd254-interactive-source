@@ -1,3 +1,58 @@
+## v1.13.0 - 12 September 2026
+
+Tool version 2.125. Correctness fixes to what the tool asserts about the form,
+plus post-contract retention tracking. Existing storage, records and approval
+holds are retained.
+
+- Separated the DD Form 254's own CUI marking from the contract's CUI
+  requirements. Item 10j, Item 11l, a CUI designation, a distribution statement
+  or an LDC say the CONTRACT involves CUI; they no longer mark the FORM. A
+  draft with 10j ticked was badged CUI, raised the encryption banner, was split
+  into its own bulk-issuance audience and went out with a (CUI)(CUI)(CUI)
+  subject line over a form marked UNCLASSIFIED. A DD Form 254 naming CUI
+  categories for a classified contract is routinely UNCLASSIFIED; marking an
+  unclassified document as CUI is a marking error in its own right. Validation
+  still reports the contract requirement and points at the Item 13 protection
+  guidance the GCA must supply, but no longer instructs the preparer to select
+  CUI before export.
+- The SAP flag now adds the constraint it exists for. Ticking SAP DD-254 only
+  revealed an advisory panel and appended an Item 13 tag; it raised no finding
+  and gated nothing, so a SAP subcontract could reach Issued with no
+  subcontractor signature recorded. Both behaviours were keyed on Item 2b alone,
+  so a form naming its subcontractor in Item 7a got nothing. A SAP subcontract
+  is now any SAP-flagged form identifying a subcontractor in 2b or 7a; the
+  requirement is a finding, the card shows it as owed, and issuance states that
+  access stays closed until the signature is held. It does not block issuance,
+  because the form must go out to be signed. (DoDM 5205.07 10.1.d)
+- Corrected where that signature goes: nowhere on the form. The tool told
+  operators the subcontractor "countersigns Item 17" in eleven places. Item 17
+  is the issuer's certification, carrying one signature field (17h) for the
+  certifying official; the APR 2018 form has no subcontractor signature block at
+  all. Each now states the requirement and the gap, and recording a signature
+  asks where it is held, since with no block on the form the location is the
+  only thing identifying it.
+- Item 13 states a classified mailing address once when the Item 7 subcontractor
+  is also an Item 8 performance location. Keyed on CAGE; Item 6 is excluded. A
+  genuine disagreement between the two is reported rather than hidden.
+- Restored the Items 16 and 17 required-field asterisks. The asterisk states
+  what the FORM requires; the REQ list states what the PREPARER must finish
+  before handover. Those are different claims and may differ, so Items 16/17
+  stay outside REQ and never block a draft.
+- The preparer's worksheet no longer mislabels the boxes it reports. It kept a
+  hand-written copy of the Item 10/11 labels that had drifted: 11c read "Use of
+  SCG" (the box is receive/store/generate) and 11k read "COMSEC (FOCI
+  considerations)" (the box is Defense Courier Service), while 11b and 11d had
+  lost the words carrying their restriction. Labels are now read from the boxes.
+- Added template source provenance - Original, numbered Revision, or Final,
+  beside the existing source date - carried through template import and export.
+- Added two independent 32 CFR 117.15 two-year retention clocks. Revising a
+  template to Final starts the window to return or destroy what is held.
+  Issuing a Final DD Form 254 starts a separate window to get the subcontractor
+  to return, transfer or destroy what it holds, anchored to the Item 3c date and
+  falling back to issuance, with a card badge escalating at ninety days and an
+  optional calendar invite. Neither is the Item 3b(3) biennial review, which
+  applies to revisions only and is still cleared on a Final.
+
 ## v1.12.0 - 8 September 2026
 
 Added Item 6/7 performance-site reuse, direct validation navigation, inline findings, combined reviewed Item 13 insertion and unfinished-template-prompt selection. Supporting records now sit below the source log and add no extra issuance confirmation. Existing storage, records and approval holds are retained. Verified: 1001 regression assertions and both native Chrome builds pass.

@@ -1541,6 +1541,9 @@ await ta('the audit log records the material actions', async()=>{
   const before=E("audAll()").length;
   await E("draftPut({id:'A9',title:'Audited',status:'Draft',stage:'orig',todos:[],dist:[],holds:[],meta:{},workspace:{}})");
   await E("dashNissToggle('A9')");
+  /* Recording a subcontractor signature now asks where it is held, because the
+     form provides no block for it. Answer the prompt rather than hang on it. */
+  E("window.uiPrompt=async function(){return 'signed copy on file';};");
   await E("dashCsToggle('A9')");
   const a=E("audAll()");
   return a.length>before && a.some(x=>x.action==='niss-verified') && a.some(x=>x.action==='countersign-received');});
@@ -1940,7 +1943,10 @@ t('the Item 13 tag is SAP-gated too', ()=>{
   const withSap=w.document.getElementById('item13tags').innerHTML;
   E("document.getElementById('sapFlag').checked=false;run();");
   const without=w.document.getElementById('item13tags').innerHTML;
-  return /countersign Item 17/.test(withSap) && !/countersign Item 17/.test(without);});
+  /* The tag asserts the requirement without naming a block: the form has no
+     subcontractor signature field, so Item 17 was never the right answer. */
+  const req=/signature of the subcontractor/;
+  return req.test(withSap) && !/Item 17/.test(withSap) && !req.test(without);});
 t('a SAP form with no subcontract still raises nothing', ()=>{
   E("resetFormFields();document.getElementById('sapFlag').checked=true;run();");
   return !w.document.getElementById('a2bSubSign').className.includes('show');});
@@ -5633,23 +5639,47 @@ t('checked 18f text remains in the issue e-mail CC line', ()=>{
   const m=E("dashIssueMail({requestedBy:'req@gov.mil',workspace:{checks:{dist18f:true},texts:{dist18fOther:'other@example.mil'}}})");
   return m.cc.join('|')==='other@example.mil';
 });
-t('CUI is derived from access boxes, designation fields, LDCs and templates', ()=>{
-  E("tplSave(TPL_CT,[{label:'Derived CUI',ioId:'derived-cui',data:Object.assign(ctBlankData(),{c10:{'10j':true}})}])");
-  const samples=[
+t('the form marking and the contract CUI indicators are answered separately', ()=>{
+  E("tplSave(TPL_CT,[{label:'Derived CUI',ioId:'derived-cui',data:Object.assign(ctBlankData(),{c10:{'10j':true}})},{label:'Marked CUI',ioId:'marked-cui',data:Object.assign(ctBlankData(),{cls:'CUI'})}])");
+  /* Item 10j/11l, a designation, an LDC and a distribution statement each say
+     the CONTRACT involves CUI. Not one of them marks the FORM. */
+  const contractOnly=[
     {checks:{c10j:true}},{checks:{c11l:true}},{texts:{cuiCat:'CTI'}},
     {checks:{ldcNoDissem:true}},{selects:{distStmt:'C'}},{selects:{ctTplSel:'derived-cui'}}
   ];
-  return !E('dd254WorkspaceHasCUI({})') && samples.every(function(ws){return E('dd254WorkspaceHasCUI('+JSON.stringify(ws)+')');});
+  const noMarking=contractOnly.every(function(ws){return !E('dd254WorkspaceCuiMarking('+JSON.stringify(ws)+')');});
+  const isContract=contractOnly.every(function(ws){return E('dd254WorkspaceContractCui('+JSON.stringify(ws)+')');});
+  /* The marking comes from the operator's own selection, or from the marking
+     carried by the template the draft was built from. */
+  const marked=E("dd254WorkspaceCuiMarking({selects:{clsSel:'CUI'}})")
+            && E("dd254WorkspaceCuiMarking({selects:{ctTplSel:'marked-cui'}})");
+  const blank=!E('dd254WorkspaceCuiMarking({})') && !E('dd254WorkspaceContractCui({})');
+  return noMarking && isContract && marked && blank;
 });
-t('derived CUI drives both the dashboard badge and the e-mail subject', ()=>{
-  const r={title:'Derived',requestedBy:'req@gov.mil',workspace:{checks:{c10j:true},texts:{},selects:{}}};
+t('contract CUI never becomes the form marking, the badge or the subject line', ()=>{
+  const r={title:'Contract CUI',requestedBy:'req@gov.mil',workspace:{checks:{c10j:true},texts:{},selects:{}}};
   const cls=E('dashClsOf('+JSON.stringify(r)+')'), m=E('dashIssueMail('+JSON.stringify(r)+')');
-  return cls==='CUI' && m.cui && /^\(CUI\)\(CUI\)\(CUI\)/.test(m.subject);
+  const badge=E('dashClsBadge('+JSON.stringify(r)+')');
+  /* An unclassified form, sent with an unclassified subject, and a card that
+     says UNCLASSIFIED and nothing else - the whole badge contains no "CUI" at
+     all. The contract's CUI requirement is surfaced by validation, where it is
+     actionable; as a badge it told the reader nothing they could act on. */
+  const notMarked=cls==='UNCLASSIFIED' && !m.cui && !/\(CUI\)/.test(m.subject)
+    && /UNCLASSIFIED/.test(badge) && !/CUI/.test(badge);
+  const marked={title:'Marked',requestedBy:'req@gov.mil',workspace:{checks:{},texts:{},selects:{clsSel:'CUI'}}};
+  const mc=E('dashIssueMail('+JSON.stringify(marked)+')');
+  const doesMark=E('dashClsOf('+JSON.stringify(marked)+')')==='CUI' && mc.cui
+    && /^\(CUI\)\(CUI\)\(CUI\)/.test(mc.subject);
+  return notMarked && doesMark;
 });
-t('a CUI selection with an unclassified marking warns but does not create that warning as an error', ()=>{
+t('a CUI contract with an unclassified marking is reported without prescribing a marking', ()=>{
   E("resetFormFields();document.getElementById('c10j').checked=true;document.getElementById('clsSel').value='';run();");
   const warnings=w.DD254_WARNS||[], errors=w.DD254_ERRORS||[];
-  return warnings.some(function(x){return /CUI content is present/.test(x);}) && !errors.some(function(x){return /CUI content is present/.test(x);});
+  const hit=warnings.filter(function(x){return /This contract involves CUI/.test(x);});
+  /* It must state the fact and point at Item 13, and must NOT tell the preparer
+     to select CUI: that instruction mismarks an unclassified document. */
+  return hit.length===1 && /Item 13/.test(hit[0]) && !/Select CUI/i.test(hit[0])
+      && !errors.some(function(x){return /contract involves CUI/i.test(x);});
 });
 t('bulk issuance groups identical recipients together and isolates different recipients', ()=>{
   const base=function(id,fso){return {id:id,title:id,requestedBy:'req@gov.mil',workspace:{checks:{},selects:{},texts:{i6fsoEmail:fso,i6c:'cso@gov.mil'}}};};
@@ -5657,11 +5687,15 @@ t('bulk issuance groups identical recipients together and isolates different rec
   const split=E('dashIssueMailGroups('+JSON.stringify([base('a','fso@a.com'),base('c','fso@c.com')])+')');
   return same.length===1 && same[0].records.length===2 && split.length===2;
 });
-t('the same recipients are separated when only one record is CUI', ()=>{
+t('the same recipients are separated when only one record is marked CUI', ()=>{
   const a={id:'a',title:'A',requestedBy:'req@gov.mil',workspace:{checks:{},selects:{},texts:{i6fsoEmail:'fso@a.com'}}};
-  const b=JSON.parse(JSON.stringify(a)); b.id='b'; b.title='B'; b.workspace.checks.c10j=true;
+  const b=JSON.parse(JSON.stringify(a)); b.id='b'; b.title='B'; b.workspace.selects.clsSel='CUI';
   const g=E('dashIssueMailGroups('+JSON.stringify([a,b])+')');
-  return g.length===2 && g.filter(function(x){return x.mail.cui;}).length===1;
+  /* A contract-CUI difference alone must NOT split the audience: it changes
+     neither form's marking and neither form's transmission. */
+  const c=JSON.parse(JSON.stringify(a)); c.id='c'; c.title='C'; c.workspace.checks.c10j=true;
+  const g2=E('dashIssueMailGroups('+JSON.stringify([a,c])+')');
+  return g.length===2 && g.filter(function(x){return x.mail.cui;}).length===1 && g2.length===1;
 });
 t('an oversized mail handoff is detected before the browser is asked to open it', ()=>{
   const list=Array.from({length:120},function(_,i){return 'person'+i+'@example.mil';}).join('; ');
@@ -5923,6 +5957,172 @@ t('find prompt selects the exact editable placeholder',()=>{
  E("completionNextPrompt();");return E("window.getSelection().toString()")==='[INSERT APPLICABLE AUTHORITY]'&&E('WIZ_STEP')===5;
 });
 t('supporting records are retained below the source log',()=>E("document.getElementById('vlogBox').nextElementSibling.id")==='astraReview');
+
+console.log('\n### 91. v196 marking, Item 13 duplication, source provenance and retention');
+t('Item 13 states one classified mailing address when Item 7 and Item 8 are the same CAGE', ()=>{
+  E("resetFormFields();document.getElementById('i7a').value='Beta Corp';document.getElementById('i7b').value='2XY99';document.getElementById('i7cma').value='PO Box 9\\nAnytown, ST 00000';addPerf();");
+  const blk=w.document.querySelector('#perfBlocks > div[id^="perf-"]');
+  blk.querySelector('.loc-8a').value='Beta Corp';
+  blk.querySelector('.cage-8b').value=' 2xy99 ';   /* one company, sloppier typing */
+  blk.querySelector('.cma-loc').value='PO Box 9\nAnytown, ST 00000';
+  E('cmaSync()');
+  const body=w.document.getElementById('item13').value;
+  return E('cmaEntries()').length===1 && (body.match(/Classified Mailing Address/g)||[]).length===1;
+});
+t('a genuinely different Item 8 CAGE still gets its own classified mailing address', ()=>{
+  const blk=w.document.querySelector('#perfBlocks > div[id^="perf-"]');
+  blk.querySelector('.cage-8b').value='7ZZZ7';
+  E('cmaSync()');
+  return E('cmaEntries()').length===2;
+});
+t('a suppressed duplicate that actually disagrees is reported rather than hidden', ()=>{
+  const blk=w.document.querySelector('#perfBlocks > div[id^="perf-"]');
+  blk.querySelector('.cage-8b').value='2XY99';
+  blk.querySelector('.cma-loc').value='PO Box 12345\nElsewhere, ST 99999';
+  E('cmaSync();run();');
+  const warnings=w.DD254_WARNS||[];
+  return E('cmaEntries()').length===1
+      && warnings.some(function(x){return /DIFFERENT classified mailing address/.test(x);});
+});
+t('Item 6 is untouched by the Item 7 and Item 8 duplicate rule', ()=>{
+  E("resetFormFields();document.getElementById('i6a').value='Example Corp';document.getElementById('i6b').value='1ABC5';addPerf();");
+  const blk=w.document.querySelector('#perfBlocks > div[id^="perf-"]');
+  blk.querySelector('.loc-8a').value='Example Corp';
+  blk.querySelector('.cage-8b').value='1ABC5';
+  blk.querySelector('.cma-loc').value='PO Box 5\nAnytown, ST 00000';
+  E('cmaSync()');
+  /* The prime's CAGE matching a performance location proves nothing about the
+     subcontractor address in Item 7, so nothing is suppressed. */
+  return E('cmaEntries()').length===1;
+});
+t('template source provenance records Original, a numbered Revision and Final', ()=>{
+  const lbl=function(x){ return E('ctSrcLabel('+JSON.stringify(x)+')'); };
+  return lbl({srcType:'orig'})==='Original' && lbl({srcType:'rev',srcRev:'12'})==='Revision 12'
+      && lbl({srcType:'rev'})==='Revision' && lbl({srcType:'final'})==='FINAL' && lbl({})==='';
+});
+t('only a Final template carries a two-year retention deadline', ()=>{
+  const due=function(x){ return E('ctRetentionDue('+JSON.stringify(x)+')'); };
+  return due({srcType:'final',srcDate:'2026-04-15'})==='2028-04-15'
+      && due({srcType:'rev',srcDate:'2026-04-15'})===''
+      && due({srcType:'orig',srcDate:'2026-04-15'})===''
+      && due({srcType:'final'})==='';
+});
+t('the Final badge shows the return-or-destroy deadline and a revision badge does not', ()=>{
+  const fin=E("ctSrcBadge({srcType:'final',srcDate:'2026-04-15'})");
+  const rev=E("ctSrcBadge({srcType:'rev',srcRev:'3',srcDate:'2026-04-15'})");
+  return /RETURN OR DESTROY BY 2028-04-15/.test(fin) && /FINAL/.test(fin)
+      && !/RETURN OR DESTROY/.test(rev) && /Revision 3/.test(rev);
+});
+t('the subcontractor disposition clock runs from the Item 3c final date, then issuance', ()=>{
+  const byFinal=E("dd254RetentionDue({workspace:{texts:{i3c_date:'20260415'}},issuedAt:'2026-09-01T00:00:00.000Z'})");
+  const byIssue=E("dd254RetentionDue({workspace:{texts:{}},issuedAt:'2026-09-01T00:00:00.000Z'})");
+  return byFinal==='2028-04-15' && byIssue==='2028-09-01'
+      && E("dd254RetentionDue({workspace:{texts:{}}})")==='';
+});
+t('the disposition badge escalates from scheduled to due to overdue', ()=>{
+  const iso=function(d){ return new Date(Date.now()+d*86400000).toISOString().split('T')[0]; };
+  const far=E('dashRetentionBadge('+JSON.stringify({retentionDue:iso(400)})+')');
+  const soon=E('dashRetentionBadge('+JSON.stringify({retentionDue:iso(30)})+')');
+  const late=E('dashRetentionBadge('+JSON.stringify({retentionDue:iso(-1)})+')');
+  return /disposition /.test(far) && !/OVERDUE/.test(far) && !/disposition due/.test(far)
+      && /disposition due/.test(soon) && /OVERDUE/.test(late)
+      && E('dashRetentionBadge({})')==='';
+});
+await ta('the flattened PDF prints a shared Item 7/8 classified mailing address once', async()=>{
+  /* The unit test above proves cmaEntries() and the Item 13 textarea are right.
+     This proves it survives into the artifact the subcontractor actually
+     receives - AGENTS.md is explicit that an in-memory data packet is not
+     evidence about an export. The sentinel is a single unbroken token so that
+     Item 13 word-wrapping cannot split it and make a count meaningless. */
+  F();
+  V('i7a','Beta Corp'); V('i7b','2XY99'); V('i7cma','PDFDEDUPE90210');
+  E('addPerf()');
+  const blk=w.document.querySelector('#perfBlocks > div[id^="perf-"]');
+  blk.querySelector('.loc-8a').value='Beta Corp';
+  blk.querySelector('.cage-8b').value='2XY99';       /* same company as Item 7 */
+  blk.querySelector('.cma-loc').value='PDFDEDUPE90210';
+  E('cmaSync(); run();');
+  let bytes=null; const OB=w.Blob;
+  w.Blob=function(p,o){
+    try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){}
+    return new OB(p,o);
+  };
+  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
+  if(!bytes) return 'PDF bytes were not captured';
+  const out=path.join(os.tmpdir(),'dd254-cmadedupe-'+process.pid+'.pdf');
+  fs.writeFileSync(out,bytes);
+  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
+  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,
+    '1x:PDFDEDUPE90210'],{encoding:'utf8'});
+  try{fs.unlinkSync(out);}catch(e){}
+  return chk.status===0 ? true : {status:chk.status,stdout:chk.stdout,stderr:chk.stderr};
+});
+t('the SAP flag raises the countersignature requirement on a 2b subcontract', ()=>{
+  E("resetFormFields();document.getElementById('i2b').value='SUB-0001';document.getElementById('sapFlag').checked=true;run();");
+  const warnings=w.DD254_WARNS||[];
+  /* show() toggles the 'show' class; the inline display:none stays put and CSS
+     overrides it, so the class is what says whether the panel is visible. */
+  const panel=w.document.getElementById('a2bSubSign');
+  return warnings.some(function(x){return /not complete until the subcontractor/.test(x)&&/10\.1\.d/.test(x);})
+      && !!panel && panel.classList.contains('show');
+});
+t('the SAP flag reaches a form that names its subcontractor only in Item 7a', ()=>{
+  /* The case the old Item-2b-only test missed entirely. */
+  E("resetFormFields();document.getElementById('i7a').value='Beta Corp';document.getElementById('sapFlag').checked=true;run();");
+  const warnings=w.DD254_WARNS||[];
+  return warnings.some(function(x){return /not complete until the subcontractor/.test(x);});
+});
+t('no SAP flag and no subcontractor means no countersignature requirement', ()=>{
+  E("resetFormFields();document.getElementById('i7a').value='Beta Corp';document.getElementById('sapFlag').checked=false;run();");
+  const a=(w.DD254_WARNS||[]).some(function(x){return /not complete until the subcontractor/.test(x);});
+  /* SAP ticked but nobody named as a subcontractor: a prime SAP form owes no
+     subcontractor countersignature. */
+  E("resetFormFields();document.getElementById('sapFlag').checked=true;run();");
+  const b=(w.DD254_WARNS||[]).some(function(x){return /not complete until the subcontractor/.test(x);});
+  return !a && !b;
+});
+t("the preparer's worksheet labels every box the way the form does", ()=>{
+  /* The worksheet kept a hand-written copy of the Item 10/11 labels and it had
+     drifted: 11c read "Use of SCG" when the box is receive/store/generate, and
+     11k read "COMSEC (FOCI considerations)" when the box is Defense Courier
+     Service. A preparer working from the printed sheet was told the wrong thing
+     about what they had ticked. Labels are now read from the boxes themselves. */
+  F();
+  C('c11c'); C('c11k'); RUN();
+  grabWindow(); E("exportPrep254();");
+  return /11c\. Receive, store, AND generate/.test(grabbed)
+      && /11k\. Be authorized to use Defense Courier Service/.test(grabbed)
+      && !/Use of SCG/.test(grabbed)
+      && !/COMSEC \(FOCI/.test(grabbed);
+});
+t('the subcontractor signature requirement names no block on the form', ()=>{
+  /* DoDM 5205.07 10.1.d requires the subcontractor to sign; it does not say
+     where, and the APR 2018 form has no subcontractor signature block - Item 17
+     is the ISSUER's certification with one signature field, 17h, for the
+     certifying official. The tool used to direct the subcontractor to Item 17,
+     which is a location it invented. Asserting a place that does not exist sends
+     an FSO looking for a field that is not on the form. */
+  E("resetFormFields();document.getElementById('i7a').value='Beta Corp';document.getElementById('sapFlag').checked=true;run();");
+  const hit=(w.DD254_WARNS||[]).filter(function(x){return /not complete until the subcontractor/.test(x);});
+  return hit.length===1 && !/Item 17/.test(hit[0]) && /no subcontractor signature field|provides no/.test(hit[0]);
+});
+t('a stored SAP subcontract is recognised by the dashboard', ()=>{
+  const sap={workspace:{checks:{sapFlag:true},texts:{i7a:'Beta Corp'},selects:{}}};
+  const sap2b={workspace:{checks:{sapFlag:true},texts:{i2b:'SUB-0001'},selects:{}}};
+  const noFlag={workspace:{checks:{},texts:{i7a:'Beta Corp'},selects:{}}};
+  const noSub={workspace:{checks:{sapFlag:true},texts:{},selects:{}}};
+  return E('dashSapSub('+JSON.stringify(sap)+')') && E('dashSapSub('+JSON.stringify(sap2b)+')')
+      && !E('dashSapSub('+JSON.stringify(noFlag)+')') && !E('dashSapSub('+JSON.stringify(noSub)+')');
+});
+t('the retention clock and the biennial review clock stay separate', ()=>{
+  /* A Final is not a revision: it has a disposition deadline and no review
+     date, and a revision is the reverse. Neither is derived from the other. */
+  const fin={workspace:{texts:{i3c_date:'20260415'},radios:{spec:'3c'}},issuedAt:'2026-04-15T00:00:00.000Z'};
+  const rev={workspace:{texts:{i3b_date:'20260415'},radios:{spec:'3b'}},issuedAt:'2026-04-15T00:00:00.000Z'};
+  return E('dd254RetentionDue('+JSON.stringify(fin)+')')==='2028-04-15'
+      && E('dd254ReviewDue('+JSON.stringify(rev)+')')==='2028-04-15'
+      && E('dd254RetentionDue('+JSON.stringify({workspace:{texts:{}},issuedAt:''})+')')==='';
+});
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
