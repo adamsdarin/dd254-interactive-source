@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v1.12.0
+# DD‑254 Interactive — Codex Astra v1.13.0
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -20,13 +20,13 @@ and no network traffic. Download one file, open it, work offline.
 | | |
 |---|---|
 | **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.12.0.HTM` |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.13.0.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v1.12.0.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.13.0.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -95,6 +95,42 @@ still describes the committed build. The logs are public.
 
 ---
 
+## What changed in v1.13.0
+
+Mostly corrections, each one a place where the tool stated something more
+specific than the DD Form 254 or its authority supports.
+
+- **CUI marking is no longer derived from the contract's CUI requirements.**
+  Item 10j, Item 11l, a CUI designation, a distribution statement or an LDC say
+  the *contract* involves CUI. They no longer mark the *form*, badge it CUI,
+  split its issuance audience or put `(CUI)(CUI)(CUI)` in an e-mail subject. A
+  DD Form 254 naming CUI categories for a classified contract is routinely
+  UNCLASSIFIED. Validation still reports the requirement and points at the Item
+  13 guidance the GCA must supply.
+- **The SAP flag now adds the constraint it exists for.** A SAP subcontract
+  identified in Item 2b *or* Item 7a raises the subcontractor-signature
+  requirement as a finding, shows it as owed on the card, and states at issuance
+  that access stays closed until it is held. It does not block issuance — the
+  form has to go out to be signed.
+- **That signature is no longer directed to Item 17.** DoDM 5205.07 requires the
+  subcontractor's authorised representative to sign and does not say where; Item
+  17 is the issuer's certification and its one signature field belongs to the
+  certifying official. The form provides no subcontractor block, so the tool
+  states the requirement and the gap, and records where the signature is held.
+- **Item 13 states a classified mailing address once** when the Item 7
+  subcontractor is also an Item 8 performance location. A genuine disagreement
+  between the two is reported rather than hidden.
+- **Items 16 and 17 show their required-field asterisks again.** They remain
+  outside preparer validation, so a draft is never blocked on fields the GCA and
+  certifying official complete after handover.
+- **The preparer's worksheet labels each box the way the form does**, reading
+  them from the boxes rather than a second copy that had drifted.
+- **Template source provenance and retention tracking.** A template records
+  whether it came from an Original, a numbered Revision or a Final. Marking one
+  Final starts the 32 CFR 117.15 two-year window for material held under it, and
+  issuing a Final DD Form 254 starts a separate window for a subcontractor's
+  holdings. Neither is the Item 3b(3) biennial review.
+
 ## Complete the form with fewer repeated steps
 
 - Reuse Item 6 or 7 details as an Item 8 performance site with one action. Existing sites and manual edits are preserved.
@@ -110,14 +146,14 @@ These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify
 eligibility or decide authority. No server or new storage service is required.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.12.0.md)
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.13.0.md)
 describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.12.0.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.13.0.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)
 - [Original enhancement requirements (Word PRD, draft 0.2)](02_DOCS/product_planning/DD254_Tool_Enhancement_PRD.docx)
 

@@ -149,3 +149,17 @@ Both are fixed, and both have tests pinning the fix.
   the dynamic XFA button is the only user-facing official PDF route.
 
 The v1.12.0 completion tests exercise performance-site reuse and manual-edit preservation, direct field navigation, inline error clearing, combined Item 13 insertion, cancellation and stale-preview guards, and unfinished prompt selection. Native Chrome exercises the visible controls in both builds.
+
+The v1.13.0 tests separate the form's own CUI marking from the contract's CUI
+requirements and assert that a record which merely involves CUI is neither
+badged, audience-split nor given a `(CUI)` subject; that the SAP flag raises the
+subcontractor-signature requirement from Item 2b or Item 7a and names no block
+on the form; that Item 13 states a shared Item 7/8 classified mailing address
+once and reports a genuine disagreement; that only a Final arms each two-year
+retention clock and neither is the Item 3b(3) biennial review; and that the
+preparer's worksheet labels every box the way the form does. The PDF oracle now
+accepts `Nx:VALUE` to assert an exact occurrence count, because a containment
+check passes just as happily when an address is printed twice. Native Chrome
+additionally proves the Items 16/17 asterisks are present and non-blocking; that
+check previously resolved labels with `closest()`, which returns null for those
+fields and made it true whatever the markup said.
