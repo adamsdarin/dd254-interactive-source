@@ -1,3 +1,24 @@
+## v1.14.0 - 13 September 2026
+
+Tool version 2.126. Removes the Source & Validation Log. Existing storage,
+records and approval holds are retained.
+
+- Removed the Source & Validation Log panel, its PDF export and its file
+  attachments. It recorded the preparer's working material - sources consulted,
+  notes and uploaded files - which is not needed to prepare or issue a DD Form
+  254. It was also a second place to record sources, alongside Optional
+  supporting records.
+- Drafts saved by earlier versions still open. Their log entries and attachments
+  are no longer shown and are not written back when the draft is next saved from
+  the form. Until then they remain in browser storage and in Full Backup. To keep
+  that material, export the log from v1.13.0 before opening the draft here.
+- The tool no longer stores uploaded file bytes. Its remaining file inputs import
+  drafts, backups and template data; nothing is attached to drafts or exports.
+- In Optional supporting records, a document's file reference was a picker whose
+  only options were log attachments. It is now a text field for a file name or
+  SHA-256, and a reference already recorded in an older draft is kept.
+- Optional supporting records keep their collapsed position on the page.
+
 ## v1.13.0 - 12 September 2026
 
 Tool version 2.125. Correctness fixes to what the tool asserts about the form,

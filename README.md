@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v1.13.0
+# DD‑254 Interactive — Codex Astra v1.14.0
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -20,13 +20,13 @@ and no network traffic. Download one file, open it, work offline.
 | | |
 |---|---|
 | **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.13.0.HTM` |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.14.0.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v1.13.0.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.14.0.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -95,6 +95,16 @@ still describes the committed build. The logs are public.
 
 ---
 
+## What changed in v1.14.0
+
+- **The Source & Validation Log is gone.** It recorded the preparer's working
+  material — sources consulted, notes and uploaded files — which isn't needed to
+  prepare or issue a DD Form 254, and it duplicated the source records in
+  Optional supporting records. The tool no longer stores uploaded files.
+- **Older drafts still open.** Log entries and attachments in a draft saved by
+  an earlier version are no longer shown and are dropped when that draft is next
+  saved from the form. To keep them, export the log from v1.13.0 first.
+
 ## What changed in v1.13.0
 
 Mostly corrections, each one a place where the tool stated something more
@@ -139,21 +149,21 @@ specific than the DD Form 254 or its authority supports.
 - Find and select unfinished bracketed template prompts in Item 13.
 
 The previous review workspace is now **Optional supporting records**, collapsed
-below the source log. Its stored records remain available; it no longer adds an
+by default. Its stored records remain available; it no longer adds an
 issuance confirmation. Existing validation and approval holds still apply.
 
 These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify
 eligibility or decide authority. No server or new storage service is required.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.13.0.md)
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.14.0.md)
 describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.13.0.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.14.0.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)
 - [Original enhancement requirements (Word PRD, draft 0.2)](02_DOCS/product_planning/DD254_Tool_Enhancement_PRD.docx)
 

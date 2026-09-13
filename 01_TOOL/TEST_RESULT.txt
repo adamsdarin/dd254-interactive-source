@@ -1,4 +1,4 @@
-BUILD_SHA256 46f73c5ac4d2aecec20f8ad26119f529456d4c38fc06d5acf1efd577b8f3c782
+BUILD_SHA256 e589a245dbc210b918b8ce8d5c58253ae4457341e2f197618403452770efabbf
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -398,7 +398,6 @@ BUILD_SHA256 46f73c5ac4d2aecec20f8ad26119f529456d4c38fc06d5acf1efd577b8f3c782
   PASS  generated HTML reports encode operator text and declare a locked-down CSP
   PASS  the generated-report opener cannot retain access to the tool window
   PASS  the notes report covers holds, to-dos and notes
-  PASS  the validation log export runs with an entry attached
   PASS  a draft export is named and watermarked DRAFT while errors remain
 
 ### 32. CSO block layout in the exports
@@ -435,8 +434,6 @@ BUILD_SHA256 46f73c5ac4d2aecec20f8ad26119f529456d4c38fc06d5acf1efd577b8f3c782
 
 ### 34. Previously untested paths
   PASS  a real CSV file upload goes through FileReader
-  PASS  a real file attaches to the validation log and is hashed
-  PASS  SHA-256 matches the reference value for those bytes
   PASS  the manager rollup imports team backups read-only
   PASS  closing the rollup returns you to your own drafts
   PASS  a 60-draft portfolio renders in reasonable time
@@ -1189,7 +1186,9 @@ BUILD_SHA256 46f73c5ac4d2aecec20f8ad26119f529456d4c38fc06d5acf1efd577b8f3c782
   PASS  changed template during preview is rejected without overwriting the form
   PASS  unfinished contract prompts are detected without treating a citation as a prompt
   PASS  find prompt selects the exact editable placeholder
-  PASS  supporting records are retained below the source log
+  PASS  supporting records remain, collapsed, where the removed log used to sit
+  PASS  a draft saved with the removed validation log still opens and saving drops it
+  PASS  a supporting document keeps a recorded file reference as editable text
 
 ### 91. v196 marking, Item 13 duplication, source provenance and retention
   PASS  Item 13 states one classified mailing address when Item 7 and Item 8 are the same CAGE
@@ -1211,5 +1210,5 @@ BUILD_SHA256 46f73c5ac4d2aecec20f8ad26119f529456d4c38fc06d5acf1efd577b8f3c782
   PASS  the retention clock and the biennial review clock stay separate
 
 ================================
-  PASS 1018   FAIL 0
+  PASS 1017   FAIL 0
 ================================

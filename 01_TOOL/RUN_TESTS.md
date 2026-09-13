@@ -163,3 +163,10 @@ check passes just as happily when an address is printed twice. Native Chrome
 additionally proves the Items 16/17 asterisks are present and non-blocking; that
 check previously resolved labels with `closest()`, which returns null for those
 fields and made it true whatever the markup said.
+
+The v1.14.0 tests cover the removal of the Source & Validation Log: the
+supporting-records panel stays present and collapsed where the log used to sit;
+a draft saved with a log by an earlier version still opens and the log is not
+written back on save; and a supporting document's file reference renders as
+editable text that keeps a hash already recorded. The log's own export and
+file-hashing tests were removed with the feature.

@@ -631,7 +631,7 @@ await ta('seed a fully-worked issued, blocked solicitation', async()=>{
     todos:[{text:'open item',due:'2026-03-01',done:false},{text:'done item',due:'2026-02-01',done:true}],\
     niss:{on:true,date:'2026-02-01',by:'DA'},countersign:{received:true,date:'2026-02-05'},\
     meta:{contract:'W911-J',contractor:'Juliet Corp'},\
-    workspace:{selects:{fcl1a:'S'},texts:{i6a:'Juliet Corp',item13:'Ref 10a: guidance.'},checks:{c10a:true,dist18a:true},radios:{spec:'3a'},perf:[],vlog:{entries:[{x:1}],remarks:'r',files:[]}}})");
+    workspace:{selects:{fcl1a:'S'},texts:{i6a:'Juliet Corp',item13:'Ref 10a: guidance.'},checks:{c10a:true,dist18a:true},radios:{spec:'3a'},perf:[]}})");
   const r=await E("draftGet('S9')"); return r.holds.length===2;});
 const kid=async()=>(await E("draftAll()")).filter(x=>x.parentId==='S9')[0];
 await ta('spawn clears parent EVENTS', async()=>{
@@ -639,8 +639,7 @@ await ta('spawn clears parent EVENTS', async()=>{
   return c.holds.length===0 && c.dist.length===0 && c.countersign===null && !('issuedAt' in c)
       && c.status==='Draft' && c.reviewDate==='';});
 await ta('spawn carries working CONTEXT', async()=>{const c=await kid();
-  return c.niss && c.niss.by==='DA' && c.todos.length===2 && c.notes==='parent notes'
-      && c.workspace.vlog && c.workspace.vlog.entries.length===1;});
+  return c.niss && c.niss.by==='DA' && c.todos.length===2 && c.notes==='parent notes';});
 await ta('spawn carries the form content and sets stage/title/Item 3', async()=>{const c=await kid();
   return c.workspace.texts.i6a==='Juliet Corp' && c.workspace.checks.c10a===true
       && c.stage==='orig' && c.title==='Juliet — Original' && c.workspace.radios.spec==='3a';});
@@ -1689,9 +1688,6 @@ await ta('the notes report covers holds, to-dos and notes', async()=>{
   return /Chase SCG/.test(grabbed) && /General note here/.test(grabbed) && /SCG missing/.test(grabbed) && /open hold/i.test(grabbed)
     && grabbed.indexOf('<img src=x')<0 && grabbed.indexOf('&lt;img src=x onerror=alert(1)&gt;')>=0
     && /default-src 'none'/.test(grabbed);});
-t('the validation log export runs with an entry attached', ()=>{ F();
-  E("VLOG.entries=[{item:'10a',source:'NISS',note:'FCL confirmed',ts:'2026-07-30'}];VLOG.remarks='';VLOG.files=[];");
-  return E("VLOG.entries.length")===1 && typeof E("typeof exportValidationLog")==='string'; });
 t('a draft export is named and watermarked DRAFT while errors remain', ()=>{ F(); RUN();
   return ERRS().length>0 && /DRAFT/.test(E("String(exportOfficial254)")); });
 
@@ -1861,27 +1857,6 @@ await ta('a real CSV file upload goes through FileReader', async()=>{
   const a=E("tplLoad(TPL_CSO)");
   return a.length===1 && a[0].label==='Uploaded' && a[0].email==='up@dcsa.mil';});
 
-const suiteCrypto=w.crypto;
-const nodeCrypto=require('crypto');
-const hashCrypto={subtle:{digest:async function(algorithm,data){
-  if(String(algorithm).toUpperCase()!=='SHA-256') throw new Error('Unsupported digest: '+algorithm);
-  const out=nodeCrypto.createHash('sha256').update(Buffer.from(Array.from(new Uint8Array(data)))).digest();
-  return out.buffer.slice(out.byteOffset,out.byteOffset+out.byteLength);
-}}};
-try{ Object.defineProperty(w,'crypto',{value:hashCrypto,configurable:true}); }catch(e){}
-await ta('a real file attaches to the validation log and is hashed', async()=>{
-  E("VLOG.entries=[];VLOG.files=[];VLOG.remarks='';");
-  const file=new w.File([new Uint8Array([1,2,3,4,5])],'evidence.txt',{type:'text/plain'});
-  E("window.__F2={target:{files:[null],value:''}};"); w.__F2.target.files=[file];
-  await E("vlogAddFiles(window.__F2)");
-  for(let i=0;i<40 && !E("VLOG.files.length");i++) await new Promise(r=>setTimeout(r,25));
-  const f=E("VLOG.files");
-  return f.length===1 && f[0].name==='evidence.txt' && /^[0-9a-f]{64}$/.test(f[0].sha256||'');});
-await ta('SHA-256 matches the reference value for those bytes', async()=>{
-  const h=await E("vlogSha256(new Uint8Array([1,2,3,4,5]).buffer)");
-  const crypto=require('crypto');
-  return h===crypto.createHash('sha256').update(Buffer.from([1,2,3,4,5])).digest('hex');});
-try{ Object.defineProperty(w,'crypto',{value:suiteCrypto,configurable:true}); }catch(e){}
 
 await ta('the manager rollup imports team backups read-only', async()=>{
   await wipe();
@@ -5956,7 +5931,25 @@ t('unfinished contract prompts are detected without treating a citation as a pro
 t('find prompt selects the exact editable placeholder',()=>{
  E("completionNextPrompt();");return E("window.getSelection().toString()")==='[INSERT APPLICABLE AUTHORITY]'&&E('WIZ_STEP')===5;
 });
-t('supporting records are retained below the source log',()=>E("document.getElementById('vlogBox').nextElementSibling.id")==='astraReview');
+t('supporting records remain, collapsed, where the removed log used to sit',()=>{
+  const r=w.document.getElementById('astraReview');
+  return !!r && r.open===false && !w.document.getElementById('vlogBox');
+});
+t('a draft saved with the removed validation log still opens and saving drops it',()=>{
+  /* Drafts saved before v1.14.0 can carry a vlog block, attachments included.
+     Opening one must not fail, and the next save must not write the log back. */
+  F();
+  E("applyWorkspace({texts:{i6a:'Legacy Log Corp'},checks:{},radios:{},selects:{},perf:[],vlog:{entries:[{item:'10a',source:'NISS',note:'n'}],remarks:'r',files:[{name:'x.pdf',size:3,b64:'AAAA',sha256:'ab'}]}});");
+  const ws=E('collectWorkspace()');
+  return E("document.getElementById('i6a').value")==='Legacy Log Corp' && !('vlog' in ws)
+      && typeof E('typeof VLOG')==='string' && E('typeof VLOG')==='undefined';
+});
+t('a supporting document keeps a recorded file reference as editable text',()=>{
+  /* fileRef used to be a picker whose only options were log attachments. With the
+     log gone it is typed, and a hash already recorded in an older draft survives. */
+  const html=E("astraField('documents',{id:'d1',fileRef:'57ab7f77811938c6'},['fileRef','Existing file reference (name or SHA-256)'])");
+  return /<input[^>]*type="text"[^>]*value="57ab7f77811938c6"/.test(html) && !/<select/.test(html);
+});
 
 console.log('\n### 91. v196 marking, Item 13 duplication, source provenance and retention');
 t('Item 13 states one classified mailing address when Item 7 and Item 8 are the same CAGE', ()=>{
