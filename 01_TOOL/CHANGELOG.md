@@ -1,23 +1,35 @@
 ## v1.14.0 - 13 September 2026
 
-Tool version 2.126. Removes the Source & Validation Log. Existing storage,
-records and approval holds are retained.
+Tool version 2.126. Removes the Source & Validation Log and the Optional
+supporting records panel. Existing drafts, templates, approval holds and the
+v1.13.0 corrections are retained.
 
-- Removed the Source & Validation Log panel, its PDF export and its file
+- Removed the Source & Validation Log: its panel, PDF export and file
   attachments. It recorded the preparer's working material - sources consulted,
   notes and uploaded files - which is not needed to prepare or issue a DD Form
-  254. It was also a second place to record sources, alongside Optional
-  supporting records.
-- Drafts saved by earlier versions still open. Their log entries and attachments
-  are no longer shown and are not written back when the draft is next saved from
-  the form. Until then they remain in browser storage and in Full Backup. To keep
-  that material, export the log from v1.13.0 before opening the draft here.
+  254.
+- Removed the Optional supporting records panel (introduced in v1.11.0): guidance
+  sources, contract attachment reconciliation, attachments and delivery,
+  requirements and cost estimates, questions and decisions, changes and closeout,
+  local review history, its separate review PDF, its review findings in the
+  Contracting Officer package and its Item 13 insertion. It too recorded working
+  material rather than anything the form requires.
+- Kept the Final-form retention guidance those records carried (32 CFR
+  117.13(d)(5); DoDM 5205.07 section 10.5). It still appears in the Item 3
+  instructions, the Item 3c validation note and the CO package. It previously
+  lived in a script block that loaded after the first validation run; it now
+  loads with the form.
 - The tool no longer stores uploaded file bytes. Its remaining file inputs import
-  drafts, backups and template data; nothing is attached to drafts or exports.
-- In Optional supporting records, a document's file reference was a picker whose
-  only options were log attachments. It is now a text field for a file name or
-  SHA-256, and a reference already recorded in an older draft is kept.
-- Optional supporting records keep their collapsed position on the page.
+  drafts, backups and template data.
+- Drafts saved by earlier versions still open, including supporting records
+  whose schema the removed validator would have rejected. Their log entries,
+  attachments and supporting records are no longer shown and are not written back
+  when the draft is next saved from the form; until then they remain in browser
+  storage and Full Backup. Restoring an older backup no longer rejects it for its
+  supporting-records data. To keep that material, export it from v1.13.0 before
+  opening the draft here.
+- The Item 13 drafting tools from v1.12.0 - site reuse, go-to-field, combined
+  template insertion and unfinished-prompt search - are unchanged.
 
 ## v1.13.0 - 12 September 2026
 

@@ -480,16 +480,6 @@ body.ws-dragging{user-select:none;}
 @media print{#wsDrag{display:none!important;}}
 </style>
 <style>
-#astraPanel{margin:12px 0;padding:16px;border:1px solid #b9c9d8;border-radius:8px;background:var(--bg,#fff);color:var(--text,#1d3349);font:13px/1.5 Arial,sans-serif}
-#astraPanel h2{font-size:17px;margin:0 0 6px}.astra-edition{font-size:11px;font-weight:normal}
-#astraPanel details{border-top:1px solid #bdcad6;padding:9px 0}#astraPanel summary{cursor:pointer;font-weight:bold;padding:4px 0}
-#astraReview summary::before{content:none!important}
-.astra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}.astra-grid label{display:block;font-size:12px}
-.astra-grid input,.astra-grid textarea,.astra-grid select{display:block;box-sizing:border-box;width:100%;padding:7px;border:1px solid #9fb3c5;border-radius:4px;background:#fff;color:#172d42;font:13px Arial,sans-serif}
-.astra-grid textarea{resize:vertical}.astra-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}.astra-actions label{font-size:12px}
-#astraPanel :focus-visible{outline:3px solid #3184ce;outline-offset:2px}#astraFindings{margin:12px 0;padding:10px;background:#edf3f8;color:#1d3349}.astra-row{margin-left:12px}.astra-cost{font-weight:bold}
-@media(max-width:700px){.astra-grid{grid-template-columns:1fr}.astra-row{margin-left:0}}
-@media print{#astraReview{display:none!important}}
 </style>
 <style>.completion-tools{padding:9px;margin:8px 0;border-left:3px solid #2d6592;background:#eef4fa;font:12px/1.5 Arial;color:#173b58}.completion-tools button{margin:4px}.completion-inline{font:11px/1.5 Arial;color:#8b1a0a;white-space:pre-line;margin:3px 0 8px}.completion-jump{margin-left:6px}.completion-target{outline:3px solid #2674b5!important;outline-offset:3px}#completionPromptHint{color:#8b1a0a;font-weight:bold}@media print{.completion-tools,.completion-inline,.completion-jump,#completionNext{display:none!important}.completion-target{outline:none!important}}</style></head>
 <body>
@@ -606,7 +596,6 @@ body.ws-dragging{user-select:none;}
     </div>
 </div>
 
-<details id="astraReview" style="margin-bottom:15px;"><summary style="cursor:pointer;font:bold 14px Arial;color:#245278;">Optional supporting records</summary><div id="astraPanel"></div></details>
 
 
 <div class="top-bar">
@@ -2400,6 +2389,17 @@ function renderMarkedSummary(){
   body.innerHTML=html||'<em style="color:#7a8aa0;">None marked yet in Items 10 or 11.</em>';
 }
 // ── ITEM 3 CHECKLIST PANEL ────────────────────────────────────
+/* Retention guidance shown for a Final DD Form 254 - in the Item 3 instructions,
+   in the Item 3c validation note and in the CO package. Sources: 32 CFR
+   117.13(d)(5); DoDM 5205.07 (17 January 2025) section 10.5. It lived inside the
+   optional supporting-records panel, which was removed in v1.14.0, and that
+   script block loaded after the initial run(), so a draft opened as Final could
+   reach this before it existed. It belongs to the form, so it lives with it. */
+const FINAL_RETENTION_GUIDANCE={
+  general:'At contract completion, return USG-provided or deliverable information. Unless the GCA directs otherwise, copies may be retained for two years; continued need beyond that period requires a final specification or equivalent with disposition instructions. This is not blanket permission to retain all material.',
+  sap:'For SAP work, coordinate disposition and the termination plan with the GCA and PSM/PSO. SAP information may be retained only with specific written GCA authorization. A Final DD Form 254 addresses continued SAP security requirements; do not apply the ordinary two-year rule as automatic SAP retention authority.'
+};
+function finalRetentionGuidance(sap){ return sap?FINAL_RETENTION_GUIDANCE.sap:FINAL_RETENTION_GUIDANCE.general; }
 function buildItem3Panel(){
 const p = ck('item3Panel');
 if(!S.spec){ p.innerHTML='<div class="check-item"><span class="ci-icon ci-pending">—</span><span class="ci-text" style="font-style:italic;">Select 3a, 3b, or 3c above to see applicable rules</span></div>'; return; }
@@ -2441,7 +2441,7 @@ html += info('Each revision supersedes all previous specifications. Provide revi
 }
 else if(S.spec === '3c'){
 html += `<div style="background:var(--req-bg);border-left:3px solid var(--req-red);padding:5px 8px;border-radius:0 4px 4px 0;font-size:10.5px;font-family:Arial,sans-serif;color:var(--rule-red);font-weight:bold;margin-bottom:6px;">3c — FINAL selected</div>`;
-html += info(astraRetention(!!ck('sapFlag')?.checked));
+html += info(finalRetentionGuidance(!!ck('sapFlag')?.checked));
 html += req('Enter the <strong>original issuance date</strong> in Item 3a — it must still appear on a Final form.');
 html += req('For retention, complete <strong>Item 5</strong> with the request date and authorized period; coordinate any SAP continuation basis with the GCA and PSM/PSO.');
 html += req('<strong>Item 13 must contain final disposition instructions</strong> for all classified material covered by this contract.');
@@ -2686,7 +2686,7 @@ if(S.spec==='3c'){
   if(!_hasDisp) errors.push('Item 3c Final: Item 13 must contain final disposition instructions for all classified material');
   else complete.push('Item 3c Final: Item 13 carries disposition instructions');
 }
-if(S.spec==='3c') warns.push('Item 3c Final: '+astraRetention(!!ck('sapFlag')?.checked));
+if(S.spec==='3c') warns.push('Item 3c Final: '+finalRetentionGuidance(!!ck('sapFlag')?.checked));
 if(!(typeof solStrip==='function'?solStrip(S.i9):S.i9).trim()) warns.push('Item 9: Unclassified description is required');
 else complete.push('Item 9: Description entered');
 if(S.c['11a']&&(!ck('item13')?.value.includes('8')&&!ck('item13')?.value.includes('11a')&&!ck('item13')?.value.length)) warns.push('Item 11a: Ensure Item 8a identifies where contractor will access classified info');
@@ -3851,7 +3851,6 @@ async function saveWorkspace() {
         const p=perfVals(b);
         data.perf.push({loc:p.loc, cage:p.cage, cso:p.cso, email:p.email, cma:p.cma});
     });
-    data.astra=astraSnapshot();
     document.querySelectorAll('input[type="text"], textarea, [contenteditable="true"]').forEach(e => { if(e.id) data.texts[e.id] = e.value; });
     document.querySelectorAll('input[type="checkbox"]').forEach(e => { if(e.id) data.checks[e.id] = e.checked; });
     document.querySelectorAll('input[type="radio"]').forEach(e => { if(e.name && e.checked) data.radios[e.name] = e.value; });
@@ -3893,7 +3892,6 @@ function loadWorkspace(event) {
     reader.onload = (e) => {
         try {
             const data = JSON.parse(e.target.result);
-            astraValidate(data.astra);
             if(typeof b13SelectionReset==='function') b13SelectionReset();
             if(data.texts) { 
                 Object.keys(data.texts).forEach(id => { 
@@ -3923,7 +3921,6 @@ function loadWorkspace(event) {
         if(f.cma) f.cma.value=p.cma||''; } });
             }
             updateStateAndUI();
-            astraLoad(data.astra);
             alert("Draft workspace loaded successfully!");
         } catch(err) { alert("Workspace could not be loaded: "+err.message); }
     };
@@ -4025,7 +4022,6 @@ function lsWrite(all){
   }
 }
 async function draftPut(rec){
-  astraValidate(rec&&rec.workspace&&rec.workspace.astra);
   if(window.DD254_READONLY) return;   /* read-only tab: never write a draft */
   if(typeof bkMark==='function'&&!window.BK_UNLOADING) bkMark();
   await dashDB();
@@ -5277,12 +5273,10 @@ function collectWorkspace(){
     const p=perfVals(b);
     data.perf.push({loc:p.loc,cage:p.cage,cso:p.cso,email:p.email,cma:p.cma});
   });
-  data.astra=astraSnapshot();
   return data;
 }
 function applyWorkspace(data){
   if(!data) return;
-  astraValidate(data.astra);
   if(typeof b13SelectionReset==='function') b13SelectionReset();
   if(data.texts){
     Object.keys(data.texts).forEach(function(id){
@@ -5324,7 +5318,6 @@ function applyWorkspace(data){
   if(typeof cmaAdopt==='function') cmaAdopt();
   if(typeof supAdopt==='function') supAdopt();
   if(typeof cuiAdopt==='function') cuiAdopt();
-  astraLoad(data.astra);
   updateStateAndUI();
 }
 function syncUIFromDom(){
@@ -5364,7 +5357,6 @@ function resetFormFields(){
   document.querySelectorAll('select').forEach(function(e){ e.selectedIndex=0; });
   document.querySelectorAll('#perfBlocks > div[id^="perf-"]').forEach(function(b){b.remove();});
   document.querySelectorAll('.reviewer-row').forEach(function(b){b.remove();});
-  astraLoad(null);
   syncUIFromDom();
 }
 
@@ -6887,7 +6879,6 @@ function fullRestore(ev){
   rd.onload=async function(e){
     try{
       const data=JSON.parse(e.target.result);
-      astraValidateRecords(data.drafts||[]);
       if(data.tool!=='DD254 Full Backup'||!data.templates) return alert('That is not a full-backup file.');
       const nT=BK_KINDS.reduce(function(a,k){return a+((data.templates[k]||[]).length);},0);
       const nD=(data.drafts||[]).length;
@@ -7338,7 +7329,6 @@ async function dashBulkIssue(ids){
     if(typeof uiAlert==='function') await uiAlert(msg); else alert(msg);
     await dashRenderCards(); return false;
   }
-  // Optional supporting records do not introduce an additional issuance dialog.
   const openHolds=[];
   records.forEach(function(rec){ dashHoldsOpen(rec).forEach(function(h){openHolds.push((rec.title||rec.id)+': '+h.t);}); });
   if(openHolds.length && !(await uiConfirm('✋ '+openHolds.length+' open operational hold'+(openHolds.length===1?'':'s')+' across the selected DD-254s:\n\n• '+openHolds.join('\n• ')+'\n\nIssuing with unresolved holds is a contradiction. Issue every selected DD-254 anyway?'))){
@@ -8104,7 +8094,6 @@ function dashRestore(ev){
     try{
       const data=JSON.parse(e.target.result);
       const list=Array.isArray(data)?data:(data.drafts||[]);
-      astraValidateRecords(list);
       if(!list.length) return alert('No drafts found in that backup.');
       let n=0;
       for(const rec of list){ if(rec&&rec.id){ await draftPut(rec); n++; } }
@@ -8267,7 +8256,6 @@ function dashResetWorkflow(rec){
   rec.dist=[];
   rec.countersign=null;
   delete rec.issuedAt;
-  astraResetRecord(rec);
   return rec;
 }
 async function dashSpawn(id,kind){
@@ -10737,7 +10725,6 @@ function exportCOPrep() {
     _fl.err.forEach(function(x){ coMust.push(x); });
     _fl.warn.forEach(function(x){ coWarn.push(x); }); }
 
-  astraFindings(ASTRA,collectWorkspace()).forEach(x=>coWarn.push('Astra review: '+x));
   // Core CO obligations
   coMust.push('Verify the contractor entity eligibility/FCL and, when possession or storage is required, the approved safeguarding capability through NISS, NCAISS, or the CSA-designated source. A CAGE code or FCL alone does not establish storage authority. (32 CFR §§117.9 and 117.15)');
   coMust.push('Confirm the DD Form 254 is properly prepared, coordinated with requirements and security personnel, distributed, and incorporated with the classified acquisition. (FAR 4.403; 32 CFR §117.13(d))');
@@ -10747,7 +10734,7 @@ function exportCOPrep() {
   coMust.push('Complete the Item 17 certifying-official data, then complete Items 17h and 17i by digitally signing the generated dynamic PDF in Adobe Acrobat Pro.');
 
   if(spec==='3b') coMust.push('REVISED FORM: Incorporate this revised DD Form 254 through the contract modification process and preserve the original Item 3a date.');
-  if(spec==='3c') coMust.push('FINAL FORM: '+astraRetention(gc('sapFlag'))+' Complete Item 5 for retention and record disposition instructions in Item 13.');
+  if(spec==='3c') coMust.push('FINAL FORM: '+finalRetentionGuidance(gc('sapFlag'))+' Complete Item 5 for retention and record disposition instructions in Item 13.');
   if(gv('i2c')) coMust.push('SOLICITATION: Issue a new DD Form 254 at award with the awarded contract number; do not reuse the solicitation specification as the award form.');
 
   if(isSub) {
@@ -10949,7 +10936,6 @@ ${isSub && gc('sapFlag') ? `
 </div>
 
 <div style="margin-top:24px;padding-top:10px;border-top:1px solid #b0bac6;font-size:9.5px;color:#888;">
-${astraReportHTML()}
 CO Preparatory Package · DD Form 254 Interactive Guided Edition · Governed by 32 CFR Part 117 (NISPOM)${gc('sapFlag')?' · DoDM 5205.07 (SAP)':''} · FAR Subpart 4.4
 </div>
 </body></html>`;
@@ -11551,299 +11537,6 @@ if(typeof b13ViewSet==='function') b13ViewSet(b13ViewGet());
 if(typeof distRenderSel==='function'){ distRenderSel(); distSyncCats(); }</script>
 <script>initWizard(); run();</script>
 
-<script>
-/* Codex Astra review records live inside the existing workspace. They are
-   advisory evidence, never another approval engine or a remote data store. */
-const ASTRA_SCHEMA=1;
-const ASTRA_GUIDANCE={
-  id:'astra-retention-20260906', reviewed:'2026-09-06',
-  general:'At contract completion, return USG-provided or deliverable information. Unless the GCA directs otherwise, copies may be retained for two years; continued need beyond that period requires a final specification or equivalent with disposition instructions. This is not blanket permission to retain all material.',
-  sap:'For SAP work, coordinate disposition and the termination plan with the GCA and PSM/PSO. SAP information may be retained only with specific written GCA authorization. A Final DD Form 254 addresses continued SAP security requirements; do not apply the ordinary two-year rule as automatic SAP retention authority.',
-  sources:[['32 CFR 117.13(d)(5)','https://www.ecfr.gov/current/title-32/subtitle-A/chapter-I/subchapter-D/part-117/section-117.13'],['DoDM 5205.07, 17 January 2025, section 10.5','https://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/520507m1.PDF']]
-};
-function astraRetention(sap){return sap?ASTRA_GUIDANCE.sap:ASTRA_GUIDANCE.general;}
-function astraBlank(){return {schema:ASTRA_SCHEMA,guidanceVersion:ASTRA_GUIDANCE.id,package:{},sources:[],documents:[],requirements:[],issues:[],closeout:[],history:[]};}
-let ASTRA=astraBlank();
-const ASTRA_FIELDS={
-  package:[['contract','Contract or subcontract number'],['modification','Modification / solicitation reference'],['attachment','Contract attachment / exhibit number'],['revision','Attached DD254 revision (Original, number, or Final)'],['date','Attached DD254 date','date'],['incorporation','Recorded incorporation reference','area'],['clauseBasis','Executed clause / deviation basis','area']],
-  sources:[['title','Source title'],['issuer','Issuing organization'],['edition','Edition / effective date'],['locator','Paragraph / page'],['url','Official reference URL'],['scope','Applicability and limitations','area'],['reviewDate','Date reviewed by preparer','date'],['status','Source status',['Unknown','Current','Superseded']]],
-  documents:[['title','Guidance / attachment title'],['version','Available version / date'],['citedVersion','Version cited in the form'],['items','Affected form items (comma separated)'],['supersedes','Superseded document','documents'],['fileRef','Existing file reference (name or SHA-256)'],['location','Reference-only location / delivery instructions','area'],['recipient','Recipient / audience'],['method','Delivery channel'],['sentDate','Delivery date recorded','date'],['ackDate','Acknowledgment date recorded','date'],['ackRef','Acknowledgment evidence reference']],
-  requirements:[['title','Requirement title'],['task','Required task for Item 13','area'],['items','Affected form items (comma separated)'],['sourceId','Source and authority','sources'],['documentId','Supporting document','documents'],['contractRef','Contract authority / reference'],['scope','Applicability / site','area'],['owner','Implementation owner'],['extra','Additional requirement beyond baseline',['Unknown','Yes','No']],['inspectionOwner','Inspection organization and scope'],['criteria','Inspection criteria / evidence expected','area'],['frequency','Inspection frequency if specified'],['people','People / units','number'],['hours','Hours per person / unit','number'],['rate','Rate per hour / unit','number'],['events','Number of events','number'],['currency','Currency (e.g. USD)'],['costBasis','Estimate assumptions / basis for zero','area']],
-  issues:[['title','Question / mismatch'],['question','Facts and competing interpretations','area'],['items','Affected form items (comma separated)'],['sourceA','First source','sources'],['sourceB','Second source','sources'],['requirementId','Affected requirement','requirements'],['documentId','Affected document','documents'],['reviewer','Reviewer role / office'],['requested','Request date recorded','date'],['proposal','Proposed resolution','area'],['authority','Responding authority'],['responseDate','Response date','date'],['reference','Written response reference'],['resolution','Disposition and rationale','area'],['scope','Decision applicability / scope','area'],['status','Question status',['Draft','Ready for review','Sent recorded','Response recorded','Resolution recorded','Superseded']]],
-  closeout:[['title','Action'],['category','Action category',['Contract completion','Return / disposition','Retention','Continued program requirements']],['requirementId','Affected requirement','requirements'],['sourceId','Source','sources'],['owner','Responsible reviewer'],['due','Due / authorization end date','date'],['authority','Instruction / authorizing office'],['evidence','Disposition / authorization evidence','area'],['completed','Completion date recorded','date'],['status','Action status',['Pending','Completed']]]
-};
-const ASTRA_LABELS={sources:'Guidance sources',documents:'Attachments and delivery',requirements:'Requirements and Item 13',issues:'Questions and decisions',closeout:'Changes and closeout'};
-const ASTRA_PREFIX={sources:'S',documents:'D',requirements:'R',issues:'Q',closeout:'C'};
-['documents','requirements'].forEach(k=>ASTRA_FIELDS[k].push(['reviewer','Impact reviewer'],['reviewNote','Impact review basis','area']));
-ASTRA_FIELDS.requirements.push(['estimateStatus','Estimate status',['Unknown','Draft estimate','Reviewed estimate']],['costTiming','Effort basis',['Unknown','One-time','Recurring']]);
-ASTRA_FIELDS.issues.push(['holdRef','Related existing hold reference (does not resolve the hold)']);
-function astraClone(v){return JSON.parse(JSON.stringify(v));}
-function astraShort(id){return String(id||'').slice(0,10);}
-function astraDisplay(text,a){Object.keys(ASTRA_LABELS).forEach(k=>(a[k]||[]).forEach(r=>{text=String(text).split(r.id).join(astraShort(r.id));}));return text;}
-function astraValidate(v){
-  if(v==null)return true;
-  if(typeof v!=='object'||Array.isArray(v)||v.schema!==ASTRA_SCHEMA)throw new Error('Unsupported Codex Astra workspace version. Use a compatible release; no records were imported.');
-  ['sources','documents','requirements','issues','closeout','history'].forEach(k=>{
-    if(!Array.isArray(v[k]))throw new Error('Invalid Astra '+k+' records.');
-    if(k!=='history'){
-      const ids=new Set(); v[k].forEach(r=>{if(!r||typeof r!=='object'||typeof r.id!=='string'||!/^[-a-zA-Z0-9_]+$/.test(r.id)||ids.has(r.id))throw new Error('Invalid or duplicate Astra record ID.');ids.add(r.id);
-        ASTRA_FIELDS[k].forEach(([field])=>{if(r[field]!=null&&typeof r[field]!=='string')throw new Error('Invalid Astra field '+field+'.');});
-      });
-    }
-  });
-  if(!v.package||typeof v.package!=='object'||Array.isArray(v.package))throw new Error('Invalid Astra contract package.');
-  ASTRA_FIELDS.package.forEach(([field])=>{if(v.package[field]!=null&&typeof v.package[field]!=='string')throw new Error('Invalid Astra contract field.');});
-  return true;
-}
-function astraValidateRecords(records){(records||[]).forEach(r=>astraValidate(r&&r.workspace&&r.workspace.astra));}
-function astraSnapshot(){return astraClone(ASTRA);}
-function astraHasData(a){return a.guidanceVersion!==ASTRA_GUIDANCE.id||Object.values(a.package).some(v=>String(v||'').trim())||Object.keys(ASTRA_LABELS).some(k=>a[k].length);}
-function astraLoad(value){astraValidate(value);ASTRA=value?astraClone(value):astraBlank();if(window.DD254_RECOUNTING)return;if(document.getElementById('astraReview')?.open)astraRender();else astraRefresh();}
-function astraRow(kind,id,data){data=data||ASTRA;return kind==='package'?data.package:(data[kind]||[]).find(r=>r.id===id);}
-function astraAudit(action,id,before,after){ASTRA.history.push({at:new Date().toISOString(),action:action,id:id,before:astraClone(before==null?null:before),after:astraClone(after==null?null:after)});}
-function astraTouch(){if(typeof dashTouch==='function')dashTouch();}
-function astraAdd(kind){
-  if(window.DD254_READONLY||!ASTRA_FIELDS[kind]||kind==='package')return;
-  const id=ASTRA_PREFIX[kind]+'-'+audUid(); const row={id:id,createdAt:new Date().toISOString(),include:true};
-  ASTRA_FIELDS[kind].forEach(([k,label,type])=>{row[k]=Array.isArray(type)?type[0]:'';});
-  ASTRA[kind].push(row);astraAudit('Added '+kind,id,null,row);astraTouch();astraRender();
-  const el=document.getElementById('astra-row-'+id);if(el){el.open=true;el.querySelector('input,textarea,select')?.focus();}return id;
-}
-function astraStateError(kind,row,value){
-  if(kind==='issues'){
-    let fields=value==='Sent recorded'?['reviewer','requested']:value==='Response recorded'?['authority','responseDate','reference']:value==='Resolution recorded'?['authority','responseDate','reference','resolution','scope']:[];
-    if(fields.some(k=>!String(row[k]||'').trim()))return 'Record '+fields.join(', ')+' before using '+value+'.';
-  }
-  if(kind==='closeout'&&value==='Completed'&&['authority','evidence','completed'].some(k=>!String(row[k]||'').trim()))return 'Record the authority, evidence and completion date first.';
-  return '';
-}
-function astraSet(kind,id,key,value,commit,previous){
-  if(window.DD254_READONLY)return false;
-  const row=astraRow(kind,id);if(!row)return false;
-  if(key==='status'){
-    const error=astraStateError(kind,row,value);if(error){alert(error);astraRender();return false;}
-  }
-  const old=previous===undefined?row[key]:previous;row[key]=value;
-  if(commit&&old!==value){
-    astraAudit(kind+' '+key,id,old,value);
-    if(key==='status'&&kind==='issues'&&value==='Resolution recorded')row.basisKey=astraBasis(row,ASTRA,collectWorkspace());
-    if(key==='status'&&kind==='closeout'&&value==='Completed')row.basisKey=astraBasis(row,ASTRA,collectWorkspace());
-  }
-  if(key==='title'){const el=document.querySelector('#astra-row-'+id+' > summary');if(el)el.textContent=astraShort(id)+' - '+(value||'Untitled');}
-  astraTouch();astraRefresh();return true;
-}
-async function astraRemove(kind,id){
-  if(window.DD254_READONLY)return;
-  const row=astraRow(kind,id);if(!row||!(await uiConfirm('Remove '+id+'? A copy remains in local review history; references to it will be flagged.')))return;
-  astraAudit('Removed '+kind,id,row,null);ASTRA[kind]=ASTRA[kind].filter(r=>r.id!==id);astraTouch();astraRender();
-}
-function astraCost(r){
-  const keys=['people','hours','rate','events'];
-  if(keys.some(k=>String(r[k]??'').trim()===''))return {value:null,text:'Unknown - complete units, hours, rate and events.'};
-  const n=keys.map(k=>Number(r[k]));
-  if(n.some(x=>!Number.isFinite(x)||x<0))return {value:null,text:'Invalid estimate - use finite, nonnegative values.'};
-  const value=n.reduce((a,b)=>a*b,1);
-  if(!Number.isFinite(value))return {value:null,text:'Estimate exceeds the supported numeric range.'};
-  if(value===0&&!String(r.costBasis||'').trim())return {value:null,text:'A zero estimate needs a written basis.'};
-  return {value:value,text:value.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+(r.currency||'(currency not recorded)')+' - estimated, not a contract entitlement'};
-}
-function astraIdentity(ws){
-  ws=ws||{};const t=ws.texts||{},r=ws.radios||{};
-  return {contract:t.i2b||t.i2a||t.i2c||'',prime:t.i2a||'',revision:r.spec==='3b'?String(t.i3b_rev||''):r.spec==='3c'?'Final':'Original',date:r.spec==='3b'?t.i3b_date:r.spec==='3c'?t.i3c_date:t.i3a_date};
-}
-function astraBasis(row,a,ws){
-  const items=String(row.items||'').split(',').map(s=>s.trim().replace(/^Item\s*/i,'')).filter(Boolean);
-  const form={identity:astraIdentity(ws)}, getItem=id=>{
-    if(id==='item13')return '13';if(id==='sapFlag')return '10f';if(id==='fcl1a')return '1a';if(id==='sfg1b')return '1b';
-    const m=id.match(/^(?:dist|[ic])(\d+[a-z]?)/);return m?m[1]:'';
-  };
-  ['texts','checks','selects'].forEach(group=>{Object.keys(ws[group]||{}).sort().forEach(id=>{
-    const item=getItem(id);if(item&&(!items.length||items.some(x=>item===x||item.startsWith(x))))form[id]=ws[group][id];
-  });});
-  if(!items.length||items.some(x=>x.startsWith('8')))form.perf=ws.perf||[];
-  form.radios=ws.radios||{};
-  const refs={};
-  [['sourceA','sources'],['sourceB','sources'],['sourceId','sources'],['documentId','documents'],['requirementId','requirements']].forEach(([field,kind])=>{
-    if(row[field]){const r=astraRow(kind,row[field],a);refs[field]=r?astraClone(r):'MISSING '+row[field];if(r&&kind==='requirements'){refs.requirementSource=astraRow('sources',r.sourceId,a)||null;refs.requirementDocument=astraRow('documents',r.documentId,a)||null;}}
-  });
-  const decision={};['question','proposal','authority','responseDate','reference','resolution','scope','evidence','completed','title','task','version','citedVersion','location','recipient','method','owner','inspectionOwner','criteria','frequency','reviewer','reviewNote'].forEach(k=>decision[k]=row[k]||'');
-  return JSON.stringify({form:form,refs:refs,decision:decision});
-}
-function astraImpact(row,a,ws){
-  if(!row.reviewBasis)return [];
-  try{
-    const prior=JSON.parse(row.reviewBasis),current=JSON.parse(astraBasis(row,a,ws)),changes=[];
-    const different=(x,y)=>JSON.stringify(x)!==JSON.stringify(y);
-    Object.keys({...prior.form,...current.form}).forEach(k=>{if(different(prior.form[k],current.form[k]))changes.push(k==='identity'?'contract / revision identity':k==='perf'?'Item 8 performance sites':k==='radios'?'form selections':'form field '+k);});
-    Object.keys({...prior.refs,...current.refs}).forEach(k=>{if(different(prior.refs[k],current.refs[k]))changes.push('linked '+({sourceId:'source',documentId:'document',requirementId:'requirement',requirementSource:'requirement source',requirementDocument:'requirement document'}[k]||k));});
-    if(different(prior.decision,current.decision))changes.push('record content / review basis');return changes;
-  }catch(e){return ['unreadable previous review basis'];}
-}
-function astraRecordReview(kind,id){
-  if(window.DD254_READONLY)return false;
-  const row=astraRow(kind,id);if(!row||!['documents','requirements'].includes(kind))return false;
-  if(!String(row.reviewer||'').trim()||!String(row.reviewNote||'').trim()){alert('Record the impact reviewer and review basis first.');return false;}
-  const prior={basis:row.reviewBasis||null,at:row.reviewedAt||null};
-  row.reviewBasis=astraBasis(row,ASTRA,collectWorkspace());row.reviewedAt=new Date().toISOString();
-  astraAudit('Impact review recorded',id,prior,{basis:row.reviewBasis,at:row.reviewedAt});astraTouch();astraRefresh();return true;
-}
-function astraFindings(a,ws,lookup){
-  if(!a)return [];astraValidate(a);const out=[],add=s=>out.push(s),p=a.package||{},id=astraIdentity(ws);
-  lookup=lookup||a;
-  if(Object.values(p).some(v=>String(v||'').trim())){
-    if(!p.contract||!p.attachment||!p.revision||!p.incorporation)add('Contract package: record the contract, attachment identifier, DD254 revision and incorporation reference.');
-    if(p.contract&&p.contract.trim()!==id.contract.trim())add('Contract package number '+p.contract+' differs from working form '+(id.contract||'(blank)')+'.');
-    if(p.revision&&p.revision.trim().toLowerCase()!==id.revision.trim().toLowerCase())add('Attached DD254 revision '+p.revision+' differs from working revision '+(id.revision||'(blank)')+'.');
-    if(p.date&&id.date&&p.date.replace(/-/g,'')!==id.date.replace(/-/g,''))add('Attached DD254 date differs from the working form date.');
-  }
-  if(a.guidanceVersion!==ASTRA_GUIDANCE.id)add('This record used guidance '+a.guidanceVersion+'; current guidance '+ASTRA_GUIDANCE.id+' needs review. Prior recorded sources remain unchanged.');
-  a.sources.forEach(r=>{if(!r.edition||!r.locator||!r.scope)add(r.id+': source edition, locator or applicability is not recorded.');});
-  a.documents.forEach(r=>{
-    const impact=astraImpact(r,lookup,ws);if(impact.length)add(r.id+': review delivery / attachment impact after changes to '+impact.join(', ')+'.');
-    if(!r.version||!r.citedVersion)add(r.id+': available or cited guidance version is not recorded.');
-    else if(r.version.trim()!==r.citedVersion.trim())add(r.id+': available version '+r.version+' differs from cited version '+r.citedVersion+'.');
-    if(r.ackDate&&(!r.ackRef||!r.recipient))add(r.id+': acknowledgment needs a recipient and evidence reference.');
-    if(r.sentDate&&(!r.recipient||!r.method))add(r.id+': delivery needs a recipient and channel.');
-    if(r.supersedes&&!astraRow('documents',r.supersedes,lookup))add(r.id+': superseded document reference is missing.');
-  });
-  a.requirements.forEach(r=>{
-    const impact=astraImpact(r,lookup,ws);if(impact.length)add(r.id+': review requirement / inspection impact after changes to '+impact.join(', ')+'.');
-    if(!r.task||!r.sourceId||!r.owner)add(r.id+': record the task, source and implementation owner.');
-    if(!r.inspectionOwner)add(r.id+': inspection organization / scope is not recorded.');
-    if(r.sourceId&&!astraRow('sources',r.sourceId,lookup))add(r.id+': linked source is missing.');
-    if(r.documentId&&!astraRow('documents',r.documentId,lookup))add(r.id+': supporting document is missing.');
-    if(r.extra==='Yes'&&(ws.radios||{}).i14!=='yes')add(r.id+': recorded additional requirement needs Item 14 review. Item 15 is a separate scope decision.');
-    if(astraCost(r).value===null)add(r.id+': '+astraCost(r).text);
-    if(r.insertedText&&!String((ws.texts||{}).item13||'').includes(r.insertedText))add(r.id+': previously inserted Item 13 text was edited or removed; reconcile before replacing it.');
-  });
-  a.issues.forEach(r=>{
-    if(r.status==='Resolution recorded'){
-      if(astraStateError('issues',r,r.status))add(r.id+': incomplete recorded resolution.');
-      if(!r.basisKey||r.basisKey!==astraBasis(r,lookup,ws))add(r.id+': form, linked evidence or decision changed; review the recorded resolution.');
-    }else if(r.status!=='Superseded')add(r.id+': '+(r.status||'Draft')+' - '+(r.title||'unnamed question')+'; reviewer '+(r.reviewer||'not assigned')+'.');
-  });
-  const today=new Date().toISOString().slice(0,10);
-  a.closeout.forEach(r=>{
-    if(r.status==='Completed'){
-      if(astraStateError('closeout',r,r.status)||!r.basisKey||r.basisKey!==astraBasis(r,lookup,ws))add(r.id+': completed action or its evidence needs review.');
-    }else if(r.due&&r.due<today)add(r.id+': overdue since '+r.due+' - '+(r.title||'closeout action')+'.');
-  });
-  return out;
-}
-function astraResetRecord(rec){
-  const a=rec.workspace&&rec.workspace.astra;if(!a)return;astraValidate(a);
-  a.history.push({at:new Date().toISOString(),action:'Workflow reset for new scope',before:{package:astraClone(a.package),documents:astraClone(a.documents),issues:astraClone(a.issues),closeout:astraClone(a.closeout)}});
-  a.package.incorporation='';
-  a.documents.forEach(r=>{r.sentDate='';r.ackDate='';r.ackRef='';});
-  a.issues.forEach(r=>{if(r.status!=='Superseded')r.status='Draft';delete r.basisKey;r.responseDate='';r.reference='';r.authority='';r.resolution='';});
-  a.closeout.forEach(r=>{r.status='Pending';r.completed='';delete r.basisKey;});
-}
-function astraSafeURL(v){try{const u=new URL(v);return ['http:','https:'].includes(u.protocol)?u.href:'';}catch(e){return '';}}
-function astraField(kind,row,field){
-  const [key,label,type]=field,value=String(row[key]??''),id=row.id||'package';let control;
-  const at=' data-kind="'+kind+'" data-row="'+id+'" data-field="'+key+'"';
-  let options=Array.isArray(type)?type.map(s=>[s,s]):ASTRA_LABELS[type]?(ASTRA[type]||[]).filter(x=>x.id!==id).map(x=>[x.id,astraShort(x.id)+' - '+(x.title||'Untitled')]):null;
-  if(options){if(!Array.isArray(type))options.unshift(['','Not recorded']);if(value&&!options.some(x=>x[0]===value))options.push([value,value+' (unavailable)']);control='<select'+at+'>'+options.map(([v,l])=>'<option value="'+htmlEsc(v)+'"'+(v===value?' selected':'')+'>'+htmlEsc(l)+'</option>').join('')+'</select>';}
-  else if(type==='area')control='<textarea'+at+' rows="2">'+htmlEsc(value)+'</textarea>';
-  else control='<input'+at+' type="'+(type==='date'?'date':type==='number'?'number':'text')+'"'+(type==='number'?' min="0" step="any"':'')+' value="'+htmlEsc(value)+'">';
-  return '<label>'+htmlEsc(label)+control+'</label>';
-}
-function astraRowHTML(kind,row){
-  const cost=kind==='requirements'?'<p class="astra-cost" data-cost="'+row.id+'">'+htmlEsc(astraCost(row).text)+'</p>':'';
-  const action=(kind==='requirements'?'<button type="button" class="pbtn pbtn-secondary" data-action="insert" data-kind="'+kind+'" data-row="'+row.id+'">Review text for Item 13</button>':'')+(['documents','requirements'].includes(kind)?'<button type="button" class="pbtn pbtn-secondary" data-action="review" data-kind="'+kind+'" data-row="'+row.id+'">Record impact review</button>':'');
-  return '<details class="astra-row" id="astra-row-'+row.id+'"><summary>'+htmlEsc(astraShort(row.id)+' - '+(row.title||'Untitled'))+'</summary><div class="astra-grid">'+ASTRA_FIELDS[kind].map(f=>astraField(kind,row,f)).join('')+'</div>'+cost+'<div class="astra-actions"><label><input type="checkbox" data-kind="'+kind+'" data-row="'+row.id+'" data-field="include"'+(row.include!==false?' checked':'')+'> Include in separate review report</label>'+action+'<button type="button" class="pbtn pbtn-tertiary" data-action="remove" data-kind="'+kind+'" data-row="'+row.id+'">Remove record</button></div></details>';
-}
-function astraRender(){
-  const host=document.getElementById('astraPanel');if(!host)return;
-  const opened=new Set(Array.from(host.querySelectorAll('details[open]')).map(e=>e.id));
-  host.innerHTML='<h2>Supporting review records <span class="astra-edition">v1.12.0</span></h2><p>Optional working evidence saved in this browser with the draft. These review findings do not clear approval holds. Exports contain only this draft\'s selected records; no attachments are embedded.</p>'
-    +'<div class="astra-actions"><button type="button" class="pbtn pbtn-primary" data-action="pdf">Export selected review PDF</button><button type="button" class="pbtn pbtn-secondary" data-action="refresh">Refresh review</button></div><div id="astraFindings" aria-live="polite"></div>'
-    +'<details id="astra-policy"><summary>Guidance and applicability</summary><p>'+htmlEsc(ASTRA_GUIDANCE.general)+'</p><p>'+htmlEsc(ASTRA_GUIDANCE.sap)+'</p><p>Reviewed '+ASTRA_GUIDANCE.reviewed+'. Recorded source version: '+htmlEsc(ASTRA.guidanceVersion)+'.</p>'+ASTRA_GUIDANCE.sources.map(([l,u])=>'<p><a href="'+u+'" target="_blank" rel="noopener noreferrer">'+htmlEsc(l)+'</a></p>').join('')+'<p>Record the executed contract clause and deviation basis below. A newer source does not amend an existing contract. Contract scope or unresolved placement questions require the responsible Government office.</p></details>'
-    +'<details id="astra-package"><summary>Contract attachment reconciliation</summary><div class="astra-grid">'+ASTRA_FIELDS.package.map(f=>astraField('package',ASTRA.package,f)).join('')+'</div></details>'
-    +Object.keys(ASTRA_LABELS).map(kind=>'<details id="astra-'+kind+'"><summary>'+ASTRA_LABELS[kind]+' ('+ASTRA[kind].length+')</summary><button type="button" class="pbtn pbtn-secondary" data-action="add" data-kind="'+kind+'">Add '+({sources:'source',documents:'document',requirements:'requirement',issues:'question',closeout:'action'}[kind])+'</button>'+ASTRA[kind].map(r=>astraRowHTML(kind,r)).join('')+'</details>').join('')
-    +'<details id="astra-history"><summary>Local review history ('+ASTRA.history.length+')</summary><p>User-recorded history is not authenticated Government approval or immutable evidence. Full Backup retains the complete history.</p>'+ASTRA.history.slice(-30).reverse().map(r=>'<p>'+htmlEsc(r.at+' - '+r.action+' '+(r.id||''))+'</p>').join('')+'</details>';
-  opened.forEach(id=>{const el=document.getElementById(id);if(el)el.open=true;});astraRefresh();
-}
-function astraRefresh(){
-  const host=document.getElementById('astraFindings');if(!host)return;
-  const findings=astraHasData(ASTRA)?astraFindings(ASTRA,collectWorkspace()):[];
-  const summary=document.querySelector('#astraReview > summary');if(summary)summary.textContent='Optional supporting records ('+findings.length+' review items'+(findings.some(x=>x.includes('overdue since'))?', overdue actions':'')+')';
-  host.innerHTML='<strong>Review recommendations ('+findings.length+')</strong>'+(findings.length?'<ul>'+findings.map(s=>'<li>'+htmlEsc(astraDisplay(s,ASTRA))+'</li>').join('')+'</ul>':'<p>No inconsistency detected in the recorded review data. Missing optional records are not evidence of approval or compliance.</p>');
-  document.querySelectorAll('[data-cost]').forEach(el=>{const r=astraRow('requirements',el.dataset.cost);if(r)el.textContent=astraCost(r).text;});
-}
-function astraRequirementText(row){
-  const src=astraRow('sources',row.sourceId),doc=astraRow('documents',row.documentId);
-  return ['Requirement: '+(row.title||row.id),'Task: '+(row.task||''),'Authority: '+(src?[src.title,src.edition,src.locator].filter(Boolean).join('; '):'NOT RECORDED'),row.contractRef?'Contract reference: '+row.contractRef:'',row.scope?'Applicability / site: '+row.scope:'',row.owner?'Implementation owner: '+row.owner:'',doc?'Supporting guidance: '+doc.title+'; version '+doc.version:'',row.inspectionOwner?'Inspection scope / organization: '+row.inspectionOwner:'',row.criteria?'Review criteria: '+row.criteria:''].filter(Boolean).join('\n');
-}
-async function astraInsert(id){
-  const row=astraRow('requirements',id);if(!row||window.DD254_READONLY)return false;
-  if(!row.task||!row.sourceId||!astraRow('sources',row.sourceId)){alert('Record the task and an available authority source before preparing Item 13 text.');return false;}
-  const text=astraRequirementText(row);
-  if(!(await uiConfirm('Review this proposed Item 13 text. Cost assumptions and internal decision notes are excluded.\n\n'+text+'\n\nInsert this wording?')))return false;
-  const box=document.getElementById('item13'),old=box.value||'';
-  if(row.insertedText){
-    const hits=old.split(row.insertedText).length-1;
-    if(hits!==1){alert('The previous inserted wording was changed, removed or duplicated. Reconcile it manually; no Item 13 text was overwritten.');return false;}
-    box.value=old.replace(row.insertedText,text);
-  }else box.value=old+(old.trim()?'\n\n':'')+text;
-  astraAudit('Inserted reviewed Item 13 wording',id,row.insertedText||null,text);row.insertedText=text;
-  box.dispatchEvent(new Event('input',{bubbles:true}));if(typeof run==='function')run();astraTouch();astraRefresh();return true;
-}
-function astraReportLines(a,ws){
-  const id=astraIdentity(ws);
-  const lines=['CODEX ASTRA REVIEW RECORD','Contract: '+(id.contract||'Not recorded')+' | Revision: '+id.revision+' | Date: '+(id.date||'Not recorded'),'User-recorded working evidence. Not the official DD254 or authenticated approval.','Generated '+new Date().toISOString(),'Guidance version: '+a.guidanceVersion,'CONTRACT PACKAGE'];
-  ASTRA_FIELDS.package.forEach(([k,l])=>{if(a.package[k])lines.push(l+': '+a.package[k]);});
-  const selected=astraClone(a);Object.keys(ASTRA_LABELS).forEach(kind=>{selected[kind]=selected[kind].filter(r=>r.include!==false);});
-  lines.push('REVIEW RECOMMENDATIONS FOR SELECTED RECORDS');lines.push(...astraFindings(selected,ws,a));
-  Object.keys(ASTRA_LABELS).forEach(kind=>{
-    if(!selected[kind].length)return;
-    lines.push(ASTRA_LABELS[kind].toUpperCase());
-    selected[kind].forEach(r=>{lines.push(r.id+' - '+(r.title||'Untitled'));ASTRA_FIELDS[kind].forEach(([k,l,type])=>{if(!r[k])return;let value=r[k];if(ASTRA_LABELS[type]){const ref=astraRow(type,value,selected);value=ref?astraShort(ref.id)+' - '+(ref.title||'Untitled'):astraShort(value)+' (reference not included in this report)';}lines.push(l+': '+value);});if(r.reviewedAt)lines.push('Impact review recorded: '+r.reviewedAt);if(kind==='requirements')lines.push('Estimate: '+astraCost(r).text);});
-  });
-  return lines.map(s=>astraDisplay(s,selected));
-}
-function astraReportHTML(){return '<section style="margin-top:20px;font:12px/1.5 Arial;color:#172d42"><h2>Codex Astra review evidence</h2><p>Selected records for this draft only. Referenced files are not embedded. Internal history is retained in Full Backup.</p>'+astraReportLines(ASTRA,collectWorkspace()).map(s=>'<p style="white-space:pre-wrap">'+htmlEsc(s)+'</p>').join('')+'</section>';}
-async function astraExportPDF(){
-  try{
-    const ws=collectWorkspace(),a=astraSnapshot(),lines=astraReportLines(a,ws);
-    const {PDFDocument,StandardFonts,rgb}=PDFLib,doc=await PDFDocument.create();
-    const font=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);let page,y;
-    const marking=(typeof dashClsOf==='function'&&dashClsOf({workspace:ws})==='CUI')||ws.selects.clsSel==='CUI'?'CUI':'UNCLASSIFIED';
-    function next(){page=doc.addPage([612,792]);y=736;page.drawText(marking,{x:46,y:765,size:9,font:bold});page.drawText(marking+' | Codex Astra v1.12.0 | '+doc.getPageCount(),{x:46,y:22,size:8,font:font});}
-    next();
-    lines.forEach((s,i)=>{
-      const clean=sanitizePdfText(String(s)).replace(/\r/g,'');
-      clean.split('\n').forEach(line=>{
-        let current='';for(const char of line){if(font.widthOfTextAtSize(current+char,10)>518){if(y<48)next();page.drawText(current,{x:46,y:y,size:10,font:font});y-=14;current='';}current+=char;}
-        if(y<48)next();page.drawText(current,{x:46,y:y,size:10,font:i===0?bold:font,color:rgb(.08,.13,.2)});y-=14;
-      });y-=4;
-    });
-    doc.setTitle('DD254 Codex Astra review record');doc.setSubject('Selected local review evidence');
-    const blob=new Blob([await doc.save()],{type:'application/pdf'}),url=URL.createObjectURL(blob),link=document.createElement('a');
-    link.href=url;link.download='DD254_Astra_Review_'+dd254FileSafe(astraIdentity(ws).contract||'Draft','_')+'.pdf';document.body.appendChild(link);link.click();setTimeout(()=>{link.remove();URL.revokeObjectURL(url);},1200);
-    if(typeof audLog==='function')audLog(DASH.current||'','','astra-review-export','Selected records; no automatic sending or approval');return true;
-  }catch(e){alert('Review PDF could not be created: '+e.message);return false;}
-}
-async function astraPreflight(records){
-  const lines=[];(records||[]).forEach(r=>{astraFindings(r.workspace&&r.workspace.astra,r.workspace||{}).forEach(s=>lines.push((r.title||r.id)+': '+s));});
-  if(!lines.length)return true;
-  return uiConfirm('Astra review recommendations (existing approval holds remain in force):\n\n'+lines.join('\n')+'\n\nContinue issuance with these review items? Cancel to reconcile them.');
-}
-document.addEventListener('DOMContentLoaded',function(){
-  astraRender();const host=document.getElementById('astraPanel');
-  document.getElementById('astraReview').addEventListener('toggle',function(){if(this.open)astraRender();});
-  host.addEventListener('focusin',e=>{if(e.target.dataset.field)e.target.dataset.previous=e.target.type==='checkbox'?String(e.target.checked):e.target.value;});
-  host.addEventListener('input',e=>{const x=e.target;if(!x.dataset.field||x.tagName==='SELECT'||x.type==='checkbox')return;astraSet(x.dataset.kind,x.dataset.row,x.dataset.field,x.value,false);});
-  host.addEventListener('change',e=>{const x=e.target;if(!x.dataset.field)return;astraSet(x.dataset.kind,x.dataset.row,x.dataset.field,x.type==='checkbox'?x.checked:x.value,true,x.type==='checkbox'?x.dataset.previous==='true':x.dataset.previous);});
-  host.addEventListener('click',e=>{const x=e.target.closest('[data-action]');if(!x)return;const k=x.dataset.kind,id=x.dataset.row;
-    if(x.dataset.action==='add'){const id=astraAdd(k);const group=document.getElementById('astra-'+k);if(group)group.open=true;}
-    if(x.dataset.action==='remove')astraRemove(k,id);if(x.dataset.action==='insert')astraInsert(id);if(x.dataset.action==='review')astraRecordReview(k,id);if(x.dataset.action==='pdf')astraExportPDF();if(x.dataset.action==='refresh')astraRender();
-  });
-  document.addEventListener('change',e=>{if(!host.contains(e.target))astraRefresh();});
-  setInterval(()=>{if(!document.hidden&&document.getElementById('astraReview').open)astraRefresh();},60000);
-});
-
-</script>
 
 <script>
 /* Drafting actions reuse the form and its existing validators/templates.
@@ -11942,7 +11635,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   const note=document.createElement('div');note.textContent='Uses existing templates for selected Items 10/11. Existing sections are preserved. Review contract authority and replace unfinished prompts.';compose.append(note);
   const hint=document.createElement('div');hint.id='completionPromptHint';compose.append(hint,button('completionPrompt','Find next unfinished prompt',completionNextPrompt));
   b13El().before(compose);
-  const records=document.getElementById('astraReview');if(records)records.open=false;
   completionRender();
 });
 

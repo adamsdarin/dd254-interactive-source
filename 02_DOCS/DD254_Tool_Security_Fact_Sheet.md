@@ -36,31 +36,16 @@ draft store, and preserves the reminder for changes made after its snapshot.
 The download confirmation is the operator's report, not proof from the browser
 that a file exists on disk.
 
-## Codex Astra review evidence
+## Working material
 
-The optional review panel stores sources, contract-package references,
-attachments, requirements, issues, closeout actions and local review history
-as `workspace.astra` in the existing draft store. Schema version 1 is additive;
-older workspaces start empty. Unsupported versions or malformed record lists
-are rejected before restore writes. Full Backup includes current Astra edits.
-Older application versions do not understand these fields; do not round-trip
-new review work through them.
-
-The separate review PDF and CO package use only the current draft's selected
-records. They include contract-package metadata, reference text and cost
-assumptions; review the selection before sharing. Local event history is
-excluded from these reports. Since v1.14.0 the tool stores no uploaded file
-bytes: the Source & Validation Log and its attachments were removed, and the
-remaining file inputs import drafts, backups and template data. Drafts saved by
-earlier versions keep any log attachments in browser storage and Full Backup
-until they are next saved from the form. Full Backup retains
-the history. This release adds no automatic sending or remote lookup.
-
-Recorded responses, delivery, acknowledgment and impact reviews are operator
-statements, not authenticated signatures or immutable evidence. A resolved
-question does not clear an approval hold. Closeout reminders require an open
-application; the current draft is rechecked when opened and its review panel
-refreshes every minute while visible.
+Since v1.14.0 the tool keeps no record of the preparer's working material. The
+Source & Validation Log and the Optional supporting records panel were removed:
+there is no source log, no uploaded attachment, no review question, requirement
+or cost record, no closeout record and no separate review PDF. The tool stores no
+uploaded file bytes; its remaining file inputs import drafts, backups and template
+data. Drafts saved by earlier versions keep any such material in browser storage
+and Full Backup until they are next saved from the form. This release adds no
+automatic sending or remote lookup.
 
 ## Boundaries
 

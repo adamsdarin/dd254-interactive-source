@@ -97,13 +97,17 @@ still describes the committed build. The logs are public.
 
 ## What changed in v1.14.0
 
-- **The Source & Validation Log is gone.** It recorded the preparer's working
-  material — sources consulted, notes and uploaded files — which isn't needed to
-  prepare or issue a DD Form 254, and it duplicated the source records in
-  Optional supporting records. The tool no longer stores uploaded files.
-- **Older drafts still open.** Log entries and attachments in a draft saved by
-  an earlier version are no longer shown and are dropped when that draft is next
-  saved from the form. To keep them, export the log from v1.13.0 first.
+- **The Source & Validation Log and Optional supporting records are gone.**
+  Both recorded the preparer's working material — sources consulted, notes,
+  uploaded files, review questions, requirement costs and closeout records —
+  which isn't needed to prepare or issue a DD Form 254. The tool no longer stores
+  uploaded files and has no separate review PDF.
+- **Final-form retention guidance stays.** It still appears in the Item 3
+  instructions, the Item 3c validation note and the Contracting Officer package.
+- **Older drafts still open.** Log entries, attachments and supporting records in
+  a draft saved by an earlier version are no longer shown and are dropped when
+  that draft is next saved from the form. To keep them, export them from v1.13.0
+  first.
 
 ## What changed in v1.13.0
 
@@ -147,10 +151,6 @@ specific than the DD Form 254 or its authority supports.
 - Jump from a validation finding directly to its field. Relevant text fields also show their existing validation messages beside the entry.
 - Review and insert missing Item 13 template sections for selected Items 10/11 together, preserving existing sections.
 - Find and select unfinished bracketed template prompts in Item 13.
-
-The previous review workspace is now **Optional supporting records**, collapsed
-by default. Its stored records remain available; it no longer adds an
-issuance confirmation. Existing validation and approval holds still apply.
 
 These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify

@@ -40,7 +40,7 @@ const waitFor=async(fn,label,ms=5000)=>{const end=Date.now()+ms;while(Date.now()
 let pass=0,fail=0; const failures=[];
 const E=s=>w.eval(s);
 const t=(n,f)=>{ try{ const r=f(); if(r===true){pass++;console.log('  PASS  '+n);} else {fail++;failures.push(n);console.log('  FAIL  '+n+'  -> '+JSON.stringify(r));} }catch(e){ fail++; failures.push(n); console.log('  THROW '+n+'  -> '+e.message); } };
-const ta=async(n,f)=>{ let timer; try{ const r=await Promise.race([f(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Asynchronous test exceeded 30 seconds: '+n)),30000);})]); if(r===true){pass++;console.log('  PASS  '+n);} else {fail++;failures.push(n);console.log('  FAIL  '+n+'  -> '+JSON.stringify(r));} }catch(e){ fail++; failures.push(n); console.log('  THROW '+n+'  -> '+e.message); if(/Asynchronous test exceeded/.test(e.message)){dom.window.close();process.exit(1);} } finally{clearTimeout(timer);} };
+const ta=async(n,f,limit)=>{ const budget=limit||30000; let timer; try{ const r=await Promise.race([f(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Asynchronous test exceeded '+Math.round(budget/1000)+' seconds: '+n)),budget);})]); if(r===true){pass++;console.log('  PASS  '+n);} else {fail++;failures.push(n);console.log('  FAIL  '+n+'  -> '+JSON.stringify(r));} }catch(e){ fail++; failures.push(n); console.log('  THROW '+n+'  -> '+e.message); if(/Asynchronous test exceeded/.test(e.message)){dom.window.close();process.exit(1);} } finally{clearTimeout(timer);} };
 const H=n=>console.log('\n### '+n);
 const wipe=async()=>E("(async function(){var a=await draftAll();for(const d of a)await draftDel(d.id);})()");
 /* Scope to the live dashboard. The manager rollup renders its own .dash-card
@@ -1896,11 +1896,17 @@ await ta('the portfolio export handles the whole portfolio', async()=>{
   await E("portfolioCsv()"); w.Blob=OB;
   const rows=E("ioCsvParse("+JSON.stringify(cap)+")");
   return rows.length===62;});
+/* A performance tripwire, not a benchmark. Recounting this 61-draft portfolio was
+   measured back to back on one machine at 32.8s and 20.4s for the same build and
+   29.7s for the shipped v1.13.0; CI measured 19.8s, 25.1s and once over 30s. A
+   30-second limit sat inside that noise for every version, and because a timeout
+   aborts the whole suite it hid roughly five hundred later results instead of
+   reporting one failure. 90 seconds still stops a hang or a quadratic regression. */
 await ta('recount copes with a large portfolio', async()=>{
   E("window.uiConfirm=async function(){return true;};window.alert=function(m){window.__A=m;};");
   const t0=Date.now(); await E("dashRecountAll()"); const ms=Date.now()-t0;
   const r=await E("draftGet('P7')");
-  return ms<30000 && typeof r.meta.errors==="number";});
+  return ms<90000 && typeof r.meta.errors==="number";}, 90000);
 
 H('35. SAP flag gates the DoDM 5205.07 rules');
 t('the SAP toggle exists and is off by default', ()=>{
@@ -5785,115 +5791,11 @@ await ta('an unreadable draft database refuses a misleading empty backup', async
   return result===false&&downloads===0&&E('bkDirty()')===5&&/could not read/.test(message);
 });
 
-H('Codex Astra single-file review workflows');
-t('Astra starts with additive browser-only metadata on old workspaces',()=>{
- E("resetFormFields();applyWorkspace({texts:{i2a:'OLD-CONTRACT'},checks:{},radios:{spec:'3a'},selects:{},perf:[]});");
- const a=E('collectWorkspace().astra');return a.schema===1&&a.sources.length===0&&E("document.getElementById('i2a').value")==='OLD-CONTRACT';
-});
-t('Astra rejects future schema before modifying live form',()=>{
- let rejected=false;try{E("applyWorkspace({texts:{i2a:'SHOULD NOT REPLACE'},astra:{schema:999}})");}catch(e){rejected=/Unsupported/.test(e.message);}
- return rejected&&E("document.getElementById('i2a').value")==='OLD-CONTRACT';
-});
-t('Astra real input controls capture a source without duplicating official fields',()=>{
- const host=w.document.getElementById('astraPanel');host.querySelector('[data-action="add"][data-kind="sources"]').click();
- const input=host.querySelector('[data-kind="sources"][data-field="title"]');input.focus();input.value='SCG ALPHA';input.dispatchEvent(new w.Event('input',{bubbles:true}));input.dispatchEvent(new w.Event('change',{bubbles:true}));
- const data=E('collectWorkspace()');return data.astra.sources[0].title==='SCG ALPHA'&&!Object.keys(data.texts).some(k=>k.startsWith('astra'))&&data.astra.history.length===2;
-});
-t('Astra backup snapshot owns its records rather than sharing mutable references',()=>{
- E("window.astraCopy=collectWorkspace();ASTRA.sources[0].title='NEW TITLE';");return E("window.astraCopy.astra.sources[0].title")==='SCG ALPHA';
-});
-await ta('Astra source records survive the actual draft database round trip',async()=>{
- E("DASH.current='astra-roundtrip';");await E('dashSaveNow()');const rec=await E("draftGet('astra-roundtrip')");
- E("resetFormFields();");E('applyWorkspace('+JSON.stringify(rec.workspace)+')');return E('ASTRA.sources[0].title')==='NEW TITLE';
-});
-t('Astra preserves unknown additive fields without inferring decisions',()=>{
- E("ASTRA.futureMetadata={kept:true};window.futureAdditive=astraSnapshot();astraLoad(window.futureAdditive);");return E('astraSnapshot().futureMetadata.kept')===true&&E('ASTRA.issues.length')===0;
-});
-t('Astra refuses malformed or duplicate source identities',()=>{
- let bad=0;for(const expression of ["({schema:1,package:{},sources:[{id:'<unsafe>'}],documents:[],requirements:[],issues:[],closeout:[],history:[]})","({schema:1,package:{},sources:[{id:'same'},{id:'same'}],documents:[],requirements:[],issues:[],closeout:[],history:[]})"]){try{E('astraValidate('+expression+')');}catch(e){bad++;}}return bad===2;
-});
-t('Astra source text is rendered as text and cannot inject HTML',()=>{
- E("ASTRA.sources[0].title='<img src=x onerror=alert(1)>';astraRender();");return !w.document.querySelector('#astraPanel img')&&w.document.getElementById('astraPanel').textContent.includes('<img src=x');
-});
-t('Astra distinguishes available versus cited attachment versions',()=>{
- E("astraLoad(null);window.ad=astraAdd('documents');astraRow('documents',ad).version='B';astraRow('documents',ad).citedVersion='A';");
- return E('astraFindings(ASTRA,collectWorkspace())').some(x=>/available version B differs from cited version A/.test(x));
-});
-t('Astra detects DD254 contract attachment revision mismatch',()=>{
- E("ASTRA.package={contract:'OLD-CONTRACT',attachment:'J-1',revision:'2',incorporation:'Mod P00001'};");return E('astraFindings(ASTRA,collectWorkspace())').some(x=>/revision 2 differs from working revision Original/.test(x));
-});
-t('Astra delivery and acknowledgment remain independent of report generation',()=>{
- E('astraReportLines(ASTRA,collectWorkspace());');const r=E('ASTRA.documents[0]');return !r.sentDate&&!r.ackDate&&!r.ackRef;
-});
-t('Astra cost is unknown when incomplete and computes the documented example',()=>{
- return E("astraCost({people:'2',hours:'4',rate:'100',events:''}).value")===null&&E("astraCost({people:'2',hours:'4',rate:'100',events:'1',currency:'USD'}).value")===800;
-});
-t('Astra refuses negative and unsubstantiated zero cost estimates',()=>E("astraCost({people:'-2',hours:'4',rate:'100',events:'1'}).value")===null&&E("astraCost({people:'0',hours:'4',rate:'100',events:'1'}).value")===null&&E("astraCost({people:'0',hours:'4',rate:'100',events:'1',costBasis:'No added effort'}).value")===0);
-t('Astra issue cannot claim a resolution without its recorded basis',()=>{
- E("window.aq=astraAdd('issues');");return E("astraSet('issues',aq,'status','Resolution recorded',true)")===false&&E("astraRow('issues',aq).status")==='Draft';
-});
-t('Astra records scoped resolution and identifies changed form evidence',()=>{
- E("Object.assign(astraRow('issues',aq),{authority:'GCA test',responseDate:'2026-09-06',reference:'Memo 1',resolution:'Use guide B',scope:'This contract',items:'13'});astraSet('issues',aq,'status','Resolution recorded',true);");
- const initial=E('astraFindings(ASTRA,collectWorkspace())').filter(x=>x.startsWith(E('aq')));
- E("document.getElementById('item13').value='New scope';");
- return initial.length===0&&E('astraFindings(ASTRA,collectWorkspace())').some(x=>x.startsWith(E('aq'))&&/changed/.test(x));
-});
-t('Astra issue resolution never clears a separate approval hold',()=>{
- const rec={holds:[{k:'10f',t:'SAP approval',done:false}],workspace:E('collectWorkspace()')};
- const before=JSON.stringify(rec.holds);E("astraSet('issues',aq,'status','Resolution recorded',true);");return JSON.stringify(rec.holds)===before;
-});
-t('Astra closeout completion requires authorization evidence and date',()=>{
- E("window.ac=astraAdd('closeout');astraRow('closeout',ac).due='2000-01-01';");const refused=E("astraSet('closeout',ac,'status','Completed',true)")===false;
- return refused&&E('astraFindings(ASTRA,collectWorkspace())').some(x=>x.includes('overdue since 2000-01-01'));
-});
-t('Astra completed closeout becomes a review item after evidence changes',()=>{
- E("Object.assign(astraRow('closeout',ac),{authority:'GCA',evidence:'Receipt 5',completed:'2026-09-06'});astraSet('closeout',ac,'status','Completed',true);");
- const before=E('astraFindings(ASTRA,collectWorkspace())').some(x=>x.startsWith(E('ac')));
- E("astraRow('closeout',ac).evidence='Different receipt';");return !before&&E('astraFindings(ASTRA,collectWorkspace())').some(x=>x.startsWith(E('ac')));
-});
-await ta('Astra Item 13 insertion preserves surrounding text and excludes internal costs',async()=>{
- E("window.as=astraAdd('sources');Object.assign(astraRow('sources',as),{title:'SCG EXAMPLE',edition:'1',locator:'2.1'});window.ar=astraAdd('requirements');Object.assign(astraRow('requirements',ar),{title:'Protect example',task:'Apply the identified guidance',sourceId:as,owner:'Security',costBasis:'INTERNAL COST ONLY'});document.getElementById('item13').value='USER TEXT';");
- const ok=await E('astraInsert(ar)');return ok&&E("document.getElementById('item13').value.startsWith('USER TEXT')")&&!E("document.getElementById('item13').value.includes('INTERNAL COST ONLY')");
-});
-await ta('Astra will not overwrite user edits to previously inserted Item 13 wording',async()=>{
- E("document.getElementById('item13').value=document.getElementById('item13').value.replace('Apply the identified guidance','USER MODIFIED');");
- return await E('astraInsert(ar)')===false&&E("document.getElementById('item13').value.includes('USER MODIFIED')");
-});
-t('Astra requirements do not automatically change Items 14 or 15',()=>{
- const before=JSON.stringify(E('collectWorkspace().radios'));E("astraRow('requirements',ar).extra='Yes';astraRefresh();");return JSON.stringify(E('collectWorkspace().radios'))===before;
-});
-t('Astra selected report excludes unselected question content and history',()=>{
- E("astraRow('issues',aq).title='EXCLUDED QUESTION';astraRow('issues',aq).include=false;");const text=E('astraReportLines(ASTRA,collectWorkspace()).join("\\n")');return !text.includes('EXCLUDED QUESTION')&&!text.includes('Workflow reset for new scope');
-});
-t('Astra report selection does not mislabel excluded but existing source as missing',()=>{
- E("astraRow('sources',as).include=false;");const report=E('astraReportLines(ASTRA,collectWorkspace()).join("\\n")');E("astraRow('sources',as).include=true;");return !report.includes('linked source is missing')&&report.includes('reference not included in this report');
-});
-t('Astra impact review requires reviewer and basis',()=>!E("astraRecordReview('requirements',ar)"));
-t('Astra source change identifies a linked requirement impact',()=>{
- E("Object.assign(astraRow('requirements',ar),{reviewer:'Example reviewer',reviewNote:'Reviewed for current scope'});astraRecordReview('requirements',ar);astraRow('sources',as).edition='2';");return E("astraImpact(astraRow('requirements',ar),ASTRA,collectWorkspace()).includes('linked source')");
-});
-t('Astra performance-site change identifies affected delivery record',()=>{
- E("window.ad=ASTRA.documents[0].id;Object.assign(astraRow('documents',ad),{items:'8',reviewer:'Example reviewer',reviewNote:'Confirmed delivery scope'});astraRecordReview('documents',ad);window.changedWS=collectWorkspace();changedWS.perf=[{name:'Changed site'}];");return E("astraImpact(astraRow('documents',ad),ASTRA,changedWS).includes('Item 8 performance sites')");
-});
-t('Astra workflow reset preserves evidence history but does not inherit receipts or decisions',()=>{
- E("ASTRA.documents[0].sentDate='2026-09-06';ASTRA.documents[0].ackDate='2026-09-06';window.resetRec={workspace:collectWorkspace(),holds:[],dist:[]};dashResetWorkflow(resetRec);");const a=E('resetRec.workspace.astra');return a.documents[0].sentDate===''&&a.documents[0].ackDate===''&&a.issues[0].status==='Draft'&&a.history.some(x=>x.action==='Workflow reset for new scope');
-});
-t('Astra ordinary and SAP completion explanations preserve their different scope',()=>E('astraRetention(false)').includes('copies may be retained')&&E('astraRetention(true)').includes('specific written GCA authorization'));
-t('Astra program continuation does not demand an extended-retention answer by default',()=>{
+H('Final-form retention guidance');
+t('ordinary and SAP retention guidance keep their different scope',()=>E('finalRetentionGuidance(false)').includes('copies may be retained')&&E('finalRetentionGuidance(true)').includes('specific written GCA authorization'));
+t('a SAP Final with written program direction does not demand an extended-retention answer by default',()=>{
  E("resetFormFields();document.getElementById('sapFlag').checked=true;document.querySelector('input[name=spec][value=\"3c\"]').checked=true;document.getElementById('item13').value='Disposition: follow written program direction';run();");
  return !(w.DD254_ERRORS||[]).some(x=>/Item 3c Final.*Item 5 must be set to YES/.test(x));
-});
-await ta('Astra actual review PDF contains selected content and excludes hidden records',async()=>{
- E("astraLoad(null);window.pdfSource=astraAdd('sources');astraRow('sources',pdfSource).title='ASTRA PDF SELECTED';window.pdfHidden=astraAdd('sources');astraRow('sources',pdfHidden).title='ASTRA PDF EXCLUDED';astraRow('sources',pdfHidden).include=false;");
- const prev=w.URL.createObjectURL;let blob;w.URL.createObjectURL=b=>{blob=b;return 'blob:astra-report-test';};const ok=await E('astraExportPDF()');w.URL.createObjectURL=prev;
- if(!ok||!blob)return false;const out=path.join(os.tmpdir(),'astra-regression-'+process.pid+'.pdf');fs.writeFileSync(out,Buffer.from(await blob.arrayBuffer()));
- const python=process.env.DD254_PYTHON||'python';const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,'ASTRA PDF SELECTED','CODEX ASTRA REVIEW RECORD'],{encoding:'utf8'});
- const hidden=cp.spawnSync(python,['-c','from pypdf import PdfReader;import sys;t="\\n".join(p.extract_text() or "" for p in PdfReader(sys.argv[1]).pages);sys.exit(1 if "ASTRA PDF EXCLUDED" in t else 0)',out],{encoding:'utf8'});fs.unlinkSync(out);return chk.status===0&&hidden.status===0;
-});
-await ta('Astra full backup captures edits made immediately before download',async()=>{
- E("DASH.current='astra-backup';showFormView();astraRow('sources',pdfSource).title='LATEST ASTRA SOURCE';dashTouch();");
- const prev=w.URL.createObjectURL;let blob;w.URL.createObjectURL=b=>{blob=b;return 'blob:astra-backup-test';};await E('fullBackup()');w.URL.createObjectURL=prev;
- const data=JSON.parse(await blob.text());return data.drafts.find(r=>r.id==='astra-backup').workspace.astra.sources[0].title==='LATEST ASTRA SOURCE';
 });
 
 H('Completion-focused drafting');
@@ -5931,24 +5833,18 @@ t('unfinished contract prompts are detected without treating a citation as a pro
 t('find prompt selects the exact editable placeholder',()=>{
  E("completionNextPrompt();");return E("window.getSelection().toString()")==='[INSERT APPLICABLE AUTHORITY]'&&E('WIZ_STEP')===5;
 });
-t('supporting records remain, collapsed, where the removed log used to sit',()=>{
-  const r=w.document.getElementById('astraReview');
-  return !!r && r.open===false && !w.document.getElementById('vlogBox');
-});
-t('a draft saved with the removed validation log still opens and saving drops it',()=>{
-  /* Drafts saved before v1.14.0 can carry a vlog block, attachments included.
-     Opening one must not fail, and the next save must not write the log back. */
+t('neither the validation log nor the supporting-records panel is on the page',()=>
+  !w.document.getElementById('vlogBox') && !w.document.getElementById('astraReview')
+  && !w.document.getElementById('astraPanel') && E('typeof ASTRA')==='undefined');
+t('a draft saved with the removed log and supporting records still opens and saving drops both',()=>{
+  /* Drafts saved before v1.14.0 can carry a vlog block (attachments included)
+     and an astra block. Opening one must not fail - including an astra schema
+     the removed validator would have rejected - and the next save writes neither. */
   F();
-  E("applyWorkspace({texts:{i6a:'Legacy Log Corp'},checks:{},radios:{},selects:{},perf:[],vlog:{entries:[{item:'10a',source:'NISS',note:'n'}],remarks:'r',files:[{name:'x.pdf',size:3,b64:'AAAA',sha256:'ab'}]}});");
+  E("applyWorkspace({texts:{i6a:'Legacy Records Corp'},checks:{},radios:{},selects:{},perf:[],vlog:{entries:[{item:'10a',source:'NISS',note:'n'}],remarks:'r',files:[{name:'x.pdf',size:3,b64:'AAAA',sha256:'ab'}]},astra:{schema:999,sources:[{id:'S-1',title:'old'}]}});");
   const ws=E('collectWorkspace()');
-  return E("document.getElementById('i6a').value")==='Legacy Log Corp' && !('vlog' in ws)
-      && typeof E('typeof VLOG')==='string' && E('typeof VLOG')==='undefined';
-});
-t('a supporting document keeps a recorded file reference as editable text',()=>{
-  /* fileRef used to be a picker whose only options were log attachments. With the
-     log gone it is typed, and a hash already recorded in an older draft survives. */
-  const html=E("astraField('documents',{id:'d1',fileRef:'57ab7f77811938c6'},['fileRef','Existing file reference (name or SHA-256)'])");
-  return /<input[^>]*type="text"[^>]*value="57ab7f77811938c6"/.test(html) && !/<select/.test(html);
+  return E("document.getElementById('i6a').value")==='Legacy Records Corp'
+      && !('vlog' in ws) && !('astra' in ws) && E('typeof VLOG')==='undefined';
 });
 
 console.log('\n### 91. v196 marking, Item 13 duplication, source provenance and retention');

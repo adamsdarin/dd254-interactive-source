@@ -1,4 +1,4 @@
-BUILD_SHA256 e589a245dbc210b918b8ce8d5c58253ae4457341e2f197618403452770efabbf
+BUILD_SHA256 911314fadd45fffd3f9995873395317be83ee737ca0aebe19c885702e7957e85
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1140,38 +1140,9 @@ BUILD_SHA256 e589a245dbc210b918b8ce8d5c58253ae4457341e2f197618403452770efabbf
   PASS  an IndexedDB write failure keeps the latest record recoverable in Full Backup
   PASS  an unreadable draft database refuses a misleading empty backup
 
-### Codex Astra single-file review workflows
-  PASS  Astra starts with additive browser-only metadata on old workspaces
-  PASS  Astra rejects future schema before modifying live form
-  PASS  Astra real input controls capture a source without duplicating official fields
-  PASS  Astra backup snapshot owns its records rather than sharing mutable references
-  PASS  Astra source records survive the actual draft database round trip
-  PASS  Astra preserves unknown additive fields without inferring decisions
-  PASS  Astra refuses malformed or duplicate source identities
-  PASS  Astra source text is rendered as text and cannot inject HTML
-  PASS  Astra distinguishes available versus cited attachment versions
-  PASS  Astra detects DD254 contract attachment revision mismatch
-  PASS  Astra delivery and acknowledgment remain independent of report generation
-  PASS  Astra cost is unknown when incomplete and computes the documented example
-  PASS  Astra refuses negative and unsubstantiated zero cost estimates
-  PASS  Astra issue cannot claim a resolution without its recorded basis
-  PASS  Astra records scoped resolution and identifies changed form evidence
-  PASS  Astra issue resolution never clears a separate approval hold
-  PASS  Astra closeout completion requires authorization evidence and date
-  PASS  Astra completed closeout becomes a review item after evidence changes
-  PASS  Astra Item 13 insertion preserves surrounding text and excludes internal costs
-  PASS  Astra will not overwrite user edits to previously inserted Item 13 wording
-  PASS  Astra requirements do not automatically change Items 14 or 15
-  PASS  Astra selected report excludes unselected question content and history
-  PASS  Astra report selection does not mislabel excluded but existing source as missing
-  PASS  Astra impact review requires reviewer and basis
-  PASS  Astra source change identifies a linked requirement impact
-  PASS  Astra performance-site change identifies affected delivery record
-  PASS  Astra workflow reset preserves evidence history but does not inherit receipts or decisions
-  PASS  Astra ordinary and SAP completion explanations preserve their different scope
-  PASS  Astra program continuation does not demand an extended-retention answer by default
-  PASS  Astra actual review PDF contains selected content and excludes hidden records
-  PASS  Astra full backup captures edits made immediately before download
+### Final-form retention guidance
+  PASS  ordinary and SAP retention guidance keep their different scope
+  PASS  a SAP Final with written program direction does not demand an extended-retention answer by default
 
 ### Completion-focused drafting
   PASS  one action reuses five subcontractor fields in Item 8
@@ -1186,9 +1157,8 @@ BUILD_SHA256 e589a245dbc210b918b8ce8d5c58253ae4457341e2f197618403452770efabbf
   PASS  changed template during preview is rejected without overwriting the form
   PASS  unfinished contract prompts are detected without treating a citation as a prompt
   PASS  find prompt selects the exact editable placeholder
-  PASS  supporting records remain, collapsed, where the removed log used to sit
-  PASS  a draft saved with the removed validation log still opens and saving drops it
-  PASS  a supporting document keeps a recorded file reference as editable text
+  PASS  neither the validation log nor the supporting-records panel is on the page
+  PASS  a draft saved with the removed log and supporting records still opens and saving drops both
 
 ### 91. v196 marking, Item 13 duplication, source provenance and retention
   PASS  Item 13 states one classified mailing address when Item 7 and Item 8 are the same CAGE
@@ -1210,5 +1180,5 @@ BUILD_SHA256 e589a245dbc210b918b8ce8d5c58253ae4457341e2f197618403452770efabbf
   PASS  the retention clock and the biennial review clock stay separate
 
 ================================
-  PASS 1017   FAIL 0
+  PASS 987   FAIL 0
 ================================

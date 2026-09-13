@@ -22,14 +22,10 @@ the failing names are listed at the end.
 
 ## Codex Astra coverage
 
-The added suite exercises legacy workspace import, additive schema validation,
-source escaping, browser-database persistence, newest-edit backup capture,
-contract and document mismatches, cost estimates, decision/closeout evidence,
-changed dependencies, guarded Item 13 insertion, selected-report privacy and
-the ordinary/SAP Final distinction. The real-browser smoke test also drives
-the new controls, confirms the Item 13 preview, downloads the review PDF,
-extracts its text and restores the saved review record. Run it against both
-the official and generated demo files.
+The real-browser smoke test drives the drafting tools — Item 8 site reuse,
+unfinished-prompt selection, combined Item 13 insertion and validation jump — as
+well as settings, exports, signing, Block 18f, issuance safety and backup. Run it
+against both the official and generated demo files.
 
 ## What it covers
 
@@ -164,9 +160,11 @@ additionally proves the Items 16/17 asterisks are present and non-blocking; that
 check previously resolved labels with `closest()`, which returns null for those
 fields and made it true whatever the markup said.
 
-The v1.14.0 tests cover the removal of the Source & Validation Log: the
-supporting-records panel stays present and collapsed where the log used to sit;
-a draft saved with a log by an earlier version still opens and the log is not
-written back on save; and a supporting document's file reference renders as
-editable text that keeps a hash already recorded. The log's own export and
-file-hashing tests were removed with the feature.
+The v1.14.0 tests cover the removal of the Source & Validation Log and the
+Optional supporting records panel: neither is on the page; a draft saved by an
+earlier version with both a log and supporting records — including a records
+schema the old validator would have rejected — still opens, and saving writes
+neither back. The Final-form retention guidance those records carried keeps its
+tests: ordinary and SAP wording keep their different scope, and a SAP Final with
+written program direction does not demand an extended-retention answer. The
+removed features' own tests went with them.
