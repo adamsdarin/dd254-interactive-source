@@ -13,7 +13,7 @@
 # That link is not something the author can forge, which is exactly why it is
 # worth more than anything written in a document.
 #
-# Trigger: git tag v1.12.0 && git push origin v1.12.0
+# Trigger: git tag vX.Y.Z && git push origin vX.Y.Z
 name: release
 
 on:
@@ -30,6 +30,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # The checks import rebuild_kit/split.py, and Python would leave a __pycache__
+    # beside it that the kit tarball then shipped. The kit is meant to hold only
+    # the files a reviewer is asked to read (make_build_facts.py refuses bytecode
+    # for the same reason), so no step here writes any.
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@v4
 
@@ -74,11 +80,19 @@ jobs:
           DEMO="$(python3 .github/scripts/newest_build.py --demo)"
           cp "$BUILD" "$DEMO" dist/
           cp 02_DOCS/DD254_Interactive_User_Manual.pdf dist/
-          cp BUILD_FACTS.md VERIFY.md 02_DOCS/DD254_Tool_Security_Fact_Sheet.md 02_DOCS/RELEASE_ASSESSMENT_v1.12.0.md 02_DOCS/product_planning/IMPLEMENTATION_v1.12.0.md dist/
+          # The per-release documents are named for the tag being released. These
+          # were hard-coded to v1.12.0, so v1.13.0 and v1.14.0 shipped v1.12.0's
+          # assessment and implementation notes. A missing document now fails the
+          # release instead of quietly attaching an older one.
+          VERSION="${GITHUB_REF_NAME#v}"
+          ASSESS="02_DOCS/RELEASE_ASSESSMENT_v${VERSION}.md"
+          IMPL="02_DOCS/product_planning/IMPLEMENTATION_v${VERSION}.md"
+          for f in "$ASSESS" "$IMPL"; do [ -f "$f" ] || { echo "Missing release document: $f"; exit 1; }; done
+          cp BUILD_FACTS.md VERIFY.md 02_DOCS/DD254_Tool_Security_Fact_Sheet.md "$ASSESS" "$IMPL" dist/
           # The review kit, so a reviewer can start from the split parts
           # without running anything first.
           (cd 01_TOOL/rebuild_kit && python3 split.py >/dev/null)
-          tar czf dist/rebuild_kit.tar.gz -C 01_TOOL rebuild_kit
+          tar czf dist/rebuild_kit.tar.gz --exclude='__pycache__' -C 01_TOOL rebuild_kit
           (cd dist && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
           echo "build=$(basename "$BUILD")" >> "$GITHUB_OUTPUT"
 

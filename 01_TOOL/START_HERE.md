@@ -35,7 +35,7 @@ The tool is one HTML file. No build step, no dependencies, no server.
 6. **Then run any changed export live** — see the warning below.
 7. Ship as the next version number and preserve earlier official builds unless
    the owner explicitly authorises archival or deletion.
-8. **Add a `## v1.10.0`-style entry to `CHANGELOG.md`** — what changed, what was added,
+8. **Add a `## vX.Y.Z - D Month YYYY` entry to `CHANGELOG.md`** — what changed, what was added,
    what was deliberately not done. Every change to the HTML gets one.
 9. Run `python3 make_build_facts.py`. It regenerates `BUILD_FACTS.md` and
    `rebuild_kit/manifest.json` together, and exits non-zero if step 7 was
@@ -51,6 +51,13 @@ These cost real time. Worth reading before touching the file.
   passed every assertion and did nothing in the browser: Items 10/11 are hidden
   checkboxes behind clickable tiles, so setting `.checked` silently does nothing.
   Always drive the real form in a jsdom run, not just the data layer.
+- **Check the artifact, not the report that it was produced.** A script can print
+  "ok" and exit before writing; a push can succeed after Git has altered the
+  bytes; a green Pages build can describe a file that is not yet the one being
+  served; a test can pass because it cannot fail. Each of these happened in the
+  v1.13.0–v1.14.0 cycle and each was caught only by opening the rebuilt PDF,
+  hashing the served file or running the assertion against a build where it must
+  fail. A green status line is a reason to look, not the look.
 - **Two sources of truth is the recurring defect.** Every significant bug in
   this tool was the same shape: a red asterisk in the markup and a rule in the
   JavaScript that had drifted apart; a template list and a form list; a

@@ -19,7 +19,7 @@ and no network traffic. Download one file, open it, work offline.
 
 | | |
 |---|---|
-| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` |
+| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.14.0 demo build, covered by the release's signed provenance |
 | **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.14.0.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
@@ -91,7 +91,12 @@ file into those four parts so you only have to read the one that is ours.
 
 Every push runs the full regression suite, syntax‑checks every `<script>`
 block, and re‑derives the component hashes to confirm the committed manifest
-still describes the committed build. The logs are public.
+still describes the committed build. Every release repeats those checks before
+publishing and attaches a **signed build provenance attestation** covering both
+HTML files — verify it with `gh attestation verify` as [VERIFY.md](VERIFY.md)
+describes — plus `rebuild_kit.tar.gz`, whose parts reassemble into the exact
+released file. Because the demo build is one of the attested files, the live demo
+can be checked against it too. The logs are public.
 
 ---
 
@@ -164,6 +169,9 @@ describe this release. Docker and Kubernetes remain a future phase.
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
 - [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.14.0.md)
+- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.14.0.md)
+- [Verifying a download and the live demo](VERIFY.md)
+- [Maintainer release and demo procedure](SETUP.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)
 - [Original enhancement requirements (Word PRD, draft 0.2)](02_DOCS/product_planning/DD254_Tool_Enhancement_PRD.docx)
 
