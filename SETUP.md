@@ -80,7 +80,10 @@ ones with `gh release delete-asset`, regenerate `SHA256SUMS.txt` from the full
 corrected set, then re-verify the release from a fresh download. v1.13.0 and
 v1.14.0 were corrected this way on 13 September 2026: each carried v1.12.0's
 release documents and a stray `__pycache__` in its rebuild kit, and v1.13.0's
-security fact sheet was labelled v1.12.0.
+security fact sheet was labelled v1.12.0. v1.10.0, v1.11.0 and v1.12.0 had their
+own documents but the same `__pycache__`; their kits were repacked the same way,
+each confirmed to rebuild its release byte-identically before upload, and
+v1.10.0's release notes were pointed at `VERIFY.md` for its own tag.
 
 ## Rollback
 
