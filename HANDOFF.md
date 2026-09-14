@@ -1,13 +1,14 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-14T14:30-05:00 by Claude
+Last updated: 2026-09-14T15:10-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: v1.14.1 (Tool 2.127). **v1.15.0 (Tool 2.128) is built,
-verified and being released** per SETUP.md "Publish" — owner chose separate,
-fully verified point releases for the v1.15 horizon.
+published release: **v1.15.0 (Tool 2.128)**, tag at da54148 on `main`; assets,
+checksums, kit rebuild and both attestations verified from a fresh download; the
+live demo (`dd254-interactive` 9cffd04) serves the attested demo bytes. Owner
+chose separate, fully verified point releases for the v1.15 horizon.
 
 v1.15.0 (owner requests, 2026-09-14):
 
@@ -51,6 +52,9 @@ Remaining v1.15 point releases, in order (owner-approved scope, 2026-09-14):
 
 ## Log
 
+2026-09-14 15:10 Claude — Published v1.15.0 per SETUP.md: verify passed on
+da54148, main fast-forwarded, tag pushed, release workflow passed, release and
+served demo verified independently. Branch `release/v1.15.0` left in place.
 2026-09-14 14:30 Claude — Built and verified v1.15.0 (dashboard numbers, search
 in any order, NISS re-confirmation on spawn). Chose per-record AND matching with
 chain surfacing, and punctuation-free matching per word only, to avoid false
