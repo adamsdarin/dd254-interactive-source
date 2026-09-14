@@ -1,3 +1,36 @@
+## v1.15.0 - 14 September 2026
+
+Tool version 2.128. The first preparer-throughput release: three dashboard changes
+requested by the owner for finding and re-issuing DD-254s. No validation rule,
+approval hold, export or official PDF field changed.
+
+- Cards show every contract number the form carries. The card line used
+  `meta.contract`, which collapses Items 2a, 2b and 2c to the first one filled, so
+  a subcontract card showed only its prime number. Item 2a now appears as
+  "Prime", Item 2b as "Subcontract" and Item 2c as "Solicitation", each only when
+  filled, beside the contractor and subcontractor CAGE (`dashCardNumbers`). A
+  record with no Item 2 text still shows its stored contract number.
+- Dashboard search takes terms in any order. The box matched its whole text as one
+  phrase, so "5XYZ5 W911NF" found nothing unless those words were adjacent in that
+  order. Each term must now appear in the same record, in any order
+  (`dashSearchTerms`, `dashSearchMatches`); quoted text is an exact phrase; a term
+  of four or more letters and digits also matches with punctuation ignored inside
+  a single word, so a contract number matches with or without hyphens. The
+  punctuation-free comparison never joins separate words. A chain still appears
+  when any record in it matches. The search box says so.
+- Spawning resets NISS verification. An Original from a solicitation, a Revision
+  or a Final is a new issuance, but it inherited the parent's NISS record, so a
+  card could show a months-old verification as current. The child now starts
+  unverified; when the parent was verified, its date, verifier and stage are kept
+  as `nissPrior`, the card shows "NISS re-confirm" with them in the tooltip, and
+  the spawn audit entry says verification was reset. Verifying again clears the
+  prompt and is audited as a re-confirmation. The parent's record is untouched.
+  Copy is deliberately unchanged, and existing issuance challenges for missing
+  NISS verification now apply to the new record.
+
+Not done: fielded search syntax (such as `cage:`), and the rest of the v1.15
+horizon, which ships as separate point releases.
+
 ## v1.14.1 - 14 September 2026
 
 Tool version 2.127. A trust patch: places where the tool, its exports or its

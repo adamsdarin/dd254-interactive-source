@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.14.1 (tool version 2.127)"
+VER="Codex Astra v1.15.0 (tool version 2.128)"
 
 DOC = [
-("h1","Codex Astra v1.14.1 changes"),
+("h1","Codex Astra v1.15.0 changes"),
+("b","Each dashboard card labels its numbers: <b>Prime</b> (Item 2a), <b>Subcontract</b> (Item 2b) and <b>Solicitation</b> (Item 2c), whichever are filled, beside the contractor and the subcontractor CAGE — see 3.1."),
+("b","Search takes several terms in any order. <b>pat.requestor 5XYZ5 W911NF</b> finds the DD-254 carrying all three, however you type them; a contract number matches with or without its hyphens — see 3.10."),
+("b","Spawning an Original, Revision or Final no longer carries NISS verification into the new DD-254. Its card shows <b>NISS re-confirm</b> until you verify again for that issuance — see 3.3 and 3.11."),
+("h2","Codex Astra v1.14.1 changes"),
 ("p","A correction release. Nothing about how a DD Form 254 is validated, held or exported changed."),
 ("b","The header shows the release name from the tool itself, so it always matches the file you downloaded. The OMB expiry date now sits beside the OMB number it belongs to."),
 ("b","The Preparer's Worksheet and the Contracting Officer Package name Item 14 <b>Additional Security Requirements</b> and Item 15 <b>Inspections</b>, as the form does."),
@@ -59,7 +63,7 @@ DOC = [
 ("h1","3. The dashboard — working your queue"),
 ("h2","3.1 Reading a card"),
 ("p","Each DD-254 is a card. The coloured border around the card is its status. A card turns grey once a revision or final has been spawned from it — grey means superseded, and the live status has moved to the newer card indented beneath it."),
-("p","The card line shows the contract number, the contractor, and — when Item 7b is filled — <b>Subcontractor CAGE</b>."),
+("p","The card line labels each contract number the form carries: <b>Prime</b> from Item 2a, <b>Subcontract</b> from Item 2b and <b>Solicitation</b> from Item 2c. Only filled items appear, so a subcontract shows its prime and subcontract numbers together and a solicitation shows its solicitation number. After them come the contractor and — when Item 7b is filled — <b>Subcontractor CAGE</b>."),
 ("h2","3.2 Statuses"),
 ("tbl",[["Status","Meaning"],
         ["Draft","Being prepared. Forced automatically whenever validation errors exist."],
@@ -72,7 +76,8 @@ DOC = [
 ("note","<b>Awaiting info was retired.</b> It meant the same thing as Blocked and split the queue for no reason. Any record still sitting on it is moved to Blocked when the dashboard loads, keeping its holds and history, and the change is written to the audit log."),
 ("h2","3.3 Stages and the revision chain"),
 ("p","A record carries a stage: Solicitation, Original, Revision or Final. From a Solicitation you can spawn an Original; from an Original or Revision you can spawn a Revision or a Final. Spawned cards nest under their parent, keeping the whole chain for one contract together. <b>Compare</b> walks the entire retained chain, uses readable field names, reports Item 13 by reference section, and preserves the complete previous and revised text. <b>Export PDF change report</b> creates a paginated static record and writes the export to the audit history. If an earlier parent was deleted, the report identifies the missing record and starts with the earliest retained revision."),
-("p","A spawned child inherits the form content and the ongoing work — NISS verification, to-dos and notes. It does not inherit anything that happened to the parent: holds, distribution records, countersignature, issue date, review date, or permission to bypass validation."),
+("p","A spawned child inherits the form content and the ongoing work — to-dos and notes. It does not inherit anything that happened to the parent: holds, distribution records, countersignature, issue date, review date, permission to bypass validation, or NISS verification."),
+("note","NISS verification is a check for one issuance. An Original spawned from a solicitation, a Revision or a Final is a new issuance, often months later, so it starts unverified. If the parent was verified, the new card shows <b>NISS re-confirm</b>; hovering shows when and by whom the parent was verified. Verifying again clears it and the audit log records the re-confirmation. <b>Copy</b> is unchanged — see 3.4."),
 ("h2","3.4 Copying a DD-254"),
 ("p","<b>Copy</b> asks which kind you want, because copying means two different things."),
 ("tbl",[["Choice","What comes across"],
@@ -119,9 +124,10 @@ DOC = [
 ("h2","3.9 Notes and to-do items"),
 ("p","Click <b>Notes</b> on a card to expand its panel. <b>Notes</b> is free text and appears in the Notes Report and the Manager Rollup. <b>To-do</b> items are the running “I need…” list; each requires a note-taken date, and any item can be turned into an Outlook calendar reminder dated to that note."),
 ("h2","3.10 Finding things"),
+("p","Type what you have in hand, in any order — typically the requestor, then the subcontractor CAGE, then the prime number. Every word you type must appear in the same DD-254, but the order does not matter, so <b>pat.requestor 5XYZ5 W911NF</b> and <b>W911NF 5XYZ5 pat.requestor</b> find the same record. Put words in quotes to match them as an exact phrase. A contract number of four or more characters matches with or without punctuation: <b>W911NF26C0001</b> finds <b>W911NF-26-C-0001</b>."),
 ("p","The search box matches far more than the title: contract number, contractor, CAGE, GCA, every text field on the form including Block 13, note text, hold and cancellation text, and both the number and the name of every checked Item 10 and 11 box. Searching <b>10a</b> and searching <b>COMSEC</b> return the same contracts. A match on a revision surfaces the whole chain it belongs to. You can also filter by requestor and by status, and sort by recent activity, date created, title or status urgency."),
 ("h2","3.11 NISS verification and countersignature"),
-("p","<b>NISS</b> records that you verified the contractor's facility clearance and safeguarding. Click the badge, enter your initials, and the date and initials are stored. Issuing without it is possible but challenged. <b>Countersigned</b> records the date the signed form came back and asks where that signature is held. DoDM 5205.07 requires the subcontractor's authorised representative to sign but does not say where, and the APR 2018 form has no subcontractor signature block — Item 17 is the issuer's certification and its one signature field, 17h, belongs to the certifying official. Capture the signature however your programme accepts it, and record the location: without a block on the form, that is the only thing identifying it."),
+("p","<b>NISS</b> records that you verified the contractor's facility clearance and safeguarding for this DD-254. Click the badge, enter your initials, and the date and initials are stored. A newly spawned Original, Revision or Final shows <b>NISS re-confirm</b> instead of <b>NISS not verified</b> when its parent had been verified. Issuing without it is possible but challenged. <b>Countersigned</b> records the date the signed form came back and asks where that signature is held. DoDM 5205.07 requires the subcontractor's authorised representative to sign but does not say where, and the APR 2018 form has no subcontractor signature block — Item 17 is the issuer's certification and its one signature field, 17h, belongs to the certifying official. Capture the signature however your programme accepts it, and record the location: without a block on the form, that is the only thing identifying it."),
 ("h2","3.12 What a card tells you at a glance"),
 ("p","Beside the stage chip, every card carries an <b>UNCLASSIFIED</b> or purple <b>CUI</b> handling badge. That badge reports how <i>this form</i> is marked, and it comes from the marking selector or the marking carried by the template the draft was built from. Item 10j, Item 11l, CUI designation fields, a distribution statement and LDCs say the <i>contract</i> involves CUI, which is a different fact: a DD Form 254 naming CUI categories for a classified contract is routinely UNCLASSIFIED, and marking it CUI would be a marking error in its own right. When the contract involves CUI, validation says so and points at the Item 13 protection guidance the GCA must supply; it does not change the marking, the encryption banner, the bulk-issuance audience or the e-mail subject line."),
 ("p","A card also carries a <b>paperclip badge</b> counting everything that must travel with that DD-254: what its own selections require, what the template it was built from demands, and anything you recorded by hand. Click the badge to open the card on the full list, grouped by where each item came from. A form with nothing to attach shows no badge. The count is computed from the same source the distribution dialog uses, so the two can never disagree."),

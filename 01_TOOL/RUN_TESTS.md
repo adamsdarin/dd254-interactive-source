@@ -185,3 +185,13 @@ because earlier sections leave `BK_UNLOADING` set), and not overwriting a record
 changed while it runs. `check_manifest.py` separately fails a build whose
 filename, `RELEASE_VERSION`, title and release strings disagree, and
 `browser_smoke.js` compares the rendered header with the filename.
+
+The v1.15.0 tests (section 93) render cards for a prime, a subcontract, a
+solicitation and a record without Item 2 text and read the labelled numbers back,
+including escaping. Search is driven through the real dashboard filter with terms
+in both orders, a missing term, a hyphen-free contract number, quoted phrases in
+and out of order, a stray quote and a guard that punctuation-free matching never
+joins separate words. NISS re-confirmation is checked for every spawn path, for the
+card badge and its tooltip, for clearing on re-verification with its audit entry,
+and for a child of an unverified record. The section 14 spawn test that asserted
+inherited NISS verification was changed deliberately to assert the reset.

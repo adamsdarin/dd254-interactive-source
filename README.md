@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v1.14.1
+# DD‑254 Interactive — Codex Astra v1.15.0
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -19,14 +19,14 @@ and no network traffic. Download one file, open it, work offline.
 
 | | |
 |---|---|
-| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.14.1 demo build, covered by the release's signed provenance |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.14.1.HTM` |
+| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.15.0 demo build, covered by the release's signed provenance |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.15.0.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v1.14.1.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.15.0.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -99,6 +99,21 @@ released file. Because the demo build is one of the attested files, the live dem
 can be checked against it too. The logs are public.
 
 ---
+
+## What changed in v1.15.0
+
+Three dashboard changes for finding and re-issuing DD‑254s faster.
+
+- **Cards show every contract number the form carries.** Item 2a appears as
+  *Prime*, Item 2b as *Subcontract* and Item 2c as *Solicitation*, beside the
+  contractor and subcontractor CAGE.
+- **Search in any order.** Type the requestor, the subcontractor CAGE and the
+  prime number in whatever order you have them; every word must match the same
+  DD‑254. Quotes match an exact phrase, and contract numbers match with or
+  without hyphens.
+- **A new issuance re-confirms NISS.** Spawning an Original, Revision or Final
+  no longer carries the parent's NISS verification; the new card shows
+  *NISS re-confirm* until it is verified again. Copy is unchanged.
 
 ## What changed in v1.14.1
 
@@ -183,15 +198,15 @@ These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify
 eligibility or decide authority. No server or new storage service is required.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.14.1.md)
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.15.0.md)
 describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.14.1.md)
-- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.14.1.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.15.0.md)
+- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.15.0.md)
 - [Verifying a download and the live demo](VERIFY.md)
 - [Maintainer release and demo procedure](SETUP.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)

@@ -1,4 +1,4 @@
-BUILD_SHA256 b052fb385d79ce9538f7dda1fa89e0de0f3643266f1437abe15534a2c174e9a2
+BUILD_SHA256 25e2a61b4b7434bb73b3b726f296a7785151ff1ddaa4e24823b6f3e644589432
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -168,6 +168,7 @@ BUILD_SHA256 b052fb385d79ce9538f7dda1fa89e0de0f3643266f1437abe15534a2c174e9a2
   PASS  seed a fully-worked issued, blocked solicitation
   PASS  spawn clears parent EVENTS
   PASS  spawn carries working CONTEXT
+  PASS  spawn resets NISS verification and records the parent's for re-confirmation
   PASS  spawn carries the form content and sets stage/title/Item 3
   PASS  revision numbering works off the chain
   PASS  a hold on the child does not reach the parent
@@ -1200,6 +1201,27 @@ BUILD_SHA256 b052fb385d79ce9538f7dda1fa89e0de0f3643266f1437abe15534a2c174e9a2
   PASS  a dashboard change made while a recount runs is not overwritten by its snapshot
   PASS  opening a draft waits for a running automatic recount
 
+### 93. v1.15.0 dashboard numbers, search in any order, NISS re-confirmation
+  PASS  seed prime, subcontract, solicitation and a record without Item 2 text
+  PASS  a prime card labels its Item 2a number
+  PASS  a subcontract card shows Item 2b beside the prime number and the subcontractor CAGE
+  PASS  a solicitation card shows its Item 2c number
+  PASS  a record with no Item 2 text still shows its stored contract number
+  PASS  card numbers are escaped, not rendered as markup
+  PASS  requestor, then subcontractor CAGE, then prime narrows to one record
+  PASS  the same terms in the opposite order find the same record
+  PASS  every term must match the same record
+  PASS  a contract number typed without hyphens still matches
+  PASS  punctuation-free matching never joins separate words
+  PASS  a quoted phrase matches only in that order
+  PASS  a stray quote mark does not stop a CAGE search
+  PASS  the search box says terms can be typed in any order
+  PASS  an Original spawned from a verified solicitation starts unverified with a re-confirm prompt
+  PASS  re-confirming records a fresh verification and clears the prompt
+  PASS  a Revision from an Original and a Final from that Original both reset NISS
+  PASS  a Final from a verified Revision resets NISS
+  PASS  spawning from an unverified record leaves NISS unverified without a re-confirm note
+
 ================================
-  PASS 1006   FAIL 0
+  PASS 1026   FAIL 0
 ================================

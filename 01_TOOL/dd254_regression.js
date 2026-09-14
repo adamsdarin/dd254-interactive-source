@@ -639,7 +639,11 @@ await ta('spawn clears parent EVENTS', async()=>{
   return c.holds.length===0 && c.dist.length===0 && c.countersign===null && !('issuedAt' in c)
       && c.status==='Draft' && c.reviewDate==='';});
 await ta('spawn carries working CONTEXT', async()=>{const c=await kid();
-  return c.niss && c.niss.by==='DA' && c.todos.length===2 && c.notes==='parent notes';});
+  return c.todos.length===2 && c.notes==='parent notes';});
+/* v1.15.0: NISS verification belongs to one issuance. Until then a spawned
+   child inherited it; now it starts unverified and records what the parent had. */
+await ta('spawn resets NISS verification and records the parent\'s for re-confirmation', async()=>{const c=await kid();
+  return c.niss===null && !!c.nissPrior && c.nissPrior.by==='DA' && c.nissPrior.date==='2026-02-01' && c.nissPrior.from==='sol';});
 await ta('spawn carries the form content and sets stage/title/Item 3', async()=>{const c=await kid();
   return c.workspace.texts.i6a==='Juliet Corp' && c.workspace.checks.c10a===true
       && c.stage==='orig' && c.title==='Juliet — Original' && c.workspace.radios.spec==='3a';});
@@ -6206,6 +6210,93 @@ await ta('opening a draft waits for a running automatic recount', async()=>{
   w.DD254_AUTO_RECOUNT=null; release({changed:0,checked:0,failed:0});
   await opening;
   return waited && E("DASH.current")==='AR2';
+});
+
+H('93. v1.15.0 dashboard numbers, search in any order, NISS re-confirmation');
+const cardIds=id=>{ const el=w.document.querySelector('#dashCards .dash-card[data-id="'+id+'"] .dash-card-ids'); return el?el.textContent.replace(/\s+/g,' '):null; };
+const NREC=(id,over)=>Object.assign({id:id,stage:'orig',status:'Draft',todos:[],dist:[],holds:[],meta:{},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}},over);
+await ta('seed prime, subcontract, solicitation and a record without Item 2 text', async()=>{
+  await wipe(); E("DASH.current=null;DASH.search='';DASH.filterPerson='';DASH.statusFilter='';");
+  const recs=[
+    NREC('N1',{title:'Prime only',requestedBy:'pat.requestor@example.com',meta:{contract:'W911NF-26-C-0001',contractor:'Acme'},workspace:{texts:{i2a:'W911NF-26-C-0001',i6b:'1ABC2'},checks:{},radios:{},selects:{},perf:[]}}),
+    NREC('N2',{title:'Beta subcontract',requestedBy:'pat.requestor@example.com',meta:{contract:'W911NF-26-C-0001',contractor:'Acme',cage7:'5XYZ5'},workspace:{texts:{i2a:'W911NF-26-C-0001',i2b:'SUB-7788',i7a:'Beta Corp',i7b:'5XYZ5'},checks:{},radios:{},selects:{},perf:[]}}),
+    NREC('N3',{title:'Solicitation work',stage:'sol',requestedBy:'lee.other@example.com',meta:{contract:'HQ0034-26-R-0042',contractor:'Gamma'},workspace:{texts:{i2c:'HQ0034-26-R-0042',i7b:'5XYZ5'},checks:{},radios:{},selects:{},perf:[]}}),
+    NREC('N4',{title:'Older record',meta:{contract:'OLD-123',contractor:'Delta'}})];
+  for(const r of recs) await E("draftPut("+JSON.stringify(r)+")");
+  await E("dashRenderCards()");
+  return cards().length===4;
+});
+t('a prime card labels its Item 2a number', ()=>{ const s=cardIds('N1'); return !!s && /Prime: W911NF-26-C-0001/.test(s) && !/Subcontract:|Solicitation:/.test(s); });
+t('a subcontract card shows Item 2b beside the prime number and the subcontractor CAGE', ()=>{ const s=cardIds('N2');
+  return !!s && /Prime: W911NF-26-C-0001 · Subcontract: SUB-7788/.test(s) && /Subcontractor CAGE: 5XYZ5/.test(s); });
+t('a solicitation card shows its Item 2c number', ()=>{ const s=cardIds('N3'); return !!s && /Solicitation: HQ0034-26-R-0042/.test(s) && !/Prime:/.test(s); });
+t('a record with no Item 2 text still shows its stored contract number', ()=>{ const s=cardIds('N4'); return !!s && /OLD-123/.test(s); });
+t('card numbers are escaped, not rendered as markup', ()=>{
+  const h=E("dashCardNumbers({workspace:{texts:{i2b:'<img src=x onerror=alert(1)>'}}})");
+  return h.indexOf('<img')===-1 && h.indexOf('&lt;img')!==-1; });
+await ta('requestor, then subcontractor CAGE, then prime narrows to one record', async()=>{
+  await search('pat.requestor 5xyz5 w911nf'); const v=titles(); return v.length===1 && v[0]==='Beta subcontract'; });
+await ta('the same terms in the opposite order find the same record', async()=>{
+  await search('W911NF 5XYZ5 pat.requestor'); const v=titles(); return v.length===1 && v[0]==='Beta subcontract'; });
+await ta('every term must match the same record', async()=>{
+  await search('pat.requestor 9QQQ9'); return titles().length===0; });
+await ta('a contract number typed without hyphens still matches', async()=>{
+  await search('W911NF26C0001'); const v=titles(); return v.length===2 && v.includes('Prime only') && v.includes('Beta subcontract'); });
+await ta('punctuation-free matching never joins separate words', async()=>{
+  await search('primeonly'); return titles().length===0; });
+await ta('a quoted phrase matches only in that order', async()=>{
+  await search('"prime only"'); const a=titles(); await search('"only prime"'); const b=titles();
+  return a.length===1 && a[0]==='Prime only' && b.length===0; });
+await ta('a stray quote mark does not stop a CAGE search', async()=>{
+  await search('"5xyz5'); const v=titles(); return v.length===2 && v.includes('Beta subcontract') && v.includes('Solicitation work'); });
+t('the search box says terms can be typed in any order', ()=>{
+  const b=w.document.getElementById('dashSearchBox'); return /any order/i.test(b.getAttribute('placeholder')||'') && /same DD-254/.test(b.getAttribute('title')||''); });
+
+const childOf=async pid=>(await E("draftAll()")).filter(x=>x.parentId===pid).sort((a,b)=>(a.createdAt||'').localeCompare(b.createdAt||''));
+E("window.__UI_PROMPT_REAL=uiPrompt;");
+await ta('an Original spawned from a verified solicitation starts unverified with a re-confirm prompt', async()=>{
+  await search(''); await wipe(); E("DASH.current=null;");
+  await E("draftPut("+JSON.stringify(NREC('NS',{title:'Kilo — Solicitation',stage:'sol',niss:{on:true,date:'2026-05-01',by:'AB'}}))+")");
+  await E("dashSpawn('NS','orig')");
+  const o=(await childOf('NS'))[0];
+  await E("dashRenderCards()");
+  const badge=w.document.querySelector('#dashCards .dash-card[data-id="'+o.id+'"] .dash-niss-reconfirm');
+  const parent=await E("draftGet('NS')");
+  return o.niss===null && o.nissPrior && o.nissPrior.from==='sol' && o.nissPrior.by==='AB'
+      && !!badge && badge.textContent==='NISS re-confirm' && /solicitation was verified 2026-05-01 by AB/.test(badge.getAttribute('title'))
+      && parent.niss && parent.niss.on===true
+      && E("audAll()").some(x=>x.action==='spawned'&&x.id===o.id&&/NISS verification reset/.test(x.detail));
+});
+await ta('re-confirming records a fresh verification and clears the prompt', async()=>{
+  const o=(await childOf('NS'))[0];
+  E("window.uiPrompt=async function(){return 'CD';};");
+  try{ await E("dashNissToggle('"+o.id+"')"); } finally { E("window.uiPrompt=window.__UI_PROMPT_REAL;"); }
+  const r=await E("draftGet('"+o.id+"')");
+  await E("dashRenderCards()");
+  return r.niss && r.niss.on && r.niss.by==='CD' && !('nissPrior' in r)
+      && !w.document.querySelector('#dashCards .dash-card[data-id="'+o.id+'"] .dash-niss-reconfirm')
+      && E("audAll()").some(x=>x.action==='niss-verified'&&x.id===o.id&&/re-confirmed for this issuance/.test(x.detail));
+});
+await ta('a Revision from an Original and a Final from that Original both reset NISS', async()=>{
+  const o=(await childOf('NS'))[0];
+  await E("dashSpawn('"+o.id+"','rev')"); await E("dashSpawn('"+o.id+"','final')");
+  const kids=await childOf(o.id); const rev=kids.find(k=>k.stage==='rev'), fin=kids.find(k=>k.stage==='final');
+  return !!rev && !!fin && rev.niss===null && fin.niss===null
+      && rev.nissPrior.from==='orig' && fin.nissPrior.from==='orig' && rev.nissPrior.by==='CD';
+});
+await ta('a Final from a verified Revision resets NISS', async()=>{
+  const o=(await childOf('NS'))[0]; const rev=(await childOf(o.id)).find(k=>k.stage==='rev');
+  const r=await E("draftGet('"+rev.id+"')"); r.niss={on:true,date:'2026-06-01',by:'EF'}; await E("draftPut("+JSON.stringify(r)+")");
+  await E("dashSpawn('"+rev.id+"','final')");
+  const fin=(await childOf(rev.id))[0];
+  return fin.stage==='final' && fin.niss===null && fin.nissPrior.from==='rev' && fin.nissPrior.date==='2026-06-01';
+});
+await ta('spawning from an unverified record leaves NISS unverified without a re-confirm note', async()=>{
+  await E("draftPut("+JSON.stringify(NREC('NU',{title:'Lima — Original',niss:null}))+")");
+  await E("dashSpawn('NU','rev')");
+  const c=(await childOf('NU'))[0]; await E("dashRenderCards()");
+  const card=w.document.querySelector('#dashCards .dash-card[data-id="'+c.id+'"]');
+  return c.niss===null && !('nissPrior' in c) && !!card && /NISS not verified/.test(card.textContent) && !card.querySelector('.dash-niss-reconfirm');
 });
 
 console.log('\n================================');
