@@ -1,4 +1,4 @@
-BUILD_SHA256 911314fadd45fffd3f9995873395317be83ee737ca0aebe19c885702e7957e85
+BUILD_SHA256 b052fb385d79ce9538f7dda1fa89e0de0f3643266f1437abe15534a2c174e9a2
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1179,6 +1179,27 @@ BUILD_SHA256 911314fadd45fffd3f9995873395317be83ee737ca0aebe19c885702e7957e85
   PASS  a stored SAP subcontract is recognised by the dashboard
   PASS  the retention clock and the biennial review clock stay separate
 
+### 92. v1.14.1 trust patch
+  PASS  the header release name renders from RELEASE_VERSION and agrees with the title
+  PASS  the OMB expiry sits with the OMB number, not with the release name
+  PASS  the worksheet and the CO package name Items 14 and 15 the way the form does
+  PASS  the CO package carries no signature or date lines and sends the signer to Item 17h
+  PASS  a SAP subcontract named only in Item 7a gets the signature requirement and names the Item 7 subcontractor
+  PASS  every authority cited in the demo seed is on the verified list
+  PASS  an empty log and an untouched records panel from v1.13.0 raise nothing; content and unknown shapes do
+  PASS  opening a draft that still holds removed material asks first, and Cancel changes nothing
+  PASS  Export, then open writes the stored workspace verbatim, opens the draft and records it
+  PASS  once saved, the draft holds neither block and opens without asking again
+  PASS  declining the download question leaves the draft unopened; opening without exporting is recorded
+  PASS  a read-only tab never saves, so it opens a legacy draft without the prompt
+  PASS  the three-way dialog focuses the safe primary action and Escape resolves as Cancel
+  PASS  drafts counted under an earlier version are recounted once on load, without a prompt
+  PASS  the automatic pass runs once: the next load finds nothing stale
+  PASS  a version stamp with unchanged counts is not a change since backup; changed counts are
+  PASS  a read-only tab and an open draft both skip the automatic pass
+  PASS  a dashboard change made while a recount runs is not overwritten by its snapshot
+  PASS  opening a draft waits for a running automatic recount
+
 ================================
-  PASS 987   FAIL 0
+  PASS 1006   FAIL 0
 ================================

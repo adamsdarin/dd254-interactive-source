@@ -11,7 +11,14 @@
    person, and it must not be used to prepare an actual DD Form 254.
 
    Seeding only happens when a library is empty, so anything typed during a
-   demonstration survives a reload rather than being overwritten on every load. */
+   demonstration survives a reload rather than being overwritten on every load.
+
+   The companies are fictitious; the authorities are not. A demo is where a
+   reviewer judges whether the tool gets the rules right, and v1.14.0's seed
+   told them CUI was safeguarded under 32 CFR Part 117, which expressly places
+   CUI outside its scope. Every citation below was checked against the approved
+   library on 14 September 2026, and the regression suite refuses any citation
+   in this file that is not on its verified list. */
 (function(){
   const B=[
     ['Aurora Dynamics','7AUR1','1400 Kestrel Way, Building 3','Fairfax, VA 22030'],
@@ -67,24 +74,24 @@
       return {label:p[0], name:p[0], email:p[3], program:['Programme ALDER (demo)','Programme BIRCH (demo)','Programme CEDAR (demo)','Programme DAMSON (demo)'][i]};
     }));
     seed(TPL_SL, [
-      {label:'Derivative classification', text:'Reference 11c:\n\nAll classified material generated or derived under this effort shall be marked in accordance with the applicable security classification guide. The contractor shall not classify by compilation without written GCA concurrence.'},
+      {label:'Derivative classification', text:'Reference 11c:\n\nAll classified material generated or derived under this effort shall be marked in accordance with the applicable security classification guide.'},
       {label:'Subcontracting notice', text:'Reference 10a:\n\nFurther disclosure of classified information, to include subcontracting at any tier, requires prior written approval of the Government Contracting Activity.'},
-      {label:'Visit authorisation', text:'Reference 11a:\n\nClassified visits shall be arranged through the Defense Information System for Security. Visit requests shall cite this contract number and identify the accrediting security office.'},
-      {label:'Return or destruction', text:'Reference 13:\n\nUpon completion or termination, all classified material shall be returned to the Government Contracting Activity or destroyed under NISPOM procedures, and a certificate of destruction retained.'}
+      {label:'Visit authorisation', text:'Reference 11a:\n\nThe host will verify each visitor\'s personnel clearance through a CSA-designated database or a visit authorization letter (32 CFR 117.16(a)(4)). Visit requests shall cite this contract number.'},
+      {label:'Return or destruction', text:'Reference 13:\n\nUpon completion of the contract, the contractor must return all USG-provided or deliverable information to USG custody; unless the GCA advises otherwise, copies may be retained for two years (32 CFR 117.13(d)(5)). Destruction records are required for TOP SECRET material (32 CFR 117.15(e)(2)(vii)).'}
     ]);
     seed(TPL_B13, [
       {label:'CPFF Research — SECRET (demo)', data:ctData({cls:'',c10:{'10a':true,'10b':true},c11:{'11a':true,'11c':true},i14:'no',i15:'yes',i15text:'Inspections by the cognizant security office.'})},
       {label:'FFP Services — CONFIDENTIAL (demo)', data:ctData({c11:{'11e':true},i14:'no',i15:'no'})},
-      {label:'IDIQ Task Order — SECRET/CUI (demo)', data:ctData({cls:'CUI',c10:{'10b':true},c11:{'11c':true,'11l':true},i14:'yes',i14text:'CUI handling per 32 CFR Part 117.'})},
+      {label:'IDIQ Task Order — SECRET/CUI (demo)', data:ctData({cls:'CUI',c10:{'10b':true},c11:{'11c':true,'11l':true},i14:'yes',i14text:'CUI handling per 32 CFR Part 2002 and the CUI designation block in Item 13.'})},
       {label:'Subcontract flow-down — SECRET (demo)', data:ctData({c10:{'10a':true},c11:{'11b':true,'11c':true},i14:'no',i15:'yes',i15text:'Prime retains inspection responsibility.'})}
     ]);
     seed(TPL_CT, [
       {label:'Aurora Dynamics — Programme ALDER (demo)', srcDate:'2026-02-02', smName:'R. Vance', smEmail:'r.vance@example.com', smProgram:'Programme ALDER (demo)',
-       data:ctData({primeContract:'HQ0034-25-D-0101', taskOrder:'', c10:{'10a':true}, l10:{'10a':'Reference 10a:\n\nAccess to classified COMSEC information requires a final U.S. Government clearance at the appropriate level.'}})},
+       data:ctData({primeContract:'HQ0034-25-D-0101', taskOrder:'', c10:{'10a':true}, l10:{'10a':'Reference 10a:\n\nAccess to COMSEC information requires a final entity eligibility determination and a final personnel clearance at the appropriate level (32 CFR 117.21(c)(3)).'}})},
       {label:'Task Order 0042 — Meridian (demo)', srcDate:'2026-03-14', smName:'T. Okafor', smEmail:'t.okafor@example.com', smProgram:'Programme BIRCH (demo)',
        data:ctData({primeContract:'HQ0034-25-D-0101', taskOrder:'0042', c11:{'11c':true}, l11:{'11c':'Reference 11c:\n\nThe contractor will reference the applicable security classification guide when generating or deriving classified material.'}})},
       {label:'Calder Aerospace — Programme CEDAR (demo)', srcDate:'2026-04-01', smName:'M. Lindqvist', smEmail:'m.lindqvist@example.com', smProgram:'Programme CEDAR (demo)',
-       data:ctData({primeContract:'N00178-25-D-2204', c11:{'11l':true}, l11:{'11l':'Reference 11l:\n\nControlled Unclassified Information generated under this contract shall be marked and safeguarded per 32 CFR Part 117 and the CUI designation block below.'}})},
+       data:ctData({primeContract:'N00178-25-D-2204', c11:{'11l':true}, l11:{'11l':'Reference 11l:\n\nControlled Unclassified Information generated under this contract shall be marked and safeguarded per 32 CFR Part 2002 and the CUI designation block below. CUI requirements are outside the scope of 32 CFR Part 117 (32 CFR 117.7(h)(1)(iii)).'}})},
       {label:'Northwind Defense — Programme DAMSON (demo)', srcDate:'2026-05-20', smName:'J. Serrano', smEmail:'j.serrano@example.com', smProgram:'Programme DAMSON (demo)',
        data:ctData({primeContract:'SP4701-25-C-3310', taskOrder:'0007', c10:{'10b':true}, l10:{'10b':'Reference 10b:\n\nRestricted Data access is limited to personnel briefed under the applicable programme access requirements.'}})}
     ]);

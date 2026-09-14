@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.14.0 (tool version 2.126)"
+VER="Codex Astra v1.14.1 (tool version 2.127)"
 
 DOC = [
-("h1","Codex Astra v1.14.0 changes"),
+("h1","Codex Astra v1.14.1 changes"),
+("p","A correction release. Nothing about how a DD Form 254 is validated, held or exported changed."),
+("b","The header shows the release name from the tool itself, so it always matches the file you downloaded. The OMB expiry date now sits beside the OMB number it belongs to."),
+("b","The Preparer's Worksheet and the Contracting Officer Package name Item 14 <b>Additional Security Requirements</b> and Item 15 <b>Inspections</b>, as the form does."),
+("b","The Contracting Officer Package no longer has signature or date lines. Sign Item 17h and date Item 17i in the generated dynamic PDF — see 6.1. A SAP subcontract named only in Item 7a now gets the subcontractor-signature requirement in the package."),
+("b","Opening a draft saved by an earlier version that still holds log entries, attached files or supporting records now tells you first — see 3.16."),
+("b","Validation counts on the cards refresh automatically after an update — see 3.15."),
+("b","The demonstration build's sample language now cites verified authorities."),
+("h2","Codex Astra v1.14.0 changes"),
 ("p","The Source & Validation Log and the Optional supporting records panel have been removed. Both recorded the preparer's working material — sources consulted, notes, attached files, review questions, requirement costs and closeout records — which is not needed to prepare or issue the DD Form 254, and neither printed on the form. Drafts saved by earlier versions still open; any log entries, attachments or supporting records they contain are no longer shown and are not written back when the draft is saved. To keep that material, export it from v1.13.0 before opening the draft in this version. The Final-form retention guidance those records carried remains in the Item 3 instructions, the Item 3c validation note and the CO package."),
 ("h2","Drafting shortcuts in v1.12.0"),
 ("b","At Item 8, choose <b>Use Item 6 contractor as a performance site</b> or the Item 7 equivalent when that entity is a classified performance location. The action copies the entered location, CAGE, CSO and FSO e-mail, plus Item 7 CMA when present. It fills an empty row or adds one. Matching location/CAGE entries are not duplicated or overwritten. This does not verify eligibility or safeguarding."),
@@ -147,7 +155,18 @@ DOC = [
 ("p","DoDI 5220.22 requires a review every two years. When you issue a Revision (Item 3b) the tool offers to set the review date two years from the revision date and can produce a calendar invite. The card badges the date, amber near due and red once overdue. The clock applies to revisions only."),
 ("h2","3.15 Recount validation"),
 ("p","The error and warning counts on each card are a snapshot written when a draft is saved, not recomputed as you look at the dashboard. Whenever the validation rules change, every stored draft keeps showing numbers derived from the old rules until you open it."),
-("p","<b>Manage</b>, then <b>Recount validation (all drafts)</b> walks every draft, re-checks it against the current rules, refreshes the counts, and puts back whatever you had open. Nothing else about the drafts is touched. Run it after any tool update."),
+("p","<b>After an update this happens on its own.</b> Each draft's counts record the tool version that produced them. When the tool loads and finds drafts counted under a different version, it recounts those drafts once, without asking, and writes one entry to the audit log. Status, holds, notes and the form itself are not changed. A draft you try to open waits until the recount finishes. A recount that changes nothing does not count toward your backup reminder."),
+("p","<b>Manage</b>, then <b>Recount validation (all drafts)</b> does the same for every draft on demand and puts back whatever you had open. Nothing else about the drafts is touched. A status change or hold you make on the dashboard while a recount runs is kept. If one draft cannot be checked, the rest still are, and the result says how many were skipped."),
+("note","A backup restored during a session is recounted the next time the tool loads, not immediately."),
+("h2","3.16 Drafts saved by an earlier version"),
+("p","v1.14.0 removed the Source & Validation Log and the Optional supporting records. A draft saved by an earlier version can still hold log entries, attached files or supporting records. Opening a draft saves it, and saving drops that material from this browser."),
+("p","So when you open such a draft, the tool lists what it holds and asks first:"),
+("tbl",[["Choice","What happens"],
+        ["Export, then open","Downloads the draft's stored workspace as a JSON file — including any attached file bytes — then asks whether the file finished saving. OK opens the draft; Cancel leaves it unopened and unchanged. The file opens with <b>Load Draft</b> in v1.13.0."],
+        ["Open without exporting","Opens the draft. The material is dropped at the first save."],
+        ["Cancel","Nothing happens. Escape does the same."]]),
+("p","Either way of opening is written to the audit log with a list of what the draft held. An empty log or an untouched records panel, which every draft from v1.11.0 to v1.13.0 carries, raises nothing. A read-only tab does not ask, because it never saves."),
+("warn","The exported file carries everything the draft held, including attachments. Handle it the way you would handle the draft itself."),
 
 ("h1","4. The form — preparing the DD-254"),
 ("p","The form is an eight-step wizard with a live validation panel down the right-hand side. Steps are not locked: use Next and Previous, or the step dots, to move freely."),
@@ -387,6 +406,7 @@ DOC = [
 ("h2","6.1 Contracting Officer Package"),
 ("p","The Contracting Officer Package is a <b>preparatory review aid</b>, not an official form and not a substitute for the signed DD Form 254 or the contract file. It checks entity eligibility and safeguarding capability separately; Item 12 public-release routing; Item 13 clarity, currency and supporting documents; CUI contract direction; original, revised, final and solicitation actions; Items 14 and 15; and minimum signed distribution."),
 ("warn","Its clause section is an <b>applicability review</b>, not a complete clause matrix. A DD Form 254 box does not by itself prescribe a FAR or DFARS clause. The contracting officer must confirm the current regulation, agency supplement, acquisition type, COTS status, location and personnel facts, and actual subcontract performance before incorporating or flowing down clauses."),
+("p","The package carries <b>no signature or date lines</b>. It lists the Item 17 certifying official's details and tells the signer to sign Item 17h and date Item 17i in the generated dynamic PDF. For a SAP subcontract — the SAP flag with a subcontractor in Item 2b or 7a — it names the Item 7 subcontractor and states that the subcontractor's authorised representative must sign. The form has no block for that signature and neither does the package: capture it however the programme accepts, then record where it is held with <b>Countersigned</b> on the card. Item titles in the package, such as Item 14 Additional Security Requirements and Item 15 Inspections, are read from the form."),
 ("p","For CUI, the requiring activity identifies the CUI through the contracting vehicle. If Controlled By, category, distribution statement or LDC, or the point of contact is missing, the package reports the gap and tells the reviewer to obtain written direction rather than invent a value."),
 ("h2","6.2 Digital signatures"),
 ("p","<b>Open the generated dynamic PDF in Adobe Acrobat Pro and complete Items 17h Signature and 17i Date Signed there; the browser does not collect or prefill them.</b> The export has been tested against a pristine blank copy of the form; both sign the same way."),

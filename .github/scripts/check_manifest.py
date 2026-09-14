@@ -121,6 +121,37 @@ else:
     if not problems:
         print("BUILD_FACTS.md : matches the build")
 
+# ------------------------------------------------------ 4. release identity
+#
+# v1.14.0 shipped with "Codex Astra v1.12.0" typed into its header while its
+# filename, title and release said v1.14.0 -- a second copy of the release name
+# that nothing compared. The filename, the RELEASE_VERSION constant the header
+# renders from, the <title>, and every literal release string in the file must
+# now name the same version, or this check fails the build.
+text = raw.decode("utf-8")
+file_ver = re.search(r"_v(\d+(?:\.\d+)+)\.HTM$", name, re.I)
+const_ver = re.search(r"RELEASE_VERSION='([^']+)'", text)
+title_ver = re.search(r"<title>[^<]*Codex Astra v(\d+(?:\.\d+)+)\s*</title>", text)
+literals = sorted(set(re.findall(r"Codex Astra v(\d+(?:\.\d+)+)", text)))
+identity = []
+if not const_ver:
+    identity.append("the build has no RELEASE_VERSION constant")
+elif not file_ver or file_ver.group(1) != const_ver.group(1):
+    identity.append("RELEASE_VERSION %s disagrees with the filename %s"
+                    % (const_ver.group(1), name))
+if not title_ver or (const_ver and title_ver.group(1) != const_ver.group(1)):
+    identity.append("<title> names %s, not RELEASE_VERSION %s"
+                    % (title_ver.group(1) if title_ver else "no release",
+                       const_ver.group(1) if const_ver else "?"))
+if const_ver and literals != [const_ver.group(1)]:
+    identity.append("literal release strings in the build name %s; only %s is allowed"
+                    % (", ".join(literals) or "nothing", const_ver.group(1)))
+if identity:
+    problems.extend(identity)
+else:
+    print("release identity: filename, RELEASE_VERSION, title and header agree (v%s)"
+          % const_ver.group(1))
+
 print("")
 if problems:
     print("RESULT: published facts do not describe the build\n")

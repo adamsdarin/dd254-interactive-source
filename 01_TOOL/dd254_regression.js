@@ -6013,6 +6013,201 @@ t('the retention clock and the biennial review clock stay separate', ()=>{
       && E('dd254RetentionDue('+JSON.stringify({workspace:{texts:{}},issuedAt:''})+')')==='';
 });
 
+console.log('\n### 92. v1.14.1 trust patch');
+/* Run against the v1.14.0 build they correct, 18 of these 19 fail. The one
+   that passes there - no repeat notice once a draft is saved - guards behaviour
+   v1.14.0 already had. A check that cannot fail is not evidence of anything. */
+t('the header release name renders from RELEASE_VERSION and agrees with the title', ()=>{
+  const rv=E("typeof RELEASE_VERSION==='string'?RELEASE_VERSION:''");
+  const hdr=(w.document.getElementById('releaseVer')||{}).textContent||'';
+  const lits=Array.from(new Set(fs.readFileSync('dd254.htm','utf8').match(/Codex Astra v\d+(?:\.\d+)+/g)||[]));
+  return !!rv && hdr==='Codex Astra v'+rv && w.document.title.endsWith('Codex Astra v'+rv)
+      && lits.length===1 && lits[0]==='Codex Astra v'+rv;
+});
+t('the OMB expiry sits with the OMB number, not with the release name', ()=>{
+  const h=w.document.querySelector('h1').textContent.replace(/\s+/g,' ');
+  return /OMB 0704-0567 \(Exp\. Aug 31, 2028\)/.test(h) && !/Codex Astra v[\d.]+ \(Exp/.test(h);
+});
+t('the worksheet and the CO package name Items 14 and 15 the way the form does', ()=>{
+  CLEAN(); R('i14','yes'); V('i14text','Example additional requirement'); R('i15','yes'); V('i15text','Example inspection office'); RUN();
+  grabWindow(); E("exportPrep254();"); const sheet=grabbed;
+  grabWindow(); E("exportCOPrep();"); const co=grabbed;
+  return E("formItemTitle('14')")==='Additional Security Requirements' && E("formItemTitle('15')")==='Inspections'
+      && sheet.includes('Item 14 — Additional Security Requirements') && sheet.includes('Item 15 — Inspections')
+      && co.includes('Additional Security Requirements (14)') && co.includes('Inspections (15)')
+      && !/Gov.t Approval/.test(sheet+co) && !/Supplemental Information/.test(sheet+co);
+});
+t('the CO package carries no signature or date lines and sends the signer to Item 17h', ()=>{
+  CLEAN(); V('i2b','SUB-0001'); V('i7a','Beta Corp'); C('sapFlag'); RUN();
+  grabWindow(); E("exportCOPrep();");
+  return grabbed.length>0 && !/class="sig-line"/.test(grabbed) && !/CO Certification Block/.test(grabbed)
+      && !/Printed Name/.test(grabbed) && /Sign Item 17h and date Item 17i/.test(grabbed);
+});
+t('a SAP subcontract named only in Item 7a gets the signature requirement and names the Item 7 subcontractor', ()=>{
+  CLEAN(); V('i7a','Beta Corp'); V('i7b','2XY99'); C('sapFlag'); RUN();
+  grabWindow(); E("exportCOPrep();"); const sap=grabbed;
+  CLEAN(); V('i7a','Beta Corp'); RUN();
+  grabWindow(); E("exportCOPrep();"); const plain=grabbed;
+  return (sap.match(/5205\.07 §10\.1\.d/g)||[]).length>=3
+      && /Subcontractor \(7a\)<\/td><td>Beta Corp/.test(sap) && !/Subcontractor[^<]*<\/td><td>Acme Corp/.test(sap)
+      && !/Prime form/.test(sap) && /Item 7a names a subcontractor/.test(sap)
+      && !/10\.1\.d/.test(plain);
+});
+t('every authority cited in the demo seed is on the verified list', ()=>{
+  /* Checked against the approved library, 14 September 2026. Add a locator
+     here only after checking it there. The header comment is stripped first
+     because it quotes the error it records. */
+  const code=fs.readFileSync('demo_seed.html','utf8').replace(/\/\*[\s\S]*?\*\//g,'');
+  const cites=code.match(/32 CFR (?:Part )?\d+(?:\.\d+)?(?:\([a-z0-9]+\))*|DoD[IMD] [\d.]+(?:-V\d+)?|NISPOM/g)||[];
+  const verified=['32 CFR Part 2002','32 CFR Part 117','32 CFR 117.7(h)(1)(iii)','32 CFR 117.13(d)(5)',
+    '32 CFR 117.15(e)(2)(vii)','32 CFR 117.16(a)(4)','32 CFR 117.21(c)(3)'];
+  const unverified=cites.filter(c=>verified.indexOf(c)<0);
+  if(unverified.length) return {unverified};
+  return cites.length>=6 && !/(safeguarded|handling) per 32 CFR Part 117/.test(code)
+      && !/certificate of destruction/.test(code);
+});
+
+const LEGACY_WS={texts:{i6a:'Legacy Records Corp'},checks:{},radios:{},selects:{},perf:[],
+  vlog:{entries:[{item:'10a',source:'NISS',note:'n'}],remarks:'',files:[{name:'x.pdf',size:3,b64:'AAAA',sha256:'ab'}]},
+  astra:{schema:1,guidanceVersion:'astra-retention-20260906',package:{},sources:[{id:'S-1',title:'old'}],documents:[],requirements:[],issues:[],closeout:[],history:[]}};
+const legacyRec=id=>({id:id,title:'Legacy '+id,stage:'orig',status:'Draft',todos:[],dist:[],holds:[],meta:{},workspace:JSON.parse(JSON.stringify(LEGACY_WS))});
+/* Guarded: on a build without uiChoice this line would otherwise throw outside
+   any test and abort the run, hiding every later result instead of failing. */
+E("window.__UI_CHOICE_REAL=(typeof uiChoice==='function')?uiChoice:null;window.__UI_CONFIRM_REAL=uiConfirm;");
+t('an empty log and an untouched records panel from v1.13.0 raise nothing; content and unknown shapes do', ()=>{
+  const blank={vlog:{entries:[],remarks:'',files:[]},astra:{schema:1,guidanceVersion:'astra-retention-20260906',package:{contract:''},sources:[],documents:[],requirements:[],issues:[],closeout:[],history:[]}};
+  const found=JSON.parse(JSON.stringify(E('legacyMaterialSummary('+JSON.stringify(LEGACY_WS)+')')));
+  const odd=JSON.parse(JSON.stringify(E('legacyMaterialSummary('+JSON.stringify({astra:{schema:999,notes:[{a:1}]}})+')')));
+  return E('legacyMaterialSummary('+JSON.stringify(blank)+').length')===0
+      && E('legacyMaterialSummary({texts:{}}).length')===0
+      && JSON.stringify(found)===JSON.stringify(['1 source log entry','1 attached file','1 guidance source'])
+      && odd.length===1 && /does not recognise/.test(odd[0]);
+});
+await ta('opening a draft that still holds removed material asks first, and Cancel changes nothing', async()=>{
+  await wipe(); E("DASH.current=null;");
+  await E("draftPut("+JSON.stringify(legacyRec('LG1'))+")");
+  E("window.__CH=null;window.uiChoice=async function(m,c){window.__CH={m:m,labels:c.map(function(x){return x.label;})};return null;};");
+  await E("dashOpen('LG1')");
+  const r=await E("draftGet('LG1')"); const ch=w.__CH;
+  return E("DASH.current")===null && !!ch && /1 source log entry/.test(ch.m) && /1 guidance source/.test(ch.m)
+      && JSON.stringify(Array.from(ch.labels))===JSON.stringify(['Cancel','Open without exporting','Export, then open'])
+      && r.workspace.vlog.entries.length===1 && r.workspace.astra.sources.length===1;
+});
+await ta('Export, then open writes the stored workspace verbatim, opens the draft and records it', async()=>{
+  let blob=null; const oldURL=w.URL.createObjectURL; w.URL.createObjectURL=b=>{blob=b;return 'blob:legacy-material';};
+  E("window.uiChoice=async function(){return 'export';};window.uiConfirm=async function(){return true;};");
+  try{ await E("dashOpen('LG1')"); } finally { w.URL.createObjectURL=oldURL; }
+  const parsed=blob?JSON.parse(await blob.text()):{};
+  return E("DASH.current")==='LG1' && !!parsed.texts && parsed.texts.i6a==='Legacy Records Corp'
+      && parsed.vlog.files[0].b64==='AAAA' && parsed.astra.schema===1 && parsed.astra.sources[0].id==='S-1'
+      && E("audAll()").filter(x=>x.action==='legacy-material-exported'&&x.id==='LG1').length===1;
+});
+await ta('once saved, the draft holds neither block and opens without asking again', async()=>{
+  await E("dashSaveNow()");
+  const r=await E("draftGet('LG1')");
+  E("window.__CH=null;window.uiChoice=async function(m){window.__CH=m;return null;};DASH.current=null;");
+  await E("dashOpen('LG1')");
+  return !('vlog' in r.workspace) && !('astra' in r.workspace) && w.__CH===null && E("DASH.current")==='LG1';
+});
+await ta('declining the download question leaves the draft unopened; opening without exporting is recorded', async()=>{
+  E("DASH.current=null;");
+  await E("draftPut("+JSON.stringify(legacyRec('LG2'))+")");
+  const oldURL=w.URL.createObjectURL; w.URL.createObjectURL=()=>'blob:declined';
+  E("window.uiChoice=async function(){return 'export';};window.uiConfirm=async function(){return false;};");
+  try{ await E("dashOpen('LG2')"); } finally { w.URL.createObjectURL=oldURL; }
+  const unopened=E("DASH.current")===null && (await E("draftGet('LG2')")).workspace.vlog.entries.length===1;
+  E("window.uiChoice=async function(){return 'discard';};window.uiConfirm=async function(){return true;};");
+  await E("dashOpen('LG2')");
+  return unopened && E("DASH.current")==='LG2'
+      && E("audAll()").some(x=>x.action==='legacy-material-discarded'&&x.id==='LG2'&&/1 attached file/.test(x.detail));
+});
+await ta('a read-only tab never saves, so it opens a legacy draft without the prompt', async()=>{
+  E("window.__CH=null;window.uiChoice=async function(m){window.__CH=m;return null;};window.DD254_READONLY=true;");
+  let ok=false;
+  try{ ok=await E("legacyMaterialGate("+JSON.stringify(legacyRec('LG3'))+")"); } finally { E("window.DD254_READONLY=false;"); }
+  return ok===true && w.__CH===null;
+});
+await ta('the three-way dialog focuses the safe primary action and Escape resolves as Cancel', async()=>{
+  E("window.uiChoice=window.__UI_CHOICE_REAL;window.uiConfirm=window.__UI_CONFIRM_REAL;");
+  E("window.__UCP=uiChoice('Example question',[{label:'Cancel',value:null},{label:'Discard',value:'discard'},{label:'Keep a copy',value:'export',primary:true}]);");
+  const ov=await waitDlg('.ui-modal-ov');
+  const focused=w.document.activeElement&&w.document.activeElement.textContent;
+  ov.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  const v=await w.__UCP;
+  E("window.uiConfirm=async function(){return true;};");
+  return focused==='Keep a copy' && v===null && !w.document.querySelector('.ui-modal-ov');
+});
+
+await ta('drafts counted under an earlier version are recounted once on load, without a prompt', async()=>{
+  E("DASH.current=null;"); await wipe();
+  const ws={texts:{},checks:{},radios:{},selects:{},perf:[],vlog:{entries:[{item:'10a',source:'NISS',note:'kept'}],remarks:'',files:[]}};
+  await E("draftPut("+JSON.stringify({id:'AR1',title:'Issued under old rules',stage:'orig',status:'Issued',issuedAt:'2026-01-02T00:00:00.000Z',todos:[],dist:[],holds:[],notes:'keep me',meta:{contract:'W-AR',errors:99,warns:99,rulesVersion:'2.126'},workspace:ws})+")");
+  await E("draftPut({id:'AR2',title:'Never stamped',stage:'orig',status:'Draft',todos:[],dist:[],holds:[],meta:{errors:99,warns:99},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
+  E("window.__PROMPTED=false;window.uiConfirm=async function(){window.__PROMPTED=true;return true;};window.alert=function(){window.__PROMPTED=true;};");
+  const res=await E("dashAutoRecount()");
+  const a=await E("draftGet('AR1')"), b=await E("draftGet('AR2')");
+  E("window.uiConfirm=async function(){return true;};window.alert=function(m){window.__A=m;};");
+  return !w.__PROMPTED && res.checked===2 && res.changed===2
+      && a.meta.errors!==99 && a.meta.rulesVersion===E('TOOL_VERSION') && b.meta.rulesVersion===E('TOOL_VERSION')
+      && a.status==='Issued' && a.notes==='keep me' && a.issuedAt==='2026-01-02T00:00:00.000Z'
+      && a.workspace.vlog.entries[0].note==='kept'
+      && E("audAll()").some(x=>x.action==='recount'&&/automatic after update to Tool v/.test(x.detail));
+});
+await ta('the automatic pass runs once: the next load finds nothing stale', async()=>{
+  const res=await E("dashAutoRecount()");
+  return res.checked===0;
+});
+await ta('a version stamp with unchanged counts is not a change since backup; changed counts are', async()=>{
+  /* Counted at the source: marks raised synchronously from dashRecountDrafts.
+     Reading the global counter instead also caught a debounced write left
+     pending by an earlier test and failed on a correct build. Any other marks
+     seen during the pass are reported so a real leak would still be visible.
+     Earlier sections dispatch beforeunload, which leaves BK_UNLOADING set and
+     suppresses every mark; it is cleared for this test and restored after. */
+  const wasUnloading=w.BK_UNLOADING; w.BK_UNLOADING=false;
+  const marks=[], stray=[]; const realMark=w.bkMark;
+  w.bkMark=function(){ const s=new Error().stack||''; (/dashRecountDrafts/.test(s)?marks:stray).push(s.split('\n').slice(2,4).join(' / ')); return realMark.apply(this,arguments); };
+  let quiet,loud,quietMarks;
+  try{
+    const r=await E("draftGet('AR2')"); r.meta.rulesVersion='2.126';
+    await E("draftPut("+JSON.stringify(r)+")");
+    marks.length=0; stray.length=0;
+    quiet=await E("dashAutoRecount()"); quietMarks=marks.length;
+    const s=await E("draftGet('AR2')"); s.meta.rulesVersion='2.126'; s.meta.errors=42;
+    await E("draftPut("+JSON.stringify(s)+")");
+    marks.length=0;
+    loud=await E("dashAutoRecount()");
+  } finally { w.bkMark=realMark; w.BK_UNLOADING=wasUnloading; }
+  const ok=quiet.checked===1 && quiet.changed===0 && quietMarks===0 && loud.changed===1 && marks.length===1
+      && (await E("draftGet('AR2')")).meta.rulesVersion===E('TOOL_VERSION');
+  return ok || {quiet,quietMarks,loud,loudMarks:marks.length,stray};
+});
+await ta('a read-only tab and an open draft both skip the automatic pass', async()=>{
+  const r=await E("draftGet('AR2')"); r.meta.rulesVersion='2.126';
+  await E("draftPut("+JSON.stringify(r)+")");
+  E("window.DD254_READONLY=true;"); const ro=await E("dashAutoRecount()"); E("window.DD254_READONLY=false;");
+  E("DASH.current='AR1';"); const open=await E("dashAutoRecount()"); E("DASH.current=null;");
+  return ro.checked===0 && open.checked===0 && (await E("draftGet('AR2')")).meta.rulesVersion==='2.126';
+});
+await ta('a dashboard change made while a recount runs is not overwritten by its snapshot', async()=>{
+  const snapshot=await E("draftAll()");
+  const cur=await E("draftGet('AR2')"); cur.status='Blocked'; cur.holds=[{t:'waiting on the GCA',s:'Blocked',d:'2026-09-14',done:false}];
+  await E("draftPut("+JSON.stringify(cur)+")");
+  w.__SNAP=snapshot; await E("dashRecountDrafts(window.__SNAP)");
+  const after=await E("draftGet('AR2')");
+  return after.status==='Blocked' && after.holds.length===1 && after.meta.rulesVersion===E('TOOL_VERSION');
+});
+await ta('opening a draft waits for a running automatic recount', async()=>{
+  let release; E("DASH.current=null;");
+  w.DD254_AUTO_RECOUNT=new w.Promise(r=>{release=r;});
+  const opening=E("dashOpen('AR2')");
+  await new Promise(r=>setTimeout(r,50));
+  const waited=E("DASH.current")===null;
+  w.DD254_AUTO_RECOUNT=null; release({changed:0,checked:0,failed:0});
+  await opening;
+  return waited && E("DASH.current")==='AR2';
+});
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

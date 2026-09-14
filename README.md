@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v1.14.0
+# DD‑254 Interactive — Codex Astra v1.14.1
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -19,14 +19,14 @@ and no network traffic. Download one file, open it, work offline.
 
 | | |
 |---|---|
-| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.14.0 demo build, covered by the release's signed provenance |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.14.0.HTM` |
+| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.14.1 demo build, covered by the release's signed provenance |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.14.1.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v1.14.0.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.14.1.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -100,6 +100,28 @@ can be checked against it too. The logs are public.
 
 ---
 
+## What changed in v1.14.1
+
+A trust patch. Nothing about how a DD Form 254 is validated, held or exported
+changed; each fix is a place where the tool said something wrong or lost
+something without saying so.
+
+- **The header names the right release.** v1.14.0 displayed v1.12.0. The name
+  now comes from one constant, and release verification fails if the filename,
+  title or header disagree.
+- **Exports name Items 14 and 15 correctly** — Additional Security Requirements
+  and Inspections — by reading the titles from the form.
+- **The Contracting Officer Package has no signature lines.** It is a review aid;
+  it now points the signer to Items 17h and 17i on the dynamic PDF. It also
+  recognises a SAP subcontract named only in Item 7a.
+- **The demonstration's citations are verified.** It had attributed CUI to
+  32 CFR Part 117; every citation in the demo seed now carries a locator checked
+  against the source.
+- **Older drafts warn before losing material.** A draft from an earlier version
+  that still holds log entries, attachments or supporting records says so when
+  opened and offers to export them first.
+- **Validation counts refresh after an update** without Manage → Recount.
+
 ## What changed in v1.14.0
 
 - **The Source & Validation Log and Optional supporting records are gone.**
@@ -161,15 +183,15 @@ These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify
 eligibility or decide authority. No server or new storage service is required.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.14.0.md)
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.14.1.md)
 describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.14.0.md)
-- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.14.0.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.14.1.md)
+- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.14.1.md)
 - [Verifying a download and the live demo](VERIFY.md)
 - [Maintainer release and demo procedure](SETUP.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)

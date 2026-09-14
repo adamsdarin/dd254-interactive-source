@@ -1,6 +1,6 @@
 # DD254 Interactive — security fact sheet
 
-Codex Astra v1.14.0 / Tool v2.126, 13 September 2026.
+Codex Astra v1.14.1 / Tool v2.127, 14 September 2026.
 
 This is an offline, single-user drafting aid. The official HTML embeds its
 JavaScript, PDF library and form assets. It uses local browser storage and
@@ -44,8 +44,11 @@ there is no source log, no uploaded attachment, no review question, requirement
 or cost record, no closeout record and no separate review PDF. The tool stores no
 uploaded file bytes; its remaining file inputs import drafts, backups and template
 data. Drafts saved by earlier versions keep any such material in browser storage
-and Full Backup until they are next saved from the form. This release adds no
-automatic sending or remote lookup.
+and Full Backup until they are next saved from the form. Since v1.14.1, opening
+such a draft first lists that material and offers to export the stored workspace
+as a JSON file — including any attached file bytes it holds — before the save
+that drops it; the export inherits the handling limits below. This release adds
+no automatic sending or remote lookup.
 
 ## Boundaries
 

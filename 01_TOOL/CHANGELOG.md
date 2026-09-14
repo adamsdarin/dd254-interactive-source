@@ -1,3 +1,65 @@
+## v1.14.1 - 14 September 2026
+
+Tool version 2.127. A trust patch: places where the tool, its exports or its
+demonstration stated something wrong or discarded something without saying so.
+Five were planned; the CO Package's 2b-only SAP test and the recount snapshot
+overwrite were found while fixing them. No rule, approval hold, validation gate
+or official PDF field changed.
+
+- The header named the wrong release. v1.14.0 displayed "Codex Astra v1.12.0",
+  hand-typed into the markup beside a title and filename that said v1.14.0. The
+  header now renders from a single `RELEASE_VERSION` constant, and
+  `check_manifest.py` fails any build whose filename, constant, `<title>` or
+  literal release strings disagree. The browser smoke test compares the rendered
+  header with the filename. The OMB expiry date moved beside the OMB number it
+  belongs to; it had read as the release's own expiry.
+- The Preparer's Worksheet and the Contracting Officer Package mislabelled Items
+  14 and 15. Both called Item 14 "Gov't Approval Required", and the worksheet
+  called Item 15 "Supplemental Information"; the boxes are Additional Security
+  Requirements and Inspections. Both exports now read item titles from the form
+  (`formItemTitle`), as the worksheet has read Item 10 and 11 labels since v1.13.0.
+- The CO Package no longer carries signature or date lines. It is marked as not
+  an official document yet ended in a "CO Certification Block" with a signature
+  line, and for a SAP subcontract it drew signature lines for the subcontractor
+  under the Item 6 prime's name. It now lists the Item 17 certifier details, says
+  to sign Item 17h and date 17i in the dynamic PDF, and for a SAP subcontract
+  names the Item 7 subcontractor and says to record where the signature is held.
+- The CO Package identified a SAP subcontract from Item 2b alone. A form naming
+  its subcontractor only in Item 7a got no signature requirement, banner or
+  section there, although the rest of the tool has used 2b or 7a since v1.13.0.
+  Its summary row no longer calls such a form "N/A — Prime form"; it notes that
+  Item 7a names a subcontractor while Item 2b is empty.
+- Demonstration seed text cited authorities wrongly. It attributed CUI
+  safeguarding to 32 CFR Part 117, which places CUI outside its scope
+  (117.7(h)(1)(iii)); it required a certificate of destruction for all classified
+  material, where 117.15(e)(2)(vii) requires destruction records for TOP SECRET;
+  and it named a visit system rather than the rule. Each paragraph was checked
+  against the approved library and now carries a verified locator, and a
+  regression test refuses any citation in the seed that is not on that list.
+- Opening a draft saved by an earlier version that still holds Source &
+  Validation Log entries, attached files or supporting records now says so first.
+  The notice lists what the draft holds and offers Export, then open; Open
+  without exporting; or Cancel. Escape cancels. The export is the stored
+  workspace exactly, which v1.13.0's Load Draft reads back. Before opening, the
+  tool asks whether the file saved, because the browser cannot confirm a
+  download. Either choice is written to the audit log. An empty log or untouched
+  records panel, which every v1.11.0-v1.13.0 draft carries, raises nothing, and a
+  read-only tab never prompts because it never saves.
+- Validation counts are refreshed automatically after an update. Each draft's
+  counts now record the tool version that produced them, and on load any draft
+  counted under a different version is recounted once, without a prompt. Status,
+  holds, notes and the stored workspace are not changed, so the pass cannot drop
+  earlier-version material. A version stamp with unchanged counts does not count
+  as a change since the last backup. Opening a draft waits for the pass to finish.
+  Manage → Recount validation now shares that code and, like the automatic pass,
+  re-reads each draft before writing it, so a status change or hold made on the
+  dashboard during a long recount is no longer overwritten by the recount's
+  snapshot. One draft that cannot be checked no longer stops the rest.
+
+Not done: the post-upgrade recount runs on load, not after a backup is restored
+mid-session; restored drafts are recounted at the next load. No new storage,
+service or network call is introduced.
+
 ## v1.14.0 - 13 September 2026
 
 Tool version 2.126. Removes the Source & Validation Log and the Optional

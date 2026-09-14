@@ -168,3 +168,20 @@ neither back. The Final-form retention guidance those records carried keeps its
 tests: ordinary and SAP wording keep their different scope, and a SAP Final with
 written program direction does not demand an extended-retention answer. The
 removed features' own tests went with them.
+
+The v1.14.1 tests were run against the v1.14.0 build they correct: 18 of 19
+fail there, and the one that passes (no repeat notice once a draft is saved)
+guards behaviour v1.14.0 already had. They check that the header's release name
+renders from `RELEASE_VERSION` and agrees with the title and every literal
+release string; that the worksheet and CO Package read the Item 14 and 15 titles
+from the form; that the CO Package has no signature lines and recognises a SAP
+subcontract from Item 7a; and that every citation in `demo_seed.html` is on the
+verified list. Earlier-version drafts are driven through `dashOpen`: Cancel,
+export, a declined download confirmation and opening without export, plus the
+three-way dialog's focus and Escape. The automatic recount is checked for
+unchanged status and workspace, running once, skipping read-only tabs and an open
+draft, stamp-only writes not counting as backup changes (counted at their source,
+because earlier sections leave `BK_UNLOADING` set), and not overwriting a record
+changed while it runs. `check_manifest.py` separately fails a build whose
+filename, `RELEASE_VERSION`, title and release strings disagree, and
+`browser_smoke.js` compares the rendered header with the filename.
