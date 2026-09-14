@@ -1,16 +1,20 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-14T07:40-05:00 by Claude
+Last updated: 2026-09-14T08:30-05:00 by Claude
 
 ## Current State
 
-Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: v1.14.0 (Tool 2.126, tag and live demo). **v1.14.1 (Tool
-2.127) is built and verified locally but not committed, tagged, released or
-deployed to the demo repository.**
+Canonical source for the DD-254 Interactive tool (single-file HTML). **Latest
+release: v1.14.1 (Tool 2.127), published 14 September 2026** — tag `v1.14.1` at
+commit 83fe2d1 on `main`; release assets checksum-verified from a fresh
+download; both HTML files carry a verified build-provenance attestation from the
+release workflow; the rebuild kit reassembles the release byte-identically and
+holds no `__pycache__`. The live demo (`adamsdarin/dd254-interactive`, commit
+09b97b8) serves bytes identical to `DD254_Interactive_v1.14.1_DEMO.HTM`,
+confirmed by hashing the served page.
 
 v1.14.1 is the "trust patch" horizon of the FSO / contracting officer roadmap
-(published as a private artifact on 2026-09-13):
+(private artifact, republished 2026-09-14):
 
 1. Release name rendered from `RELEASE_VERSION`; `check_manifest.py` section 4
    fails a build whose filename, constant, `<title>` or literal release strings
@@ -27,26 +31,22 @@ v1.14.1 is the "trust patch" horizon of the FSO / contracting officer roadmap
    `TOOL_VERSION`; stamp-only writes do not mark the backup reminder
    (`DD254_QUIET_WRITE`); recount re-reads each record before writing.
 
-Verification on the final build (SHA-256 in `BUILD_FACTS.md`): regression
-1006 PASS / 0 FAIL; all SETUP step-6 checks pass; live browser smoke passes for
-official and demo builds; header, legacy notice and CO Package inspected in
-headless Chrome. Negative control: against v1.14.0 all 987 earlier assertions
-pass and 18 of 19 new ones fail (the passing one guards a no-repeat-prompt
-behaviour v1.14.0 already had).
+Product boundary set by the owner on 2026-09-14: **the tool is not an NCCS/PIEE
+tie-in.** NCCS-focused improvements (transcription views, field mapping,
+alignment) are out of scope; the roadmap was revised accordingly.
 
-`SETUP.md` carries an uncommitted edit that predates this session (a note about
-repacking v1.10.0–v1.12.0 kits). It is not part of v1.14.1; commit it separately
-or with the owner's say-so.
+Working tree: `SETUP.md` carries an uncommitted edit that predates the v1.14.1
+work (a note about repacking v1.10.0–v1.12.0 kits). It is not part of v1.14.1;
+commit it separately with the owner's say-so. Local branches
+`docs/release-corrections-record` (at the old v1.14.0 `main`) and
+`release/v1.14.1` (merged) can be deleted when convenient.
 
 ## Next
 
-1. Owner decision: commit v1.14.1 on a release branch, push, require the public
-   `verify` workflow, tag, verify the published release, then replace the demo
-   repository's `index.html` with `DD254_Interactive_v1.14.1_DEMO.HTM` and hash
-   the served page (SETUP.md "Publish").
-2. Update `C:\Users\darin\src\WORKFLOWS.md` section 4, which still names v1.13.0.
-3. Next roadmap horizon (v1.15 preparer throughput) needs owner scope decisions
-   D1–D4 from the roadmap before work starts.
+1. Update `C:\Users\darin\src\WORKFLOWS.md` section 4, which still names v1.13.0
+   as the current release.
+2. Next roadmap horizon (v1.15 preparer throughput) needs owner scope decisions
+   D1–D3 from the revised roadmap before work starts.
 
 ## Open Questions
 
@@ -55,14 +55,19 @@ or with the owner's say-so.
 
 ## Log
 
+2026-09-14 08:30 Claude — Published v1.14.1 per SETUP.md: release branch pushed,
+public verify passed on 83fe2d1, main fast-forwarded, tag pushed, release
+workflow passed; assets, attestations, kit and served demo verified
+independently. Owner ruled NCCS out of scope; roadmap item and decision removed.
+Cleared a stale .git/index.lock from 2026-09-13 18:37 after confirming no git
+process was running.
 2026-09-14 07:40 Claude — Implemented and verified v1.14.1 trust patch (roadmap
-items 1.1–1.5) plus two defects found while fixing them: CO Package 2b-only SAP
-test and recount snapshot overwrite. Chose to derive values from single sources
-(RELEASE_VERSION, form labels, dd254WorkspaceSapSub rule) rather than correct
-the copies, per START_HERE's "two sources of truth" lesson. Chose to guard the
-seed with a verified-citation allowlist rather than rely on review. Chose a
-stamp-only quiet write so an upgrade does not turn every backup reminder red.
-Not committed or released pending owner approval.
+items 1.1–1.5) plus defects found while fixing them: CO Package 2b-only SAP test
+and its "Prime form" summary row, and recount snapshot overwrite. Chose to derive
+values from single sources (RELEASE_VERSION, form labels, the 2b-or-7a rule)
+rather than correct the copies, per START_HERE's "two sources of truth" lesson;
+guarded the seed with a verified-citation allowlist; chose a stamp-only quiet
+write so an upgrade does not turn every backup reminder red.
 2026-09-13 Claude — FSO/CO roadmap review of v1.14.0 published as a private
 artifact; found the header version drift, CO Package label/signature defects,
 demo seed authority error and silent legacy-data drop.
