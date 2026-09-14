@@ -195,3 +195,13 @@ joins separate words. NISS re-confirmation is checked for every spawn path, for 
 card badge and its tooltip, for clearing on re-verification with its audit entry,
 and for a child of an unverified record. The section 14 spawn test that asserted
 inherited NISS verification was changed deliberately to assert the reset.
+
+The v1.15.1 tests (section 94) build received-form fixtures in the page realm from
+the official form and the tool's own dynamic export, including a Flate-compressed
+datasets stream and a single XDP stream, and parse the government's blank form's
+own data packet. The import is driven with a real File through the preview: one
+DD-254 Template Language entry, correct mapping and source, no draft or Contract
+Type entry, no Item 9 or 17 text, a matching audit SHA-256, and a usable template.
+Refusals are checked for a flattened PDF, a non-PDF, a SECRET marking, cancel and a
+read-only tab. Fixtures pass XML to pdf-lib as a string because the harness's
+Node TextEncoder returns arrays pdf-lib does not recognise across realms.

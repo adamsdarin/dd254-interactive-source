@@ -1,3 +1,35 @@
+## v1.15.1 - 14 September 2026
+
+Tool version 2.129. Import a received DD Form 254 as DD-254 Template Language.
+By owner decision the import creates that template entry and nothing else. No
+validation rule, approval hold, export or official PDF field changed.
+
+- Added "Import received DD 254 (PDF)" to the DD-254 Template Language page only.
+  It reads the XFA datasets packet of a fillable DD Form 254 with the embedded
+  pdf-lib (uncompressed, Flate-compressed, or a single XDP stream) and the
+  browser's XML parser (`rcv254ExtractDatasets`, `rcv254Parse`), using the same
+  field names the official export writes. The government's blank form's own data
+  packet is recognised, which shows the names are the form's, not only the export's.
+- Mapped Items 10 and 11 (boxes and Other text), Item 12 routing, specify text and
+  release authority, Item 13, Items 14 and 15, Item 16, Item 18 boxes and 18f, and
+  the form's UNCLASSIFIED or CUI marking into the existing template structure.
+  Item 3 sets the template source type (Original, numbered Revision, Final) and
+  date; a Final raises the existing retention notice.
+- A preview lists what will be imported and what will not before anything is
+  saved. Confirming creates one entry named for the received form's contract number
+  and source, with a new stable id. No draft, dashboard record or parent link is
+  created, the prime contract number is not copied into the template, and the PDF
+  is not stored. The audit log records the file name and SHA-256.
+- Refused with the reason, creating nothing: a PDF with no DD Form 254 form data
+  (flattened, printed, scanned or generated elsewhere), an encrypted PDF, a file
+  that is not a PDF, a form with nothing in Items 10-16 or 18, a form marked above
+  CUI, a file over 25 MB, and any import from a read-only tab.
+
+Not done: Items 1-9 and 17, reviewers, signatures and file attachments are not
+imported. Tested against fixtures built from the official form and the tool's own
+dynamic export, not yet against a DD Form 254 filled and saved in Adobe Acrobat by
+another organisation.
+
 ## v1.15.0 - 14 September 2026
 
 Tool version 2.128. The first preparer-throughput release: three dashboard changes

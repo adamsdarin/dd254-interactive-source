@@ -1,4 +1,4 @@
-BUILD_SHA256 25e2a61b4b7434bb73b3b726f296a7785151ff1ddaa4e24823b6f3e644589432
+BUILD_SHA256 9cbb6eb9a4623a1e0c757211a24477dbc4044d76a053fea1de568de433b1040e
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1222,6 +1222,26 @@ BUILD_SHA256 25e2a61b4b7434bb73b3b726f296a7785151ff1ddaa4e24823b6f3e644589432
   PASS  a Final from a verified Revision resets NISS
   PASS  spawning from an unverified record leaves NISS unverified without a re-confirm note
 
+### 94. v1.15.1 received DD Form 254 creates only a DD-254 Template Language entry
+  PASS  a fillable DD Form 254 maps Items 10-16 and 18 and its Item 3 source
+  PASS  Items 1-9 and 17 are not part of the imported template
+  PASS  the government's blank form data is recognised and refused as having nothing to import
+  PASS  Flate-compressed form data, as Acrobat saves it, is read
+  PASS  form data stored as one XDP stream is read
+  PASS  a flattened PDF with no form data is refused with the reason
+  PASS  a file that is not a PDF is refused
+  PASS  a form marked above CUI is refused and names its marking
+  PASS  a CUI-marked form imports with the CUI marking
+  PASS  source dates are read in the formats forms carry
+  PASS  confirming the preview creates exactly one DD-254 Template Language entry and nothing else
+  PASS  the imported template applies to a form like any other
+  PASS  cancelling the preview creates nothing
+  PASS  a received Final records its source as Final and raises the retention notice
+  PASS  a refused file creates nothing and says why
+  PASS  a read-only tab refuses the import
+  PASS  the import button appears only on the DD-254 Template Language page
+  PASS  importing from the open Template Language page adds the entry to that page
+
 ================================
-  PASS 1026   FAIL 0
+  PASS 1044   FAIL 0
 ================================

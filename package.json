@@ -1,6 +1,6 @@
 {
   "name": "dd254-verification",
-  "version": "1.15.0",
+  "version": "1.15.1",
   "private": true,
   "description": "Development-only verification dependencies. The shipped HTML has no runtime dependencies.",
   "engines": {

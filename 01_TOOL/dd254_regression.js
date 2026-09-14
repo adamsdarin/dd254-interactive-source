@@ -6299,6 +6299,134 @@ await ta('spawning from an unverified record leaves NISS unverified without a re
   return c.niss===null && !('nissPrior' in c) && !!card && /NISS not verified/.test(card.textContent) && !card.querySelector('.dash-niss-reconfirm');
 });
 
+H('94. v1.15.1 received DD Form 254 creates only a DD-254 Template Language entry');
+/* Fixtures are built in the page realm with the tool's own official dynamic
+   export, so the PDF, its XFA datasets stream and pdf-lib objects all share one
+   realm. The government's blank form carries its own datasets packet, which is
+   checked too: it proves the field names are the form's, not only the export's. */
+const NLc=String.fromCharCode(10);
+const rcvFill=()=>{ E("resetFormFields();window.TPL_EDIT=null;window.TPL_EDIT_KIND='';"); const D=w.document;
+  ['c10a','c10j','c11c','c11l','dist18a','dist18c'].forEach(id=>{ D.getElementById(id).checked=true; });
+  D.getElementById('item13').value='Reference 10a:'+NLc+NLc+'Example COMSEC guidance for the fixture.';
+  D.querySelector('input[name=spec][value="3b"]').checked=true;
+  D.getElementById('i3b_rev').value='2'; D.getElementById('i3b_date').value='20260301';
+  D.getElementById('i2a').value='W911NF-26-C-0001'; D.getElementById('i2b').value='SUB-RCV-0042';
+  D.getElementById('i6a').value='Example Prime Corp'; D.getElementById('i9').value='Example description that must not import';
+  D.getElementById('i17a').value='Example Certifier';
+  D.querySelector('input[name=i14][value=yes]').checked=true; D.getElementById('i14text').value='Example additional requirement';
+  D.querySelector('input[name=i15][value=no]').checked=true;
+  D.getElementById('i16a').value='Example GCA'; D.getElementById('i16f').value='gca@example.test';
+  E("run()"); };
+const rcvPdf=async(mutate)=>{ w.__RCVMUT=mutate||null;
+  return await E("(async()=>{let xml=DD254XFA.buildXfaDatasets(collect254Data(false)); if(window.__RCVMUT) xml=window.__RCVMUT(xml); const base=Uint8Array.from(atob(DD254_XFA_B64),c=>c.charCodeAt(0)); return await DD254XFA.injectXfaDatasets(PDFLib,base,xml);})()"); };
+const rcvFile=(bytes,name)=>new w.File([bytes],name||'received-fixture.pdf',{type:'application/pdf'});
+const rcvTry=async(bytes)=>{ w.__RB=bytes; try{ const x=await E("rcv254ExtractDatasets(window.__RB)"); w.__RX=x; return {ok:true,r:E("rcv254Parse(window.__RX)")}; }catch(e){ return {ok:false,msg:String(e&&e.message||e)}; } };
+const ctCount=()=>E("tplLoad(TPL_CT).length");
+await ta('a fillable DD Form 254 maps Items 10-16 and 18 and its Item 3 source', async()=>{
+  rcvFill(); const res=await rcvTry(await rcvPdf());
+  if(!res.ok) return res.msg; const r=res.r, d=r.data;
+  return d.c10['10a']&&d.c10['10j']&&!d.c10['10b'] && d.c11['11c']&&d.c11['11l'] && d.c18['18a']&&d.c18['18c']&&!d.c18['18b']
+      && d.i13==='Reference 10a:'+NLc+NLc+'Example COMSEC guidance for the fixture.'
+      && d.i14==='yes' && d.i14text==='Example additional requirement' && d.i15==='no'
+      && d.i16.a==='Example GCA' && d.i16.f==='gca@example.test' && d.cls===''
+      && r.srcType==='rev' && r.srcRev==='2' && r.srcDate==='2026-03-01' && r.number==='SUB-RCV-0042';
+});
+t('Items 1-9 and 17 are not part of the imported template', ()=>{
+  const d=E("ctBlankData()"); const keys=Object.keys(d).sort().join(',');
+  return !/i9|i6a|i17|fcl1a|i2a/.test(keys); });
+await ta('the government\'s blank form data is recognised and refused as having nothing to import', async()=>{
+  const base=await E("Uint8Array.from(atob(DD254_XFA_B64),c=>c.charCodeAt(0))");
+  const res=await rcvTry(base); return !res.ok && /nothing to import/.test(res.msg); });
+await ta('Flate-compressed form data, as Acrobat saves it, is read', async()=>{
+  rcvFill();
+  const bytes=await E("(async()=>{const L=PDFLib; const xml=DD254XFA.buildXfaDatasets(collect254Data(false)); const doc=await L.PDFDocument.load(Uint8Array.from(atob(DD254_XFA_B64),c=>c.charCodeAt(0)),{updateMetadata:false}); const acro=doc.catalog.lookup(L.PDFName.of('AcroForm'),L.PDFDict); const xfa=acro.lookup(L.PDFName.of('XFA'),L.PDFArray); for(let i=0;i<xfa.size();i+=2){ if(String(xfa.get(i)).indexOf('datasets')>=0){ doc.context.assign(xfa.get(i+1), doc.context.flateStream(xml)); break; } } return await doc.save({useObjectStreams:true}); })()");
+  const res=await rcvTry(bytes); return res.ok && res.r.data.c10['10a'] && res.r.srcRev==='2'; });
+await ta('form data stored as one XDP stream is read', async()=>{
+  rcvFill();
+  const bytes=await E("(async()=>{const L=PDFLib; const xml=DD254XFA.buildXfaDatasets(collect254Data(false)); const doc=await L.PDFDocument.create(); doc.addPage(); const xdp='<xdp:xdp xmlns:xdp=\"http://ns.adobe.com/xdp/\">'+xml+'</xdp:xdp>'; const ref=doc.context.register(doc.context.flateStream(xdp)); doc.catalog.set(L.PDFName.of('AcroForm'), doc.context.obj({Fields:[], XFA:ref})); return await doc.save(); })()");
+  const res=await rcvTry(bytes); return res.ok && res.r.data.c11['11c'] && res.r.data.i14==='yes'; });
+await ta('a flattened PDF with no form data is refused with the reason', async()=>{
+  const bytes=await E("(async()=>{const d=await PDFLib.PDFDocument.create(); d.addPage(); return await d.save();})()");
+  const res=await rcvTry(bytes); return !res.ok && /no DD Form 254 form data/.test(res.msg) && /flattened, printed or scanned/.test(res.msg); });
+await ta('a file that is not a PDF is refused', async()=>{
+  const res=await rcvTry(await E("new TextEncoder().encode('this is not a PDF')")); return !res.ok && /could not be read as a PDF/.test(res.msg); });
+await ta('a form marked above CUI is refused and names its marking', async()=>{
+  rcvFill(); const res=await rcvTry(await rcvPdf(function(x){ return x.replace(/<Classification>[^<]*<\/Classification>/,'<Classification>SECRET</Classification>'); }));
+  return !res.ok && /marked "SECRET"/.test(res.msg) && /UNCLASSIFIED or CUI entries only/.test(res.msg); });
+await ta('a CUI-marked form imports with the CUI marking', async()=>{
+  rcvFill(); const res=await rcvTry(await rcvPdf(function(x){ return x.replace(/<Classification>[^<]*<\/Classification>/,'<Classification>CUI</Classification>'); }));
+  return res.ok && res.r.data.cls==='CUI'; });
+t('source dates are read in the formats forms carry', ()=>
+  E("rcv254Date('20260301')")==='2026-03-01' && E("rcv254Date('2026-03-01')")==='2026-03-01'
+  && E("rcv254Date('3/1/2026')")==='2026-03-01' && E("rcv254Date('2026/3/1')")==='2026-03-01' && E("rcv254Date('March 2026')")==='');
+await ta('confirming the preview creates exactly one DD-254 Template Language entry and nothing else', async()=>{
+  rcvFill(); const bytes=await rcvPdf();
+  await wipe(); E("DASH.current=null;window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  const beforeCt=ctCount(), beforeB13=E("tplLoad(TPL_B13).length"), beforeDrafts=(await E("draftAll()")).length;
+  E("window.__RCVMSG='';window.uiConfirm=async function(m){window.__RCVMSG=m;return true;};");
+  w.__RF=rcvFile(bytes,'received-rev2.pdf');
+  const t=await E("rcv254Import(window.__RF)");
+  E("window.uiConfirm=async function(){return true;};");
+  const list=E("tplLoad(TPL_CT)"), added=list[list.length-1];
+  const hash=require('crypto').createHash('sha256').update(Buffer.from(bytes)).digest('hex');
+  const aud=E("audAll()").filter(x=>x.action==='template-imported-from-dd254');
+  const msg=w.__RCVMSG;
+  return !!t && ctCount()===beforeCt+1 && E("tplLoad(TPL_B13).length")===beforeB13 && (await E("draftAll()")).length===beforeDrafts
+      && added.label==='Received DD 254 — SUB-RCV-0042 — Revision 2 2026-03-01'
+      && added.srcType==='rev' && added.srcRev==='2' && added.srcDate==='2026-03-01' && !!added.ioId
+      && added.data.c10['10a'] && added.data.i16.a==='Example GCA' && !('i9' in added.data) && added.data.primeContract===''
+      && JSON.stringify(added).indexOf('Example description that must not import')===-1
+      && JSON.stringify(added).indexOf('Example Certifier')===-1
+      && aud.length>=1 && aud[aud.length-1].detail.indexOf('received-rev2.pdf sha256 '+hash)===0
+      && /Not imported: Items 1–9 and 17/.test(msg) && /No draft or dashboard record is created/.test(msg) && /Item 10: 10a, 10j/.test(msg);
+});
+await ta('the imported template applies to a form like any other', async()=>{
+  const added=E("tplLoad(TPL_CT)").slice(-1)[0]; w.__RT=added;
+  const ws=E("ctApplyDataToWorkspace(window.__RT.data)");
+  return ws.checks.c10a===true && ws.checks.c11l===true && ws.checks.dist18a===true && /Example COMSEC guidance/.test(ws.texts.item13||'') && ws.texts.i14text==='Example additional requirement';
+});
+await ta('cancelling the preview creates nothing', async()=>{
+  rcvFill(); const bytes=await rcvPdf(); const before=ctCount();
+  E("window.uiConfirm=async function(){return false;};"); w.__RF=rcvFile(bytes);
+  const t=await E("rcv254Import(window.__RF)"); E("window.uiConfirm=async function(){return true;};");
+  return t===false && ctCount()===before; });
+await ta('a received Final records its source as Final and raises the retention notice', async()=>{
+  rcvFill(); const D=w.document; D.querySelector('input[name=spec][value="3c"]').checked=true; D.getElementById('i3c_date').value='20260415'; E("run()");
+  /* The notice goes through uiAlert when one exists and alert otherwise;
+     earlier sections leave a uiAlert defined, so both are captured. */
+  const bytes=await rcvPdf(); E("window.__ALERT='';window.__UIA=window.uiAlert;window.alert=function(m){window.__ALERT=String(m);};window.uiAlert=function(m){window.__ALERT=String(m);};window.uiConfirm=async function(){return true;};window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  w.__RF=rcvFile(bytes,'received-final.pdf'); let t;
+  try{ t=await E("rcv254Import(window.__RF)"); } finally { E("window.uiAlert=window.__UIA;"); }
+  const ok=!!t && t.srcType==='final' && t.srcDate==='2026-04-15' && /FINAL DD Form 254/.test(w.__ALERT) && /2028-04-15/.test(w.__ALERT);
+  return ok || {t:t&&{srcType:t.srcType,srcDate:t.srcDate},alert:String(w.__ALERT).slice(0,120)}; });
+await ta('a refused file creates nothing and says why', async()=>{
+  const before=ctCount(); E("window.__ALERT='';window.alert=function(m){window.__ALERT=String(m);};");
+  const flat=await E("(async()=>{const d=await PDFLib.PDFDocument.create(); d.addPage(); return await d.save();})()");
+  w.__RF=rcvFile(flat,'scan.pdf'); const t=await E("rcv254Import(window.__RF)");
+  return t===false && ctCount()===before && /Nothing was imported/.test(w.__ALERT) && /no DD Form 254 form data/.test(w.__ALERT); });
+await ta('a read-only tab refuses the import', async()=>{
+  rcvFill(); const bytes=await rcvPdf(); const before=ctCount();
+  E("window.DD254_READONLY=true;window.alert=function(){};"); w.__RF=rcvFile(bytes);
+  let t; try{ t=await E("rcv254Import(window.__RF)"); } finally { E("window.DD254_READONLY=false;"); }
+  return t===false && ctCount()===before; });
+await ta('the import button appears only on the DD-254 Template Language page', async()=>{
+  await E("dashTplEdit('ct')"); const input=w.document.getElementById('rcv254File');
+  const onCt=!!w.document.getElementById('rcv254Btn') && !!input && /\.pdf/.test(input.getAttribute('accept')||'');
+  await E("dashTplEdit('fac')"); const onFac=!!w.document.getElementById('rcv254Btn');
+  await E("dashTplEdit('b13')"); const onB13=!!w.document.getElementById('rcv254Btn');
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  return onCt && !onFac && !onB13; });
+await ta('importing from the open Template Language page adds the entry to that page', async()=>{
+  rcvFill(); const bytes=await rcvPdf();
+  await E("dashTplEdit('ct')"); const before=E("window.TPL_EDIT.length");
+  E("window.uiConfirm=async function(){return true;};window.alert=function(){};");
+  w.__RF=rcvFile(bytes,'from-page.pdf');
+  await E("rcv254Upload({target:{files:[window.__RF],value:'x'}})");
+  const rows=w.document.querySelectorAll('#tplRows > .tpl-row').length;
+  const ok=E("window.TPL_EDIT.length")===before+1 && rows===before+1 && E("tplLoad(TPL_CT).length")===before+1;
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  return ok; });
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

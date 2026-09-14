@@ -1,6 +1,6 @@
 # DD254 Interactive — security fact sheet
 
-Codex Astra v1.15.0 / Tool v2.128, 14 September 2026.
+Codex Astra v1.15.1 / Tool v2.129, 14 September 2026.
 
 This is an offline, single-user drafting aid. The official HTML embeds its
 JavaScript, PDF library and form assets. It uses local browser storage and
@@ -47,8 +47,12 @@ data. Drafts saved by earlier versions keep any such material in browser storage
 and Full Backup until they are next saved from the form. Since v1.14.1, opening
 such a draft first lists that material and offers to export the stored workspace
 as a JSON file — including any attached file bytes it holds — before the save
-that drops it; the export inherits the handling limits below. This release adds
-no automatic sending or remote lookup.
+that drops it; the export inherits the handling limits below. Since v1.15.1 a
+received fillable DD Form 254 can be imported into a DD-254 Template Language
+entry. The PDF is read in memory and not stored; only the template fields and an
+audit entry with the file name and SHA-256 are kept. Parsing uses the embedded
+pdf-lib and the browser's own XML parser, with no network access. This release
+adds no automatic sending or remote lookup.
 
 ## Boundaries
 

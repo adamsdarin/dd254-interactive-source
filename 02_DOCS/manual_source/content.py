@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.15.0 (tool version 2.128)"
+VER="Codex Astra v1.15.1 (tool version 2.129)"
 
 DOC = [
-("h1","Codex Astra v1.15.0 changes"),
+("h1","Codex Astra v1.15.1 changes"),
+("b","<b>Import received DD 254 (PDF)</b> on the DD-254 Template Language page turns a fillable DD Form 254 you received into a new template entry: its Items 10 to 16 and 18, its classification marking, and its Item 3 source type and date. Nothing else is created — no draft, no dashboard card — and the PDF is not kept. See 5.4."),
+("h2","Codex Astra v1.15.0 changes"),
 ("b","Each dashboard card labels its numbers: <b>Prime</b> (Item 2a), <b>Subcontract</b> (Item 2b) and <b>Solicitation</b> (Item 2c), whichever are filled, beside the contractor and the subcontractor CAGE — see 3.1."),
 ("b","Search takes several terms in any order. <b>pat.requestor 5XYZ5 W911NF</b> finds the DD-254 carrying all three, however you type them; a contract number matches with or without its hyphens — see 3.10."),
 ("b","Spawning an Original, Revision or Final no longer carries NISS verification into the new DD-254. Its card shows <b>NISS re-confirm</b> until you verify again for that issuance — see 3.3 and 3.11."),
@@ -370,6 +372,14 @@ DOC = [
 ("p","<b>Capture from form</b> snapshots the open form instead. It never overwrites your per-checkbox language or the attachment list, because neither exists on the form."),
 ("warn","Capture takes Block 13 as one block of text. If you had previously applied a different template to that form, its language is now in Block 13 and will be captured. Capture from a clean form, or check Block 13 straight afterwards."),
 ("p","On the form, select an entry in the Template language panel to see its content as cards. <b>Insert all of this template</b> sits at the top and applies every section in one go \u2014 the classification, the Item 10, 11 and 18 boxes, the Item 12 routing, Blocks 13, 14, 15 and 16. Fields the template leaves blank are not touched, so nothing already on the form is wiped, and it asks first if Block 13 already has text. Beneath it each section still has its own insert or apply button if you want only part of it. Nothing is applied automatically. Per-checkbox language inserts itself into Block 13 as you tick the matching box and removes itself if you untick it. The required attachments appear in the attachment reminder and again in the distribution dialog."),
+("h3","Importing a received DD Form 254"),
+("p","When a customer or higher-tier contractor sends you a DD Form 254, its wording is usually the starting point for the subcontract DD-254 you issue. Instead of retyping it, open <b>Templates</b>, then <b>DD-254 Template Language</b>, and choose <b>Import received DD 254 (PDF)</b>."),
+("n","The tool reads the form data inside a fillable (dynamic) DD Form 254: Item 10 and 11 boxes and their Other text, Item 12 routing and release authority, Item 13, Items 14 and 15, the Item 16 GCA details, Item 18 boxes and 18f addresses, and the form's UNCLASSIFIED or CUI marking."),
+("n","Item 3 sets the template's source: Original, the numbered Revision, or Final, with its date. A Final starts the retention clock described above, exactly as if you had set it by hand."),
+("n","A preview lists what will be imported and names the template after the received form's contract number and source. Nothing is saved until you confirm."),
+("n","The import creates one DD-254 Template Language entry and nothing else. It does not create a draft or a dashboard card, does not link to any DD-254, and does not keep the PDF. The audit log records the file name and its SHA-256 fingerprint."),
+("warn","Items 1 to 9 and 17, reviewers, signatures and file attachments are not imported. The template holds the received form's own wording: review it before applying it to a subcontract, and remember that a prime may not impose some requirements on a subcontractor without GCA approval."),
+("p","Some files cannot be imported, and the tool says why: a flattened, printed or scanned PDF, or one produced by another system, carries no form data; an encrypted PDF cannot be read; and a form marked above CUI is refused, because this tool handles UNCLASSIFIED and CUI entries only."),
 ("h2","5.5 Contract Type templates"),
 ("p","A Contract Type template holds exactly the same content as a DD-254 Template Language entry, and is built in the same editor. The two differ only in <i>when</i> they are used: a Contract Type is offered as a whole when you create a draft, and can be applied later from the Contract type dropdown on the card; a Template Language entry is inserted piece by piece from the form\u2019s side panel."),
 ("n","Dashboard, then Templates, then Contract Type, then <b>Add</b> \u2014 or <b>Capture from form</b> to snapshot a form you have already built."),
@@ -504,7 +514,7 @@ DOC = [
 ("p","The validation alerts and the two advisors identify the source used for each comparison. SAP-specific requirements attributed to DoDM 5205.07 appear only when the SAP DD-254 flag is on. The citations make a finding reviewable; they do not make the tool a substitute for the contract, the GCA, NISS, the responsible Government security authority, or the current text of the cited source."),
 ("p","Advisor findings are deliberately conservative prompts. A potential contradiction may have a documented fact or authority outside the DD Form 254 that resolves it. Verify the operational answer and retain that evidence rather than treating the screen as an eligibility determination."),
 ("h2","11.2 What the tool does not do"),
-("b","It does not track DD Forms 254 <i>received</i> from customers, only those you issue."),
+("b","It does not track DD Forms 254 <i>received</i> from customers, only those you issue. Importing a received form creates a template entry and nothing else — see 5.4."),
 ("b","It does not treat contract completion as creating a Final or authorizing retention; disposition and any continued requirements need their own evidence."),
 ("b","A <b>Full copy</b> carries the source's holds, distribution log and NISS verification. <b>Copy and reset the workflow</b> keeps the form and NISS verification but clears the workflow events. Neither carries the issue date."),
 ("h2","11.3 Keeping this manual honest"),
