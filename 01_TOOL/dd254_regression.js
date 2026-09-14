@@ -1377,8 +1377,9 @@ t('the classification banner follows the selector', ()=>{
    by that flush, so drop the buffer first. */
 const SEED=()=>E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
 H('29. Template libraries — all seven');
-t('all eight libraries are addressable', ()=>{
-  const kinds=['fac','cso','perf','cert','b13','ct','sm','sl'];
+t('all nine libraries are addressable', ()=>{
+  /* v1.15.2 added the Security Classification Guides library (scg). */
+  const kinds=['fac','cso','perf','cert','b13','ct','sm','sl','scg'];
   return kinds.every(k=>{ const key=E("tplKeyOf('"+k+"')"); return typeof key==='string' && key.length>0; })
     && JSON.stringify(E("BK_KINDS"))===JSON.stringify(kinds); });
 await ta('add, edit and delete a row in each library', async()=>{
@@ -1431,10 +1432,11 @@ await ta('CSV round trip for every library that supports it', async()=>{
     await E("tplIoApply('"+k+"',"+JSON.stringify(rows)+")");
     if(!E("tplLoad(tplKeyOf('"+k+"'))").length) return k+': nothing re-imported';
   }
-  return kinds.length===7;});
-t('all seven libraries now support the spreadsheet round trip', ()=>{
+  return kinds.length===8 && kinds.includes('scg');});
+t('all eight spreadsheet libraries support the round trip', ()=>{
+  /* v1.15.2 added Security Classification Guides; Standard Language remains outside it. */
   const kinds=E("Object.keys(TPL_IO)");
-  return kinds.length===7 && kinds.includes('cert');});
+  return kinds.length===8 && kinds.includes('cert') && kinds.includes('scg') && !kinds.includes('sl');});
 await ta('the Certifier library exports and re-imports its officials', async()=>{ SEED();
   E("window.ioPreview=async function(){return {apply:true,del:false};};");
   E("tplSave(TPL_CERT,[{label:'J. Doe — Huntsville',name:'Doe, John Q',title:'FSO',address:'1 Main St, Huntsville AL 35801',cage:'1ABC2',phone:'555-0100',email:'jdoe@acme.com'}]);");
@@ -2859,7 +2861,7 @@ await ta('the pack carries templates and no drafts', async()=>{
   await wipe();
   await E("draftPut({id:'PK',title:'a draft',status:'Draft',stage:'orig',todos:[],meta:{},workspace:{}})");
   const p=await packMake();
-  return p.tool==='DD254 Template Pack' && !('drafts' in p) && !!p.libs && Object.keys(p.libs).length===8; });
+  return p.tool==='DD254 Template Pack' && !('drafts' in p) && !!p.libs && Object.keys(p.libs).length===9; });
 await ta('it is stamped with who exported it and when', async()=>{
   const p=await packMake();
   return p.owner==='Alice' && /^\d{4}-\d{2}-\d{2}/.test(String(p.exported||'')); });
@@ -2908,8 +2910,8 @@ await ta('applying records an undo for that library', async()=>{
   return E("ioHasUndo('sl')")===true && E("tplLoad(TPL_SL)").length===3; });
 t('site-specific libraries are flagged so they default off', ()=>
   E("!!PACK_LOCAL.fac")===true && E("!!PACK_LOCAL.perf")===true && E("!!PACK_LOCAL.sl")===false);
-t('all eight libraries travel in a pack', ()=>
-  E("PACK_KINDS").length===8 && E("PACK_KINDS").includes('sl') && E("PACK_KINDS").includes('ct'));
+t('all nine libraries travel in a pack', ()=>
+  E("PACK_KINDS").length===9 && E("PACK_KINDS").includes('sl') && E("PACK_KINDS").includes('ct') && E("PACK_KINDS").includes('scg'));
 await ta('a file that is not a pack is refused', async()=>{
   E("window.__A='';");
   const ev={target:{files:[new w.Blob(['{\"tool\":\"something else\"}'],{type:'application/json'})],value:'x'}};
@@ -4163,7 +4165,8 @@ t('nothing was dropped in the split', ()=>{
   const v=w.document.getElementById('rpanelValidation');
   const c=w.document.getElementById('rpanelChecklist');
   const n=v.querySelectorAll('.rp-section').length+c.querySelectorAll('.rp-section').length;
-  return n===11 ? true : n+' sections, expected 11';
+  /* v1.15.2 added the Security Classification Guides section to the checklist panel. */
+  return n===12 ? true : n+' sections, expected 12';
 });
 t('no panel content ended up outside either panel', ()=>{
   const stray=Array.from(w.document.querySelectorAll('.panel-col .rp-section'))
@@ -6426,6 +6429,94 @@ await ta('importing from the open Template Language page adds the entry to that 
   const ok=E("window.TPL_EDIT.length")===before+1 && rows===before+1 && E("tplLoad(TPL_CT).length")===before+1;
   E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
   return ok; });
+
+H('95. v1.15.2 Security Classification Guides library');
+const SCG_ALD={label:'Programme ALDER Security Classification Guide (demo)',ident:'SCG-ALD-01',date:'2026-02-02',office:'Example Program Office (demo)',dist:'Distribution Statement D',delivery:'attached',ioId:'scg-ald'};
+const SCG_BIR={label:'Programme BIRCH Security Classification Guide (demo)',ident:'SCG-ALD-010',date:'2026-03-03',office:'Example Program Office (demo)',dist:'',delivery:'separate',ioId:'scg-bir'};
+const scgSeed=(arr)=>E("tplSave(TPL_SCG,"+JSON.stringify(arr)+");window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+const scgI13=()=>w.document.getElementById('item13').value;
+E("window.__UI_PROMPT_REAL2=uiPrompt;");
+t('the library has its own key, menu entry and side panel', ()=>
+  E("tplKeyOf('scg')")==='dd254_scg_tpl' && E("TPL_SCG")==='dd254_scg_tpl'
+  && !!w.document.querySelector('.dash-menu-item[onclick="dashTplEdit(\'scg\')"]') && !!w.document.getElementById('scgPanel'));
+await ta('the editor asks for unclassified titles and adds a row of the right shape', async()=>{
+  scgSeed([]); await E("dashTplEdit('scg')");
+  const note=w.document.getElementById('scgUnclassNote');
+  E("dashTplAdd()"); const row=E("tplLoad(TPL_SCG)")[0];
+  const inputs=!!w.document.querySelector('.scg-row .scg-title') && !!w.document.querySelector('.scg-row .scg-date') && !!w.document.querySelector('.scg-row .scg-delivery');
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  return !!note && /unclassified/.test(note.textContent) && inputs
+      && JSON.stringify(Object.keys(row).filter(k=>k!=='ioId').sort())===JSON.stringify(['date','delivery','dist','ident','label','office']);
+});
+t('a citation carries title, identifier, date, office, portions, distribution and delivery', ()=>{
+  const c=E("scgCitation("+JSON.stringify(SCG_ALD)+",'Sections 3-5')");
+  const bare=E("scgCitation({label:'Title only guide',ident:'',date:'',office:'',dist:'',delivery:''},'')");
+  const nl=E("scgCitation({label:'Line'+String.fromCharCode(10)+'break',ident:'X'},'')");
+  return c==='Security Classification Guide: Programme ALDER Security Classification Guide (demo) (SCG-ALD-01), dated 2026-02-02, Example Program Office (demo); applicable portions: Sections 3-5. Distribution: Distribution Statement D. Attached.'
+      && bare==='Security Classification Guide: Title only guide.' && nl.indexOf(String.fromCharCode(10))===-1;
+});
+await ta('citing inserts one line after the preparer\'s text and above the CUI block', async()=>{
+  scgSeed([SCG_ALD,SCG_BIR]);
+  E("resetFormFields();CUI_LAST='';document.getElementById('item13').value='Reference 11c:\\n\\nPreparer prose.';document.getElementById('cuiCtrlBy').value='Example controlling office';cuiSync();run();");
+  E("window.uiPrompt=async function(){return 'Sections 3-5';};");
+  let ok; try{ ok=await E("scgInsert(0)"); } finally { E("window.uiPrompt=window.__UI_PROMPT_REAL2;"); }
+  const v=scgI13(), line=E("scgCitation("+JSON.stringify(SCG_ALD)+",'Sections 3-5')");
+  const p=v.indexOf(line), prose=v.indexOf('Preparer prose.'), cui=v.indexOf(E("CUI_LAST"));
+  return ok===true && p>prose && cui>p && v.split(line).length===2;
+});
+await ta('citing the same guide twice is refused', async()=>{
+  E("window.__ALERT='';window.alert=function(m){window.__ALERT=String(m);};");
+  const before=scgI13(); const ok=await E("scgInsert(0)");
+  return ok===false && scgI13()===before && /already cites/.test(w.__ALERT); });
+t('the panel marks the cited guide and offers Cite for the other', ()=>{
+  E("scgRenderPanel()"); const h=w.document.getElementById('scgPanel');
+  return /cited in Item 13/.test(h.textContent) && h.querySelectorAll('.scg-insert').length===1 && !h.querySelector('.scg-update'); });
+t('a matching date raises no warning', ()=>{ E("run()"); return !(w.DD254_WARNS||[]).some(x=>/Security Classification Guides library/.test(x)); });
+t('when the library date changes the draft gets a warning, never an error', ()=>{
+  scgSeed([Object.assign({},SCG_ALD,{date:'2026-06-01'}),SCG_BIR]); E("run()");
+  const warn=(w.DD254_WARNS||[]).filter(x=>/cites "Programme ALDER Security Classification Guide \(demo\)" dated 2026-02-02, but the Security Classification Guides library lists it dated 2026-06-01/.test(x));
+  const err=(w.DD254_ERRORS||[]).some(x=>/Security Classification Guides library/.test(x));
+  return warn.length===1 && !err && !!w.document.querySelector('#scgPanel .scg-update'); });
+t('Update citation rewrites only that guide\'s line and keeps its portions', ()=>{
+  const before=scgI13(); const n=E("scgUpdate(0)"); const v=scgI13(); E("run()");
+  return n===1 && /dated 2026-06-01, Example Program Office \(demo\); applicable portions: Sections 3-5\./.test(v)
+      && !/dated 2026-02-02/.test(v) && v.indexOf('Preparer prose.')>=0 && v.indexOf(E("CUI_LAST"))>0
+      && !(w.DD254_WARNS||[]).some(x=>/Security Classification Guides library/.test(x)) && before!==v; });
+t('identifiers match whole: SCG-ALD-01 never claims a citation of SCG-ALD-010', ()=>{
+  const line10=E("scgCitation("+JSON.stringify(SCG_BIR)+",'')");
+  return E("scgMatch("+JSON.stringify(line10)+","+JSON.stringify(SCG_ALD)+")")===false
+      && E("scgMatch("+JSON.stringify(line10)+","+JSON.stringify(SCG_BIR)+")")===true
+      && E("scgMatch('Security Classification Guide: ALDER SCG Annex B, dated 2026-01-01.',{label:'ALDER SCG'})")===false
+      && E("scgMatch('Security Classification Guide: ALDER SCG, dated 2026-01-01.',{label:'ALDER SCG'})")===true; });
+t('a citation of a guide that is not in the library raises nothing', ()=>
+  E("scgFindings('Security Classification Guide: Unknown guide (U-1), dated 2020-01-01.').length")===0);
+t('cited guides are named in the attachment reminder instead of the generic SCG line', ()=>{
+  E("document.getElementById('c11c').checked=true;run();buildAttachmentReminder();");
+  const live=w.document.getElementById('attachAutoList').textContent;
+  const stored=E("dashDistAttachments({workspace:{checks:{c11c:true},radios:{},texts:{item13:document.getElementById('item13').value}}}).auto");
+  const none=E("dashDistAttachments({workspace:{checks:{c11c:true},radios:{},texts:{item13:'no citations'}}}).auto");
+  return /Security Classification Guide: Programme ALDER/.test(live) && !/SCG\) cited in Item 13/.test(live)
+      && stored.some(x=>/SCG-ALD-01\), dated 2026-06-01/.test(x)) && none.some(x=>/Security Classification Guide\(s\) \(SCG\) cited in Item 13/.test(x)); });
+t('the attachment reminder escapes a hostile title', ()=>{
+  E("document.getElementById('item13').value='Security Classification Guide: <img src=x onerror=alert(9)>.';buildAttachmentReminder();");
+  const el=w.document.getElementById('attachAutoList');
+  return !el.querySelector('img') && /<img src=x/.test(el.textContent); });
+t('the library is in Full Backup, template packs and spreadsheet export', ()=>
+  E("BK_KINDS").includes('scg') && E("PACK_KINDS").includes('scg') && !!E("TPL_IO.scg")
+  && JSON.stringify(E("TPL_IO.scg.cols.map(function(c){return c.h;})"))===JSON.stringify(['Unclassified Title','Identifier','Date','Issuing Office','Distribution Statement','Delivery','ID (do not edit)']));
+await ta('a spreadsheet upload normalises dates and delivery wording', async()=>{
+  E("window.__RTE=window.dashTplEdit;window.__RIP=window.ioPreview;window.ioPreview=async function(){return {apply:true,del:false};};window.dashTplEdit=function(){};tplSave(TPL_SCG,[]);");
+  try{ await E("tplIoApply('scg',[['UNCLASSIFIED'],['Unclassified Title','Identifier','Date','Delivery'],['Imported guide (demo)','SCG-IMP-9','3/1/2026','Separate cover']])"); }
+  finally { E("window.dashTplEdit=window.__RTE;window.ioPreview=window.__RIP;"); }
+  const a=E("tplLoad(TPL_SCG)");
+  return a.length===1 && a[0].label==='Imported guide (demo)' && a[0].date==='2026-03-01' && a[0].delivery==='separate' && !!a[0].ioId; });
+t('the side panel escapes a hostile title', ()=>{
+  scgSeed([{label:'<img src=x onerror=alert(8)>',ident:'H-1',date:'2026-01-01'}]); E("scgRenderPanel()");
+  const h=w.document.getElementById('scgPanel'); return !h.querySelector('img') && /<img src=x/.test(h.textContent); });
+await ta('a read-only tab refuses to cite or update', async()=>{
+  scgSeed([SCG_ALD]); E("document.getElementById('item13').value='';window.alert=function(){};window.DD254_READONLY=true;");
+  let a,b; try{ a=await E("scgInsert(0)"); b=E("scgUpdate(0)"); } finally { E("window.DD254_READONLY=false;"); }
+  return a===false && b===false && scgI13()===''; });
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

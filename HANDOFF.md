@@ -1,50 +1,48 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-14T18:20-05:00 by Claude
+Last updated: 2026-09-14T20:10-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.1 (Tool 2.129)**, tag at 142cf80 on `main`; assets,
-checksums, kit rebuild and both attestations verified from a fresh download; the
-live demo (`dd254-interactive` cae5f8e) serves the attested demo bytes. Owner
-chose separate, fully verified point releases for the v1.15 horizon.
+published release: v1.15.1 (Tool 2.129). **v1.15.2 (Tool 2.130) is built,
+verified and being released** per SETUP.md "Publish" (owner chose separate,
+fully verified point releases for the v1.15 horizon).
 
-v1.15.1 — roadmap item 2.1, scope set by the owner on 2026-09-14: importing a
-received DD Form 254 must SOLELY create DD-254 Template Language. "Import received
-DD 254 (PDF)" on the Template Language page reads the XFA datasets of a fillable
-DD Form 254 (`rcv254ExtractDatasets`, `rcv254Parse`) and, after a preview, creates
-one TPL_CT entry from Items 10-16 and 18, the form marking, and Item 3 source
-type/date. No draft, dashboard record, parent link or stored PDF; prime contract
-number deliberately not copied into the template. Refuses flattened/scanned,
-encrypted, non-PDF, empty, above-CUI and read-only cases. Audit records file name
-and SHA-256.
+v1.15.2 — roadmap item 2.2, Security Classification Guides library (`TPL_SCG`,
+kind `scg`): unclassified title, identifier, date, issuing office, distribution
+statement, delivery. Cite adds one fixed-shape citation line to Item 13 above the
+managed tail (`scgCitation`, `scgInsert`); citations are recognised from Item 13
+text only (`scgMatch`: whole identifier, or whole title when no identifier). A
+changed library date raises a warning (never an error) and Update citation
+rewrites that guide's lines keeping portions (`scgFindings`, `scgUpdate`). Cited
+guides are named in the attachment reminder and distribution dialog. Library is in
+Full Backup, packs and the spreadsheet round trip. Citation content checked against
+the DD Form 254 Instructions in the approved library (Item 13 SCG listing and
+attach/separate cover; Item 11c unclassified titles).
 
-v1.15.0 (released): card numbers labelled Prime/Subcontract/Solicitation; search
-terms in any order; NISS reset with "NISS re-confirm" on spawned stages.
+Earlier v1.15: v1.15.1 received DD Form 254 → DD-254 Template Language only;
+v1.15.0 card numbers, search in any order, NISS re-confirm on spawn.
 
-Verification on the v1.15.1 build: regression 1044 PASS / 0 FAIL; all SETUP
-step-6 checks pass; live browser smoke passes for official and demo; import page,
-preview and new row inspected in headless Chrome. Negative control against
-v1.15.0: all earlier tests pass; 17 of 18 new assertions fail.
-
-Limit: not yet tested against a DD Form 254 filled and saved in Acrobat by another
-organisation; the government's blank form's own datasets packet does parse.
+Verification on the v1.15.2 build: regression 1061 PASS / 0 FAIL; all SETUP
+step-6 checks pass; live browser smoke passes for official and demo; library page,
+citation, stale warning and panel inspected in headless Chrome. Negative control
+against v1.15.1: earlier tests pass except the six count tests changed on purpose
+(nine libraries, eight spreadsheet libraries, twelve panel sections); 16 of 17 new
+tests fail.
 
 Product boundaries: not an NCCS/PIEE tie-in (owner, 2026-09-14). v1.14.0 scope
 rule stands: keep only what is needed to prepare or issue a DD Form 254.
 
 ## Next
 
-1. Validate the import against a sanitized, Acrobat-saved DD Form 254 from the
-   owner when one is available.
-2. v1.15.2 — security classification guide reference library (template library;
-   Item 13 citation lines; flag drafts when a guide's date changes).
-3. v1.15.3 — sensitive-terms screen for Items 9 and 13 (local list, warning only,
+1. Validate the received-DD 254 import against a sanitized, Acrobat-saved DD
+   Form 254 from the owner when one is available.
+2. v1.15.3 — sensitive-terms screen for Items 9 and 13 (local list, warning only,
    excluded from exports by default).
-4. v1.15.4 — revision summary managed region in Item 13 (check DD 254
+3. v1.15.4 — revision summary managed region in Item 13 (check DD 254
    instructions in the approved library for revision annotation first).
-5. v1.15.5 — unprinted period-of-performance end date with Final-due prompt, and
+4. v1.15.5 — unprinted period-of-performance end date with Final-due prompt, and
    a demonstration portfolio seed.
 
 ## Open Questions
@@ -56,16 +54,15 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
 
 ## Log
 
-2026-09-14 18:20 Claude — Published v1.15.1 per SETUP.md: verify passed on
-142cf80, main fast-forwarded, tag pushed, release workflow passed, release and
-served demo verified independently. Branch `release/v1.15.1` left in place.
+2026-09-14 20:10 Claude — Built and verified v1.15.2 (SCG reference library).
+Chose text-derived citations over a stored list (one source of truth), exact
+identifier/title matching after spotting SCG-1 vs SCG-10, and a warning rather
+than an error because the date check is library consistency, not a rule. Reused
+dark-theme-mapped colours after the theme tests caught two unmapped ones.
+2026-09-14 18:20 Claude — Published v1.15.1; release and served demo verified.
 2026-09-14 17:40 Claude — Built and verified v1.15.1 (received DD Form 254 →
-DD-254 Template Language only). Owner narrowed item 2.1 from "read-only parent"
-to template creation. Read form data by the export's own field names, confirmed
-against the blank government form's datasets. Fixed two test-only issues: a
-cross-realm TextEncoder in fixtures and a uiAlert left defined by earlier tests.
-2026-09-14 15:10 Claude — Published v1.15.0 per SETUP.md; release and served demo
-verified independently. Branch `release/v1.15.0` left in place.
+DD-254 Template Language only).
+2026-09-14 15:10 Claude — Published v1.15.0; release and served demo verified.
 2026-09-14 14:30 Claude — Built and verified v1.15.0 (dashboard numbers, search in
 any order, NISS re-confirmation on spawn).
 2026-09-14 08:30 Claude — Published v1.14.1; owner ruled NCCS out of scope;

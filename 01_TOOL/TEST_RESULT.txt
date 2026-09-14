@@ -1,4 +1,4 @@
-BUILD_SHA256 9cbb6eb9a4623a1e0c757211a24477dbc4044d76a053fea1de568de433b1040e
+BUILD_SHA256 143c2fba8d262eee41c2553f1615e8dbcc6dfd5a426750bcccaab01796f6bbb0
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -353,14 +353,14 @@ BUILD_SHA256 9cbb6eb9a4623a1e0c757211a24477dbc4044d76a053fea1de568de433b1040e
   PASS  the classification banner follows the selector
 
 ### 29. Template libraries — all seven
-  PASS  all eight libraries are addressable
+  PASS  all nine libraries are addressable
   PASS  add, edit and delete a row in each library
   PASS  rows can be reordered
   PASS  a facility links a CSO and follows later corrections
   PASS  CAGE duplicates are detected
   PASS  the search box hides non-matching rows
   PASS  CSV round trip for every library that supports it
-  PASS  all seven libraries now support the spreadsheet round trip
+  PASS  all eight spreadsheet libraries support the round trip
   PASS  the Certifier library exports and re-imports its officials
   PASS  the CSV buttons render for the Certifier library
   PASS  an imported official applies to Item 17
@@ -674,7 +674,7 @@ BUILD_SHA256 9cbb6eb9a4623a1e0c757211a24477dbc4044d76a053fea1de568de433b1040e
   PASS  a genuinely new entry is just added
   PASS  applying records an undo for that library
   PASS  site-specific libraries are flagged so they default off
-  PASS  all eight libraries travel in a pack
+  PASS  all nine libraries travel in a pack
   PASS  a file that is not a pack is refused
 
 ### 52. Choosing what to export
@@ -1242,6 +1242,25 @@ BUILD_SHA256 9cbb6eb9a4623a1e0c757211a24477dbc4044d76a053fea1de568de433b1040e
   PASS  the import button appears only on the DD-254 Template Language page
   PASS  importing from the open Template Language page adds the entry to that page
 
+### 95. v1.15.2 Security Classification Guides library
+  PASS  the library has its own key, menu entry and side panel
+  PASS  the editor asks for unclassified titles and adds a row of the right shape
+  PASS  a citation carries title, identifier, date, office, portions, distribution and delivery
+  PASS  citing inserts one line after the preparer's text and above the CUI block
+  PASS  citing the same guide twice is refused
+  PASS  the panel marks the cited guide and offers Cite for the other
+  PASS  a matching date raises no warning
+  PASS  when the library date changes the draft gets a warning, never an error
+  PASS  Update citation rewrites only that guide's line and keeps its portions
+  PASS  identifiers match whole: SCG-ALD-01 never claims a citation of SCG-ALD-010
+  PASS  a citation of a guide that is not in the library raises nothing
+  PASS  cited guides are named in the attachment reminder instead of the generic SCG line
+  PASS  the attachment reminder escapes a hostile title
+  PASS  the library is in Full Backup, template packs and spreadsheet export
+  PASS  a spreadsheet upload normalises dates and delivery wording
+  PASS  the side panel escapes a hostile title
+  PASS  a read-only tab refuses to cite or update
+
 ================================
-  PASS 1044   FAIL 0
+  PASS 1061   FAIL 0
 ================================

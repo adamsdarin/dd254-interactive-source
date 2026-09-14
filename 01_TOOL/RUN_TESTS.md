@@ -205,3 +205,13 @@ Type entry, no Item 9 or 17 text, a matching audit SHA-256, and a usable templat
 Refusals are checked for a flattened PDF, a non-PDF, a SECRET marking, cancel and a
 read-only tab. Fixtures pass XML to pdf-lib as a string because the harness's
 Node TextEncoder returns arrays pdf-lib does not recognise across realms.
+
+The v1.15.2 tests (section 95) cover the Security Classification Guides library:
+its key, menu entry, editor row and unclassified-title note; the citation format;
+insertion after the preparer's text and above the CUI block; duplicate refusal;
+panel states; the date-change warning and that it is never an error; Update
+citation keeping portions; whole-identifier and whole-title matching; unknown
+guides; named attachments on the live form and stored drafts; spreadsheet
+normalisation; escaping of hostile titles; and read-only refusal. The library-count
+tests in sections 29, 51 and the panel split were changed deliberately to nine
+libraries, eight spreadsheet libraries and twelve panel sections.

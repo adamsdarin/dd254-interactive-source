@@ -95,6 +95,12 @@
       {label:'Northwind Defense — Programme DAMSON (demo)', srcDate:'2026-05-20', smName:'J. Serrano', smEmail:'j.serrano@example.com', smProgram:'Programme DAMSON (demo)',
        data:ctData({primeContract:'SP4701-25-C-3310', taskOrder:'0007', c10:{'10b':true}, l10:{'10b':'Reference 10b:\n\nRestricted Data access is limited to personnel briefed under the applicable programme access requirements.'}})}
     ]);
+    /* Fictitious guides: invented titles and identifiers, no real programme. */
+    if(typeof TPL_SCG!=='undefined') seed(TPL_SCG, [
+      {label:'Programme ALDER Security Classification Guide (demo)', ident:'SCG-ALD-01', date:'2026-02-02', office:'Programme ALDER Office (demo)', dist:'', delivery:'attached'},
+      {label:'Programme BIRCH Security Classification Guide (demo)', ident:'SCG-BIR-03', date:'2026-03-14', office:'Programme BIRCH Office (demo)', dist:'', delivery:'separate'},
+      {label:'Programme CEDAR Security Classification Guide (demo)', ident:'SCG-CED-02', date:'2026-04-01', office:'Programme CEDAR Office (demo)', dist:'', delivery:'attached'}
+    ]);
     if(typeof buildTplSelects==='function') buildTplSelects();
     if(typeof dashRenderCards==='function') dashRenderCards();
   }

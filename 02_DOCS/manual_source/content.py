@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.15.1 (tool version 2.129)"
+VER="Codex Astra v1.15.2 (tool version 2.130)"
 
 DOC = [
-("h1","Codex Astra v1.15.1 changes"),
+("h1","Codex Astra v1.15.2 changes"),
+("b","A ninth library, <b>Security Classification Guides</b>, keeps each guide's unclassified title, identifier, date, issuing office, distribution statement and delivery method. <b>Cite</b> in the form's side panel adds one citation line to Item 13, and cited guides are named in the attachment reminder. If a guide's date changes in the library, a draft still citing the old date gets a warning and an <b>Update citation</b> button. See 5.9."),
+("h2","Codex Astra v1.15.1 changes"),
 ("b","<b>Import received DD 254 (PDF)</b> on the DD-254 Template Language page turns a fillable DD Form 254 you received into a new template entry: its Items 10 to 16 and 18, its classification marking, and its Item 3 source type and date. Nothing else is created — no draft, no dashboard card — and the PDF is not kept. See 5.4."),
 ("h2","Codex Astra v1.15.0 changes"),
 ("b","Each dashboard card labels its numbers: <b>Prime</b> (Item 2a), <b>Subcontract</b> (Item 2b) and <b>Solicitation</b> (Item 2c), whichever are filled, beside the contractor and the subcontractor CAGE — see 3.1."),
@@ -329,7 +331,7 @@ DOC = [
 ("h2","4.18 Two panels, not one"),
 ("p","The right-hand column holds two separately scrolling panels: validation output in one, the things you act on in the other. Collapsing hides both."),
 ("h1","5. Templates — building them and using them"),
-("p","Eight libraries live under <b>Templates</b> on the dashboard. All are local to this browser and all are included in the Full Backup."),
+("p","Nine libraries live under <b>Templates</b> on the dashboard. All are local to this browser and all are included in the Full Backup."),
 ("tbl",[["Library","Holds","Fills"],
         ["Facility","Item 6 address, CAGE, FSO e-mail, linked 6c CSO","6a, 6b, 6c, FSO e-mail"],
         ["CSO","Security office name, address, phone, e-mail","6c, 7c, 8c"],
@@ -338,7 +340,8 @@ DOC = [
         ["Contract Type","A whole DD-254 posture, offered when a draft is created","10, 11, 12, 13, 14, 15, 16, 18"],
         ["DD-254 Template Language","The same, insertable piece by piece from the form","10, 11, 12, 13, 14, 15, 16, 18"],
         ["Security Managers","Name, e-mail, program","Assigned to a language template"],
-        ["Standard Language","Recurring text your organisation puts on its own DD-254s","13"]]),
+        ["Standard Language","Recurring text your organisation puts on its own DD-254s","13"],
+        ["Security Classification Guides","Unclassified title, identifier, date, issuing office, distribution statement and delivery of each guide","13 (a citation line)"]]),
 ("h2","5.1 Working the template tables"),
 ("n","<b>Add</b> appends a blank row. Typing is saving; there is no save button."),
 ("n","The up and down arrows reorder the list, which is the order the dropdowns show."),
@@ -402,7 +405,7 @@ DOC = [
 ("n","In the full backup. Not in the spreadsheet round trip, and not in dashboard search."),
 
 ("h2","5.7 Spreadsheet round trip"),
-("p","All eight libraries export to CSV and re-import from CSV or XLSX."),
+("p","Every library except Standard Language exports to CSV and re-imports from CSV or XLSX."),
 ("n","Export first, even from an empty library — the header row is the layout the importer expects."),
 ("n","Edit in Excel. Keep the header row and the ID column; the ID is how a row is matched rather than duplicated."),
 ("n","Upload. Nothing is applied yet: a preview reports what will be updated, added, skipped and unmatched."),
@@ -413,6 +416,16 @@ DOC = [
 ("h2","5.8 Saving Item 13 language back to a template"),
 ("p","Wording you have refined on a form can be pushed back into the library it came from. Choose the template first \u2014 saving with none chosen, or with nothing to save, is refused. Item 11 language lands in the Item 11 map and Item 10 language in the Item 10 map; they do not cross."),
 ("p","If the template already holds language for that item you are asked before it is replaced, and declining leaves it alone. Saving the same wording twice does not prompt, because nothing would change. In sections layout the save button on a section box saves the text actually in that box."),
+("h2","5.9 Security Classification Guides"),
+("p","Item 13 has to identify the classification guides that apply, and every guide it cites has to reach the contractor. The DD Form 254 instructions ask for the applicable guides with page numbers or other designations, for the unclassified titles or identities of the guides, and for every referenced document to be attached or forwarded under separate cover. This library keeps those details once, so the same guide is cited the same way on every form."),
+("warn","Enter only unclassified titles and identifiers. The library holds references to guides, never the guides themselves."),
+("n","Open <b>Templates</b>, then <b>Security Classification Guides</b>, and add one row per guide: unclassified title, identifier, date, issuing office, an optional distribution statement, and whether the guide is attached or forwarded under separate cover. The library also imports and exports by spreadsheet and travels in template packs and Full Backup."),
+("n","On the form, the <b>Security Classification Guides</b> section of the Checklist &amp; Templates panel lists every guide. <b>Cite</b> asks for the applicable portions (optional) and adds one line to Item 13, after your text and above the classified mailing addresses and the CUI block."),
+("p","<font face='Courier'>Security Classification Guide: Programme ALDER Security Classification Guide (SCG-ALD-01), dated 2026-02-02, Programme ALDER Office; applicable portions: Sections 3-5. Attached.</font>"),
+("n","A cited guide shows <b>cited in Item 13</b> and cannot be cited twice. The citation is ordinary text: edit or delete it as you would any other line."),
+("n","Cited guides are named individually in the attachment reminder and in the distribution dialog. The generic reminder for Item 11c appears only while no guide is cited."),
+("p","When a guide is reissued, change its date in the library. Any draft you open that still cites the old date shows a warning naming both dates, and its panel entry offers <b>Update citation</b>, which rewrites that guide's line with the new details and keeps the portions you entered. Confirm which version applies to the contract before updating. The warning never blocks a status, and records that are already Issued are not changed."),
+("note","A citation is matched to a library guide by its identifier, or by its title when the guide has no identifier. Matching is exact: guide SCG-1 is never confused with SCG-10."),
 ("h1","6. Producing the form"),
 ("tbl",[["Export","Use"],
         ["Official DD-254 (PDF)","The official expanding XFA form. It is watermarked DRAFT while errors remain and signs in Acrobat Pro — see 6.2."],
@@ -468,7 +481,7 @@ DOC = [
 ("p","Backups carry a SHA-256 checksum and entry counts. On restore both are verified: a truncated download or an edited file is refused rather than silently loaded. Older backups without a checksum require explicit confirmation. The audit log merges on restore rather than overwriting, de-duplicated by timestamp."),
 ("warn","Restoring a Full Backup REPLACES every template list. Drafts are merged by ID, but templates are not. Take a backup of the current state before restoring another one."),
 ("h2","8.2 Sharing templates with colleagues"),
-("p","When one person curates the libraries for a team, <b>Manage, then Share templates</b> moves them between instances. <b>Export templates only</b> writes a file containing the eight libraries and <i>nothing else</i> \u2014 no drafts, no dashboard, nothing about anybody\u2019s actual DD-254s. The file is stamped with who exported it and when."),
+("p","When one person curates the libraries for a team, <b>Manage, then Share templates</b> moves them between instances. <b>Export templates only</b> writes a file containing the nine libraries and <i>nothing else</i> \u2014 no drafts, no dashboard, nothing about anybody\u2019s actual DD-254s. The file is stamped with who exported it and when."),
 ("p","<b>Export templates only</b> opens a picker before it writes anything. Every library is listed with its entries, all ticked, so sharing the lot is still one click \u2014 but you can untick a whole library, or individual entries within one, and send only what is useful. Sharing two new Standard Language paragraphs need not drag your entire facility list along with them."),
 ("n","A running count shows how many of your templates are selected. A partly ticked library shows as such. Selecting nothing is refused rather than writing an empty file."),
 ("p","<b>Import templates from a colleague</b> shows what would change before anything is applied, library by library, and you tick which to take."),

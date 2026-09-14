@@ -1,3 +1,41 @@
+## v1.15.2 - 14 September 2026
+
+Tool version 2.130. Security Classification Guides reference library. No
+validation error, approval hold, export format or official PDF field changed; one
+non-blocking warning was added.
+
+- Added a ninth template library, Security Classification Guides (`TPL_SCG`,
+  kind `scg`): unclassified title, identifier, date, issuing office, distribution
+  statement and delivery (attached or forwarded under separate cover). The editor
+  asks for unclassified titles only. It is in the dashboard Templates menu, Full
+  Backup (`BK_KINDS`), template packs (`PACK_KINDS`) and the spreadsheet round trip
+  (`TPL_IO.scg`, with dates and delivery wording normalised on import).
+- Added a Security Classification Guides section to the form's Checklist &
+  Templates panel. Cite prompts for optional applicable portions and adds one line
+  to Item 13 in a fixed shape, after the preparer's text and above the classified
+  mailing addresses and CUI block (`scgCitation`, `scgInsert`). A guide already
+  cited cannot be cited twice.
+- Citations are recognised from Item 13 text alone, so there is no second store.
+  A citation matches a guide by whole identifier, or by whole title when the guide
+  has none (`scgMatch`). When the matched guide's library date differs from the
+  cited date, validation adds a warning naming both dates and the panel offers
+  Update citation, which rewrites only that guide's lines and keeps their portions
+  (`scgFindings`, `scgUpdate`). It is a warning, never an error.
+- The attachment reminder and the distribution dialog name each cited guide
+  instead of the generic Item 11c SCG line, which remains while nothing is cited.
+  Reminder entries are now escaped as text.
+- The DD Form 254 instructions in the approved library were checked for the
+  citation content: Item 13 lists applicable SCGs with page numbers or other
+  designations and all referenced documents are attached or forwarded under
+  separate cover; Item 11c asks for unclassified titles or identities of guides.
+- The demonstration seed adds three fictitious guides.
+
+Tests changed deliberately: the library-count tests now expect nine libraries,
+eight spreadsheet libraries and twelve side-panel sections.
+
+Not done: citations typed by hand in another shape are not recognised, and a
+guide's title or identifier changing in the library is not detected.
+
 ## v1.15.1 - 14 September 2026
 
 Tool version 2.129. Import a received DD Form 254 as DD-254 Template Language.
