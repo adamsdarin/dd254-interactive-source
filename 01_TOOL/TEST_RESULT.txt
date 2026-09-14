@@ -1,4 +1,4 @@
-BUILD_SHA256 8e4be2e2135753300ac6a81278cef510405bb86b3111ca36e9ce7d85bd8fbac9
+BUILD_SHA256 0d986667c9963967a4484aacb8871fe87064d17521646a4333ca5c74d9436239
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1279,6 +1279,31 @@ BUILD_SHA256 8e4be2e2135753300ac6a81278cef510405bb86b3111ca36e9ce7d85bd8fbac9
   PASS  the Manage menu opens the dialog, which adds terms and closes on Escape
   PASS  clearing the list removes every fingerprint and every warning
 
+### 97. v1.15.4 revision summary in Item 13; no flow-down ceiling between issuances
+  PASS  spawning a Revision marks it for a summary and keeps Item 13 as it was
+  PASS  first open proposes the summary above the rest of Item 13, once
+  PASS  changing Item 1a rewrites the summary with both values
+  PASS  boxes read as added or removed, and undoing a change drops its line
+  PASS  short text shows values, long text says revised, Item 13 sections are named
+  PASS  Item 3 bookkeeping is not reported as a change
+  PASS  lines follow form order
+  PASS  a Revision that raises Items 1a and 1b or adds a box gets no flow-down finding
+  PASS  a parent that is not an earlier issuance still gets the ceiling
+  PASS  the dashboard card shows no "exceeds prime" chip for a Revision
+  PASS  typing in Item 13 is not interrupted; the summary catches up on blur
+  PASS  a hand-edited summary is kept exactly as edited
+  PASS  Redraft replaces the edited summary and it is kept up to date again
+  PASS  Remove leaves the rest of Item 13 byte-identical and nothing re-adds it
+  PASS  Redraft then Remove is an exact round trip, with or without a supported-effort line
+  PASS  text inserted at the top of Item 13 goes below the summary
+  PASS  the exported Item 13 carries the summary as plain text
+  PASS  the summary survives save and reopen and is still kept up to date
+  PASS  a recount keeps the open Revision's parent
+  PASS  a read-only tab never rewrites the summary
+  PASS  Revision 2 replaces Revision 1's summary, and a Final drops it
+  PASS  point-of-contact-only changes raise a warning, never an error
+  PASS  an Original gets no summary, no bar and no POC warning
+
 ================================
-  PASS 1077   FAIL 0
+  PASS 1100   FAIL 0
 ================================

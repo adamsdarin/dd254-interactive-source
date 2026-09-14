@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v1.15.3
+# DD‑254 Interactive — Codex Astra v1.15.4
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -19,14 +19,14 @@ and no network traffic. Download one file, open it, work offline.
 
 | | |
 |---|---|
-| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.15.3 demo build, covered by the release's signed provenance |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.15.3.HTM` |
+| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.15.4 demo build, covered by the release's signed provenance |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.15.4.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v1.15.3.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.15.4.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -99,6 +99,16 @@ released file. Because the demo build is one of the attested files, the live dem
 can be checked against it too. The logs are public.
 
 ---
+
+## What changed in v1.15.4
+
+- **Revision summary in Item 13.** A Revision spawned on the dashboard gets a
+  plain-language summary of what changed at the top of Item 13, kept up to date
+  until you edit it by hand, with Redraft and Remove.
+- **Point-of-contact-only revisions** raise a warning, following the DD Form 254
+  instructions.
+- **Fixed:** a Revision that raised Item 1a or 1b was blocked by a subcontract
+  flow-down error comparing it with its own Original.
 
 ## What changed in v1.15.3
 
@@ -222,15 +232,15 @@ These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify
 eligibility or decide authority. No server or new storage service is required.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.15.3.md)
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.15.4.md)
 describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.15.3.md)
-- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.15.3.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.15.4.md)
+- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.15.4.md)
 - [Verifying a download and the live demo](VERIFY.md)
 - [Maintainer release and demo procedure](SETUP.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)

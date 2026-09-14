@@ -5,11 +5,11 @@ The documents stream reads this instead of asking for numbers.
 
 | | |
 |---|---|
-| **File** | `DD254_Interactive_v1.15.3.HTM` |
-| **Tool version** | `2.131` |
-| **Size** | 2,244,185 bytes |
-| **SHA-256** | `8e4be2e2135753300ac6a81278cef510405bb86b3111ca36e9ce7d85bd8fbac9` |
-| **Regression assertions** | 1077 |
+| **File** | `DD254_Interactive_v1.15.4.HTM` |
+| **Tool version** | `2.132` |
+| **Size** | 2,260,735 bytes |
+| **SHA-256** | `0d986667c9963967a4484aacb8871fe87064d17521646a4333ca5c74d9436239` |
+| **Regression assertions** | 1100 |
 
 ## Component split
 
@@ -19,13 +19,13 @@ would download; both figures are given so neither is misleading.
 
 | Component | In the file | Decoded | Share of file |
 |---|---|---|---|
-| pdf-lib (MIT) | 525,667 UTF-8 bytes | — | 23.4% |
-| DD Form 254, flat | 738,164 chars | 553,623 bytes | 32.9% |
+| pdf-lib (MIT) | 525,667 UTF-8 bytes | — | 23.3% |
+| DD Form 254, flat | 738,164 chars | 553,623 bytes | 32.7% |
 | DD Form 254, dynamic XFA | 83,284 chars | 62,461 bytes | 3.7% |
-| **Application code** | **680,917 UTF-8 bytes** | — | **30.3%** |
-| Markup and CSS | 216,153 UTF-8 bytes | — | 9.6% |
+| **Application code** | **696,873 UTF-8 bytes** | — | **30.8%** |
+| Markup and CSS | 216,747 UTF-8 bytes | — | 9.6% |
 
-Not the author's code: **60.0%** of the file.
+Not the author's code: **59.6%** of the file.
 
 ## Component hashes
 

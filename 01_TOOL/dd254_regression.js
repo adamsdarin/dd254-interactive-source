@@ -6590,6 +6590,145 @@ await ta('clearing the list removes every fingerprint and every warning', async(
   return before===1 && n===2 && E("localStorage.getItem(TERMS_KEY)")===null && termsWarns().length===0 && !w.document.getElementById('termsNote9'); });
 E("resetFormFields();run();");
 
+H('97. v1.15.4 revision summary in Item 13; no flow-down ceiling between issuances');
+const RS13='Reference 10a:\n\nCOMSEC guidance for this contract.';
+const RS_REF='\n\nReference 11c:\n\nUse the programme classification guide.';
+const rsI13=()=>String(w.document.getElementById('item13').value);
+const rsBar=()=>w.document.getElementById('rsumBar')||{style:{},getAttribute:()=>null};
+const rsKid=async(pid,stage)=>(await E("draftAll()")).filter(x=>x.parentId===pid&&(!stage||x.stage===stage)).sort((a,b)=>a.createdAt<b.createdAt?-1:1).pop();
+E("window.uiConfirm=async function(){return true;};window.DD254_READONLY=false;resetFormFields();");
+await wipe();
+await E("draftPut({id:'RS0',title:'Rsum Corp — Original',stage:'orig',status:'Issued',createdAt:'2026-01-05T00:00:00Z',updatedAt:'2026-01-05T00:00:00Z',todos:[],notes:'',"
+  +"workspace:{texts:{i2a:'W91CRB-26-C-0042',i3a_date:'20260105',i6a:'Rsum Corp',i16d:'A. Lane',item13:"+JSON.stringify(RS13)+"},selects:{fcl1a:'S',sfg1b:'S'},radios:{spec:'3a',fo:'no',fin:'no'},checks:{c10a:true,c11a:true},perf:[]}})");
+let RS1='';
+await ta('spawning a Revision marks it for a summary and keeps Item 13 as it was', async()=>{
+  await E("dashSpawn('RS0','rev')"); const k=await rsKid('RS0','rev'); RS1=k.id;
+  return k.rsumPending===true && k.workspace.texts.item13===RS13; });
+await ta('first open proposes the summary above the rest of Item 13, once', async()=>{
+  await E("dashOpen('"+RS1+"')");
+  const want='Summary of changes in Revision 1 (from the Original dated 20260105):\n- No changes recorded.\n\n'+RS13;
+  const rec=await E("draftGet('"+RS1+"')");
+  return rsI13()===want && !rec.rsumPending && rec.workspace.texts.item13===want
+      && rsBar().style.display==='flex' && rsBar().getAttribute('data-state')==='live' ? true : rsI13(); });
+t('changing Item 1a rewrites the summary with both values', ()=>{
+  V('fcl1a','TS'); RUN();
+  const v=rsI13();
+  return v.indexOf('- Item 1a Facility Clearance Level: changed from Secret to Top Secret.')>0
+      && v.indexOf('No changes recorded')<0 && v.endsWith('\n\n'+RS13) ? true : v; });
+t('boxes read as added or removed, and undoing a change drops its line', ()=>{
+  /* 11a, not 10a: unchecking a box whose Reference section is in Item 13 removes
+     that section, which is a separate, older behaviour. */
+  C('c11c'); C('c11a',false); RUN();
+  const a=rsI13();
+  C('c11a'); RUN();
+  const b=rsI13();
+  return /- Item 11c [^\n]*: added\./.test(a) && /- Item 11a [^\n]*: removed\./.test(a)
+      && b.indexOf('Item 11a')<0 && /- Item 11c [^\n]*: added\./.test(b) ? true : [a,b]; });
+t('short text shows values, long text says revised, Item 13 sections are named', ()=>{
+  V('i2b','SUB-7'); V('i9','Engineering and test support for the ground station integration effort, including classified design reviews.');
+  E("document.getElementById('item13').value+="+JSON.stringify(RS_REF)); RUN();
+  const v=rsI13();
+  return v.indexOf('- Item 2b Subcontract Number: now "SUB-7".')>0
+      && v.indexOf('- Item 9 Description of Classified Work: added.')>0
+      && v.indexOf('- Item 13 Reference 11c: added.')>0
+      && v.indexOf('standard language')<0 && v.indexOf('Item 13 Reference 10a')<0 ? true : v; });
+t('Item 3 bookkeeping is not reported as a change', ()=>{
+  V('i3b_date','20260301'); RUN();
+  return rsI13().indexOf('Summary of changes')===0 && !/- Item 3/.test(rsI13()); });
+t('lines follow form order', ()=>{
+  const v=rsI13(); const at=s=>v.indexOf(s);
+  return at('- Item 1a')>0 && at('- Item 1a')<at('- Item 2b') && at('- Item 2b')<at('- Item 9') && at('- Item 9')<at('- Item 11c') && at('- Item 11c')<at('- Item 13 Reference'); });
+t('a Revision that raises Items 1a and 1b or adds a box gets no flow-down finding', ()=>{
+  V('sfg1b','TS'); C('c11i'); RUN();
+  const all=(w.DD254_ERRORS||[]).concat(w.DD254_WARNS||[]);
+  const ok=!all.some(x=>/Flow-down/.test(x)) && rsI13().indexOf('- Item 1b Safeguarding Level: changed from Secret to Top Secret.')>0;
+  C('c11i',false); RUN(); return ok ? true : all.filter(x=>/Flow-down|1b/.test(x)); });
+t('a parent that is not an earlier issuance still gets the ceiling', ()=>{
+  E("window.__rsP=window.DD254_PARENT;window.DD254_PARENT=Object.assign({},window.__rsP,{issuance:false});run();");
+  const hit=(w.DD254_ERRORS||[]).some(x=>/Flow-down: Item 1a FCL \(TS\) exceeds/.test(x));
+  E("window.DD254_PARENT=window.__rsP;delete window.__rsP;run();");
+  return hit && !(w.DD254_ERRORS||[]).some(x=>/Flow-down/.test(x)); });
+await ta('the dashboard card shows no "exceeds prime" chip for a Revision', async()=>{
+  await E("dashSaveNow()"); await E("dashRenderCards()");
+  const h=w.document.getElementById('dashCards').innerHTML;
+  return h.indexOf('W91CRB-26-C-0042')>=0 && h.indexOf('exceeds prime')<0; });
+t('typing in Item 13 is not interrupted; the summary catches up on blur', ()=>{
+  const el=w.document.getElementById('item13'); el.tabIndex=0; el.focus();
+  if(w.document.activeElement!==el){ el.removeAttribute('tabindex'); return 'item13 not focusable here'; }
+  V('i6b','1RSM7'); RUN();
+  const during=rsI13().indexOf('Item 6b')<0;
+  el.blur(); el.removeAttribute('tabindex');
+  return during && rsI13().indexOf('- Item 6b CAGE Code: now "1RSM7".')>0 ? true : rsI13(); });
+let rsEdited='';
+t('a hand-edited summary is kept exactly as edited', ()=>{
+  E("document.getElementById('item13').value=document.getElementById('item13').value.replace('Facility Clearance Level: changed from Secret to Top Secret.','Facility Clearance Level: raised to TOP SECRET for the new effort.')"); RUN();
+  rsEdited=rsI13();
+  V('i7b','9ZZ99'); RUN();
+  return rsI13()===rsEdited && rsEdited.indexOf('raised to TOP SECRET')>0 && rsBar().getAttribute('data-state')==='edited'
+      && /edited by hand/.test((w.document.getElementById('rsumState')||{}).textContent||''); });
+await ta('Redraft replaces the edited summary and it is kept up to date again', async()=>{
+  await E("rsumRedraft()");
+  const v=rsI13();
+  const ok=v.indexOf('raised to TOP SECRET')<0 && v.indexOf('- Item 7b CAGE Code: now "9ZZ99".')>0 && rsBar().getAttribute('data-state')==='live';
+  V('i7c','DCSA Northern Region'); RUN();
+  return ok && rsI13().indexOf('- Item 7c Cognizant Security Office: now "DCSA Northern Region".')>0 ? true : rsI13(); });
+await ta('Remove leaves the rest of Item 13 byte-identical and nothing re-adds it', async()=>{
+  await E("rsumRemoveCmd()");
+  const gone=rsI13()===RS13+RS_REF;
+  V('i4prev','W91CRB-21-C-0001'); RUN();
+  return gone && rsI13()===RS13+RS_REF && rsBar().getAttribute('data-state')==='absent' ? true : JSON.stringify(rsI13()); });
+await ta('Redraft then Remove is an exact round trip, with or without a supported-effort line', async()=>{
+  const a0=rsI13(); await E("rsumRedraft()"); const a1=rsI13(); await E("rsumRemoveCmd()"); const a2=rsI13();
+  V('iEffort','0007'); E("supSync()"); const b0=rsI13();
+  await E("rsumRedraft()"); const b1=rsI13(); await E("rsumRemoveCmd()"); const b2=rsI13();
+  return a1.indexOf('Summary of changes in Revision 1')===0 && a2===a0
+      && b0.indexOf('This is in support of effort 0007.\n\n')===0
+      && b1.indexOf('This is in support of effort 0007.\n\nSummary of changes in Revision 1')===0
+      && b1.indexOf('- Item 2 task order / BPA number: now "0007".')>0
+      && b2===b0 ? true : [a0,a2,b0,b2].map(x=>JSON.stringify(x)); });
+await ta('text inserted at the top of Item 13 goes below the summary', async()=>{
+  await E("rsumRedraft()");
+  const v=rsI13(), last=E("RSUM_LAST");
+  return !!last && E("i13HeadOffset(document.getElementById('item13').value)")===v.indexOf(last)+last.length+2
+      && E("i13SupOffset(document.getElementById('item13').value)")===v.indexOf(last); });
+t('the exported Item 13 carries the summary as plain text', ()=>{
+  const x=E("collect254Data().v.item13");
+  return x.indexOf('This is in support of effort 0007.\n\nSummary of changes in Revision 1')===0 && !/[\u2013\u2014\u201c\u201d]/.test(x.slice(0,x.indexOf('Reference 10a'))); });
+await ta('the summary survives save and reopen and is still kept up to date', async()=>{
+  await E("dashSaveNow()"); E("showDashView()"); await E("dashOpen('"+RS1+"')");
+  const live=rsBar().getAttribute('data-state')==='live';
+  V('i6c','DCSA Southern Region'); RUN();
+  return live && rsI13().indexOf('- Item 6c Cognizant Security Office: now "DCSA Southern Region".')>0 ? true : rsI13(); });
+await ta('a recount keeps the open Revision\'s parent', async()=>{
+  await E("dashRecountDrafts([])");
+  return !!E("window.DD254_PARENT&&window.DD254_PARENT.issuance") && rsBar().style.display==='flex'; });
+await ta('a read-only tab never rewrites the summary', async()=>{
+  const before=rsI13(); E("window.DD254_READONLY=true;"); V('i6a','Rsum Corporation'); RUN();
+  const same=rsI13()===before; E("window.DD254_READONLY=false;"); RUN();
+  return same && rsI13()!==before; });
+await ta('Revision 2 replaces Revision 1\'s summary, and a Final drops it', async()=>{
+  await E("dashSaveNow()"); E("showDashView()");
+  await E("dashSpawn('"+RS1+"','rev')"); const r2=await rsKid(RS1,'rev');
+  await E("dashSpawn('"+RS1+"','final')"); const fin=await rsKid(RS1,'final');
+  const noneInherited=r2.workspace.texts.item13.indexOf('Summary of changes')<0 && fin.workspace.texts.item13.indexOf('Summary of changes')<0 && !fin.rsumPending;
+  await E("dashOpen('"+r2.id+"')");
+  const v=rsI13();
+  return noneInherited && v.indexOf('This is in support of effort 0007.\n\nSummary of changes in Revision 2 (from Revision 1 dated 20260301):\n- No changes recorded.')===0
+      && v.split('Summary of changes').length===2 ? true : v; });
+await ta('point-of-contact-only changes raise a warning, never an error', async()=>{
+  V('i16d','B. Moss'); RUN();
+  const has=()=>(w.DD254_WARNS||[]).some(x=>/Item 3b: the only changes from Revision 1 dated 20260301 are point-of-contact details/.test(x));
+  const warned=has() && !(w.DD254_ERRORS||[]).some(x=>/point-of-contact/.test(x)) && rsI13().indexOf('- Item 16d GCA POC: changed from "A. Lane" to "B. Moss".')>0;
+  V('fcl1a','S'); RUN();
+  const cleared=!has();
+  return warned && cleared; });
+await ta('an Original gets no summary, no bar and no POC warning', async()=>{
+  await E("dashSaveNow()"); E("showDashView()"); await E("dashOpen('RS0')");
+  V('i16d','C. Park'); RUN();
+  return rsI13()===RS13 && rsBar().style.display==='none' && !(w.DD254_WARNS||[]).some(x=>/point-of-contact details/.test(x)); });
+E("showDashView();resetFormFields();run();");
+await wipe();
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

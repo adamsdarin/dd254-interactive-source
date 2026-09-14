@@ -1,6 +1,6 @@
 # DD254 Interactive — security fact sheet
 
-Codex Astra v1.15.3 / Tool v2.131, 14 September 2026.
+Codex Astra v1.15.4 / Tool v2.132, 14 September 2026.
 
 This is an offline, single-user drafting aid. The official HTML embeds its
 JavaScript, PDF library and form assets. It uses local browser storage and

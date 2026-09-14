@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.15.3 (tool version 2.131)"
+VER="Codex Astra v1.15.4 (tool version 2.132)"
 
 DOC = [
-("h1","Codex Astra v1.15.3 changes"),
+("h1","Codex Astra v1.15.4 changes"),
+("b","A Revision spawned on the dashboard gets a <b>summary of changes</b> at the top of Item 13 the first time it is opened, kept up to date as you change the form, so the contracting officer incorporating the revision sees what changed on the form itself. See 4.20."),
+("b","A Revision whose only changes are point-of-contact details in Items 16d-16f or 17a-17g now raises a warning, following the DD Form 254 instructions."),
+("b","<b>Fixed:</b> the flow-down ceiling compared a spawned Original, Revision or Final with its own earlier issuance as if that were the prime contract, so a Revision that raised Item 1a or 1b was blocked with a subcontract error. Issuances of the same contract are no longer compared that way."),
+("h2","Codex Astra v1.15.3 changes"),
 ("b","<b>Manage, then Sensitive terms</b> keeps a list of unclassified program nicknames or other words that should not appear on a DD Form 254. Items 9 and 13 are checked against it and a match raises a warning. The list is stored only as one-way fingerprints: it cannot be viewed, exported, backed up or shared. See 4.19."),
 ("h2","Codex Astra v1.15.2 changes"),
 ("b","A ninth library, <b>Security Classification Guides</b>, keeps each guide's unclassified title, identifier, date, issuing office, distribution statement and delivery method. <b>Cite</b> in the form's side panel adds one citation line to Item 13, and cited guides are named in the attachment reminder. If a guide's date changes in the library, a draft still citing the old date gets a warning and an <b>Update citation</b> button. See 5.9."),
@@ -280,7 +284,7 @@ DOC = [
 ("b","11b — receive and store documents only — excludes 11a, 11c, 11d, 11h, 11i and 11k."),
 ("b","11c and 11d each exclude 11a and 11b."),
 ("p","11e services only is not recommended alongside 11b, 11c or 11d; use 11m instead, and explain in Item 13 if you keep both. Other consequences: 11f overseas requires Item 13 detail and forces Item 18d; 11g requires DD Form 1540; 11i TEMPEST and 11j OPSEC each force Item 14 to YES; 11l is expected only alongside 10j."),
-("warn","A prime may not impose TEMPEST, OPSEC or Defense Courier use on a subcontractor without prior GCA written approval. The Flow-down panel lists every selection carrying this constraint, and compares a spawned child against its parent: a clearance or safeguarding level above the prime's is a blocking error."),
+("warn","A prime may not impose TEMPEST, OPSEC or Defense Courier use on a subcontractor without prior GCA written approval. The Flow-down panel lists every selection carrying this constraint, and where a prime DD-254 is compared with a subcontract DD-254, a clearance or safeguarding level above the prime's is a blocking error. An Original, Revision or Final spawned on the dashboard is an issuance of the same contract, not a subcontract, so it is never compared with its parent this way: raising a level or adding a box is what a revision is for."),
 ("h3","Item 11 Performance Advisor"),
 ("p","The advisor beneath Item 11 cross-checks each selected 11a through 11m block against Items 1b, 10, 13, 14 and 18. Questions shown for the selected blocks capture the evidence behind the choice, including access locations, classification guidance, storage, overseas coordination, DTIC sponsorship, COMSEC account authority, TEMPEST or OPSEC direction, Defense Courier approval, CUI designation and other written authority."),
 ("note","These questions and findings are part of the draft's verification record but are excluded from official PDF data. Like the Access Eligibility Advisor, they never create validation errors, change status or block issuance."),
@@ -339,6 +343,14 @@ DOC = [
 ("n","The list is stored in this browser as one-way fingerprints. Nobody, including you, can read it back. It is not in Full Backup, template packs or any export, so re-enter it on another browser. To remove a term, type it again and choose <b>Remove</b>; <b>Clear all</b> empties the list."),
 ("n","When Item 9 or Item 13 contains a listed term, validation shows a warning that says which item, but never the term, because warnings are copied into the Preparer's Worksheet and the dashboard counts. A note directly under the field shows the matched phrase on screen. The note never prints."),
 ("note","A match is a warning, never an error: it does not block a status or an export. Remove the phrase or confirm it may appear on the form. Recount does not run the screen; it runs when a draft is open."),
+("h2","4.20 Revision summary in Item 13"),
+("p","A revised DD Form 254 is incorporated into the contract by modification, and whoever incorporates it needs to know what changed. When you open a Revision spawned from an Original or an earlier Revision for the first time, the tool writes a summary at the top of Item 13, below the supported-effort line if there is one:"),
+("p","<font face='Courier'>Summary of changes in Revision 2 (from Revision 1 dated 20260301):<br/>- Item 1a Facility Clearance Level: changed from Secret to Top Secret.<br/>- Item 11c Receive, store, AND generate classified information or material: added.</font>"),
+("b","Every field that prints is compared with the issuance the Revision was spawned from. Item 3 dates and numbers are not listed. Boxes read <b>added</b> or <b>removed</b>; short entries show both values; long text such as Item 9 says <b>revised</b>; Item 13 changes are named by Reference section."),
+("b","While the summary is the tool's own text it is rewritten as you change the form. It waits while the cursor is in Item 13 and catches up when you leave it. The bar above Item 13 says whether it is being kept up to date."),
+("b","Edit the summary by hand and the tool leaves it exactly as you wrote it. <b>Redraft</b> replaces it with a fresh one after asking. <b>Remove</b> takes it out and leaves the rest of Item 13 as it was; the tool does not put it back."),
+("b","Spawning the next Revision or a Final drops the previous summary, because a summary describes one revision."),
+("note","The DD Form 254 instructions set no format for a revision summary; Item 13 is where anything that might be unclear is explained. Review the wording before issuing. If the only changes are point-of-contact details in Items 16d-16f or 17a-17g, validation warns that the instructions say not to revise for that alone."),
 ("h1","5. Templates — building them and using them"),
 ("p","Nine libraries live under <b>Templates</b> on the dashboard. All are local to this browser and all are included in the Full Backup."),
 ("tbl",[["Library","Holds","Fills"],

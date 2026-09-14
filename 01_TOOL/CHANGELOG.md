@@ -1,3 +1,35 @@
+## v1.15.4 - 14 September 2026
+
+Tool version 2.132. Revision summary in Item 13, a point-of-contact-only warning,
+and a flow-down fix. Design choices were made by the owner: kept up to date until
+edited by hand, short values inline, warn on POC-only revisions, fix flow-down in
+this release. No official PDF field or export format changed.
+
+- A Revision spawned with dashSpawn is flagged (`rsumPending`); on first open the
+  tool writes a summary region into Item 13 directly below the supported-effort
+  line (`rsumProposeOnOpen`, `rsumInsert`, `i13SupOffset`). It compares every
+  printed field (the collect254Data set, less Item 3 bookkeeping) with the cached
+  parent workspace (`rsumText`), naming Item 13 changes by Reference section.
+- The region follows the rule of the other Item 13 regions: identified by the exact
+  text last written (`RSUM_LAST`), rewritten at the top of run() while intact
+  (`rsumSync`), left alone once edited by hand, deferred while Item 13 has focus.
+  Redraft and Remove sit above Item 13; Remove is the exact inverse of the insert.
+  `i13HeadOffset` now skips the summary, so top-of-Item-13 inserts go below it.
+- Spawning the next Revision or a Final drops the inherited summary (`rsumStripAny`).
+- A Revision whose only changes are in Items 16d-16f or 17a-17g raises a warning
+  citing the instructions (`rsumFindings`); never an error.
+- Fixed: `flowIssuesLive` and the dashboard "exceeds prime" chip compared every
+  spawned child with its parent as prime and subcontract. Every parent the tool
+  creates is an earlier issuance of the same contract (`dashParentIsIssuance`), so
+  a Revision raising Item 1a or 1b was blocked in error. The ceiling still applies
+  to a parent that is not an issuance.
+- Fixed: a recount cleared the cached parent of the draft left open.
+
+Not done: the summary is not run during a recount; a parent edited after the
+Revision was last saved makes the stored summary read as hand-edited (Redraft
+restores it); the dashboard still shows the subcontractor countersignature badge on
+every spawned child.
+
 ## v1.15.3 - 14 September 2026
 
 Tool version 2.131. Sensitive-terms screen for Items 9 and 13. Design choices were

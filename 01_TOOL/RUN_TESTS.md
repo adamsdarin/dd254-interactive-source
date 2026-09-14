@@ -223,3 +223,12 @@ on-screen note and its print exclusion, whole-word matching, clearing with the
 text, removal by re-typing, counts-only audit entries, exclusion from Full Backup
 (captured from the real backup download), read-only refusal, silence during
 recount, and the Manage-menu dialog.
+
+The v1.15.4 tests (section 97) cover the revision summary: proposal on first open of
+a spawned Revision, lines for selects, boxes, short and long text and Item 13
+sections in form order, Item 3 bookkeeping excluded, hand edits kept, Redraft,
+Remove as an exact inverse with and without a supported-effort line, head offset,
+exported Item 13, no interruption while typing, read-only tabs, save and reopen,
+recount keeping the parent, replacement by the next Revision and removal on a Final,
+the point-of-contact-only warning, and the flow-down ceiling not applied between
+issuances while still applied to a non-issuance parent.
