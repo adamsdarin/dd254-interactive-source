@@ -1,12 +1,13 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-14T21:40-05:00 by Claude
+Last updated: 2026-09-14T22:10-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.2 (Tool 2.130)**, tag at 744f1b4. **v1.15.3 (Tool
-2.131) is built and verified on branch `release/v1.15.3`, being published.**
+published release: **v1.15.3 (Tool 2.131)**, tag at 5050413 on `main`; assets,
+checksums, kit rebuild and both HTML attestations verified from a fresh download;
+the live demo (`dd254-interactive` 72b879d) serves the attested demo bytes.
 Owner chose separate, fully verified point releases for the v1.15 horizon.
 
 v1.15.3 — roadmap item 2.3, sensitive-terms screen. Owner decisions: stored as
@@ -47,6 +48,9 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-14 22:10 Claude — Published v1.15.3 per SETUP.md: verify passed on
+5050413, main fast-forwarded, tag pushed, release workflow passed, release and
+served demo verified independently. Branch `release/v1.15.3` left in place.
 2026-09-14 21:40 Claude — Built and verified v1.15.3 (sensitive-terms screen).
 Kept the term out of warning text because warnings are copied into the worksheet
 and counts; put the phrase in an unprinted on-screen note instead. Excluded the
