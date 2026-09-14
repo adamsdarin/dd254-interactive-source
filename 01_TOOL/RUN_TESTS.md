@@ -215,3 +215,11 @@ guides; named attachments on the live form and stored drafts; spreadsheet
 normalisation; escaping of hostile titles; and read-only refusal. The library-count
 tests in sections 29, 51 and the panel split were changed deliberately to nine
 libraries, eight spreadsheet libraries and twelve panel sections.
+
+The v1.15.3 tests (section 96) cover the sensitive-terms screen: storage holding
+only a salt and fingerprints, duplicate and over-long handling, salt dependence,
+warnings for Items 9 and 13 that never contain the term and are never errors, the
+on-screen note and its print exclusion, whole-word matching, clearing with the
+text, removal by re-typing, counts-only audit entries, exclusion from Full Backup
+(captured from the real backup download), read-only refusal, silence during
+recount, and the Manage-menu dialog.

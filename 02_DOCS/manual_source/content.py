@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.15.2 (tool version 2.130)"
+VER="Codex Astra v1.15.3 (tool version 2.131)"
 
 DOC = [
-("h1","Codex Astra v1.15.2 changes"),
+("h1","Codex Astra v1.15.3 changes"),
+("b","<b>Manage, then Sensitive terms</b> keeps a list of unclassified program nicknames or other words that should not appear on a DD Form 254. Items 9 and 13 are checked against it and a match raises a warning. The list is stored only as one-way fingerprints: it cannot be viewed, exported, backed up or shared. See 4.19."),
+("h2","Codex Astra v1.15.2 changes"),
 ("b","A ninth library, <b>Security Classification Guides</b>, keeps each guide's unclassified title, identifier, date, issuing office, distribution statement and delivery method. <b>Cite</b> in the form's side panel adds one citation line to Item 13, and cited guides are named in the attachment reminder. If a guide's date changes in the library, a draft still citing the old date gets a warning and an <b>Update citation</b> button. See 5.9."),
 ("h2","Codex Astra v1.15.1 changes"),
 ("b","<b>Import received DD 254 (PDF)</b> on the DD-254 Template Language page turns a fillable DD Form 254 you received into a new template entry: its Items 10 to 16 and 18, its classification marking, and its Item 3 source type and date. Nothing else is created — no draft, no dashboard card — and the PDF is not kept. See 5.4."),
@@ -330,6 +332,13 @@ DOC = [
 ("warn","A dismissal cannot clear a compliance hold. Approval gates are not findings and are not dismissible."),
 ("h2","4.18 Two panels, not one"),
 ("p","The right-hand column holds two separately scrolling panels: validation output in one, the things you act on in the other. Collapsing hides both."),
+("h2","4.19 Sensitive-terms screen"),
+("p","Item 9 must never carry classified project names, code words or descriptions that are themselves sensitive, and Item 13 is where such names most often slip in. <b>Manage, then Sensitive terms</b> keeps a list of words to look for on this browser."),
+("warn","Enter <b>unclassified</b> terms only — for example unclassified program nicknames or customer-sensitive names. Never enter classified information in this tool, and that includes the terms list."),
+("n","Type one term per line, up to five words each, and choose <b>Add</b>. Case, spacing and punctuation do not matter: <b>Kestrel-7</b> and <b>kestrel 7</b> are the same term. Whole words are matched, so <b>Kestrel-77</b> does not match <b>Kestrel-7</b>."),
+("n","The list is stored in this browser as one-way fingerprints. Nobody, including you, can read it back. It is not in Full Backup, template packs or any export, so re-enter it on another browser. To remove a term, type it again and choose <b>Remove</b>; <b>Clear all</b> empties the list."),
+("n","When Item 9 or Item 13 contains a listed term, validation shows a warning that says which item, but never the term, because warnings are copied into the Preparer's Worksheet and the dashboard counts. A note directly under the field shows the matched phrase on screen. The note never prints."),
+("note","A match is a warning, never an error: it does not block a status or an export. Remove the phrase or confirm it may appear on the form. Recount does not run the screen; it runs when a draft is open."),
 ("h1","5. Templates — building them and using them"),
 ("p","Nine libraries live under <b>Templates</b> on the dashboard. All are local to this browser and all are included in the Full Backup."),
 ("tbl",[["Library","Holds","Fills"],

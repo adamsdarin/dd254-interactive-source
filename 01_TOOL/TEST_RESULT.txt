@@ -1,4 +1,4 @@
-BUILD_SHA256 143c2fba8d262eee41c2553f1615e8dbcc6dfd5a426750bcccaab01796f6bbb0
+BUILD_SHA256 8e4be2e2135753300ac6a81278cef510405bb86b3111ca36e9ce7d85bd8fbac9
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1261,6 +1261,24 @@ BUILD_SHA256 143c2fba8d262eee41c2553f1615e8dbcc6dfd5a426750bcccaab01796f6bbb0
   PASS  the side panel escapes a hostile title
   PASS  a read-only tab refuses to cite or update
 
+### 96. v1.15.3 sensitive-terms screen (fingerprints only, warning only, Items 9 and 13)
+  PASS  adding terms stores a salt and fingerprints only, never the words
+  PASS  case, spacing and punctuation variants are duplicates; over-long terms are refused
+  PASS  the same term under a different salt has a different fingerprint
+  PASS  a listed phrase in Item 9 raises a warning that never names the term
+  PASS  the matched phrase appears only in an on-screen note under Item 9
+  PASS  the note is hidden when printing
+  PASS  a hyphenated term in Item 13 is found across punctuation and case
+  PASS  a partial word does not match
+  PASS  removing the text clears the warning and the note
+  PASS  a term is removed by typing it again; unknown terms remove nothing
+  PASS  audit entries record counts, never terms
+  PASS  the list is not in Full Backup
+  PASS  a read-only tab cannot change the list
+  PASS  during a recount the screen reports nothing and schedules nothing
+  PASS  the Manage menu opens the dialog, which adds terms and closes on Escape
+  PASS  clearing the list removes every fingerprint and every warning
+
 ================================
-  PASS 1061   FAIL 0
+  PASS 1077   FAIL 0
 ================================

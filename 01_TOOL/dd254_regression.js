@@ -6518,6 +6518,78 @@ await ta('a read-only tab refuses to cite or update', async()=>{
   let a,b; try{ a=await E("scgInsert(0)"); b=E("scgUpdate(0)"); } finally { E("window.DD254_READONLY=false;"); }
   return a===false && b===false && scgI13()===''; });
 
+H('96. v1.15.3 sensitive-terms screen (fingerprints only, warning only, Items 9 and 13)');
+const termsWarns=()=>(w.DD254_WARNS||[]).filter(x=>/sensitive-terms list/.test(x));
+const termsSet=async(i9,i13)=>{ w.document.getElementById('i9').value=i9; w.document.getElementById('item13').value=i13; E("run()"); await E("termsRescan()"); E("run()"); };
+/* Guarded so a build without the screen fails these tests instead of aborting the run. */
+E("if(typeof termsClear==='function') termsClear();resetFormFields();");
+await ta('adding terms stores a salt and fingerprints only, never the words', async()=>{
+  const r=await E("termsAdd('Programme ALDER'+String.fromCharCode(10)+'Kestrel-7')");
+  const raw=E("localStorage.getItem(TERMS_KEY)")||''; const o=JSON.parse(raw);
+  return r.added===2 && !/alder|kestrel|programme/i.test(raw) && o.hashes.length===2
+      && o.hashes.every(h=>/^[0-9a-f]{64}$/.test(h)) && /^[0-9a-f]{32}$/.test(o.salt) && o.maxWords===2; });
+await ta('case, spacing and punctuation variants are duplicates; over-long terms are refused', async()=>{
+  const r=await E("termsAdd('programme   alder!'+String.fromCharCode(10)+'one two three four five six')");
+  return r.added===0 && r.duplicates===1 && r.tooLong===1 && E("termsCount()")===2; });
+await ta('the same term under a different salt has a different fingerprint', async()=>{
+  const a=await E("termsDigest('00','programme alder')"), b=await E("termsDigest('01','programme alder')");
+  return /^[0-9a-f]{64}$/.test(a) && a!==b; });
+await ta('a listed phrase in Item 9 raises a warning that never names the term', async()=>{
+  await termsSet('Engineering support for the PROGRAMME, Alder effort (demo).','');
+  const ws=termsWarns();
+  return ws.length===1 && /^Item 9:/.test(ws[0]) && !/alder|programme/i.test(ws[0])
+      && !(w.DD254_ERRORS||[]).some(x=>/sensitive-terms/.test(x)); });
+t('the matched phrase appears only in an on-screen note under Item 9', ()=>{
+  const n=w.document.getElementById('termsNote9');
+  return !!n && n.className==='terms-note' && /“programme alder”/.test(n.textContent) && n.previousElementSibling===w.document.getElementById('i9'); });
+t('the note is hidden when printing', ()=> /@media print\{\.terms-note\{display:none!important\}\}/.test(fs.readFileSync('dd254.htm','utf8')));
+await ta('a hyphenated term in Item 13 is found across punctuation and case', async()=>{
+  await termsSet('Clean description.','Reference 11c:'+String.fromCharCode(10,10)+'Work under KESTREL-7 guidance.');
+  const ws=termsWarns();
+  return ws.length===1 && /^Item 13:/.test(ws[0]) && !/kestrel/i.test(ws[0]) && !w.document.getElementById('termsNote9')
+      && /“kestrel 7”/.test(w.document.getElementById('termsNote13').textContent); });
+await ta('a partial word does not match', async()=>{
+  await termsSet('Kestrel-77 and programmes alderman.',''); return termsWarns().length===0; });
+await ta('removing the text clears the warning and the note', async()=>{
+  await termsSet('Clean description.','Clean guidance.');
+  return termsWarns().length===0 && !w.document.getElementById('termsNote13') && !w.document.getElementById('termsNote9'); });
+await ta('a term is removed by typing it again; unknown terms remove nothing', async()=>{
+  const a=await E("termsRemove('KESTREL 7')"), b=await E("termsRemove('never listed')");
+  await termsSet('','Work under Kestrel-7 guidance.');
+  return a===1 && b===0 && E("termsCount()")===1 && termsWarns().length===0; });
+t('audit entries record counts, never terms', ()=>{
+  const a=E("audAll()").filter(x=>x.action==='sensitive-terms-updated');
+  return a.length>=2 && a.every(x=>!/alder|kestrel|programme/i.test(JSON.stringify(x))); });
+await ta('the list is not in Full Backup', async()=>{
+  const o=JSON.parse(E("localStorage.getItem(TERMS_KEY)")); const salt=o.salt, hash=o.hashes[0];
+  let cap=''; const OB=w.Blob; w.Blob=function(p,opt){ cap+=String(p[0]||''); return new OB(p,opt); };
+  const oldURL=w.URL.createObjectURL; w.URL.createObjectURL=()=>'blob:terms-backup';
+  E("window.uiConfirm=async function(){return true;};");
+  try{ await E("fullBackup()"); } finally { w.Blob=OB; w.URL.createObjectURL=oldURL; }
+  return cap.indexOf('DD254 Full Backup')>=0 && cap.indexOf(salt)<0 && cap.indexOf(hash)<0 && cap.indexOf('dd254_sensitive_terms')<0; });
+await ta('a read-only tab cannot change the list', async()=>{
+  E("window.DD254_READONLY=true;"); let msg='';
+  try{ await E("termsAdd('another term')"); }catch(e){ msg=String(e&&e.message||e); } finally { E("window.DD254_READONLY=false;"); }
+  return /read-only/.test(msg) && E("termsCount()")===1; });
+t('during a recount the screen reports nothing and schedules nothing', ()=>{
+  E("window.DD254_RECOUNTING=true;"); const n=E("termsFindings().length"); E("window.DD254_RECOUNTING=false;"); return n===0; });
+await ta('the Manage menu opens the dialog, which adds terms and closes on Escape', async()=>{
+  const item=w.document.querySelector('.dash-menu-item[onclick="termsOpen()"]');
+  if(!item) return 'no menu item';
+  E("termsOpen()"); const dlg=w.document.getElementById('termsDlg');
+  const warnsUnclass=/unclassified/.test(dlg.textContent) && /cannot be viewed, exported, backed up or shared/.test(dlg.textContent);
+  w.document.getElementById('termsInput').value='Harrier Nine';
+  w.document.getElementById('termsAddBtn').click();
+  await waitFor(()=>/Added 1\./.test(w.document.getElementById('termsMsg').textContent),'dialog add');
+  const counted=/2 terms/.test(w.document.getElementById('termsCount').textContent);
+  dlg.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  return warnsUnclass && counted && !w.document.getElementById('termsDlg'); });
+await ta('clearing the list removes every fingerprint and every warning', async()=>{
+  await termsSet('Harrier nine support.','');
+  const before=termsWarns().length; const n=E("termsClear()"); await termsSet('Harrier nine support.','');
+  return before===1 && n===2 && E("localStorage.getItem(TERMS_KEY)")===null && termsWarns().length===0 && !w.document.getElementById('termsNote9'); });
+E("resetFormFields();run();");
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

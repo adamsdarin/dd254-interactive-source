@@ -1,3 +1,29 @@
+## v1.15.3 - 14 September 2026
+
+Tool version 2.131. Sensitive-terms screen for Items 9 and 13. Design choices were
+made by the owner: fingerprints only, warning only, Items 9 and 13. No validation
+error, approval hold, export or official PDF field changed.
+
+- Added Manage → Screening → Sensitive terms. Terms (unclassified only, up to five
+  words) are normalised to lower-case words and stored in browser local storage as
+  a random 128-bit salt plus salted SHA-256 fingerprints (`termsAdd`,
+  `termsRemove`, `termsClear`). The words are never stored, displayed back,
+  exported, backed up or shared; a term is removed by typing it again. Audit
+  entries record counts only.
+- Items 9 and 13 are scanned for every run of one to the list's longest word count
+  and compared against the fingerprints (`termsScanText`). Matching is on whole
+  words, ignoring case and punctuation. Because hashing is asynchronous, run()
+  reports the last completed scan and schedules a fresh one when the text or list
+  changes (`termsFindings`, `termsRescan`).
+- A match is a warning naming the item but never the term, because warning text
+  reaches the Preparer's Worksheet and dashboard counts. The matched phrase is shown
+  only in an on-screen note under the field (`termsRenderNotes`), which a print
+  stylesheet hides. Recounts do not run the screen.
+
+Not done: fingerprints resist casual reading but not a determined guess of short
+terms; the screen does not cover fields other than Items 9 and 13; lists are per
+browser.
+
 ## v1.15.2 - 14 September 2026
 
 Tool version 2.130. Security Classification Guides reference library. No

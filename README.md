@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v1.15.2
+# DD‑254 Interactive — Codex Astra v1.15.3
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -19,14 +19,14 @@ and no network traffic. Download one file, open it, work offline.
 
 | | |
 |---|---|
-| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.15.2 demo build, covered by the release's signed provenance |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.15.2.HTM` |
+| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.15.3 demo build, covered by the release's signed provenance |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.15.3.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v1.15.2.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.15.3.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -99,6 +99,13 @@ released file. Because the demo build is one of the attested files, the live dem
 can be checked against it too. The logs are public.
 
 ---
+
+## What changed in v1.15.3
+
+- **Sensitive-terms screen.** Keep a list of unclassified program nicknames or
+  other words that must not appear on the form. Items 9 and 13 are checked and a
+  match raises a warning. The list is stored only as one-way fingerprints, so it
+  cannot be read, exported or backed up, and warnings never repeat the term.
 
 ## What changed in v1.15.2
 
@@ -215,15 +222,15 @@ These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify
 eligibility or decide authority. No server or new storage service is required.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.15.2.md)
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.15.3.md)
 describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.15.2.md)
-- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.15.2.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.15.3.md)
+- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.15.3.md)
 - [Verifying a download and the live demo](VERIFY.md)
 - [Maintainer release and demo procedure](SETUP.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)
