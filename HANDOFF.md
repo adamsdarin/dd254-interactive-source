@@ -1,13 +1,14 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-14T17:40-05:00 by Claude
+Last updated: 2026-09-14T18:20-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: v1.15.0 (Tool 2.128). **v1.15.1 (Tool 2.129) is built,
-verified and being released** per SETUP.md "Publish" (owner chose separate,
-fully verified point releases for the v1.15 horizon).
+published release: **v1.15.1 (Tool 2.129)**, tag at 142cf80 on `main`; assets,
+checksums, kit rebuild and both attestations verified from a fresh download; the
+live demo (`dd254-interactive` cae5f8e) serves the attested demo bytes. Owner
+chose separate, fully verified point releases for the v1.15 horizon.
 
 v1.15.1 — roadmap item 2.1, scope set by the owner on 2026-09-14: importing a
 received DD Form 254 must SOLELY create DD-254 Template Language. "Import received
@@ -55,6 +56,9 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
 
 ## Log
 
+2026-09-14 18:20 Claude — Published v1.15.1 per SETUP.md: verify passed on
+142cf80, main fast-forwarded, tag pushed, release workflow passed, release and
+served demo verified independently. Branch `release/v1.15.1` left in place.
 2026-09-14 17:40 Claude — Built and verified v1.15.1 (received DD Form 254 →
 DD-254 Template Language only). Owner narrowed item 2.1 from "read-only parent"
 to template creation. Read form data by the export's own field names, confirmed
