@@ -1,12 +1,13 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-14T23:30-05:00 by Claude
+Last updated: 2026-09-14T23:55-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.3 (Tool 2.131)**, tag at 5050413. **v1.15.4 (Tool
-2.132) is built and verified on branch `release/v1.15.4`, being published.**
+published release: **v1.15.4 (Tool 2.132)**, tag at d478e28 on `main`; assets,
+checksums, kit rebuild and both HTML attestations verified from a fresh download;
+the live demo (`dd254-interactive` ba8d62f) serves the attested demo bytes.
 Owner chose separate, fully verified point releases for the v1.15 horizon.
 
 v1.15.4 — roadmap item 2.4, revision summary in Item 13. DD 254 instructions in
@@ -55,6 +56,9 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   for flow-down in v1.15.4. Not changed; needs an owner decision.
 
 ## Log
+2026-09-14 23:55 Claude — Published v1.15.4 per SETUP.md: verify passed on
+d478e28, main fast-forwarded, tag pushed, release workflow passed, release and
+served demo verified independently. Branch `release/v1.15.4` left in place.
 2026-09-14 23:30 Claude — Built and verified v1.15.4 (revision summary). Proposed
 the summary on first open rather than writing it at spawn, so the exact-text match
 is computed from the same live form it is later compared with. Compared printed
