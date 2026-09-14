@@ -1,13 +1,14 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-14T20:10-05:00 by Claude
+Last updated: 2026-09-14T20:50-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: v1.15.1 (Tool 2.129). **v1.15.2 (Tool 2.130) is built,
-verified and being released** per SETUP.md "Publish" (owner chose separate,
-fully verified point releases for the v1.15 horizon).
+published release: **v1.15.2 (Tool 2.130)**, tag at 744f1b4 on `main`; assets,
+checksums, kit rebuild and both attestations verified from a fresh download; the
+live demo (`dd254-interactive` 4505abc) serves the attested demo bytes. Owner
+chose separate, fully verified point releases for the v1.15 horizon.
 
 v1.15.2 — roadmap item 2.2, Security Classification Guides library (`TPL_SCG`,
 kind `scg`): unclassified title, identifier, date, issuing office, distribution
@@ -54,6 +55,9 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
 
 ## Log
 
+2026-09-14 20:50 Claude — Published v1.15.2 per SETUP.md: verify passed on
+744f1b4, main fast-forwarded, tag pushed, release workflow passed, release and
+served demo verified independently. Branch `release/v1.15.2` left in place.
 2026-09-14 20:10 Claude — Built and verified v1.15.2 (SCG reference library).
 Chose text-derived citations over a stored list (one source of truth), exact
 identifier/title matching after spotting SCG-1 vs SCG-10, and a warning rather
