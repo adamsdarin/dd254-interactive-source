@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.15.6 (tool version 2.134)"
+VER="Codex Astra v1.15.7 (tool version 2.135)"
 
 DOC = [
-("h1","Codex Astra v1.15.6 changes"),
+("h1","Codex Astra v1.15.7 changes"),
+("b","<b>Corrected:</b> 3.14 attributed the dashboard's review clock to DoDI 5220.22. The clock follows the DD Form 254 Instructions, Item 3b(3), which call for a biennial review of revisions. The Government Contracting Activity's own biennial review is a separate government duty, now in DoDM 5220.32 Volume 1, and the Contracting Officer package says so."),
+("h2","Codex Astra v1.15.6 changes"),
 ("b","A card can carry the contract's <b>period of performance end date</b>, a tool-only date that never prints. Before it, and before the two-year retention window after it closes, the card prompts at 120, 60 and 30 days until a Final is issued. See 3.14."),
 ("b","The demonstration build opens with an example portfolio: fictitious DD-254s in every status, so its features can be seen without building a chain first."),
 ("b","<b>Fixed:</b> a note or other change saved while the dashboard was redrawing could be overwritten on an older draft. The dashboard now updates only what it needs to on the stored record."),
@@ -179,7 +181,8 @@ DOC = [
         ["Cancel all","Leaves every selected DD-254 at its prior status with no issue date or distribution change."]]),
 ("note","Selected status changes are written in one browser-database transaction, so a storage failure cannot leave only part of the group issued. Each DD-254 still receives its own status, distribution and audit entries. A Revision's biennial review date is recalculated during bulk issuance; create any calendar reminder separately."),
 ("h2","3.14 Review dates"),
-("p","DoDI 5220.22 requires a review every two years. When you issue a Revision (Item 3b) the tool offers to set the review date two years from the revision date and can produce a calendar invite. The card badges the date, amber near due and red once overdue. The clock applies to revisions only."),
+("p","The DD Form 254 Instructions, Item 3b(3), call for a review of classification requirements at least biennially, in the context of revisions. That is the clock the dashboard keeps. When you issue a Revision (Item 3b) the tool offers to set the review date two years from the revision date and can produce a calendar invite. The card badges the date, amber near due and red once overdue. The clock applies to revisions only."),
+("note","Do not confuse it with the Government Contracting Activity's own review. DoD policy requires the GCA to review the security classification requirements of a DD Form 254 at least biennially during contract performance (DoDM 5220.32 Volume 1, paragraph 6.3.g; the requirement was previously in DoDI 5220.22, which DoDI 5220.31 cancelled). That is a government duty. Contractors are bound by 32 CFR Part 117 and the DD Form 254 instructions, not by those DoD issuances."),
 ("h3","Performance end and the Final"),
 ("p","At the completion of a classified contract, USG-provided and deliverable information goes back to the Government. Unless the GCA advises otherwise, copies may be kept for two years after completion, and the DD Form 254 stays in effect for that period. Keeping them longer needs GCA authorisation and a Final DD Form 254 with disposition instructions; for a subcontract, the subcontractor asks through the prime and the prime issues the Final (32 CFR 117.13(d)(5), 117.15(j) and 117.17(c)). The decision is easy to leave too late, so the card can prompt for it."),
 ("b","Open a card and enter <b>Performance ends</b>. It is a tool-only date: the DD Form 254 has no end date, so it is kept on the dashboard record and never reaches the form, the PDF, Compare or the revision summary."),

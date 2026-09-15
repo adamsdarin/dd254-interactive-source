@@ -1,3 +1,20 @@
+## v1.15.7 - 15 September 2026
+
+Tool version 2.135. Authority attribution correction; no behaviour, validation rule,
+official PDF field or storage change.
+
+- The manual (3.14) credited the dashboard's biennial review clock to DoDI 5220.22.
+  The owner distinguished the two obligations: DoD policy requires the GCA to review
+  a DD Form 254's security classification requirements at least biennially during
+  performance, a government duty; the DD Form 254 Instructions, Item 3b(3), call for
+  the biennial review of revisions, which is what the clock implements; contractors
+  are bound by 32 CFR Part 117 and the instructions. In the approved library DoDI
+  5220.22 is cancelled by DoDI 5220.31 (2023-05-09) and the GCA requirement is DoDM
+  5220.32 Volume 1 (Change 2, 2021-12-10), paragraph 6.3.g.
+- Manual 3.14 now cites Item 3b(3) for the clock and adds a note on the GCA's
+  separate duty. The Contracting Officer package line on the GCA review now cites
+  DoDM 5220.32 Volume 1, paragraph 6.3.g, and says it is separate from Item 3b(3).
+
 ## v1.15.6 - 15 September 2026
 
 Tool version 2.134. Final-due prompt and demonstration portfolio (roadmap items 2.5

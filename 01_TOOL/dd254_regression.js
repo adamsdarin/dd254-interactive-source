@@ -7008,6 +7008,20 @@ await ta("the seeded Revision 1 summary is the tool's own text, and a second run
 E("(function(){var b=document.getElementById('demoBanner');if(b)b.remove();})();showDashView();resetFormFields();run();");
 await wipe();
 
+H('100. v1.15.7 biennial review attribution (GCA duty vs Item 3b(3) review of revisions)');
+t('the CO package cites the GCA review to DoDM 5220.32 Volume 1 and keeps it apart from Item 3b(3)', ()=>{
+  E("showFormView();resetFormFields();document.getElementById('i2a').value='W911-R';run();");
+  grabWindow(); E("exportCOPrep();");
+  const txt=String(grabbed||'');
+  E("showDashView();resetFormFields();");
+  return /GCA review of the DD Form 254 security classification requirements at least biennially during contract performance \(DoDM 5220\.32 Volume 1, paragraph 6\.3\.g\)/.test(txt)
+      && /separate from the DD Form 254 Instructions Item 3b\(3\) review of revisions/.test(txt) && !/DoDI 5220\.22/.test(txt); });
+t('the manual credits the review clock to Item 3b(3) and the GCA duty to DoDM 5220.32 Volume 1', ()=>{
+  const m=fs.readFileSync(path.join('..','02_DOCS','manual_source','content.py'),'utf8');
+  return !/DoDI 5220\.22 requires a review/.test(m)
+      && /Instructions, Item 3b\(3\), call for a review of classification requirements at least biennially, in the context of revisions/.test(m)
+      && /DoDM 5220\.32 Volume 1, paragraph 6\.3\.g/.test(m) && /Contractors are bound by 32 CFR Part 117 and the DD Form 254 instructions/.test(m); });
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

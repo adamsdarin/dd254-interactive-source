@@ -1,4 +1,4 @@
-BUILD_SHA256 963289b4bdfd89b7ae09941c7a13919253aab6f86dfaa916b4aefdb25591956c
+BUILD_SHA256 761f4ec6c14e423996476c5075994861440bf1e259153053c4850bd5e2400c03
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1338,6 +1338,10 @@ BUILD_SHA256 963289b4bdfd89b7ae09941c7a13919253aab6f86dfaa916b4aefdb25591956c
   PASS  seeding never touches the form, and the counts it writes are what validation says
   PASS  the seeded Revision 1 summary is the tool's own text, and a second run seeds nothing
 
+### 100. v1.15.7 biennial review attribution (GCA duty vs Item 3b(3) review of revisions)
+  PASS  the CO package cites the GCA review to DoDM 5220.32 Volume 1 and keeps it apart from Item 3b(3)
+  PASS  the manual credits the review clock to Item 3b(3) and the GCA duty to DoDM 5220.32 Volume 1
+
 ================================
-  PASS 1130   FAIL 0
+  PASS 1132   FAIL 0
 ================================

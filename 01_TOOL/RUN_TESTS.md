@@ -252,3 +252,7 @@ window: twelve labelled records in every status, clean validation where issued,
 holds and dates, prompt levels, seeding beside an open form without touching it,
 written counts equal to a fresh recount, a live revision summary, and no second
 seeding.
+
+The v1.15.7 test (section 100) checks that the Contracting Officer package cites the
+GCA's biennial review to DoDM 5220.32 Volume 1 and separates it from Item 3b(3), and
+that the manual source no longer credits the review clock to DoDI 5220.22.

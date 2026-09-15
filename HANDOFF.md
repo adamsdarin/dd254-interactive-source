@@ -1,14 +1,16 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T12:30-05:00 by Claude
+Last updated: 2026-09-15T13:30-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.6 (Tool 2.134)**, tag at 39bacf2 on `main`; assets,
-checksums, kit rebuild and both HTML attestations verified from a fresh download;
-the live demo (`dd254-interactive` bdeb696) serves the attested demo bytes. It
-completes the v1.15 horizon.
+published release: **v1.15.6 (Tool 2.134)**, tag at 39bacf2. **v1.15.7 (Tool
+2.135) is built and verified on branch `release/v1.15.7`, being published** — a
+wording-only correction: the manual credited the revision review clock to DoDI
+5220.22; it now cites DD 254 Instructions Item 3b(3), with a note that the GCA's own
+biennial review is a separate government duty (DoDM 5220.32 V1 §6.3.g; DoDI 5220.22
+cancelled into DoDI 5220.31), and the CO package cites it. Regression 1132/0.
 
 v1.15.6 — roadmap items 2.5 and 2.6. Authority checked first: 32 CFR 117.13(d)(5),
 117.15(j), 117.17(c). The roadmap premise "retention clock starts once a Final
@@ -57,11 +59,12 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   backup restore? Currently it waits for the next load (documented limit).
 - Should an imported template also carry the received form's prime contract
   number (template field `primeContract`)? Left empty under "solely template language".
-- Manual 3.14 attributes the biennial review to "DoDI 5220.22"; the tool's code
-  cites DD Form 254 Instructions Item 3b(3) ("Conduct review of classification
-  requirements at least biennially"). Not changed; needs a check and owner decision.
 
 ## Log
+2026-09-15 13:30 Claude — Built v1.15.7 on the owner's clarification that the GCA
+biennial review (DoD policy) and the Item 3b(3) review of revisions (DD 254
+instructions, binding industry with the NISPOM) are different obligations. Cited the
+current DoD source found in the library rather than the cancelled instruction.
 2026-09-15 12:30 Claude — Published v1.15.6 per SETUP.md. First verify run
 (30e11a9) failed the demo smoke test; fixed in 39bacf2 (seed writes counts; render
 backfills use draftPatch), verify passed, main fast-forwarded, tag pushed, release
