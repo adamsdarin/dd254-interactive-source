@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.15.5 (tool version 2.133)"
+VER="Codex Astra v1.15.6 (tool version 2.134)"
 
 DOC = [
-("h1","Codex Astra v1.15.5 changes"),
+("h1","Codex Astra v1.15.6 changes"),
+("b","A card can carry the contract's <b>period of performance end date</b>, a tool-only date that never prints. Before it, and before the two-year retention window after it closes, the card prompts at 120, 60 and 30 days until a Final is issued. See 3.14."),
+("b","The demonstration build opens with an example portfolio: fictitious DD-254s in every status, so its features can be seen without building a chain first."),
+("h2","Codex Astra v1.15.5 changes"),
 ("b","The <b>countersignature</b> badge now appears only on a SAP subcontract: the SAP flag with a subcontractor in Item 2b or 7a. It used to appear on every spawned Original, Revision or Final, including Revisions of prime contracts. See 3.11."),
 ("b","A contract is SAP or non-SAP for its whole life. A spawned Original, Revision or Final whose SAP flag differs from the issuance it was spawned from is a blocking error. See 2.2."),
 ("b","The Item 17 help text no longer says every subcontract needs the subcontractor's signature; that is a SAP rule (DoDM 5205.07 section 10.1.d). The Preparer's Worksheet now treats a SAP subcontractor named only in Item 7a as a SAP subcontract, as the rest of the tool already did."),
@@ -176,6 +179,14 @@ DOC = [
 ("note","Selected status changes are written in one browser-database transaction, so a storage failure cannot leave only part of the group issued. Each DD-254 still receives its own status, distribution and audit entries. A Revision's biennial review date is recalculated during bulk issuance; create any calendar reminder separately."),
 ("h2","3.14 Review dates"),
 ("p","DoDI 5220.22 requires a review every two years. When you issue a Revision (Item 3b) the tool offers to set the review date two years from the revision date and can produce a calendar invite. The card badges the date, amber near due and red once overdue. The clock applies to revisions only."),
+("h3","Performance end and the Final"),
+("p","At the completion of a classified contract, USG-provided and deliverable information goes back to the Government. Unless the GCA advises otherwise, copies may be kept for two years after completion, and the DD Form 254 stays in effect for that period. Keeping them longer needs GCA authorisation and a Final DD Form 254 with disposition instructions; for a subcontract, the subcontractor asks through the prime and the prime issues the Final (32 CFR 117.13(d)(5), 117.15(j) and 117.17(c)). The decision is easy to leave too late, so the card can prompt for it."),
+("b","Open a card and enter <b>Performance ends</b>. It is a tool-only date: the DD Form 254 has no end date, so it is kept on the dashboard record and never reaches the form, the PDF, Compare or the revision summary."),
+("b","The newest Original or Revision of a contract shows <b>performance ends</b> with the date. From 120 days out it turns amber and says a retention decision is due, bolder at 60 days and red at 30."),
+("b","After the end date the badge counts down to the close of the two-year retention window the same way, saying a Final is needed to keep copies longer. Once the window has closed it stays red."),
+("b","Issuing a Final anywhere in the contract's chain clears the prompt. Solicitations, Finals, cancelled and skipped records and superseded cards never show it."),
+("b","<b>Invite</b> downloads a calendar file with both dates and reminders at 120, 60 and 30 days. Setting, changing and clearing the date are written to the audit log, and the portfolio export has a Performance End column."),
+("note","Exercising an option year that extends performance is not a reason to revise the DD Form 254 (Instructions, Item 3b(2)). Change the date on the card; the tool does not suggest a revision."),
 ("h2","3.15 Recount validation"),
 ("p","The error and warning counts on each card are a snapshot written when a draft is saved, not recomputed as you look at the dashboard. Whenever the validation rules change, every stored draft keeps showing numbers derived from the old rules until you open it."),
 ("p","<b>After an update this happens on its own.</b> Each draft's counts record the tool version that produced them. When the tool loads and finds drafts counted under a different version, it recounts those drafts once, without asking, and writes one entry to the audit log. Status, holds, notes and the form itself are not changed. A draft you try to open waits until the recount finishes. A recount that changes nothing does not count toward your backup reminder."),

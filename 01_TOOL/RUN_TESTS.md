@@ -240,3 +240,12 @@ no error without a parent, the Item 17 help text, the worksheet's Item 7a SAP
 subcontract case, dialog height rules and Escape, and the revision summary baseline:
 the choice offered, applied, kept through edits and reopening, cleared, cancelled,
 not inherited, not asked with one earlier issuance, and the POC warning's own parent.
+
+The v1.15.6 tests (section 99) cover the Final-due prompt: the clock at every
+escalation boundary before performance ends and before the retention window closes,
+the records that never prompt, the card moving the prompt to a Revision and clearing
+it on a Final, audited setting and clearing, absence from the workspace, Compare,
+revision summary and XFA data, refused dates and read-only tabs, the calendar invite
+and the CSV column; and the demo portfolio, run from `demo_seed.html` in the test
+window: twelve labelled records in every status, clean validation where issued,
+holds and dates, prompt levels, a live revision summary, and no second seeding.

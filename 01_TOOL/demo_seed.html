@@ -1,8 +1,9 @@
 <script>
 /* ── DEMONSTRATION BUILD ─────────────────────────────────────────
    Identical to the shipped tool except for this block. Every template library
-   is seeded with four fictitious entries so the workflow can be shown without
-   anyone typing setup data first.
+   is seeded with four fictitious entries, and an empty dashboard with an example
+   portfolio of DD-254s (see EXAMPLE PORTFOLIO below), so the workflow can be
+   shown without anyone typing setup data first.
 
    Every value here is invented. Companies, addresses and contract numbers are
    made up; telephone numbers use the 555-01xx range reserved for fiction and
@@ -103,6 +104,130 @@
     ]);
     if(typeof buildTplSelects==='function') buildTplSelects();
     if(typeof dashRenderCards==='function') dashRenderCards();
+    window.DD254_DEMO_PORTFOLIO=seedPortfolio().catch(function(){ return false; });
+  }
+  /* ── EXAMPLE PORTFOLIO (v1.15.6) ───────────────────────────────
+     A reviewer should see the dashboard at work without building a chain first,
+     so an empty dashboard gets a handful of fictitious DD-254s: a solicitation
+     skipped straight to an Original whose performance ends soon, an Original
+     with an issued Revision 1 carrying its biennial review date and a Draft
+     Revision 2, a SAP subcontract Blocked on the Program Security Officer
+     approval hold, a pair of task orders issued together, a subcontract Final
+     with its disposition clock running, one Ready to sign and one Cancelled - so
+     every status chip has something in it. Dates are relative to today so the
+     clocks stay live, and every title says "(example)". Seeded only when there
+     are no drafts at all, so nothing typed during a demonstration is replaced. */
+  function isoDay(n){ const d=new Date(); d.setUTCHours(12,0,0,0); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().split('T')[0]; }
+  function ymd(n){ return isoDay(n).replace(/-/g,''); }
+  function stamp(n,hhmm){ return isoDay(n)+'T'+(hhmm||'15:00')+':00.000Z'; }
+  const EX13='Reference 11c:\n\nThe contractor will reference the applicable security classification guide when generating or deriving classified material.';
+  const EXNOTE='Example record seeded by the demonstration build. Every name, number and date is fictitious.';
+  function exParty(i){ return B[i][0]+'\n'+B[i][2]+'\n'+B[i][3]; }
+  function exWs(i,o){
+    const c=CSOS[i], p=PEOPLE[2];
+    const ws={texts:{i2a:'',i6a:exParty(i),i6b:B[i][1],i6c:c[0]+'\n'+c[1],i6fsoEmail:'fso.'+B[i][1].toLowerCase()+'@example.com',
+        i9:'Engineering and test support for a ground station integration effort (example).',
+        i12:'Program Public Affairs Office (demo), 100 Liberty Avenue, Arlington, VA 22202',item13:EX13,
+        i16a:'Army Contracting Command (demo)',i16b:'W91CRB',i16c:'6001 Combat Drive, Aberdeen Proving Ground, MD 21005',i16d:p[0],i16e:p[2],i16f:p[3],
+        i17a:p[0],i17b:'Contracting Officer',i17c:'6001 Combat Drive, Aberdeen Proving Ground, MD 21005',i17d:'W91CRB',i17f:p[2],i17g:p[3]},
+      selects:{fcl1a:'S',sfg1b:'S'},radios:{spec:'3a',fo:'no',fin:'no',i12route:'dir',i14:'no',i15:'no'},
+      checks:{c11c:true,dist18a:true,dist18e:true},perf:[]};
+    ['texts','selects','radios','checks'].forEach(function(g){ Object.keys((o&&o[g])||{}).forEach(function(k){ ws[g][k]=o[g][k]; }); });
+    if(o&&o.perf) ws.perf=o.perf;
+    return ws;
+  }
+  function exRec(id,title,stage,status,ws,o){
+    const t=ws.texts;
+    return Object.assign({id:id,title:title,stage:stage,status:status,workspace:ws,todos:[],notes:EXNOTE,holds:[],dist:[],
+      createdAt:stamp(-30),updatedAt:stamp(-30),
+      meta:{contract:t.i2a||t.i2b||t.i2c||'',cage7:t.i7b||'',contractor:String(t.i6a||'').split('\n')[0]}},o||{});
+  }
+  function exDist(n,i,more){
+    return [{ts:stamp(n,'15:10'),party:'18a',to:'fso.'+B[i][1].toLowerCase()+'@example.com',method:'e-mail'},
+            {ts:stamp(n,'15:10'),party:'18e',to:CSOS[i][3],method:'e-mail'}].concat(more||[]);
+  }
+  async function seedPortfolio(){
+    if(typeof draftAll!=='function'||typeof draftPut!=='function'||typeof dashRecountDrafts!=='function') return false;
+    if(window.DD254_AUTO_RECOUNT){ try{ await window.DD254_AUTO_RECOUNT; }catch(e){} }
+    if((await draftAll()).length) return false;
+    const plus2=(typeof dd254Plus2y==='function')?dd254Plus2y:function(){ return ''; };
+    const recs=[], logs=[];
+    /* Aurora: a solicitation skipped straight to an Original; performance ends in 100 days. */
+    const aSol=exRec('demo-aur-sol','Aurora Dynamics (example) — Solicitation','sol','Skipped',
+      exWs(0,{texts:{i2c:'W91CRB-26-R-0101',i2c_due:ymd(-215),i3a_date:ymd(-240)}}),
+      {createdAt:stamp(-240),updatedAt:stamp(-200)});
+    const aOrig=exRec('demo-aur-orig','Aurora Dynamics (example) — Original','orig','Issued',
+      exWs(0,{texts:{i2a:'W91CRB-26-C-0101',i3a_date:ymd(-150)}}),
+      {parentId:aSol.id,rootId:aSol.id,createdAt:stamp(-200),updatedAt:stamp(-150),issuedAt:stamp(-150),
+       niss:{on:true,date:isoDay(-152),by:'RV'},dist:exDist(-150,0),popEnd:isoDay(100)});
+    recs.push(aSol,aOrig);
+    logs.push([aSol,'skipped','solicitation not issued — went straight to Original (example)']);
+    /* Meridian: Original, Revision 1 raising safeguarding (issued, biennial review
+       date set), and a Draft Revision 2 whose summary is proposed when opened. */
+    const M={i2a:'N00024-25-C-2210',i9:'Systems integration and sustainment for a shipboard sensor (example).'};
+    const mOrig=exRec('demo-mer-orig','Meridian Systems (example) — Original','orig','Issued',
+      exWs(1,{texts:Object.assign({i3a_date:ymd(-420)},M),selects:{sfg1b:'C'}}),
+      {createdAt:stamp(-430),updatedAt:stamp(-420),issuedAt:stamp(-420),niss:{on:true,date:isoDay(-421),by:'TO'},dist:exDist(-420,1),popEnd:isoDay(720)});
+    const rev1Summary='Summary of changes in Revision 1 (from the Original dated '+ymd(-420)+'):\n- Item 1b Safeguarding Level: changed from Confidential to Secret.';
+    const mRev1=exRec('demo-mer-rev1','Meridian Systems (example) — Rev 1','rev','Issued',
+      exWs(1,{texts:Object.assign({i3a_date:ymd(-420),i3b_rev:'1',i3b_date:ymd(-60),item13:rev1Summary+'\n\n'+EX13},M),radios:{spec:'3b'}}),
+      {parentId:mOrig.id,rootId:mOrig.id,revN:1,createdAt:stamp(-75),updatedAt:stamp(-60),issuedAt:stamp(-60),
+       niss:{on:true,date:isoDay(-62),by:'TO'},dist:exDist(-60,1),reviewDate:plus2(isoDay(-60)),popEnd:isoDay(720)});
+    const mRev2=exRec('demo-mer-rev2','Meridian Systems (example) — Rev 2','rev','Draft',
+      exWs(1,{texts:Object.assign({i3a_date:ymd(-420),i3b_rev:'2',i3b_date:''},M),radios:{spec:'3b'},checks:{c11d:true},
+        perf:[{loc:'Naval Surface Warfare Center (demo)\n300 Highway 361\nCrane, IN 47522',cage:'',cso:'',email:'',cma:''}]}),
+      {parentId:mRev1.id,rootId:mOrig.id,revN:2,rsumPending:true,niss:null,nissPrior:{date:isoDay(-62),by:'TO',from:'rev'},
+       createdAt:stamp(-2),updatedAt:stamp(-2),popEnd:isoDay(720),todos:[{text:'Confirm the hardware storage area with the program office (example).',due:isoDay(-2),done:false}]});
+    recs.push(mOrig,mRev1,mRev2);
+    /* Northwind issuing a SAP subcontract to Calder: Blocked on the PSO approval hold. */
+    const cSap=exRec('demo-cal-sap','Calder Aerospace (example) — SAP subcontract — Original','orig','Blocked',
+      exWs(3,{texts:{i2a:'SP4701-25-C-3310',i2b:'NWD-S-26-0142',i3a_date:'',i7a:exParty(2),i7b:B[2][1],i7c:CSOS[2][0]+'\n'+CSOS[2][1],
+        i7fsoEmail:'fso.9cal2@example.com',i17e:B[3][1],i9:'Fabrication of test fixtures for a special access programme (example).',
+        i14text:'SAP addendum requirements apply and are transmitted separately (example).',i15text:'The Program Security Officer retains inspection responsibility (example).',
+        item13:'Reference 10f:\n\nAccess to the programme requires Program Security Officer approval and the SAP addendum (example).\n\n'+EX13},
+        radios:{i14:'yes',i15:'yes'},checks:{sapFlag:true,c10f:true,dist18b:true}}),
+      {createdAt:stamp(-12),updatedAt:stamp(-5),
+       holds:[{t:'Waiting on the Program Security Officer to approve the SAP addendum (example).',s:'Blocked',d:isoDay(-5),ts:stamp(-5),done:false}]});
+    if(typeof dashSyncCompliance==='function') dashSyncCompliance(cSap);
+    recs.push(cSap);
+    /* Northwind: two task orders issued together - one ends in 25 days, one ended a month ago. */
+    [['0007',25,'demo-nwd-to7'],['0008',-30,'demo-nwd-to8']].forEach(function(x){
+      const r=exRec(x[2],'Northwind Defense (example) — Task Order '+x[0]+' — Original','orig','Issued',
+        exWs(3,{texts:{i2a:'SP4701-25-D-3310',iEffort:x[0],i3a_date:ymd(-20),item13:'This is in support of effort '+x[0]+'.\n\n'+EX13}}),
+        {createdAt:stamp(-40),updatedAt:stamp(-20,'14:05'),issuedAt:stamp(-20,'14:05'),niss:{on:true,date:isoDay(-22),by:'JS'},
+         dist:exDist(-20,3),popEnd:isoDay(x[1])});
+      recs.push(r);
+      logs.push([r,'status','Ready to sign → Issued (bulk issuance; example)']);
+      logs.push([r,'distributed','18a (fso.4nwd8@example.com); 18e ('+CSOS[3][3]+') — bulk issuance; example']);
+    });
+    /* Aurora's subcontract to Calder: Original, then a Final with the disposition clock running. */
+    const S={i2a:'W91CRB-23-C-0090',i2b:'AUR-S-23-0031',i3a_date:ymd(-1000),i7a:exParty(2),i7b:B[2][1],i7c:CSOS[2][0]+'\n'+CSOS[2][1],
+      i7fsoEmail:'fso.9cal2@example.com',i17e:B[0][1],i9:'Prototype antenna assembly and test (example).'};
+    const sOrig=exRec('demo-sub-orig','Calder Aerospace (example) — Subcontract — Original','orig','Issued',
+      exWs(0,{texts:S,checks:{dist18b:true}}),
+      {createdAt:stamp(-1010),updatedAt:stamp(-1000),issuedAt:stamp(-1000),niss:{on:true,date:isoDay(-1001),by:'RV'},dist:exDist(-1000,0),popEnd:isoDay(-150)});
+    const sFin=exRec('demo-sub-final','Calder Aerospace (example) — Subcontract — Final','final','Issued',
+      exWs(0,{texts:Object.assign({},S,{i3c_date:ymd(-120),i5_reqdate:ymd(-135),i5ret:'Two years from the final date (example)',
+        item13:EX13+'\n\nReference 5:\n\nFinal disposition: at the end of the retention period, return all classified material to the Government Contracting Activity or destroy it, and notify the prime contractor in writing (example).'}),
+        radios:{spec:'3c',fin:'yes'},checks:{dist18b:true}}),
+      {parentId:sOrig.id,rootId:sOrig.id,createdAt:stamp(-130),updatedAt:stamp(-120),issuedAt:stamp(-120),
+       niss:{on:true,date:isoDay(-121),by:'RV'},dist:exDist(-120,0),retentionDue:plus2(isoDay(-120)),popEnd:isoDay(-150)});
+    recs.push(sOrig,sFin);
+    /* One Ready to sign and one Cancelled. */
+    const cRts=exRec('demo-cal-rts','Calder Aerospace (example) — Original','orig','Ready to sign',
+      exWs(2,{texts:{i2a:'N00178-26-C-0417',i3a_date:ymd(0),i9:'Radar cross-section measurement support (example).'}}),
+      {createdAt:stamp(-9),updatedAt:stamp(-1),niss:{on:true,date:isoDay(-1),by:'ML'},popEnd:isoDay(400)});
+    const mCxl=exRec('demo-mer-cxl','Meridian Systems (example) — Task Order 0012 — Original','orig','Cancelled',
+      exWs(1,{texts:{i2a:'N00024-25-D-2215',iEffort:'0012',i3a_date:'',item13:'This is in support of effort 0012.\n\n'+EX13}}),
+      {createdAt:stamp(-25),updatedAt:stamp(-9),cancel:{reason:'Requirement withdrawn by the program office before award (example).',date:isoDay(-9),from:'Draft'}});
+    recs.push(cRts,mCxl);
+    logs.push([mCxl,'cancelled','Requirement withdrawn by the program office before award (example).']);
+    for(const r of recs) await draftPut(r);
+    if(typeof audLog==='function') logs.forEach(function(l){ audLog(l[0].id,l[0].title,l[1],l[2]); });
+    /* The counts on each card are written by validation, so run it once over the examples. */
+    await dashRecountDrafts(recs);
+    if(typeof dashRenderCards==='function') await dashRenderCards();
+    return true;
   }
   let tries=0;
   (function wait(){

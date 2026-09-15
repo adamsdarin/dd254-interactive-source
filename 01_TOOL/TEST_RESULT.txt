@@ -1,4 +1,4 @@
-BUILD_SHA256 ebe70e0ae2bf88e7beac9490c509f5caa518b2c910000dc4e0ac67ecd2e36993
+BUILD_SHA256 3cc174fe48949c911f280635d1faf3888493be757de36b3e62e737472dff99de
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1323,6 +1323,19 @@ BUILD_SHA256 ebe70e0ae2bf88e7beac9490c509f5caa518b2c910000dc4e0ac67ecd2e36993
   PASS  a Revision spawned from one with a chosen baseline starts from its own parent
   PASS  with only one earlier issuance Redraft does not ask
 
+### 99. v1.15.6 Final-due prompt (tool-only performance end date) and the demo portfolio
+  PASS  the clock escalates at 120, 60 and 30 days before performance ends, then before the retention window closes
+  PASS  no prompt without a date, on a Solicitation, a Final, a Cancelled or Skipped record, a superseded card or a chain with a Final
+  PASS  the card prompts on the newest Original or Revision, and a spawned Final clears it
+  PASS  setting, extending and clearing the date is audited and never reaches the form, Compare, the summary or the XFA data
+  PASS  an impossible date is refused and a read-only tab cannot set one
+  PASS  the calendar invite carries both deadlines with reminders at 120, 60 and 30 days
+  PASS  the card control says the date is tool-only and that an option-year extension is not a reason to revise
+  PASS  the portfolio export carries the Performance End column
+  PASS  the demo seed fills an empty dashboard with labelled examples and every status
+  PASS  the demo portfolio shows the Final-due prompt at its escalation levels
+  PASS  the seeded Revision 1 summary is the tool's own text, and a second run seeds nothing
+
 ================================
-  PASS 1117   FAIL 0
+  PASS 1128   FAIL 0
 ================================

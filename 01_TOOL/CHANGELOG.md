@@ -1,3 +1,36 @@
+## v1.15.6 - 15 September 2026
+
+Tool version 2.134. Final-due prompt and demonstration portfolio (roadmap items 2.5
+and 2.6), completing the v1.15 horizon. Owner decisions: count down to both the
+end of performance and the close of the two-year retention window; keep the date
+on the dashboard card only; seed the demo when the dashboard is empty. No form
+field, validation rule, official PDF field or XFA data changed.
+
+- Authority checked in the approved library first: 32 CFR 117.13(d)(5) (return at
+  completion; copies for two years unless the GCA advises otherwise; a Final with
+  disposition instructions for a continuing need), 117.15(j) and 117.17(c)
+  (subcontract retention requested through the prime, which issues the Final). The
+  roadmap's "retention clock starts once a Final exists" was corrected: the clock
+  starts at completion.
+- A tool-only `popEnd` date on the dashboard record, set from the open card
+  (`dashSetPopEnd`, audited). It is never in the workspace, so it cannot print,
+  reach XFA data, Compare or the revision summary.
+- `dashPopClock` and `dashPopBadge`: before the end date, then until end + 2 years,
+  escalating at 120, 60 and 30 days; red once the window has closed. Shown on the
+  newest Original or Revision only; a Final in the chain (`dashChainHasFinal`), a
+  superseded card, a Solicitation, a Final, Cancelled and Skipped clear it.
+- `dashPopIcs`: a calendar file with both dates and reminders at 120, 60 and 30
+  days. The portfolio CSV gains a Performance End column after Review Date.
+- Demo: `demo_seed.html` seeds an empty dashboard with twelve fictitious DD-254s,
+  titled "(example)", dated relative to today: a Solicitation skipped to an
+  Original, an Original with Revision 1 (review date) and a Draft Revision 2, a
+  SAP subcontract Blocked on the Program Security Officer approval hold, a
+  bulk-issued pair, a subcontract Final with its disposition clock, one Ready to
+  sign and one Cancelled. Validation counts are written by a recount.
+
+Not done: the end date is entered by hand; the tool does not read it from the
+contract.
+
 ## v1.15.5 - 14 September 2026
 
 Tool version 2.133. Countersignature badge, SAP lineage, dialog layout and revision

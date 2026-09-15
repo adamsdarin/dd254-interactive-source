@@ -6860,6 +6860,124 @@ E("window.uiChoice=window.__ucOrig;delete window.__ucOrig;");
 E("showDashView();resetFormFields();run();");
 await wipe();
 
+H('99. v1.15.6 Final-due prompt (tool-only performance end date) and the demo portfolio');
+const popAdd=(iso,n)=>{ const d=new Date(iso+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().split('T')[0]; };
+const popToday=new Date().toISOString().split('T')[0];
+const popClock=(r,o)=>E("dashPopClock("+JSON.stringify(r)+","+JSON.stringify(o||{})+")");
+const popBadges=()=>cards().map(c=>({id:c.getAttribute('data-id'),b:Array.from(c.querySelectorAll('.dash-pop-badge')).map(x=>x.textContent)}));
+E("window.uiConfirm=async function(){return true;};window.DD254_READONLY=false;showDashView();resetFormFields();");
+t('the clock escalates at 120, 60 and 30 days before performance ends, then before the retention window closes', ()=>{
+  const r={stage:'orig',status:'Issued',popEnd:'2027-01-31'}, L=(today)=>{ const c=popClock(r,{today}); return c.phase+':'+c.level+':'+c.days; };
+  const got=[L(popAdd('2027-01-31',-121)),L(popAdd('2027-01-31',-120)),L(popAdd('2027-01-31',-61)),L(popAdd('2027-01-31',-60)),
+    L(popAdd('2027-01-31',-31)),L(popAdd('2027-01-31',-30)),L('2027-01-31'),
+    L('2027-02-01'),L(popAdd('2029-01-31',-120)),L(popAdd('2029-01-31',-60)),L(popAdd('2029-01-31',-30)),L('2029-01-31'),L('2029-02-01')];
+  const want=['before:0:121','before:1:120','before:1:61','before:2:60','before:2:31','before:3:30','before:3:0',
+    'window:0:730','window:1:120','window:2:60','window:3:30','window:3:0','closed:3:-1'];
+  return JSON.stringify(got)===JSON.stringify(want) && popClock(r,{today:'2027-02-01'}).close==='2029-01-31' ? true : got; });
+t('no prompt without a date, on a Solicitation, a Final, a Cancelled or Skipped record, a superseded card or a chain with a Final', ()=>{
+  const base={stage:'orig',status:'Issued',popEnd:'2027-01-31'}, o={today:'2026-12-01'};
+  return popClock(base,o)!==null && popClock(Object.assign({},base,{stage:'rev'}),o)!==null
+    && popClock(Object.assign({},base,{popEnd:''}),o)===null && popClock(Object.assign({},base,{popEnd:'2027-02-30'}),o)===null
+    && popClock(Object.assign({},base,{stage:'sol'}),o)===null && popClock(Object.assign({},base,{stage:'final'}),o)===null
+    && popClock(Object.assign({},base,{status:'Cancelled'}),o)===null && popClock(Object.assign({},base,{status:'Skipped'}),o)===null
+    && popClock(base,Object.assign({superseded:true},o))===null && popClock(base,Object.assign({hasFinal:true},o))===null; });
+let POPID='';
+/* Close whatever an earlier section left open, or its pending autosave recreates it after the wipe. */
+const popIdle=async()=>{ await E("dashSaveNow()"); await new Promise(r=>setTimeout(r,50)); E("clearTimeout(DASH.timer);DASH.current=null;document.body.classList.add('dash-mode');resetFormFields();"); await wipe(); };
+await ta('the card prompts on the newest Original or Revision, and a spawned Final clears it', async()=>{
+  await popIdle();
+  await E("draftPut({id:'PO1',title:'Pop Co — Original',stage:'orig',status:'Issued',createdAt:'2026-01-10T00:00:00Z',updatedAt:'2026-01-10T00:00:00Z',todos:[],notes:'',popEnd:'"+popAdd(popToday,100)+"',"
+    +"workspace:{texts:{i2a:'W91CRB-26-C-0550',i3a_date:'20260110'},selects:{fcl1a:'S',sfg1b:'S'},radios:{spec:'3a'},checks:{},perf:[]}})");
+  await E("dashRenderCards()");
+  const one=popBadges();
+  await E("dashSpawn('PO1','rev')"); POPID=(await E("draftAll()")).find(x=>x.parentId==='PO1').id;
+  await E("dashRenderCards()");
+  const two=popBadges();
+  await E("dashSpawn('"+POPID+"','final')"); await E("dashRenderCards()");
+  const three=popBadges();
+  return one.length===1 && /performance ends in 100 days \(/.test(one[0].b.join()) && /retention decision due/.test(one[0].b.join())
+      && two.find(x=>x.id==='PO1').b.length===0 && /performance ends in 100 days/.test(two.find(x=>x.id===POPID).b.join())
+      && three.every(x=>x.b.length===0) ? true : [one,two,three]; });
+await ta('setting, extending and clearing the date is audited and never reaches the form, Compare, the summary or the XFA data', async()=>{
+  const end1=popAdd(popToday,200), end2=popAdd(popToday,565);
+  await E("dashSetPopEnd('PO1','"+end1+"')"); await E("dashSetPopEnd('PO1','"+end2+"')");
+  const rec=await E("draftGet('PO1')");
+  const aud=E("audAll()").filter(x=>x.action==='performance-end-set'&&x.id==='PO1').map(x=>JSON.stringify(x));
+  const audited=aud.some(x=>x.indexOf(end1)>=0) && aud.some(x=>x.indexOf(end2)>=0&&x.indexOf('was '+end1)>=0);
+  const notInWs=JSON.stringify(rec.workspace).indexOf(end2)<0 && JSON.stringify((await E("draftGet('"+POPID+"')")).workspace).indexOf('popEnd')<0;
+  const model=await E("dashCompareModel('"+POPID+"')");
+  const noDiff=model.edges.length===1 && !model.edges[0].rows.some(x=>/perform/i.test(x.field));
+  await E("dashOpen('"+POPID+"')");
+  const i13=w.document.getElementById('item13').value;
+  const x=String(E("DD254XFA.buildXfaDatasets(collect254Data())"));
+  const clean=i13.indexOf('No changes recorded')>0 && x.indexOf(end2)<0 && x.indexOf(end2.replace(/-/g,''))<0;
+  E("showDashView()");
+  await E("dashSetPopEnd('PO1',null)");
+  const cleared=!('popEnd' in (await E("draftGet('PO1')"))) && E("audAll()").some(x=>x.action==='performance-end-set'&&x.id==='PO1'&&/\(cleared\) \(was /.test(JSON.stringify(x)));
+  return audited && notInWs && noDiff && clean && cleared ? true : {audited,notInWs,noDiff,clean,cleared,aud}; });
+await ta('an impossible date is refused and a read-only tab cannot set one', async()=>{
+  let msg=''; w.alert=m=>{msg=m;};
+  await E("dashSetPopEnd('PO1','2027-02-30')");
+  const refused=/YYYY-MM-DD/.test(msg) && !('popEnd' in (await E("draftGet('PO1')")));
+  E("window.DD254_READONLY=true;"); msg='';
+  await E("dashSetPopEnd('PO1','2027-03-01')");
+  E("window.DD254_READONLY=false;");
+  return refused && /read-only/.test(msg) && !('popEnd' in (await E("draftGet('PO1')"))); });
+t('the calendar invite carries both deadlines with reminders at 120, 60 and 30 days', ()=>{
+  const ics=E("dashPopIcs({id:'X1',title:'Pop Co — Original',popEnd:'2027-03-01',meta:{contract:'W91CRB-26-C-0550',contractor:'Pop Co'}})");
+  return /DTSTART:20270301T090000/.test(ics) && /DTSTART:20290301T090000/.test(ics)
+      && (ics.match(/BEGIN:VEVENT/g)||[]).length===2 && (ics.match(/BEGIN:VALARM/g)||[]).length===6
+      && ['-P120D','-P60D','-P30D'].every(x=>ics.indexOf('TRIGGER:'+x)>0) && /117\.13\(d\)\(5\)/.test(ics) && /117\.17\(c\)/.test(ics)
+      && E("dashPopIcs({id:'X2'})")===''; });
+await ta('the card control says the date is tool-only and that an option-year extension is not a reason to revise', async()=>{
+  await E("dashSetPopEnd('PO1','"+popAdd(popToday,300)+"')"); await E("dashRenderCards('PO1')");
+  const row=w.document.querySelector('.dash-card[data-id="PO1"] .dash-pop-row');
+  return !!row && /tool only, never printed/.test(row.textContent) && /option year is not a reason to revise the DD Form 254 \(Instructions, Item 3b\(2\)\)/.test(row.textContent)
+      && !!row.querySelector('input[type=date]') && /invite/.test(row.textContent); });
+await ta('the portfolio export carries the Performance End column', async()=>{
+  let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p,{type:'text/csv'});};
+  w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{};
+  try{ await E("portfolioCsv()"); } finally { w.Blob=OB; }
+  const rows=E("ioCsvParse("+JSON.stringify(cap)+")"), hdr=rows.find(r=>r.indexOf('Performance End')>=0)||[];
+  /* By the ID column: the Revision and Final spawned from PO1 carry it as their Parent ID. */
+  const col=hdr.indexOf('Performance End'), idc=hdr.lastIndexOf('ID'), row=rows.find(r=>r[idc]==='PO1')||[];
+  return col>0 && hdr[col-1]==='Review Date' && row[col]===popAdd(popToday,300) ? true : {col,idc,hdr:hdr.slice(col-1,col+1),row:row.slice(col-1,col+1)}; });
+/* The demo seed, run in this window: it seeds an empty dashboard only. */
+const demoSeedCode=()=>fs.readFileSync('demo_seed.html','utf8').replace(/^\s*<script>/,'').replace(/<\/script>\s*$/,'');
+await ta('the demo seed fills an empty dashboard with labelled examples and every status', async()=>{
+  await popIdle(); E("window.DD254_DEMO_PORTFOLIO=null;");
+  w.eval(demoSeedCode());
+  await waitFor(()=>E("!!window.DD254_DEMO_PORTFOLIO"),'portfolio seeding',15000);
+  const seeded=await E("window.DD254_DEMO_PORTFOLIO");
+  const all=await E("draftAll()"), by={}; all.forEach(r=>{by[r.id]=r;});
+  const statuses=new Set(all.map(r=>r.status));
+  const clean=all.filter(r=>r.status==='Issued'||r.status==='Ready to sign'||r.status==='Skipped').every(r=>r.meta&&r.meta.errors===0);
+  await E("dashRenderCards()");
+  const chips=w.document.getElementById('dashStatusCounts').textContent.replace(/\s+/g,' ');
+  const sap=by['demo-cal-sap']||{holds:[]}, pair=[by['demo-nwd-to7']||{},by['demo-nwd-to8']||{}];
+  return seeded===true && all.length===12 && all.every(r=>/\(example\)/.test(r.title))
+      && ['Draft','Blocked','Ready to sign','Issued','Skipped','Cancelled'].every(s=>statuses.has(s)) && clean
+      && /1 ?Draft/.test(chips) && /1 ?Blocked/.test(chips) && /1 ?Ready to sign/.test(chips) && /8 ?Issued/.test(chips) && /1 ?Cancelled/.test(chips)
+      && sap.holds.some(h=>h.k==='10f'&&!h.done) && sap.holds.some(h=>/Program Security Officer to approve/.test(h.t)&&!h.done)
+      && !!pair[0].issuedAt && pair[0].issuedAt===pair[1].issuedAt && !!by['demo-mer-rev1'].reviewDate && !!by['demo-sub-final'].retentionDue
+      && by['demo-aur-sol'].status==='Skipped' && by['demo-aur-orig'].parentId==='demo-aur-sol' ? true : {seeded,n:all.length,statuses:[...statuses],clean,chips}; }, 90000);
+await ta('the demo portfolio shows the Final-due prompt at its escalation levels', async()=>{
+  const b=popBadges(), get=id=>(b.find(x=>x.id===id)||{b:[]}).b.join();
+  return /performance ends in 100 days/.test(get('demo-aur-orig')) && /performance ends in 25 days/.test(get('demo-nwd-to7'))
+      && /performance ended .* retention window closes \d{4}-\d{2}-\d{2}/.test(get('demo-nwd-to8'))
+      && get('demo-sub-orig')==='' && get('demo-sub-final')==='' && get('demo-mer-orig')==='' ? true : b; });
+await ta("the seeded Revision 1 summary is the tool's own text, and a second run seeds nothing", async()=>{
+  await E("dashOpen('demo-mer-rev1')");
+  const live=(w.document.getElementById('rsumBar')||{getAttribute:()=>null}).getAttribute('data-state')==='live';
+  await E("dashSaveNow()"); await new Promise(r=>setTimeout(r,50));
+  E("clearTimeout(DASH.timer);DASH.current=null;document.body.classList.add('dash-mode');window.DD254_DEMO_PORTFOLIO=null;");
+  w.eval(demoSeedCode());
+  await waitFor(()=>E("!!window.DD254_DEMO_PORTFOLIO"),'second seeding',15000);
+  const again=await E("window.DD254_DEMO_PORTFOLIO");
+  return live && again===false && (await E("draftAll()")).length===12; }, 60000);
+E("(function(){var b=document.getElementById('demoBanner');if(b)b.remove();})();showDashView();resetFormFields();run();");
+await wipe();
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));
