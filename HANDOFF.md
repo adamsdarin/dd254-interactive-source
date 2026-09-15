@@ -1,12 +1,13 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T01:00-05:00 by Claude
+Last updated: 2026-09-15T01:30-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.4 (Tool 2.132)**, tag at d478e28. **v1.15.5 (Tool
-2.133) is built and verified on branch `release/v1.15.5`, being published.**
+published release: **v1.15.5 (Tool 2.133)**, tag at f29e9bc on `main`; assets,
+checksums, kit rebuild and both HTML attestations verified from a fresh download;
+the live demo (`dd254-interactive` 260eb10) serves the attested demo bytes.
 Owner chose separate, fully verified point releases for the v1.15 horizon.
 
 v1.15.5 — corrective release. Authorities checked in the approved library: DoDM
@@ -52,6 +53,9 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-15 01:30 Claude — Published v1.15.5 per SETUP.md: verify passed on
+f29e9bc, main fast-forwarded, tag pushed, release workflow passed, release and
+served demo verified independently. Branch `release/v1.15.5` left in place.
 2026-09-15 01:00 Claude — Built and verified v1.15.5. Reproduced the badge on a
 prime-contract Revision in jsdom, read DoDM 5205.07 10.1.d and the DD 254
 instructions, and asked the owner before changing it. Owner testing mid-release
