@@ -1,4 +1,4 @@
-BUILD_SHA256 94bdb52fa401358d3497a69c913b0daf87607320b9a0f010bc5fa35eba0c2151
+BUILD_SHA256 bd765882f984ecd453314e28e185938678ad38ab9178961c8db6434f4f76b02c
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1350,6 +1350,17 @@ BUILD_SHA256 94bdb52fa401358d3497a69c913b0daf87607320b9a0f010bc5fa35eba0c2151
   PASS  the PDF edition carries the package, and every page names the release and the marking
   PASS  the menu offers both audiences with the automatic one first, and each choice does what it says
 
+### 103. v2.0.0 restoring a backup merges templates instead of replacing them
+  PASS  restoring an older backup keeps templates created after it and shows what each library would change
+  PASS  a library left unticked is not touched
+  PASS  Cancel changes nothing, drafts included
+  PASS  Replace all takes a Full Backup first and replaces nothing if it does not complete
+  PASS  Undo last change puts a merged library back
+  PASS  Undo after a colleague pack import reverts the library instead of emptying it
+  PASS  an Undo copy saved as a bare list by an earlier build still restores
+  PASS  a tampered backup is refused before any preview
+  PASS  a colleague's pack still gets its own preview and returns the ticked libraries
+
 ================================
-  PASS 1138   FAIL 0
+  PASS 1147   FAIL 0
 ================================

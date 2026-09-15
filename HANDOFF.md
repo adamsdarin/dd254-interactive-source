@@ -1,13 +1,33 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T18:00-05:00 by Claude
+Last updated: 2026-09-15T19:00-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.16.0 (Tool 2.136)**, tag at 664cf3d on `main`; assets,
-checksums, kit rebuild and both HTML attestations verified; live demo serves the
-attested demo bytes.
+published release: **v1.16.0 (Tool 2.136)**, tag at 664cf3d on `main`. **v2.0.0
+(Tool 2.137) is built and verified locally, release in progress** (branch
+`release/v2.0.0`); update this line when the tag is verified.
+
+v2.0.0 — roadmap 4.3. `fullRestore` only reads the file; `fullRestoreData(data)`
+keeps the count/sha256 gate, then plans every library with `tplPackPlan` and shows
+`tplPackPreview({mode:'restore'})` (resolves `{picked}` or `{replaceAll}`; pack mode
+still resolves an array). Merge applies `tplPackApply` to ticked libraries: nothing
+removed. Replace-all: confirm, then `fullBackup()` must return true, then per-list
+undo copy. Audit `full-restore` detail starts `merge:` or `replace-all:`. Fixed a
+shipped bug: `tplPackApply` stored its undo copy as a bare array while `tplIoUndo`
+reads `{ts,data}`, so Undo after a colleague import emptied the library;
+`tplIoUndo` now also accepts a bare array and refuses unreadable copies. Fixed
+`PACK_LABEL.scg` missing ("undefined"). Regression section is **103** (a section
+titled "102. Notes and backup snapshot custody" already exists — section numbers
+are not unique by position, so splice by title). Four `String(fullRestore)`
+assertions also read `fullRestoreData`.
+
+Verification on the v2.0.0 build: regression 1147 PASS / 0 FAIL; all SETUP step-6
+checks and both browser smokes pass; restore dialog screenshotted in headless
+Chrome. Negative control on v1.16.0: 6 new tests throw (no `fullRestoreData`), both
+Undo tests and the pack-label test fail; earlier tests pass (portfolio export timing
+test failed once, passed on rerun; manual-source test needs ../02_DOCS).
 
 v1.16.0 — roadmap 3.1, first v1.16 release. `exportCOPrep` split into
 `coPackageModel(audience)` + `coPackageHtml` + `coPackagePdfBytes`/`coPackagePdf`;
@@ -47,9 +67,11 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
 2. v1.16 closed as planned (owner, 2026-09-15): 3.1 shipped in v1.16.0; 3.3
    (signer readiness, non-XFA investigation) dropped; 3.4 (NCCS view) out of scope;
    3.5 (generated rule catalog, authority baseline date) skipped. Do not build them
-   without a new owner decision. Remaining roadmap: v2.0 durability and adoption
-   (4.1 persistent storage, 4.2 encrypted backup, 4.3 merge-on-restore, 4.4 approval
-   package, 4.5 hosting decision), pending owner selection.
+   without a new owner decision. v2.0 (owner, 2026-09-15): selected 4.1, 4.3, 4.4;
+   then skipped 4.1 (headless Chrome on file:// reports persisted=false and refuses
+   persist()). 4.3 is v2.0.0. **Next: 4.4 approval package** — Section 508 ACR from
+   an actual audit, CycloneDX SBOM, two-page ISSM brief. 4.2 encrypted backup and
+   4.5 hosting were not selected.
 3. 3.2 CMMC prompts wait for source text: missing_source requests filed as
    guidance_watch in ../workflow_requests.py (Librarian): 9868ef03f16a6bc5f0aed7d7
    DFARS 252.204-7021, 4788a4859333a8dc85cc9962 DFARS 252.204-7025,
@@ -65,6 +87,14 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-15 19:00 Claude — Built and verified v2.0.0 (4.3 merge on restore). Reused
+the colleague-import planner rather than a second merge rule, kept replace-all behind
+a completed backup, and took the major version because restore's effect on existing
+data changed. The new Undo test exposed a shipped bug (Undo after a colleague import
+emptied the library); fixed in the same release. The Custodian corrected the
+library's mislabelled "DD 254 January 2026.pdf" by a `historical` metadata decision
+(effective 1999-12) in release dd254-dec1999-lifecycle-fix-20260915; its title and
+filename still await an owner decision in the Archivist handoff.
 2026-09-15 18:00 Claude — Owner skipped roadmap 3.5 after seeing the rule survey
 (31 alerts carry authorities; ~59 error/warning sites and 5 helper sources mostly do
 not). Library mislabel handed to the Custodian through a background agent.

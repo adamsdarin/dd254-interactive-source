@@ -263,3 +263,12 @@ each confined to their package with shared lines in both; the differing action
 lines limited to the audience-specific ones word for word; draft, stage, contract,
 release and marking in both; the PDF read back with pypdf for the release, notice
 and marking on every page; and the menu dialog's choices, view, PDF and Cancel.
+
+The v2.0.0 tests (section 103) drive the real restore dialog with backups built by
+the tool's own checksum functions: an older backup returns changed templates to its
+version, adds what it holds and keeps templates created since and same-name
+templates of another lineage; an unticked library and Cancel change nothing;
+replace-all needs a completed prior backup and leaves an undo copy; Undo reverts a
+merged library and a colleague import, reads an old-format copy and refuses an
+unreadable one; a tampered backup is refused before the preview; a colleague pack
+keeps its own preview.

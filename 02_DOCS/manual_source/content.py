@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.16.0 (tool version 2.136)"
+VER="Codex Astra v2.0.0 (tool version 2.137)"
 
 DOC = [
-("h1","Codex Astra v1.16.0 changes"),
+("h1","Codex Astra v2.0.0 changes"),
+("b","<b>Restoring a Full Backup no longer deletes newer templates.</b> The restore shows what it would change in each library, then merges: templates in both return to the backup\u2019s version, templates only in the backup are added, and templates you created since are kept. Replacing every list is still available as a separate choice, after a backup of what you have now. See 8.1."),
+("b","<b>Fixed:</b> <b>Undo last change</b> after importing a colleague\u2019s templates emptied that library instead of reverting it. It now puts the library back as it was."),
+("h2","Codex Astra v1.16.0 changes"),
 ("b","The Contracting Officer Package is now two review packages, one for the <b>Government CO / GCA</b> and one for a <b>prime contractor issuing a subcontract</b>. The tool picks one from Items 2b and 7a and lets you choose the other, on screen or as a PDF. See 6.1."),
 ("h2","Codex Astra v1.15.7 changes"),
 ("b","<b>Corrected:</b> 3.14 attributed the dashboard's review clock to DoDI 5220.22. The clock follows the DD Form 254 Instructions, Item 3b(3), which call for a biennial review of revisions. The Government Contracting Activity's own biennial review is a separate government duty, now in DoDM 5220.32 Volume 1, and the Contracting Officer package says so."),
@@ -535,7 +538,14 @@ DOC = [
 ("p","<b>Templates</b>, then <b>Full Backup</b> writes a single JSON file containing every template library, every draft, and the audit log. The dashboard header counts changes since your last backup and turns red when you are behind."),
 ("p","After the download starts, the tool asks whether the Full Backup finished and was saved successfully. Only the backed-up changes clear when you confirm; later edits keep their reminder. Choose Cancel if the browser blocked the download, it is still running, or you cannot find the file; the reminder stays active."),
 ("p","Backups carry a SHA-256 checksum and entry counts. On restore both are verified: a truncated download or an edited file is refused rather than silently loaded. Older backups without a checksum require explicit confirmation. The audit log merges on restore rather than overwriting, de-duplicated by timestamp."),
-("warn","Restoring a Full Backup REPLACES every template list. Drafts are merged by ID, but templates are not. Take a backup of the current state before restoring another one."),
+("p","<b>Restore</b> checks the file first, then shows what it would change before anything is applied, library by library, the same way an import from a colleague does. Every library with a difference starts ticked, because it is your own backup; untick any you want to leave alone."),
+("tbl",[["In the backup","What happens"],
+        ["A template you still hold, changed since the backup","Returned to the backup\u2019s version. Recognised by its hidden identifier, so a rename does not matter."],
+        ["A template you have since deleted","Added back."],
+        ["A different template with the same name as one of yours","<b>Both are kept.</b> Yours is untouched; the backup\u2019s arrives renamed, for example <i>Mid-Atlantic CSO (imported, 2026-08-01)</i>."],
+        ["Nothing \u2014 a template you created after the backup","Kept. A restore never removes a template."]]),
+("p","Drafts in the backup are added or overwritten by ID; drafts that are not in it are kept. <b>Undo last change</b> in a library reverts what the restore did to it."),
+("warn","<b>Replace all templates instead</b> makes every list exactly the backup\u2019s, removing templates created or changed since. The tool first downloads a Full Backup of what you have now and asks whether it saved; if you say it did not, nothing is replaced."),
 ("h2","8.2 Sharing templates with colleagues"),
 ("p","When one person curates the libraries for a team, <b>Manage, then Share templates</b> moves them between instances. <b>Export templates only</b> writes a file containing the nine libraries and <i>nothing else</i> \u2014 no drafts, no dashboard, nothing about anybody\u2019s actual DD-254s. The file is stamped with who exported it and when."),
 ("p","<b>Export templates only</b> opens a picker before it writes anything. Every library is listed with its entries, all ticked, so sharing the lot is still one click \u2014 but you can untick a whole library, or individual entries within one, and send only what is useful. Sharing two new Standard Language paragraphs need not drag your entire facility list along with them."),

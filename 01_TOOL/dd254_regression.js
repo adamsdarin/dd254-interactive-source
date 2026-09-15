@@ -149,7 +149,7 @@ t('counts both halves', ()=>{const c=E("bkCounts({ct:[1,2],fac:[3]},[{id:'a'},{i
 t('canonical body key order', ()=> E("bkBody({a:1},[2]).indexOf('templates')<bkBody({a:1},[2]).indexOf('drafts')"));
 await ta('a good payload verifies', async()=> true===await E("(async function(){var T={ct:[{label:'x'}]},D=[{id:'1'}];var sha=await bkSha256(bkBody(T,D));var r=JSON.parse(JSON.stringify({templates:T,drafts:D}));return (await bkSha256(bkBody(r.templates,r.drafts)))===sha;})()"));
 await ta('a tampered payload does not', async()=> true===await E("(async function(){var T={ct:[{label:'x'}]},D=[{id:'1'}];var sha=await bkSha256(bkBody(T,D));T.ct[0].label='EVIL';return (await bkSha256(bkBody(T,D)))!==sha;})()"));
-t('restore refuses on a count mismatch', ()=> /Restore refused/.test(E("String(fullRestore)")) && /checksum mismatch/.test(E("String(fullRestore)")));
+t('restore refuses on a count mismatch', ()=> /Restore refused/.test(E("String(fullRestore)+(typeof fullRestoreData==='function'?String(fullRestoreData):'')")) && /checksum mismatch/.test(E("String(fullRestore)+(typeof fullRestoreData==='function'?String(fullRestoreData):'')")));
 t('backup stamps version 4, counts, hash and the audit log', ()=>{const s=E("String(fullBackup)");
   return /version:4/.test(s) && /payload\.counts=bkCounts/.test(s)
       && /payload\.sha256=await bkSha256/.test(s) && /payload\.audit=/.test(s);});
@@ -1537,7 +1537,7 @@ await ta('a full backup round-trips through restore', async()=>{
   return stamped && !!back && back.workspace.texts.i6a==='Backup Co'
       && E("tplLoad(TPL_CSO)")[0].label==='BK-CSO' && E("tplLoad(TPL_FAC)")[0].cage==='9BK99';});
 t('a tampered backup is rejected on checksum', ()=>{
-  const s2=E("String(fullRestore)");
+  const s2=E("String(fullRestore)+(typeof fullRestoreData==='function'?String(fullRestoreData):'')");
   return /checksum mismatch/.test(s2) && /Restore refused/.test(s2) && /bkSha256/.test(s2);});
 t('the backup dirty counter tracks changes', ()=>{
   E("try{localStorage.setItem('dd254_dirty_n','0');}catch(e){} bkMark();");
@@ -1806,7 +1806,7 @@ await ta('the audit log travels in the backup and merges on restore', async()=>{
   const back=E("audAll()");
   return carried && back.some(x=>x.action==='probe-a') && back.some(x=>x.action==='probe-b');});
 t('restore de-duplicates the audit merge', ()=>{
-  const s2=E("String(fullRestore)");
+  const s2=E("String(fullRestore)+(typeof fullRestoreData==='function'?String(fullRestoreData):'')");
   return /data\.audit/.test(s2) && /audIdentity/.test(s2) && /audMerge/.test(s2) && /audTrim/.test(s2);});
 t('a version 3 backup with no audit key still verifies', ()=>{
   return !/audit/.test(E("String(bkBody)"));});
@@ -7114,6 +7114,116 @@ await ta('the menu offers both audiences with the automatic one first, and each 
   } finally { E("window.uiChoice=window.__cpOrig;delete window.__cpOrig;"); }
 });
 E("showDashView();resetFormFields();run();");
+
+H('103. v2.0.0 restoring a backup merges templates instead of replacing them');
+/* Current libraries and an older backup, built the way fullBackup builds one, so
+   the integrity gate is the real one. */
+const RB_SET=(lib)=>{ Object.keys(lib).forEach(k=>E("tplSave(tplKeyOf('"+k+"'),"+JSON.stringify(lib[k])+")")); };
+const RB_GET=(k)=>E("tplLoad(tplKeyOf('"+k+"'))");
+const RB_BACKUP=async(templates,drafts)=>{
+  const T=Object.assign({},templates); E("BK_KINDS").forEach(k=>{ if(!T[k]) T[k]=[]; });
+  w.__rbT=JSON.parse(JSON.stringify(T)); w.__rbD=JSON.parse(JSON.stringify(drafts||[]));
+  return E("(async function(){ var T=window.__rbT, D=window.__rbD; return {tool:'DD254 Full Backup',version:4,exported:'2026-08-01T12:00:00Z',templates:T,drafts:D,counts:bkCounts(T,D),sha256:await bkSha256(bkBody(T,D))}; })()"); };
+const RB_CURRENT=()=>({
+  cso:[{label:'Mid-Atlantic CSO',name:'Mid-Atlantic CSO',address:'Edited after the backup',ioId:'rb-cso-a'},{label:'Created after the backup',name:'Created after the backup',ioId:'rb-cso-b'}],
+  sl:[{label:'Derivative classification',text:'Reference 11c:\n\nSame in both.',ioId:'rb-sl-x'}],
+  fac:[{label:'Alpha (7AUR1)',text:'Alpha\nYours',cage:'7AUR1',ioId:'rb-fac-1'}]
+});
+const RB_OLD=()=>({
+  cso:[{label:'Mid-Atlantic CSO',name:'Mid-Atlantic CSO',address:'As it was at backup time',ioId:'rb-cso-a'}],
+  sl:[{label:'Derivative classification',text:'Reference 11c:\n\nSame in both.',ioId:'rb-sl-x'},{label:'Visit authorisation',text:'Reference 11a:\n\nOnly in the backup.',ioId:'rb-sl-y'}],
+  fac:[{label:'Alpha (7AUR1)',text:'Alpha\nFrom another lineage',cage:'7AUR1',ioId:'rb-fac-2'}]
+});
+/* Starts a restore, waits for its preview, lets the caller act on it, and returns the result. */
+const RB_RUN=async(data,act)=>{
+  w.__rbData=data; w.__A=''; E("window.alert=function(m){window.__A=String(m);};");
+  const pr=E("fullRestoreData(window.__rbData)");
+  let dlg=null;
+  try{ dlg=await waitFor(()=>w.document.getElementById('tplPackDlg'),'restore preview',8000); }catch(e){ return {result:await pr,dialog:null}; }
+  const text=dlg.textContent;
+  await act(dlg);
+  return {result:await pr,dialog:text};
+};
+E("window.uiConfirm=async function(){return true;};window.DD254_READONLY=false;showDashView();resetFormFields();");
+await ta('restoring an older backup keeps templates created after it and shows what each library would change', async()=>{
+  RB_SET(RB_CURRENT()); await wipe();
+  const data=await RB_BACKUP(RB_OLD(),[{id:'RB1',title:'Restored draft',status:'Draft',stage:'orig',todos:[],dist:[],holds:[],meta:{},workspace:{}}]);
+  const r=await RB_RUN(data,async dlg=>{ dlg.querySelector('#pkGo').click(); });
+  const cso=RB_GET('cso'), sl=RB_GET('sl'), fac=RB_GET('fac');
+  const draft=await E("draftGet('RB1')");
+  const audit=E("audAll()").filter(x=>x.action==='full-restore').pop();
+  return r.result===true && /Restore templates from a backup/.test(r.dialog) && /Nothing is removed/.test(r.dialog)
+      && /returned to the backup’s version/.test(r.dialog) && /1 added/.test(r.dialog) && /kept alongside yours/.test(r.dialog)
+      && /1 draft will be added or overwritten by ID/.test(r.dialog)
+      && cso.length===2 && cso.find(x=>x.ioId==='rb-cso-a').address==='As it was at backup time' && !!cso.find(x=>x.ioId==='rb-cso-b')
+      && sl.length===2 && !!sl.find(x=>x.ioId==='rb-sl-y')
+      && fac.length===2 && fac.some(x=>x.text==='Alpha\nYours') && fac.some(x=>/Alpha \(7AUR1\) \(imported, 2026-08-01\)/.test(x.label))
+      && !!draft && /merge: /.test(JSON.stringify(audit)) ? true : {result:r.result,dialog:r.dialog,cso,sl,fac:fac.map(x=>x.label)}; });
+await ta('a library left unticked is not touched', async()=>{
+  RB_SET(RB_CURRENT());
+  const data=await RB_BACKUP(RB_OLD(),[]);
+  const r=await RB_RUN(data,async dlg=>{ const c=dlg.querySelector('#pk_cso'); c.checked=false; dlg.querySelector('#pkGo').click(); });
+  const cso=RB_GET('cso');
+  return r.result===true && cso.find(x=>x.ioId==='rb-cso-a').address==='Edited after the backup' && RB_GET('sl').length===2; });
+await ta('Cancel changes nothing, drafts included', async()=>{
+  RB_SET(RB_CURRENT()); await wipe();
+  const before=JSON.stringify([RB_GET('cso'),RB_GET('sl'),RB_GET('fac')]);
+  const data=await RB_BACKUP(RB_OLD(),[{id:'RB2',title:'Should not arrive',status:'Draft',stage:'orig',todos:[],dist:[],holds:[],meta:{},workspace:{}}]);
+  const r=await RB_RUN(data,async dlg=>{ dlg.querySelector('#pkNo').click(); });
+  return r.result===false && JSON.stringify([RB_GET('cso'),RB_GET('sl'),RB_GET('fac')])===before && !(await E("draftGet('RB2')")); });
+await ta('Replace all takes a Full Backup first and replaces nothing if it does not complete', async()=>{
+  RB_SET(RB_CURRENT());
+  const data=await RB_BACKUP(RB_OLD(),[]);
+  E("window.__fbOrig=fullBackup;window.__fbCalls=0;window.fullBackup=async function(){window.__fbCalls++;return false;};");
+  let r;
+  try{ r=await RB_RUN(data,async dlg=>{ dlg.querySelector('#pkReplace').click(); }); }
+  finally{ E("window.fullBackup=window.__fbOrig;"); }
+  const unchanged=RB_GET('cso').length===2 && E("window.__fbCalls")===1 && /Nothing was replaced/.test(E("window.__A"));
+  E("window.fullBackup=async function(){window.__fbCalls++;return true;};");
+  let r2;
+  try{ r2=await RB_RUN(data,async dlg=>{ dlg.querySelector('#pkReplace').click(); }); }
+  finally{ E("window.fullBackup=window.__fbOrig;delete window.__fbOrig;"); }
+  const cso=RB_GET('cso');
+  return r.result===false && unchanged && r2.result===true && cso.length===1 && cso[0].address==='As it was at backup time'
+      && E("ioHasUndo('cso')")===true && /replace-all: /.test(JSON.stringify(E("audAll()").filter(x=>x.action==='full-restore').pop())) ? true : {r:r.result,unchanged,r2:r2&&r2.result,cso}; });
+await ta('Undo last change puts a merged library back', async()=>{
+  RB_SET(RB_CURRENT());
+  const data=await RB_BACKUP(RB_OLD(),[]);
+  await RB_RUN(data,async dlg=>{ dlg.querySelector('#pkGo').click(); });
+  const merged=RB_GET('sl').length===2;
+  await E("tplIoUndo('sl')");
+  return merged && RB_GET('sl').length===1 ? true : {merged,after:RB_GET('sl').length,A:E("window.__A"),undo:E("ioHasUndo('sl')")}; });
+await ta('Undo after a colleague pack import reverts the library instead of emptying it', async()=>{
+  RB_SET(RB_CURRENT());
+  E("tplPackApply('sl',tplPackPlan('sl',[{label:'Pack paragraph',text:'Reference 10a:\\n\\nFrom a pack.',ioId:'pk-u'}],'Colleague','2026-09-01'));");
+  const imported=RB_GET('sl').length===2, saved=await E("ioGetUndo('sl')");
+  await E("tplIoUndo('sl')");
+  const sl=RB_GET('sl');
+  return imported && !Array.isArray(saved) && Array.isArray(saved.data) && !!saved.ts && sl.length===1 && sl[0].ioId==='rb-sl-x' ? true : {imported,saved,sl}; });
+await ta('an Undo copy saved as a bare list by an earlier build still restores', async()=>{
+  RB_SET(RB_CURRENT());
+  E("ioSetUndo('cso',[{label:'Only the old one',name:'Only the old one',ioId:'rb-legacy'}]);");
+  await E("tplIoUndo('cso')");
+  const cso=RB_GET('cso');
+  E("ioSetUndo('cso',{ts:'2026-09-01T00:00:00Z',data:'not a list'});"); w.__A='';
+  await E("tplIoUndo('cso')");
+  return cso.length===1 && cso[0].ioId==='rb-legacy' && RB_GET('cso').length===1 && /Nothing was changed/.test(E("window.__A")) ? true : {cso,A:E("window.__A")}; });
+await ta('a tampered backup is refused before any preview', async()=>{
+  const data=await RB_BACKUP(RB_OLD(),[]); data.templates.sl[0].text='tampered';
+  const r=await RB_RUN(data,async()=>{});
+  return r.dialog===null && /checksum mismatch/.test(E("window.__A")); });
+await ta("a colleague's pack still gets its own preview and returns the ticked libraries", async()=>{
+  RB_SET(RB_CURRENT());
+  w.__pkPlans=null; E("window.__pkPlans={}; PACK_KINDS.forEach(function(k){ window.__pkPlans[k]=tplPackPlan(k,[],'Colleague','2026-09-01'); }); window.__pkPlans.sl=tplPackPlan('sl',[{label:'New paragraph',text:'Reference 10a:\\n\\nNew.',ioId:'pk-new'}],'Colleague','2026-09-01');");
+  const pr=E("tplPackPreview({plans:window.__pkPlans,owner:'Colleague',exported:'2026-09-01'})");
+  const dlg=await waitFor(()=>w.document.getElementById('tplPackDlg'),'pack preview',8000);
+  const txt=dlg.textContent, noReplace=!dlg.querySelector('#pkReplace');
+  dlg.querySelector('#pkGo').click();
+  const res=await pr;
+  return /Import templates — nothing has been applied yet/.test(txt) && /From Colleague/.test(txt) && noReplace
+      && Array.isArray(res) && res.join()==='sl' && !/undefined/.test(txt) && E("PACK_LABEL.scg")==='Security Classification Guides'; });
+E("window.alert=function(m){window.__A=m;};showDashView();resetFormFields();run();");
+await wipe();
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

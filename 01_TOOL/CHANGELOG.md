@@ -1,3 +1,41 @@
+## v2.0.0 - 15 September 2026
+
+Tool version 2.137. Restore merges templates instead of replacing them (roadmap item
+4.3), the first release of the v2.0 horizon. Owner decisions (15 September 2026):
+v2.0 is 4.1 persistent storage, 4.3 merge on restore and 4.4 approval package; 4.1
+was then skipped, because Chrome refuses persistent storage to a file opened from
+disk, which is how the tool is run. The major version marks the change to what a
+restore does to existing data. No validation rule, official PDF field or storage
+format change; backups from earlier releases restore unchanged.
+
+- `fullRestore` now only reads the file; `fullRestoreData(data)` does the work. The
+  count and SHA-256 checks run first, unchanged. Each library is then planned with
+  `tplPackPlan`, the colleague-import planner, and shown in `tplPackPreview` with
+  `mode:'restore'`: updates read "returned to the backup's version", every changed
+  library starts ticked (the Facility and Performance defaults for colleague packs do
+  not apply to your own backup), and the dialog states that nothing is removed.
+- Restoring applies `tplPackApply` to the ticked libraries. Templates matched by
+  identifier take the backup's content; templates only in the backup are added; a
+  same-name template of different lineage is kept alongside, renamed; templates not
+  in the backup are kept.
+- Replace all is a separate button. It asks for confirmation, then runs
+  `fullBackup()` and replaces nothing unless that backup is confirmed saved. Each
+  replaced list gets an undo copy.
+- The audit entry `full-restore` records `merge:` with per-library counts, or
+  `replace-all:`. Drafts and the audit-log merge are unchanged.
+- Fixed: `tplPackApply` saved its undo copy as a bare list, but `tplIoUndo` reads
+  `{ts,data}`, so **Undo last change** after a colleague import emptied the library.
+  The writer now saves `{ts,data}`; `tplIoUndo` also accepts a bare list left by an
+  earlier build and refuses, changing nothing, if the copy cannot be read.
+- Fixed: `PACK_LABEL` had no entry for the Security Classification Guides library
+  added in v1.15.2, so previews labelled it "undefined".
+- The checksum refusal no longer says restoring would replace template lists.
+- Four existing assertions that read `String(fullRestore)` now also read
+  `fullRestoreData`, where the checks moved.
+
+Not done: 4.1 persistent storage (skipped, above); 4.4 approval package is the next
+release.
+
 ## v1.16.0 - 15 September 2026
 
 Tool version 2.136. Separate review packages for government and prime audiences
