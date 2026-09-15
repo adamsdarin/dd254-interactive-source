@@ -9,8 +9,8 @@ Shipped documents:
 
 - `DD254_Interactive_User_Manual.pdf` — operating instructions.
 - `DD254_Tool_Security_Fact_Sheet.md` — behavior, recovery and security boundaries.
-- `RELEASE_ASSESSMENT_v1.15.7.md` — review findings and change rationale.
-- `product_planning/IMPLEMENTATION_v1.15.7.md` — what the release implements or withdraws.
+- `RELEASE_ASSESSMENT_v1.16.0.md` — review findings and change rationale.
+- `product_planning/IMPLEMENTATION_v1.16.0.md` — what the release implements or withdraws.
 - `../BUILD_FACTS.md` — generated sizes, versions, hashes and regression count.
 - `../VERIFY.md` — how a reviewer checks a download, its provenance and the live demo.
 - `../01_TOOL/rebuild_kit/REBUILD_GUIDE.md` — verification and reconstruction.

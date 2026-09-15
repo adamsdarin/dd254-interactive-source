@@ -44,7 +44,7 @@ source hash and component hashes.
 ## Step 1 — Verify what you were given
 
 ```
-certutil -hashfile DD254_Interactive_v1.15.7.HTM SHA256
+certutil -hashfile DD254_Interactive_v1.16.0.HTM SHA256
 ```
 
 Compare the result and byte count with the current `BUILD_FACTS.md` and
@@ -55,7 +55,7 @@ A mismatch means the file is not the one this guide describes. Stop.
 ## Step 2 — Split it
 
 ```
-python split.py DD254_Interactive_v1.15.7.HTM parts
+python split.py DD254_Interactive_v1.16.0.HTM parts
 ```
 
 Produces `parts/` containing four files and a `manifest.json` recording the size
@@ -128,9 +128,9 @@ government's unmodified files.
 ## Step 6 — Review the application code
 
 `parts/04_application.html` is the only part that originated with the author.
-Its exact size for each release is in `BUILD_FACTS.md`. For v1.15.7 it is about
-929 KB after the three replaceable components are carved out, which the
-shipped-file accounting splits into roughly 712 KB of unobfuscated, commented
+Its exact size for each release is in `BUILD_FACTS.md`. For v1.16.0 it is about
+942 KB after the three replaceable components are carved out, which the
+shipped-file accounting splits into roughly 725 KB of unobfuscated, commented
 application code and 217 KB of markup and CSS. The figure changes release to
 release — v1.14.0 removed two features, and later releases added code and
 explanatory comments — so read the one for your file.
@@ -233,7 +233,7 @@ Stated plainly, because a procedure that only lists its strengths is not useful.
 - **It is not a reproducible build.** You are reassembling a delivered artifact
   from its parts, not compiling from independently authored source.
 - **It does not replace code review.** It reduces what must be reviewed from
-  about 2.2 MB to about 929 KB (v1.15.7; see `BUILD_FACTS.md`). Someone still
+  about 2.2 MB to about 942 KB (v1.16.0; see `BUILD_FACTS.md`). Someone still
   has to read that.
 - **It provides no chain of custody for the application code.** That part was
   directed by one person on a personal machine, with no formal SDLC, and the

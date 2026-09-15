@@ -1,4 +1,4 @@
-BUILD_SHA256 761f4ec6c14e423996476c5075994861440bf1e259153053c4850bd5e2400c03
+BUILD_SHA256 94bdb52fa401358d3497a69c913b0daf87607320b9a0f010bc5fa35eba0c2151
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1342,6 +1342,14 @@ BUILD_SHA256 761f4ec6c14e423996476c5075994861440bf1e259153053c4850bd5e2400c03
   PASS  the CO package cites the GCA review to DoDM 5220.32 Volume 1 and keeps it apart from Item 3b(3)
   PASS  the manual credits the review clock to Item 3b(3) and the GCA duty to DoDM 5220.32 Volume 1
 
+### 101. v1.16.0 separate government and prime review packages
+  PASS  Item 2b or 7a selects the prime subcontract review; otherwise the government review
+  PASS  the government package has no prime-only lines and the prime package has no government-only lines
+  PASS  the only action lines that differ between the packages are the audience-specific ones, word for word
+  PASS  each package names the draft, its stage, the release and the form marking
+  PASS  the PDF edition carries the package, and every page names the release and the marking
+  PASS  the menu offers both audiences with the automatic one first, and each choice does what it says
+
 ================================
-  PASS 1132   FAIL 0
+  PASS 1138   FAIL 0
 ================================

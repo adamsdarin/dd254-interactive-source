@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v1.15.7 (tool version 2.135)"
+VER="Codex Astra v1.16.0 (tool version 2.136)"
 
 DOC = [
-("h1","Codex Astra v1.15.7 changes"),
+("h1","Codex Astra v1.16.0 changes"),
+("b","The Contracting Officer Package is now two review packages, one for the <b>Government CO / GCA</b> and one for a <b>prime contractor issuing a subcontract</b>. The tool picks one from Items 2b and 7a and lets you choose the other, on screen or as a PDF. See 6.1."),
+("h2","Codex Astra v1.15.7 changes"),
 ("b","<b>Corrected:</b> 3.14 attributed the dashboard's review clock to DoDI 5220.22. The clock follows the DD Form 254 Instructions, Item 3b(3), which call for a biennial review of revisions. The Government Contracting Activity's own biennial review is a separate government duty, now in DoDM 5220.32 Volume 1, and the Contracting Officer package says so."),
 ("h2","Codex Astra v1.15.6 changes"),
 ("b","A card can carry the contract's <b>period of performance end date</b>, a tool-only date that never prints. Before it, and before the two-year retention window after it closes, the card prompts at 120, 60 and 30 days until a Final is issued. See 3.14."),
@@ -474,12 +476,22 @@ DOC = [
 ("tbl",[["Export","Use"],
         ["Official DD-254 (PDF)","The official expanding XFA form. It is watermarked DRAFT while errors remain and signs in Acrobat Pro — see 6.2."],
         ["Preparer's Worksheet","Internal checklist of what is required, recommended and outstanding."],
-        ["Contracting Officer Package","A preparatory checklist for eligibility, safeguarding, guidance, distribution and clause-applicability review."],
+        ["Contracting Officer Review Package","A preparatory checklist for the government contracting officer or, for a subcontract, the prime contractor: eligibility, safeguarding, guidance, distribution, and clause or flow-down review. On screen or as a PDF."],
         ["Print","Browser print of the on-screen form."]]),
-("h2","6.1 Contracting Officer Package"),
-("p","The Contracting Officer Package is a <b>preparatory review aid</b>, not an official form and not a substitute for the signed DD Form 254 or the contract file. It checks entity eligibility and safeguarding capability separately; Item 12 public-release routing; Item 13 clarity, currency and supporting documents; CUI contract direction; original, revised, final and solicitation actions; Items 14 and 15; and minimum signed distribution."),
-("warn","Its clause section is an <b>applicability review</b>, not a complete clause matrix. A DD Form 254 box does not by itself prescribe a FAR or DFARS clause. The contracting officer must confirm the current regulation, agency supplement, acquisition type, COTS status, location and personnel facts, and actual subcontract performance before incorporating or flowing down clauses."),
-("p","The package carries <b>no signature or date lines</b>. It lists the Item 17 certifying official's details and tells the signer to sign Item 17h and date Item 17i in the generated dynamic PDF. For a SAP subcontract — the SAP flag with a subcontractor in Item 2b or 7a — it names the Item 7 subcontractor and states that the subcontractor's authorised representative must sign. The form has no block for that signature and neither does the package: capture it however the programme accepts, then record where it is held with <b>Countersigned</b> on the card. Item titles in the package, such as Item 14 Additional Security Requirements and Item 15 Inspections, are read from the form."),
+("h2","6.1 Contracting Officer Review Packages"),
+("p","There are two packages because two different people review a DD Form 254. The <b>Government CO / GCA review</b> is for a contracting officer placing a prime contract. The <b>Prime subcontract review</b> is for a prime contractor issuing a DD Form 254 to a subcontractor. Each carries only its own reader's actions."),
+("tbl",[["In the government review only","In the prime subcontract review only"],
+        ["The GCA's biennial review of the security classification requirements (DoDM 5220.32 Volume 1, paragraph 6.3.g)","Confirming GCA authorization before imposing classified requirements on the subcontractor"],
+        ["Issuing a new DD Form 254 at award when the form is for a solicitation","Item 17e prime CAGE and Item 18b subcontractor FSO distribution"],
+        ["The contract clause applicability review","Subcontract flow-down: items needing GCA approval before a prime may impose them, and clause flow-down"],
+        ["","The SAP subcontract signature, SAP and IR&D subcontract notices, and the flow-down ceiling against a prime DD-254"]]),
+("p","Everything else, such as eligibility and safeguarding checks, Item 13, SAP, SCI, CNWDI, NATO and CUI actions, Items 12, 14 and 15, distribution and the certifying official, is in both, word for word."),
+("n","Choose <b>Contracting Officer Review Package</b> in the export menu. If Item 2b or 7a names a subcontract the prime subcontract review is selected; otherwise the government review is. The dialog says which and why."),
+("n","Choose <b>view</b> to open it on screen or <b>PDF</b> to download it. You can pick the other audience in the same dialog."),
+("n","Every page of the PDF carries the form's marking at the top and bottom, the package and audience, the draft title, contract number and stage, the tool release, the date generated and the page number. A page separated from the rest still says what it is and that it is not the DD Form 254. Exporting a PDF is written to the audit log."),
+("p","Each package is a <b>preparatory review aid</b>, not an official form and not a substitute for the signed DD Form 254 or the contract file. It checks entity eligibility and safeguarding capability separately; Item 12 public-release routing; Item 13 clarity, currency and supporting documents; CUI contract direction; original, revised, final and solicitation actions; Items 14 and 15; and minimum signed distribution."),
+("warn","The government package's clause section is an <b>applicability review</b>, not a complete clause matrix. A DD Form 254 box does not by itself prescribe a FAR or DFARS clause. The contracting officer must confirm the current regulation, agency supplement, acquisition type, COTS status, location and personnel facts, and actual subcontract performance before incorporating or flowing down clauses."),
+("p","Neither package carries <b>signature or date lines</b>. Each lists the Item 17 certifying official's details and tells the signer to sign Item 17h and date Item 17i in the generated dynamic PDF. For a SAP subcontract — the SAP flag with a subcontractor in Item 2b or 7a — the prime subcontract review names the Item 7 subcontractor and states that the subcontractor's authorised representative must sign. The form has no block for that signature and neither does the package: capture it however the programme accepts, then record where it is held with <b>Countersigned</b> on the card. Item titles in the package, such as Item 14 Additional Security Requirements and Item 15 Inspections, are read from the form."),
 ("p","For CUI, the requiring activity identifies the CUI through the contracting vehicle. If Controlled By, category, distribution statement or LDC, or the point of contact is missing, the package reports the gap and tells the reviewer to obtain written direction rather than invent a value."),
 ("h2","6.2 Digital signatures"),
 ("p","<b>Open the generated dynamic PDF in Adobe Acrobat Pro and complete Items 17h Signature and 17i Date Signed there; the browser does not collect or prefill them.</b> The export has been tested against a pristine blank copy of the form; both sign the same way."),

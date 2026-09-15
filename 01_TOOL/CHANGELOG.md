@@ -1,3 +1,34 @@
+## v1.16.0 - 15 September 2026
+
+Tool version 2.136. Separate review packages for government and prime audiences
+(roadmap item 3.1), the first release of the v1.16 contracting-officer readiness
+horizon. Owner decisions (15 September 2026): chosen automatically from Item 2b or
+7a and confirmable; order 3.1, 3.3, 3.5; 3.4 (NCCS) dropped; 3.2 (CMMC) waits for
+approved library text. No validation rule, official PDF field or storage change,
+and no action wording changed.
+
+- `exportCOPrep` becomes `coPackageModel(audience)` with an HTML view
+  (`coPackageHtml`) and a PDF edition (`coPackagePdfBytes`, `coPackagePdf`).
+  Government-only: the GCA biennial review line, the solicitation-to-award line and
+  the contract clause applicability review. Prime-only: the SUBCONTRACT lines, the
+  SAP subcontract signature, SAP and IR&D subcontract notices, the flow-down ceiling,
+  the Subcontract Flow-Down section, the Item 17e row, the 18b warning and a
+  Subcontractor (7a/7b) summary row. Every other line is in both, unchanged.
+- `coPackageAudienceAuto` picks the prime review when Item 2b or 7a is filled.
+  The export menu entry opens `coPackageExport`, which states the automatic choice
+  and offers view or PDF for either audience.
+- Both editions name the audience, draft title, contract number, stage (from Item
+  3), release and the form marking; the PDF repeats marking, identity and
+  "Review aid, not the DD Form 254 | release | generated | Page n of N" on every page
+  and writes a `co-package-exported` audit entry.
+- Two existing tests were pointed at the new functions on purpose: the 5205.07 gate
+  scan now covers the package functions and accepts the model's `sapSub` gate, and
+  the stylesheet test reads the `coPackageHtml` template.
+
+Not done: the "authority baseline as of" date on each page waits for the rule
+catalog (roadmap 3.5); the PDF uses standard fonts, so emoji in the on-screen view
+are omitted from the PDF.
+
 ## v1.15.7 - 15 September 2026
 
 Tool version 2.135. Authority attribution correction; no behaviour, validation rule,

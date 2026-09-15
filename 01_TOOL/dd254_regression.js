@@ -1970,12 +1970,12 @@ t('the flag never reaches the printed form', ()=>{
   const x=E("DD254XFA.buildXfaDatasets(collect254Data())");
   return !src.includes('sapFlag') && !/sapFlag/.test(x);});
 t('no ungated DoDM 5205.07 countersignature claim remains', ()=>{
-  const fns=['run','buildItem13Panel','exportPrep254','exportCOPrep'].map(n=>E("String("+n+")")).join('\n');
+  const fns=['run','buildItem13Panel','exportPrep254','exportCOPrep','coPackageModel','coPackageHtml','coPackagePdfBytes'].map(n=>E("typeof "+n+"==='function'?String("+n+"):''")).join('\n');
   const hits=fns.split('5205.07 §10.1.d');
   /* every occurrence must have a SAP gate within the preceding 400 characters */
   for(let i=1;i<hits.length;i++){
     const before=hits[i-1].slice(-400);
-    if(!/sapFlag|S\.sap|isSAPflag/.test(before)) return 'ungated occurrence '+i;
+    if(!/sapFlag|S\.sap|isSAPflag|sapSub/.test(before)) return 'ungated occurrence '+i;
   }
   return true;});
 
@@ -5113,10 +5113,18 @@ t('choosing a width actually changes the wrapper', ()=>{
     ? true : {wide,reading,full,dragged};
 });
 t('the generated CO package no longer carries the application stylesheet', ()=>{
+  /* v1.16.0 split the package into two audiences rendered by coPackageHtml; the
+     template is that function, so it is the thing checked. Before, the template
+     was found by its old title in the page source. */
   const src=fs.readFileSync('dd254.htm','utf8');
-  const i=src.indexOf('Contracting Officer Preparatory Package');
-  const before=src.slice(Math.max(0,i-4000),i);
-  return (!/#dashWrap|#wsDrag|\.panel-col \.rpanel/.test(before)) ? true : 'report template still carries app CSS';
+  const i=src.indexOf('function coPackageHtml(m)');
+  const j=i<0?-1:src.indexOf('</body></html>`;',i);
+  if(i<0||j<0){
+    const k=src.indexOf('Contracting Officer Preparatory Package');
+    if(k<0) return 'report template not found';
+    return (!/#dashWrap|#wsDrag|\.panel-col \.rpanel/.test(src.slice(Math.max(0,k-4000),k))) ? true : 'report template still carries app CSS';
+  }
+  return (!/#dashWrap|#wsDrag|\.panel-col \.rpanel/.test(src.slice(i,j))) ? true : 'report template still carries app CSS';
 });
 t('the panel column has a real height to grow into, not just a cap', ()=>{
   /* max-height alone caps a box; it does not stretch one. Without an actual
@@ -7021,6 +7029,91 @@ t('the manual credits the review clock to Item 3b(3) and the GCA duty to DoDM 52
   return !/DoDI 5220\.22 requires a review/.test(m)
       && /Instructions, Item 3b\(3\), call for a review of classification requirements at least biennially, in the context of revisions/.test(m)
       && /DoDM 5220\.32 Volume 1, paragraph 6\.3\.g/.test(m) && /Contractors are bound by 32 CFR Part 117 and the DD Form 254 instructions/.test(m); });
+
+H('101. v1.16.0 separate government and prime review packages');
+/* One subcontract-heavy form, read as both audiences, so each package is judged
+   against exactly the same facts. */
+const COP_FORM=()=>{ E("showDashView();resetFormFields();showFormView();");
+  V('i2a','W91CRB-26-C-0901'); V('i2b','SUB-26-0901'); V('i2c','W91CRB-26-R-0901'); V('i7a','Sub Corp'); V('i7b','9SUB9');
+  C('sapFlag'); C('c10f'); C('c10c'); C('c11i'); C('c10j'); R('spec','3a'); R('ird10f','yes'); RUN(); };
+const COP_GOV_ONLY=['DoDM 5220.32 Volume 1','SOLICITATION:','Contract Clause Applicability Review','DFARS 252.204-7008','FAR Subpart 4.4'];
+const COP_PRIME_ONLY=['SUBCONTRACT: Confirm the prime contractor has GCA authorization','Prime CAGE (17e)','Subcontract Flow-Down','SAP SUBCONTRACT:',
+  'SAP + SUBCONTRACT:','18b — Subcontractor FSO NOT checked','IR&amp;D + SAP SUBCONTRACT','Subcontractor (7a/7b)','PRIME ACTION'];
+const COP_SHARED=['SAP: Coordinate with the Program Security Officer','CNWDI: GCA approval is required','Confirm Item 13 is clear',
+  'Sign Item 17h and date Item 17i','Required Distribution (Item 18)','SAP CLOSEOUT:'];
+t('Item 2b or 7a selects the prime subcontract review; otherwise the government review', ()=>{
+  E("showDashView();resetFormFields();showFormView();");
+  const none=E("coPackageAudienceAuto()");
+  V('i2b','SUB-1'); const b=E("coPackageAudienceAuto()");
+  V('i2b',''); V('i7a','Sub Only Corp'); const a=E("coPackageAudienceAuto()");
+  return none==='gov' && b==='prime' && a==='prime'; });
+t('the government package has no prime-only lines and the prime package has no government-only lines', ()=>{
+  COP_FORM();
+  grabWindow(); E("exportCOPrep('gov')"); const gov=String(grabbed);
+  grabWindow(); E("exportCOPrep('prime')"); const prime=String(grabbed);
+  const has=(h,list)=>list.filter(x=>h.indexOf(x)<0), hasNot=(h,list)=>list.filter(x=>h.indexOf(x)>=0);
+  const r={govMissing:has(gov,COP_GOV_ONLY.concat(COP_SHARED)),govLeaks:hasNot(gov,COP_PRIME_ONLY),
+    primeMissing:has(prime,COP_PRIME_ONLY.concat(COP_SHARED)),primeLeaks:hasNot(prime,COP_GOV_ONLY)};
+  return /Government Contracting Officer \/ GCA Review Package/.test(gov) && /Prime Contractor Subcontract Review Package/.test(prime)
+      && !r.govMissing.length && !r.govLeaks.length && !r.primeMissing.length && !r.primeLeaks.length ? true : r; });
+t('the only action lines that differ between the packages are the audience-specific ones, word for word', ()=>{
+  COP_FORM();
+  const g=E("coPackageModel('gov')"), p=E("coPackageModel('prime')");
+  const onlyG=g.must.filter(x=>p.must.indexOf(x)<0), onlyP=p.must.filter(x=>g.must.indexOf(x)<0);
+  const okG=onlyG.every(x=>/^Maintain the GCA review of the DD Form 254|^SOLICITATION:/.test(x));
+  const okP=onlyP.every(x=>/^SUBCONTRACT:|^SAP SUBCONTRACT:|^SAP \+ SUBCONTRACT:|^IR&D \+ SAP SUBCONTRACT:|^Flow-down:/.test(x));
+  const warnsSame=JSON.stringify(g.warn.filter(x=>!/^Flow-down:/.test(x)))===JSON.stringify(p.warn.filter(x=>!/^Flow-down:/.test(x)));
+  return onlyG.length===2 && onlyP.length>=5 && okG && okP && warnsSame && g.clauses.length>0 && p.clauses.length===0 && !g.flow && !!p.flow ? true : {onlyG,onlyP,warnsSame}; });
+await ta('each package names the draft, its stage, the release and the form marking', async()=>{
+  E("showDashView();resetFormFields();");
+  await E("draftPut({id:'COP1',title:'Review Co — Original',stage:'orig',status:'Draft',createdAt:'2026-09-01T00:00:00Z',updatedAt:'2026-09-01T00:00:00Z',todos:[],notes:'',"
+    +"workspace:{texts:{i2a:'W91CRB-26-C-0902',i2b:'SUB-26-0902'},selects:{fcl1a:'S',sfg1b:'S',clsSel:'CUI'},radios:{spec:'3a'},checks:{},perf:[]}})");
+  await E("dashOpen('COP1')");
+  const rel='Codex Astra v'+E("RELEASE_VERSION")+' (Tool '+E("TOOL_VERSION")+')';
+  grabWindow(); E("exportCOPrep('prime')"); const prime=String(grabbed);
+  grabWindow(); E("exportCOPrep('gov')"); const gov=String(grabbed);
+  const ident=h=>h.indexOf('Draft: Review Co — Original')>=0 && h.indexOf('Stage: Original (Item 3a)')>=0 && h.indexOf('Release: '+rel)>=0
+    && h.indexOf('Contract: W91CRB-26-C-0902')>=0 && (h.match(/CUI \/\/ CONTROLLED UNCLASSIFIED INFORMATION/g)||[]).length===2;
+  await E("dashSaveNow()"); E("showDashView()");
+  await E("(async function(){ await draftDel('COP1'); })()");
+  return ident(prime) && ident(gov) && /Audience: Prime subcontract review/.test(prime) && /Audience: Government CO \/ GCA review/.test(gov) ? true : {prime:ident(prime),gov:ident(gov)}; });
+await ta('the PDF edition carries the package, and every page names the release and the marking', async()=>{
+  COP_FORM();
+  const rel='Codex Astra v'+E("RELEASE_VERSION")+' (Tool '+E("TOOL_VERSION")+')';
+  const run=async(aud)=>{
+    let bytes=null; const OB=w.Blob;
+    w.Blob=function(p,o){ try{ if(o&&o.type==='application/pdf') bytes=Buffer.from(p[0]); }catch(e){} return new OB(p,o); };
+    const oldURL=w.URL.createObjectURL; w.URL.createObjectURL=()=>'blob:co-package';
+    try{ await E("coPackagePdf('"+aud+"')"); } finally { w.Blob=OB; w.URL.createObjectURL=oldURL; }
+    return bytes; };
+  const pages=async(aud)=>E("(async function(){ var b=await coPackagePdfBytes(coPackageModel('"+aud+"')); var d=await PDFLib.PDFDocument.load(b); return d.getPageCount(); })()");
+  const primeBytes=await run('prime'), govBytes=await run('gov');
+  if(!primeBytes||!govBytes) return 'PDF bytes were not captured';
+  const np=await pages('prime'), ng=await pages('gov');
+  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
+  const check=(bytes,args)=>{ const out=path.join(os.tmpdir(),'dd254-copkg-'+process.pid+'-'+Math.random().toString(36).slice(2)+'.pdf');
+    fs.writeFileSync(out,bytes); const r=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out].concat(args),{encoding:'utf8'});
+    try{fs.unlinkSync(out);}catch(e){} return r.status===0?true:(r.stderr||r.stdout||String(r.error)); };
+  const p=check(primeBytes,['Prime Contractor Subcontract Review Package','PRIME ACTION:','SUBCONTRACT: Confirm the prime contractor',
+    'Subcontract Flow-Down',np+'x:'+rel,np+'x:Review aid, not the DD Form 254',(2*np)+'x:UNCLASSIFIED','Page 1 of '+np,'0x:Contract Clause Applicability Review']);
+  const g=check(govBytes,['Government Contracting Officer / GCA Review Package','CO ACTION:','Contract Clause Applicability Review',
+    ng+'x:'+rel,(2*ng)+'x:UNCLASSIFIED','Page '+ng+' of '+ng,'0x:SUBCONTRACT:','0x:Subcontract Flow-Down']);
+  const audited=E("audAll()").some(x=>x.action==='co-package-exported'&&/Prime subcontract review PDF/.test(JSON.stringify(x)));
+  return np>=2 && p===true && g===true && audited ? true : {np,ng,p,g,audited}; }, 60000);
+await ta('the menu offers both audiences with the automatic one first, and each choice does what it says', async()=>{
+  COP_FORM();
+  const btn=w.document.querySelector('.dash-menu-item[onclick="coPackageExport()"]');
+  E("window.__cpOrig=uiChoice;window.__cpAsk=null;window.__cpPick='gov:view';window.uiChoice=async function(m,c){window.__cpAsk={m:m,c:c};return window.__cpPick;};");
+  try{
+    grabWindow(); const r1=await E("coPackageExport()"); const viewed=String(grabbed);
+    const ask=E("window.__cpAsk"), prim=(ask.c.find(x=>x.primary)||{}).value;
+    E("window.__cpPick=null;"); grabWindow(); const r2=await E("coPackageExport()"); const none=grabbed;
+    return !!btn && r1==='gov' && /Government Contracting Officer \/ GCA Review Package/.test(viewed)
+        && prim==='prime:view' && /Item 2b names a subcontract, so the prime subcontract review is selected/.test(ask.m)
+        && ask.c.map(x=>x.value).join()==='gov:view,gov:pdf,prime:view,prime:pdf,' && r2===null && !none ? true : {btn:!!btn,r1,prim,m:ask&&ask.m};
+  } finally { E("window.uiChoice=window.__cpOrig;delete window.__cpOrig;"); }
+});
+E("showDashView();resetFormFields();run();");
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

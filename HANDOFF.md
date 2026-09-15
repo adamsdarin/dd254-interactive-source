@@ -1,48 +1,40 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T14:00-05:00 by Claude
+Last updated: 2026-09-15T16:30-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.7 (Tool 2.135)**, tag at 922ab81 on `main`; assets,
-checksums, kit rebuild and both HTML attestations verified; live demo serves the
-attested demo bytes. v1.15.7 is a
-wording-only correction: the manual credited the revision review clock to DoDI
-5220.22; it now cites DD 254 Instructions Item 3b(3), with a note that the GCA's own
-biennial review is a separate government duty (DoDM 5220.32 V1 §6.3.g; DoDI 5220.22
-cancelled into DoDI 5220.31), and the CO package cites it. Regression 1132/0.
+published release: **v1.15.7 (Tool 2.135)**, tag at 922ab81. **v1.16.0 (Tool
+2.136) is built and verified on branch `release/v1.16.0`, being published.**
 
-v1.15.6 — roadmap items 2.5 and 2.6. Authority checked first: 32 CFR 117.13(d)(5),
-117.15(j), 117.17(c). The roadmap premise "retention clock starts once a Final
-exists" was wrong; the two-year clock starts at contract completion. Owner
-decisions (2026-09-15): count down to both performance end and end + 2 years at
-120/60/30 days; date on the dashboard card only (`popEnd` on the record, never in
-the workspace, so never in PDF/XFA, Compare or the revision summary; option-year
-extension never suggests a revision); demo seeds an example portfolio when the
-dashboard is empty. `dashPopClock`/`dashPopBadge` show on the newest Original or
-Revision with no Final in the chain (`dashChainHasFinal`); `dashSetPopEnd` audited;
-`dashPopIcs` two events with 120/60/30 alarms; CSV column Performance End.
-`demo_seed.html` `seedPortfolio`: twelve "(example)" records dated relative to
-today, every status chip populated. Seed writes each record's error/warning counts
-(`COUNTS`) and never recounts: a recount drives the live form and raced the CI
-smoke test (first verify run failed on the demo). The suite checks the written
-counts against a fresh recount, so update `COUNTS` when a rule change moves them.
-Also fixed: `dashRenderCards` stage/"Awaiting info" backfills wrote back stale
-display copies (lost a smoke-test note when the seed rendered mid-flush); now
-`draftPatch` (single IDB transaction).
+v1.16.0 — roadmap 3.1, first v1.16 release. `exportCOPrep` split into
+`coPackageModel(audience)` + `coPackageHtml` + `coPackagePdfBytes`/`coPackagePdf`;
+menu opens `coPackageExport` (auto from 2b/7a via `coPackageAudienceAuto`, four
+choices view/PDF x gov/prime). Line audience follows the actor its own text names;
+no action wording changed. Gov-only: GCA biennial review (DoDM 5220.32 V1 6.3.g),
+SOLICITATION, clause applicability review. Prime-only: SUBCONTRACT lines, SAP
+subcontract signature, SAP/IR&D subcontract notices, flow-down ceiling and section,
+17e, 18b warning, 7a/7b summary row. PDF: marking top/bottom, identity line, release,
+generated date, page n of N on every page; audit `co-package-exported`. Two existing
+tests re-pointed deliberately (5205.07 gate scan now includes package functions and
+accepts `sapSub`; stylesheet test reads `coPackageHtml`).
 
-Earlier v1.15: v1.15.5 SAP-only countersignature, SAP lineage error, dialogs fit
-the window, selectable summary baseline; v1.15.4 revision summary and flow-down
-fix; v1.15.3 sensitive-terms screen; v1.15.2 SCG library; v1.15.1 received DD 254
-→ template language; v1.15.0 card numbers, search, NISS re-confirm.
+v1.15.7 (published 922ab81): biennial review attribution — manual 3.14 cites DD 254
+Instructions Item 3b(3) for the revision clock; GCA's own review is DoDM 5220.32 V1
+§6.3.g (DoDI 5220.22 cancelled into DoDI 5220.31); CO package cites it.
 
-Verification on the v1.15.6 build: regression 1130 PASS / 0 FAIL; all SETUP
-step-6 checks pass; live browser smoke passes for official and demo; demo
-dashboard and card control inspected in headless Chrome; demo smoke passed 5 runs
-in a row after the fixes. Negative control against v1.15.5: all 1117 earlier tests
-pass; 10 of 13 new tests fail (the render test reproduces the lost note), the
-other 3 test `demo_seed.html` itself and pass on any build.
+v1.15.x summary: v1.15.6 Final-due prompt (`popEnd`, card-only) and demo portfolio
+(seed writes `COUNTS`, never recounts; `draftPatch` render backfills); v1.15.5 SAP-only
+countersignature, SAP lineage error, dialogs fit window, selectable summary baseline;
+v1.15.4 revision summary and flow-down fix; v1.15.3 sensitive terms; v1.15.2 SCG
+library; v1.15.1 received DD 254 → template; v1.15.0 card numbers, search, NISS.
+
+Verification on the v1.16.0 build: regression 1138 PASS / 0 FAIL; all SETUP step-6
+checks pass; live browser smoke passes for official and demo (demo three runs);
+both PDFs read back with pypdf and rasterised with pdftoppm for inspection. Negative
+control against v1.15.7: all earlier tests pass (the manual-source test cannot find
+../02_DOCS from a scratch directory, an environment limit); all 6 new tests fail.
 
 Product boundaries: not an NCCS/PIEE tie-in (owner, 2026-09-14). v1.14.0 scope
 rule stands: keep only what is needed to prepare or issue a DD Form 254.
@@ -51,8 +43,15 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
 
 1. Validate the received-DD 254 import against a sanitized, Acrobat-saved DD
    Form 254 from the owner when one is available.
-2. v1.16 contracting-officer readiness horizon (roadmap section 3) when the owner
-   starts it; authority wording arrives as approved change notices.
+2. v1.16 (owner, 2026-09-15): 3.1 done in v1.16.0 -> next 3.3 signer readiness
+   sheet and non-XFA go/no-go -> 3.5 generated rule catalog with "authority
+   baseline as of" date. 3.4 NCCS view dropped.
+3. 3.2 CMMC prompts wait for source text: missing_source requests filed as
+   guidance_watch in ../workflow_requests.py (Librarian): 9868ef03f16a6bc5f0aed7d7
+   DFARS 252.204-7021, 4788a4859333a8dc85cc9962 DFARS 252.204-7025,
+   0a720c5dc61ea11c75f3071d 32 CFR Part 170. URLs verified (acquisition.gov pages
+   by title; Part 170 hierarchy from the eCFR structure API). CMMC rollout phase
+   still needs Guidance Watch review. Build only after an approved library release.
 
 ## Open Questions
 
@@ -62,6 +61,11 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-15 16:30 Claude — Built and verified v1.16.0 (3.1). Filed three verified
+missing_source requests for CMMC text (acquisition.gov pages by title; Part 170 via
+the eCFR structure API, since eCFR pages bot-block fetches). Split the CO package
+by the actor each line names rather than rewording anything; kept one model for the
+view and the PDF so they cannot drift.
 2026-09-15 14:00 Claude — Published v1.15.7 per SETUP.md: verify passed on 922ab81,
 tag pushed, release workflow passed, release and served demo verified.
 2026-09-15 13:30 Claude — Built v1.15.7 on the owner's clarification that the GCA
