@@ -1,6 +1,6 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T17:00-05:00 by Claude
+Last updated: 2026-09-15T18:00-05:00 by Claude
 
 ## Current State
 
@@ -44,9 +44,12 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
 
 1. Validate the received-DD 254 import against a sanitized, Acrobat-saved DD
    Form 254 from the owner when one is available.
-2. v1.16 (owner, 2026-09-15): 3.1 done in v1.16.0 -> next 3.3 signer readiness
-   sheet and non-XFA go/no-go -> 3.5 generated rule catalog with "authority
-   baseline as of" date. 3.4 NCCS view dropped.
+2. v1.16 closed as planned (owner, 2026-09-15): 3.1 shipped in v1.16.0; 3.3
+   (signer readiness, non-XFA investigation) dropped; 3.4 (NCCS view) out of scope;
+   3.5 (generated rule catalog, authority baseline date) skipped. Do not build them
+   without a new owner decision. Remaining roadmap: v2.0 durability and adoption
+   (4.1 persistent storage, 4.2 encrypted backup, 4.3 merge-on-restore, 4.4 approval
+   package, 4.5 hosting decision), pending owner selection.
 3. 3.2 CMMC prompts wait for source text: missing_source requests filed as
    guidance_watch in ../workflow_requests.py (Librarian): 9868ef03f16a6bc5f0aed7d7
    DFARS 252.204-7021, 4788a4859333a8dc85cc9962 DFARS 252.204-7025,
@@ -62,6 +65,14 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-15 18:00 Claude — Owner skipped roadmap 3.5 after seeing the rule survey
+(31 alerts carry authorities; ~59 error/warning sites and 5 helper sources mostly do
+not). Library mislabel handed to the Custodian through a background agent.
+2026-09-15 17:30 Claude — Owner dropped roadmap 3.3 before any code. Findings kept
+for the record only: the April 2018 form is XFA-only with Reader Extensions (UR3);
+the tool's export removes UR3 on rewrite; the library's "DD 254 January 2026.pdf"
+(FOCI, active) is byte-for-byte the size of the expired December 1999 edition and
+titled December 1999 — a Custodian labelling question, not a tool change.
 2026-09-15 17:00 Claude — Published v1.16.0 per SETUP.md: verify passed on 664cf3d,
 tag pushed, release workflow passed, release and served demo verified.
 2026-09-15 16:30 Claude — Built and verified v1.16.0 (3.1). Filed three verified
