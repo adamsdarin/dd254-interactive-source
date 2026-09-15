@@ -1,12 +1,13 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T16:30-05:00 by Claude
+Last updated: 2026-09-15T17:00-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.7 (Tool 2.135)**, tag at 922ab81. **v1.16.0 (Tool
-2.136) is built and verified on branch `release/v1.16.0`, being published.**
+published release: **v1.16.0 (Tool 2.136)**, tag at 664cf3d on `main`; assets,
+checksums, kit rebuild and both HTML attestations verified; live demo serves the
+attested demo bytes.
 
 v1.16.0 — roadmap 3.1, first v1.16 release. `exportCOPrep` split into
 `coPackageModel(audience)` + `coPackageHtml` + `coPackagePdfBytes`/`coPackagePdf`;
@@ -61,6 +62,8 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-15 17:00 Claude — Published v1.16.0 per SETUP.md: verify passed on 664cf3d,
+tag pushed, release workflow passed, release and served demo verified.
 2026-09-15 16:30 Claude — Built and verified v1.16.0 (3.1). Filed three verified
 missing_source requests for CMMC text (acquisition.gov pages by title; Part 170 via
 the eCFR structure API, since eCFR pages bot-block fetches). Split the CO package
