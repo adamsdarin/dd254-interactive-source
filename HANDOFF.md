@@ -1,12 +1,13 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T10:30-05:00 by Claude
+Last updated: 2026-09-15T12:30-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.5 (Tool 2.133)**, tag at f29e9bc. **v1.15.6 (Tool
-2.134) is built and verified on branch `release/v1.15.6`, being published.** It
+published release: **v1.15.6 (Tool 2.134)**, tag at 39bacf2 on `main`; assets,
+checksums, kit rebuild and both HTML attestations verified from a fresh download;
+the live demo (`dd254-interactive` bdeb696) serves the attested demo bytes. It
 completes the v1.15 horizon.
 
 v1.15.6 — roadmap items 2.5 and 2.6. Authority checked first: 32 CFR 117.13(d)(5),
@@ -61,6 +62,10 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   requirements at least biennially"). Not changed; needs a check and owner decision.
 
 ## Log
+2026-09-15 12:30 Claude — Published v1.15.6 per SETUP.md. First verify run
+(30e11a9) failed the demo smoke test; fixed in 39bacf2 (seed writes counts; render
+backfills use draftPatch), verify passed, main fast-forwarded, tag pushed, release
+workflow passed, release and served demo verified. Branch `release/v1.15.6` left.
 2026-09-15 10:30 Claude — Built and verified v1.15.6. Read 117.13(d)(5),
 117.15(j) and 117.17(c) before designing and put the corrected premise to the owner.
 Kept the end date off the form so no path can print it or turn an option-year
