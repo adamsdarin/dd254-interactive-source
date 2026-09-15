@@ -1,12 +1,13 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T13:30-05:00 by Claude
+Last updated: 2026-09-15T14:00-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.6 (Tool 2.134)**, tag at 39bacf2. **v1.15.7 (Tool
-2.135) is built and verified on branch `release/v1.15.7`, being published** — a
+published release: **v1.15.7 (Tool 2.135)**, tag at 922ab81 on `main`; assets,
+checksums, kit rebuild and both HTML attestations verified; live demo serves the
+attested demo bytes. v1.15.7 is a
 wording-only correction: the manual credited the revision review clock to DoDI
 5220.22; it now cites DD 254 Instructions Item 3b(3), with a note that the GCA's own
 biennial review is a separate government duty (DoDM 5220.32 V1 §6.3.g; DoDI 5220.22
@@ -61,6 +62,8 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-15 14:00 Claude — Published v1.15.7 per SETUP.md: verify passed on 922ab81,
+tag pushed, release workflow passed, release and served demo verified.
 2026-09-15 13:30 Claude — Built v1.15.7 on the owner's clarification that the GCA
 biennial review (DoD policy) and the Item 3b(3) review of revisions (DD 254
 instructions, binding industry with the NISPOM) are different obligations. Cited the
