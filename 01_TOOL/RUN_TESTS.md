@@ -232,3 +232,11 @@ exported Item 13, no interruption while typing, read-only tabs, save and reopen,
 recount keeping the parent, replacement by the next Revision and removal on a Final,
 the point-of-contact-only warning, and the flow-down ceiling not applied between
 issuances while still applied to a non-issuance parent.
+
+The v1.15.5 tests (section 98) cover the countersignature badge on prime-contract,
+non-SAP and SAP subcontract issuances, a recorded signature kept in the record and
+portfolio export, the SAP lineage error in both directions, on open and on recount,
+no error without a parent, the Item 17 help text, the worksheet's Item 7a SAP
+subcontract case, dialog height rules and Escape, and the revision summary baseline:
+the choice offered, applied, kept through edits and reopening, cleared, cancelled,
+not inherited, not asked with one earlier issuance, and the POC warning's own parent.

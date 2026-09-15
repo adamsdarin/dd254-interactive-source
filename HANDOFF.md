@@ -1,39 +1,38 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-14T23:55-05:00 by Claude
+Last updated: 2026-09-15T01:00-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v1.15.4 (Tool 2.132)**, tag at d478e28 on `main`; assets,
-checksums, kit rebuild and both HTML attestations verified from a fresh download;
-the live demo (`dd254-interactive` ba8d62f) serves the attested demo bytes.
+published release: **v1.15.4 (Tool 2.132)**, tag at d478e28. **v1.15.5 (Tool
+2.133) is built and verified on branch `release/v1.15.5`, being published.**
 Owner chose separate, fully verified point releases for the v1.15 horizon.
 
-v1.15.4 — roadmap item 2.4, revision summary in Item 13. DD 254 instructions in
-the approved library checked first: they set no revision-annotation format (Item
-3b), and 16d/16f/17a/17g say not to revise for POC changes alone. Owner decisions:
-kept up to date until hand-edited, short values inline, warn on POC-only revisions,
-and fix flow-down in this release. A spawned Revision carries `rsumPending`; first
-open writes the region below the supported-effort line from the live form versus
-the cached parent (`rsumText`, printed fields only). Identified by exact text
-(`RSUM_LAST`), rewritten at the top of run(), deferred while Item 13 has focus;
-Redraft/Remove above Item 13; Remove is the exact inverse. Next Revision or a Final
-strips the inherited summary.
+v1.15.5 — corrective release. Authorities checked in the approved library: DoDM
+5205.07 (2025-01-17) section 10.1.d "Subcontractor DD Form 254s must be signed by the
+subcontractor"; the DD Form 254 instructions require only the certifying official's
+Item 17 signature. Owner decisions: countersignature badge on SAP subcontracts only
+(`dashSapSub`: SAP flag with 2b or 7a), on every issuance; a contract is SAP or
+non-SAP for life, so a spawned issuance whose SAP flag differs from its parent is a
+blocking error (`sapLineageIssue`); Item 17 help text corrected; worksheet uses the
+2b-or-7a definition. `dashParentContext` now feeds both dashOpen and recount, so
+recounts count parent-dependent findings. From owner testing: `.ui-modal-box` capped
+at window height with a scrolling message (the Item 13 missing-language review was
+stuck off screen); Redraft can pick the summary baseline from the issuance chain
+(`rsumChain`, stored `rsumBaseId`, `rsumLoadBase`); POC-only warning keeps using the
+spawned-from parent.
 
-Flow-down fix: every parentId the tool creates is an earlier issuance of the same
-contract (`dashParentIsIssuance`), so `flowIssuesLive` and the card chip no longer
-run between them; previously a Revision raising Item 1a/1b was blocked. Recount now
-restores the open draft's cached parent.
+Earlier v1.15: v1.15.4 revision summary in Item 13 and flow-down fix; v1.15.3
+sensitive-terms screen; v1.15.2 SCG reference library; v1.15.1 received DD Form 254
+→ DD-254 Template Language only; v1.15.0 card numbers, search in any order, NISS
+re-confirm on spawn.
 
-Earlier v1.15: v1.15.3 sensitive-terms screen; v1.15.2 SCG reference library;
-v1.15.1 received DD Form 254 → DD-254 Template Language only; v1.15.0 card numbers,
-search in any order, NISS re-confirm on spawn.
-
-Verification on the v1.15.4 build: regression 1100 PASS / 0 FAIL; all SETUP
-step-6 checks pass; live browser smoke passes for official and demo; summary and
-bar inspected in headless Chrome. Negative control against v1.15.3: all 1077
-earlier tests pass, all 23 new tests fail.
+Verification on the v1.15.5 build: regression 1117 PASS / 0 FAIL; all SETUP
+step-6 checks pass; live browser smoke passes for official and demo; the
+five-section language review dialog measured in headless Chrome (fits the window,
+buttons visible, Cancel closes). Negative control against v1.15.4: all 1100 earlier
+tests pass; 13 of 17 new tests fail, the other 4 guard kept behaviour.
 
 Product boundaries: not an NCCS/PIEE tie-in (owner, 2026-09-14). v1.14.0 scope
 rule stands: keep only what is needed to prepare or issue a DD Form 254.
@@ -42,7 +41,7 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
 
 1. Validate the received-DD 254 import against a sanitized, Acrobat-saved DD
    Form 254 from the owner when one is available.
-2. v1.15.5 — unprinted period-of-performance end date with Final-due prompt, and
+2. v1.15.6 — unprinted period-of-performance end date with Final-due prompt, and
    a demonstration portfolio seed.
 
 ## Open Questions
@@ -51,11 +50,15 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   backup restore? Currently it waits for the next load (documented limit).
 - Should an imported template also carry the received form's prime contract
   number (template field `primeContract`)? Left empty under "solely template language".
-- The dashboard shows the subcontractor countersignature badge on every spawned
-  child (`r.parentId||_sapSub`), the same lineage-as-subcontract assumption fixed
-  for flow-down in v1.15.4. Not changed; needs an owner decision.
 
 ## Log
+2026-09-15 01:00 Claude — Built and verified v1.15.5. Reproduced the badge on a
+prime-contract Revision in jsdom, read DoDM 5205.07 10.1.d and the DD 254
+instructions, and asked the owner before changing it. Owner testing mid-release
+found the stuck language-review dialog (fixed in CSS for every modal) and asked for a
+selectable summary baseline; confirmed in real Chrome that typed and inserted Item 13
+changes were already detected, so the report was a baseline expectation, not a
+detection bug.
 2026-09-14 23:55 Claude — Published v1.15.4 per SETUP.md: verify passed on
 d478e28, main fast-forwarded, tag pushed, release workflow passed, release and
 served demo verified independently. Branch `release/v1.15.4` left in place.

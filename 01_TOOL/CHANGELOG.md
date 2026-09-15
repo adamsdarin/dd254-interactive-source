@@ -1,3 +1,36 @@
+## v1.15.5 - 14 September 2026
+
+Tool version 2.133. Countersignature badge, SAP lineage, dialog layout and revision
+summary baseline. Owner decisions: badge for SAP subcontracts only; a SAP flag that
+differs between issuances is an error; correct the Item 17 help text; release now
+as v1.15.5; Redraft may choose its baseline. No official PDF field changed.
+
+- The dashboard countersignature badge keyed on `r.parentId||_sapSub`, so every
+  spawned Original, Revision or Final showed "no countersignature", including
+  Revisions of prime contracts. It now keys on `dashSapSub` alone (SAP flag with
+  Item 2b or 7a), on every issuance. DoDM 5205.07 section 10.1.d: subcontractor
+  DD Form 254s must be signed by the subcontractor; the DD Form 254 instructions
+  require only the certifying official's signature (Item 17). Recorded
+  countersignatures stay in the record and the portfolio CSV.
+- A contract is SAP or non-SAP for its whole life: `sapLineageIssue` raises a
+  blocking error when a spawned issuance's SAP flag differs from its parent.
+  `dashParentContext` builds the parent context for both `dashOpen` and
+  `dashRecountDrafts`, so recounts count parent-dependent findings (this error,
+  the POC-only warning) exactly as an open draft does.
+- Item 17 help text corrected: the subcontractor signature applies to SAP
+  subcontract forms. The Preparer's Worksheet now treats a SAP subcontractor named
+  only in Item 7a as a SAP subcontract, matching `S.sapSub` and the CO package.
+- Fixed: `.ui-modal-box` had no height limit, so a long `uiConfirm` (the Item 13
+  missing-language review) pushed OK and Cancel below the window. Dialogs now cap
+  at the window height, the message scrolls, and the buttons stay visible.
+- Revision summary baseline: with more than one earlier issuance, Redraft asks
+  which to compare with (`rsumChain`, `uiChoice`), stored as `rsumBaseId` and
+  restored on open and recount (`rsumLoadBase`). The POC-only warning still uses the
+  spawned-from issuance. A spawned child does not inherit the choice.
+
+Not done: the SAP flag is not locked on spawned issuances (the error flags a
+difference instead).
+
 ## v1.15.4 - 14 September 2026
 
 Tool version 2.132. Revision summary in Item 13, a point-of-contact-only warning,

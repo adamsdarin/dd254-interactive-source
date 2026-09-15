@@ -1,4 +1,4 @@
-BUILD_SHA256 0d986667c9963967a4484aacb8871fe87064d17521646a4333ca5c74d9436239
+BUILD_SHA256 ebe70e0ae2bf88e7beac9490c509f5caa518b2c910000dc4e0ac67ecd2e36993
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1304,6 +1304,25 @@ BUILD_SHA256 0d986667c9963967a4484aacb8871fe87064d17521646a4333ca5c74d9436239
   PASS  point-of-contact-only changes raise a warning, never an error
   PASS  an Original gets no summary, no bar and no POC warning
 
+### 98. v1.15.5 countersignature badge for SAP subcontracts only; SAP flag fixed for the life of a contract
+  PASS  a Revision of a prime contract shows no countersignature badge
+  PASS  a Revision of a non-SAP subcontract shows none either
+  PASS  every issuance of a SAP subcontract shows the owed badge, and countersigned once recorded
+  PASS  a countersignature recorded on a non-SAP card is kept in the record and the portfolio export
+  PASS  marking a spawned non-SAP issuance as SAP is a blocking error
+  PASS  clearing the SAP flag on an issuance of a SAP contract is a blocking error
+  PASS  a DD-254 with no parent sets or clears the flag freely
+  PASS  a recount counts the SAP lineage error on a stored issuance
+  PASS  the Item 17 help text limits the subcontractor signature to SAP subcontracts
+  PASS  the preparer's worksheet treats a SAP subcontractor named only in Item 7a as a SAP subcontract
+  PASS  a long dialog scrolls inside itself, keeps its buttons, and closes on Escape
+  PASS  Redraft can summarize from the Original instead of the issuance it was spawned from
+  PASS  the chosen baseline holds through edits and reopening; the POC warning still uses the spawned-from issuance
+  PASS  Cancel in the baseline choice changes nothing
+  PASS  choosing the spawned-from issuance again clears the stored baseline
+  PASS  a Revision spawned from one with a chosen baseline starts from its own parent
+  PASS  with only one earlier issuance Redraft does not ask
+
 ================================
-  PASS 1100   FAIL 0
+  PASS 1117   FAIL 0
 ================================

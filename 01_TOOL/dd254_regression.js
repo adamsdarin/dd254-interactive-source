@@ -6729,6 +6729,137 @@ await ta('an Original gets no summary, no bar and no POC warning', async()=>{
 E("showDashView();resetFormFields();run();");
 await wipe();
 
+H('98. v1.15.5 countersignature badge for SAP subcontracts only; SAP flag fixed for the life of a contract');
+const csWs=(sap,i2b,i7a)=>"{texts:{i2a:'W91CRB-26-C-0077',i2b:'"+i2b+"',i7a:'"+i7a+"',i3a_date:'20260110',i6a:'Prime Co'},selects:{fcl1a:'S',sfg1b:'S'},radios:{spec:'3a'},checks:{sapFlag:"+sap+"},perf:[]}";
+const csPut=(id,title,ws)=>E("draftPut({id:'"+id+"',title:'"+title+"',stage:'orig',status:'Issued',createdAt:'2026-01-10T00:00:00Z',updatedAt:'2026-01-10T00:00:00Z',todos:[],notes:'',workspace:"+ws+"})");
+const csBadges=title=>{ const i=titles().indexOf(title); if(i<0) return null;
+  return Array.from(cards()[i].querySelectorAll('.dash-badge')).map(x=>x.textContent.trim()).filter(x=>/countersign|signature/i.test(x)); };
+const csKid=async pid=>(await E("draftAll()")).filter(x=>x.parentId===pid)[0];
+E("window.uiConfirm=async function(){return true;};window.DD254_READONLY=false;showDashView();resetFormFields();");
+await wipe();
+await csPut('CSP','Prime Co — Original',csWs(false,'',''));
+await csPut('CSN','Plain Sub — Original',csWs(false,'SUB-2','Plain Sub Inc'));
+await csPut('CSQ','Sap Sub — Original',csWs(true,'SUB-1','Sap Sub Inc'));
+await ta('a Revision of a prime contract shows no countersignature badge', async()=>{
+  await E("dashSpawn('CSP','rev')"); await E("dashRenderCards()");
+  const b=csBadges('Prime Co — Rev 1'); return Array.isArray(b) && b.length===0 ? true : b; });
+await ta('a Revision of a non-SAP subcontract shows none either', async()=>{
+  await E("dashSpawn('CSN','rev')"); await E("dashRenderCards()");
+  const a=csBadges('Plain Sub — Original'), b=csBadges('Plain Sub — Rev 1');
+  return a&&b&&a.length===0&&b.length===0 ? true : [a,b]; });
+await ta('every issuance of a SAP subcontract shows the owed badge, and countersigned once recorded', async()=>{
+  await E("dashSpawn('CSQ','rev')"); const k=await csKid('CSQ'); await E("dashRenderCards()");
+  const owed=/SAP countersignature owed/.test((csBadges('Sap Sub — Original')||[]).join()) && /SAP countersignature owed/.test((csBadges('Sap Sub — Rev 1')||[]).join());
+  await E("(async function(){var r=await draftGet('"+k.id+"');r.countersign={received:true,date:'2026-02-01',how:'signed copy on file'};await draftPut(r);})()");
+  await E("dashRenderCards()");
+  return owed && /countersigned ✓/.test((csBadges('Sap Sub — Rev 1')||[]).join()) ? true : [csBadges('Sap Sub — Original'),csBadges('Sap Sub — Rev 1')]; });
+await ta('a countersignature recorded on a non-SAP card is kept in the record and the portfolio export', async()=>{
+  const k=await csKid('CSP');
+  await E("(async function(){var r=await draftGet('"+k.id+"');r.countersign={received:true,date:'2026-02-03',how:'letter'};await draftPut(r);})()");
+  await E("dashRenderCards()");
+  let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p,{type:'text/csv'});};
+  w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{};
+  try{ await E("portfolioCsv()"); } finally { w.Blob=OB; }
+  const rec=await E("draftGet('"+k.id+"')");
+  return (csBadges('Prime Co — Rev 1')||['missing']).length===0 && !!rec.countersign && /yes 2026-02-03 \(letter\)/.test(cap); });
+await ta('marking a spawned non-SAP issuance as SAP is a blocking error', async()=>{
+  const k=await csKid('CSP'); await E("dashOpen('"+k.id+"')");
+  const clean=!(w.DD254_ERRORS||[]).some(x=>/^SAP DD-254:/.test(x));
+  C('sapFlag'); RUN();
+  const err=(w.DD254_ERRORS||[]).some(x=>/^SAP DD-254: this issuance is marked SAP, but the Original dated 20260110, which it was spawned from, is not\./.test(x));
+  C('sapFlag',false); RUN();
+  return clean && err && !(w.DD254_ERRORS||[]).some(x=>/^SAP DD-254:/.test(x)); });
+await ta('clearing the SAP flag on an issuance of a SAP contract is a blocking error', async()=>{
+  const k=await csKid('CSQ'); await E("dashSaveNow()"); E("showDashView()"); await E("dashOpen('"+k.id+"')");
+  const clean=!(w.DD254_ERRORS||[]).some(x=>/^SAP DD-254:/.test(x));
+  C('sapFlag',false); RUN();
+  const err=(w.DD254_ERRORS||[]).some(x=>/^SAP DD-254: this issuance is not marked SAP, but the Original dated 20260110, which it was spawned from, is\./.test(x));
+  C('sapFlag'); RUN();
+  return clean && err; });
+t('a DD-254 with no parent sets or clears the flag freely', ()=>{
+  E("showDashView();resetFormFields();showFormView();"); C('sapFlag'); RUN();
+  const a=!(w.DD254_ERRORS||[]).some(x=>/^SAP DD-254:/.test(x));
+  C('sapFlag',false); RUN();
+  return a && !(w.DD254_ERRORS||[]).some(x=>/^SAP DD-254:/.test(x)); });
+await ta('a recount counts the SAP lineage error on a stored issuance', async()=>{
+  E("showDashView();resetFormFields();");
+  const k=await csKid('CSN');
+  await E("(async function(){ await dashRecountDrafts([await draftGet('"+k.id+"')]); })()");
+  const e0=(await E("draftGet('"+k.id+"')")).meta.errors;
+  await E("(async function(){var r=await draftGet('"+k.id+"');r.workspace.checks.sapFlag=true;await draftPut(r);})()");
+  await E("(async function(){ await dashRecountDrafts([await draftGet('"+k.id+"')]); })()");
+  const e1=(await E("draftGet('"+k.id+"')")).meta.errors;
+  return typeof e0==='number' && e1===e0+1 ? true : [e0,e1]; });
+t('the Item 17 help text limits the subcontractor signature to SAP subcontracts', ()=>{
+  const txt=Array.from(w.document.querySelectorAll('.rule-r')).map(x=>x.textContent).join('\n');
+  return /SAP subcontract forms: A subcontract DD Form 254 for a SAP contract is not complete until the subcontractor's authorized representative signs it\./.test(txt)
+      && !/If Item 2b is filled, the subcontractor/.test(txt) && /5205\.07 §10\.1\.d/.test(txt); });
+t("the preparer's worksheet treats a SAP subcontractor named only in Item 7a as a SAP subcontract", ()=>{
+  E("showFormView();resetFormFields();document.getElementById('i2a').value='W911-P';document.getElementById('i7a').value='Sub Only Inc';document.getElementById('sapFlag').checked=true;run();");
+  grabWindow(); E("exportPrep254();");
+  const sap=grabbed;
+  E("document.getElementById('sapFlag').checked=false;run();");
+  grabWindow(); E("exportPrep254();");
+  return /SAP SUBCONTRACT/.test(sap) && /5205\.07 §10\.1\.d/.test(sap) && !/5205\.07/.test(grabbed); });
+await ta('a long dialog scrolls inside itself, keeps its buttons, and closes on Escape', async()=>{
+  const css=Array.from(w.document.querySelectorAll('style')).map(x=>x.textContent).join('\n');
+  const rules=/\.ui-modal-box\{max-height:calc\(100vh - 32px\);overflow:auto;[^}]*display:flex;flex-direction:column;\}/.test(css)
+    && /\.ui-modal-box>\.ui-modal-msg\{[^}]*min-height:0;overflow:auto;\}/.test(css);
+  /* uiModal directly: the suite replaces uiConfirm with an auto-accept stub. */
+  E("window.__ucv='pending';uiModal('confirm','Reference 11d:'+String.fromCharCode(10).repeat(2)+'long text '.repeat(3000)).then(function(v){window.__ucv=v;});");
+  const ov=w.document.querySelector('.ui-modal-ov'), box=ov&&ov.querySelector('.ui-modal-box');
+  const shaped=!!box && !!box.querySelector('.ui-modal-msg') && Array.from(box.querySelectorAll('button')).map(b=>b.textContent).join()==='Cancel,OK';
+  if(ov) ov.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  await waitFor(()=>E("window.__ucv")!=='pending','dialog close');
+  return rules && shaped && E("window.__ucv")===false && !w.document.querySelector('.ui-modal-ov'); });
+/* Revision summary baseline: Original -> Revision 1 (adds a Reference 11c section) -> Revision 2. */
+E("window.__ucOrig=uiChoice;");
+let BR1='', BR2='';
+await ta('Redraft can summarize from the Original instead of the issuance it was spawned from', async()=>{
+  E("showDashView();resetFormFields();"); await wipe();
+  await E("draftPut({id:'BO',title:'Base Co — Original',stage:'orig',status:'Issued',createdAt:'2026-01-10T00:00:00Z',updatedAt:'2026-01-10T00:00:00Z',todos:[],notes:'',"
+    +"workspace:{texts:{i2a:'W91CRB-26-C-0088',i3a_date:'20260110',i16d:'A. Lane',item13:'Reference 10a:'+String.fromCharCode(10,10)+'COMSEC guidance.'},selects:{fcl1a:'S',sfg1b:'S'},radios:{spec:'3a'},checks:{c10a:true},perf:[]}})");
+  await E("dashSpawn('BO','rev')"); BR1=(await csKid('BO')).id;
+  await E("(async function(){var r=await draftGet('"+BR1+"');r.workspace.texts.item13+=String.fromCharCode(10,10)+'Reference 11c:'+String.fromCharCode(10,10)+'Use the guide.';r.workspace.texts.i3b_date='20260301';delete r.rsumPending;await draftPut(r);})()");
+  await E("dashSpawn('"+BR1+"','rev')"); BR2=(await csKid(BR1)).id;
+  await E("dashOpen('"+BR2+"')");
+  const fromParent=rsI13().indexOf('Summary of changes in Revision 2 (from Revision 1 dated 20260301):\n- No changes recorded.')===0;
+  E("window.uiChoice=async function(m,c){window.__asked={m:m,c:c};return 'BO';};");
+  await E("rsumRedraft()");
+  const asked=E("window.__asked"), labels=(asked&&asked.c||[]).map(x=>x.label).join('|');
+  const rec=await E("draftGet('"+BR2+"')"), v=rsI13();
+  return fromParent && labels==='Revision 1 dated 20260301 (spawned from)|Original dated 20260110|Cancel'
+      && v.indexOf('Summary of changes in Revision 2 (from the Original dated 20260110):\n- Item 13 Reference 11c: added.')===0
+      && rec.rsumBaseId==='BO' && /changes from the Original dated 20260110/.test(w.document.getElementById('rsumState').textContent) ? true : [fromParent,labels,v,rec.rsumBaseId]; });
+await ta('the chosen baseline holds through edits and reopening; the POC warning still uses the spawned-from issuance', async()=>{
+  V('i16d','B. Moss'); RUN();
+  const v=rsI13();
+  const live=v.indexOf('(from the Original dated 20260110)')>0 && v.indexOf('- Item 13 Reference 11c: added.')>0 && v.indexOf('- Item 16d GCA POC: changed from "A. Lane" to "B. Moss".')>0;
+  const warned=(w.DD254_WARNS||[]).some(x=>/the only changes from Revision 1 dated 20260301 are point-of-contact details/.test(x));
+  await E("dashSaveNow()"); E("showDashView()"); await E("dashOpen('"+BR2+"')");
+  return live && warned && E("window.RSUM_BASE&&window.RSUM_BASE.id")==='BO' && rsBar().getAttribute('data-state')==='live'
+      && rsI13().indexOf('(from the Original dated 20260110)')>0 ? true : [live,warned,rsI13()]; });
+await ta('Cancel in the baseline choice changes nothing', async()=>{
+  const before=rsI13(); E("window.uiChoice=async function(){return null;};");
+  await E("rsumRedraft()");
+  return rsI13()===before && (await E("draftGet('"+BR2+"')")).rsumBaseId==='BO'; });
+await ta('choosing the spawned-from issuance again clears the stored baseline', async()=>{
+  E("window.uiChoice=async function(){return '"+BR1+"';};");
+  await E("rsumRedraft()");
+  const rec=await E("draftGet('"+BR2+"')");
+  return rsI13().indexOf('Summary of changes in Revision 2 (from Revision 1 dated 20260301):')===0 && !('rsumBaseId' in rec) && !E("window.RSUM_BASE"); });
+await ta('a Revision spawned from one with a chosen baseline starts from its own parent', async()=>{
+  E("window.uiChoice=async function(){return 'BO';};"); await E("rsumRedraft()"); await E("dashSaveNow()"); E("showDashView()");
+  await E("dashSpawn('"+BR2+"','rev')"); const r3=await csKid(BR2);
+  return (await E("draftGet('"+BR2+"')")).rsumBaseId==='BO' && !('rsumBaseId' in r3); });
+await ta('with only one earlier issuance Redraft does not ask', async()=>{
+  E("window.__asked=null;window.uiChoice=async function(m,c){window.__asked={m:m,c:c};return null;};");
+  await E("dashOpen('"+BR1+"')"); await E("rsumRedraft()");
+  return E("window.__asked")===null && rsI13().indexOf('Summary of changes in Revision 1 (from the Original dated 20260110):')===0; });
+E("window.uiChoice=window.__ucOrig;delete window.__ucOrig;");
+E("showDashView();resetFormFields();run();");
+await wipe();
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

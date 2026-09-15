@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v1.15.4
+# DD‑254 Interactive — Codex Astra v1.15.5
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -19,14 +19,14 @@ and no network traffic. Download one file, open it, work offline.
 
 | | |
 |---|---|
-| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.15.4 demo build, covered by the release's signed provenance |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.15.4.HTM` |
+| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v1.15.5 demo build, covered by the release's signed provenance |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v1.15.5.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v1.15.4.HTM` from the latest release.
+1. Download `DD254_Interactive_v1.15.5.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -99,6 +99,18 @@ released file. Because the demo build is one of the attested files, the live dem
 can be checked against it too. The logs are public.
 
 ---
+
+## What changed in v1.15.5
+
+- **Countersignature badge on SAP subcontracts only.** Revisions of prime
+  contracts and non-SAP subcontracts no longer show "no countersignature"; the
+  subcontractor signature is a DoDM 5205.07 SAP rule.
+- **SAP or non-SAP for life.** A spawned issuance whose SAP flag differs from its
+  parent is a blocking error.
+- **Redraft baseline.** A revision summary can compare with the Original or any
+  earlier Revision, not only the issuance it was spawned from.
+- **Fixed:** long confirmation dialogs ran off the screen with no reachable
+  buttons; they now scroll inside the window.
 
 ## What changed in v1.15.4
 
@@ -232,15 +244,15 @@ These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify
 eligibility or decide authority. No server or new storage service is required.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.15.4.md)
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v1.15.5.md)
 describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.15.4.md)
-- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.15.4.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v1.15.5.md)
+- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v1.15.5.md)
 - [Verifying a download and the live demo](VERIFY.md)
 - [Maintainer release and demo procedure](SETUP.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)
