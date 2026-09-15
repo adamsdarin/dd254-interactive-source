@@ -10,6 +10,7 @@
 | Calendar | Review and disposition invites only | An invite with the end date and the window close, each with 120/60/30-day reminders |
 | Option-year extension | Not addressed | Changing the date is audited and never suggests a revision |
 | Demonstration build | Opened with an empty dashboard | Opens with twelve fictitious DD-254s covering every status |
+| Dashboard redraw during a save | Could overwrite a note or edit on a draft without a stored stage | Updates the stored record in one transaction |
 
 ## Why
 
@@ -32,8 +33,9 @@ features that distinguish the tool.
 
 The regression log for this exact build is recorded in `TEST_RESULT.txt`; counts
 and hashes are in `BUILD_FACTS.md`. Run against the v1.15.5 build, every earlier
-test still passed there and 9 of the 11 new tests failed; the two that passed test
-`demo_seed.html` itself, which does not depend on the build.
+test still passed there and 10 of the 13 new tests failed; the three that passed
+test `demo_seed.html` itself, which does not depend on the build. The render test
+left "old note" on v1.15.5, reproducing the lost write.
 
 - The clock's phase, days and level at every boundary (121, 120, 61, 60, 31, 30, 0
   days before each deadline, the day after the end and after the window closes).
@@ -46,8 +48,17 @@ test still passed there and 9 of the 11 new tests failed; the two that passed te
 - The demo seed fills an empty dashboard with twelve labelled records in every
   status with clean validation where issued or ready, the PSO approval hold, the
   bulk-issued pair, the review and disposition dates, the prompt at its levels and
-  a live revision summary; a second run seeds nothing. In headless Chrome the demo
-  dashboard shows every status chip populated.
+  a live revision summary; a second run seeds nothing. Seeding leaves an open form
+  untouched, and the counts it writes equal a fresh recount. In headless Chrome the
+  demo dashboard shows every status chip populated.
+
+The first push failed the verify workflow: the demo seed recounted its records,
+which resets and refills the live form, while the browser smoke test was using
+it. Seeding now writes the counts instead, and a test covers both halves. The demo
+smoke test then failed locally on its quick-notes check: the seed's dashboard
+render wrote back a stale copy of a draft without a stored stage over a note saved
+a moment earlier. That lost write was an existing dashboard defect, now fixed with
+a single-transaction patch; the demo smoke test then passed five runs in a row.
 
 Limits: the end date is entered by hand and is not read from the contract; the
 prompt is a reminder, not a determination of what may be retained.

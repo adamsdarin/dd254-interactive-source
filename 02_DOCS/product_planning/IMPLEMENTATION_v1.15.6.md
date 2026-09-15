@@ -8,6 +8,7 @@ a tool-only period of performance end date on the dashboard record, prompting at
 120, 60 and 30 days before performance ends and before the two-year retention window
 closes, cleared by a Final in the chain, with a calendar invite and a portfolio CSV
 column; and an example portfolio seeded into an empty demonstration dashboard.
+Also fixed: a dashboard redraw could overwrite a note saved on a stage-less draft.
 
 Authority verified first: 32 CFR 117.13(d)(5), 117.15(j) and 117.17(c). The
 roadmap's premise that the retention clock starts with a Final was corrected; it

@@ -129,8 +129,8 @@ government's unmodified files.
 
 `parts/04_application.html` is the only part that originated with the author.
 Its exact size for each release is in `BUILD_FACTS.md`. For v1.15.6 it is about
-927 KB after the three replaceable components are carved out, which the
-shipped-file accounting splits into roughly 710 KB of unobfuscated, commented
+929 KB after the three replaceable components are carved out, which the
+shipped-file accounting splits into roughly 712 KB of unobfuscated, commented
 application code and 217 KB of markup and CSS. The figure changes release to
 release — v1.14.0 removed two features, and later releases added code and
 explanatory comments — so read the one for your file.
@@ -233,7 +233,7 @@ Stated plainly, because a procedure that only lists its strengths is not useful.
 - **It is not a reproducible build.** You are reassembling a delivered artifact
   from its parts, not compiling from independently authored source.
 - **It does not replace code review.** It reduces what must be reviewed from
-  about 2.2 MB to about 927 KB (v1.15.6; see `BUILD_FACTS.md`). Someone still
+  about 2.2 MB to about 929 KB (v1.15.6; see `BUILD_FACTS.md`). Someone still
   has to read that.
 - **It provides no chain of custody for the application code.** That part was
   directed by one person on a personal machine, with no formal SDLC, and the

@@ -222,11 +222,17 @@
       {createdAt:stamp(-25),updatedAt:stamp(-9),cancel:{reason:'Requirement withdrawn by the program office before award (example).',date:isoDay(-9),from:'Draft'}});
     recs.push(cRts,mCxl);
     logs.push([mCxl,'cancelled','Requirement withdrawn by the program office before award (example).']);
+    /* The error and warning counts each card shows. They are written here rather
+       than by running a recount, because a recount drives the live form - resetting
+       and refilling it record by record - and seeding happens while someone may
+       already be typing. The regression suite recounts the seeded records and
+       fails if any of these numbers is no longer what validation says. */
+    const COUNTS={'demo-aur-sol':[0,0],'demo-aur-orig':[0,0],'demo-mer-orig':[0,0],'demo-mer-rev1':[0,2],'demo-mer-rev2':[1,3],
+      'demo-cal-sap':[1,1],'demo-nwd-to7':[0,0],'demo-nwd-to8':[0,0],'demo-sub-orig':[0,0],'demo-sub-final':[0,1],'demo-cal-rts':[0,0],'demo-mer-cxl':[1,0]};
+    recs.forEach(function(r){ const c=COUNTS[r.id]||[0,0]; r.meta.errors=c[0]; r.meta.warns=c[1]; r.meta.rulesVersion=(typeof TOOL_VERSION!=='undefined')?TOOL_VERSION:''; });
     for(const r of recs) await draftPut(r);
     if(typeof audLog==='function') logs.forEach(function(l){ audLog(l[0].id,l[0].title,l[1],l[2]); });
-    /* The counts on each card are written by validation, so run it once over the examples. */
-    await dashRecountDrafts(recs);
-    if(typeof dashRenderCards==='function') await dashRenderCards();
+    if(typeof dashRenderCards==='function'&&!DASH.current) await dashRenderCards();
     return true;
   }
   let tries=0;

@@ -4105,6 +4105,39 @@ async function draftPutMany(records){
     tx.onabort=function(){draftStorageFailure(tx.error);rej(tx.error||new Error('Bulk draft write aborted'));};
   });
 }
+/* Change one stored record from its CURRENT stored state, in one transaction.
+   dashRenderCards backfilled a missing stage, and migrated "Awaiting info", by
+   writing back the copy it had read for display. A note or edit saved in between
+   was overwritten. The v1.15.6 demo seed rendered the dashboard while the browser
+   smoke test flushed a note, and the note was lost. fn edits the record in place
+   and returns false to leave it alone. */
+async function draftPatch(id,fn){
+  if(window.DD254_READONLY) return false;
+  if(typeof bkMark==='function'&&!window.BK_UNLOADING&&!window.DD254_QUIET_WRITE) bkMark();
+  await dashDB();
+  if(DASH.useLS){
+    const all=lsAll(), rec=all[id];
+    if(!rec||fn(rec)===false) return false;
+    all[id]=rec; if(!lsWrite(all)) throw new Error('Draft was retained in this tab only');
+    return true;
+  }
+  if(Object.prototype.hasOwnProperty.call(DASH_MEM,id)){
+    const rec=JSON.parse(JSON.stringify(DASH_MEM[id]));
+    if(fn(rec)===false) return false;
+    await draftPut(rec); return true;
+  }
+  return new Promise(function(res,rej){
+    let changed=null;
+    const failed=function(err){ if(changed) DASH_MEM[id]=changed; draftStorageFailure(err); rej(err||new Error('Draft update failed')); };
+    try{
+      const tx=DASH.db.transaction('drafts','readwrite'), os=tx.objectStore('drafts'), rq=os.get(id);
+      rq.onsuccess=function(){ const rec=rq.result; if(rec&&fn(rec)!==false){ changed=JSON.parse(JSON.stringify(rec)); os.put(rec); } };
+      tx.oncomplete=function(){ if(changed) draftStorageSuccess(); res(!!changed); };
+      tx.onerror=function(){ failed(tx.error); };
+      tx.onabort=function(){ failed(tx.error); };
+    }catch(err){ failed(err); }
+  });
+}
 async function draftGet(id){
   await dashDB();
   if(DASH.useLS) return lsAll()[id]||null;
@@ -8096,14 +8129,18 @@ async function dashRenderCards(openId){
   const _pnD=openId?((document.getElementById('todoTaken_'+openId)||{}).value||''):'';
   const drafts=await draftAll();
   drafts.forEach(function(r){
-    if(!r.stage){ r.stage=dashStageOf(r); draftPut(r); }
+    if(!r.stage){ r.stage=dashStageOf(r); draftPatch(r.id,function(x){ if(x.stage) return false; x.stage=dashStageOf(x); }).catch(function(){}); }
     /* Awaiting info was superseded by Blocked. Anything still on it moves across,
        keeping its holds and history — the two meant the same thing. */
     if(r.status==='Awaiting info'){
       r.status='Blocked';
       (r.holds||[]).forEach(function(h){ if(h.s==='Awaiting info') h.s='Blocked'; });
       if(typeof audLog==='function') audLog(r.id,r.title,'status','Awaiting info \u2192 Blocked (status retired)');
-      draftPut(r);
+      draftPatch(r.id,function(x){
+        if(x.status!=='Awaiting info') return false;
+        x.status='Blocked';
+        (x.holds||[]).forEach(function(h){ if(h.s==='Awaiting info') h.s='Blocked'; });
+      }).catch(function(){});
     }
   });
   const sc=document.getElementById('dashStatusCounts');

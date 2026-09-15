@@ -246,6 +246,9 @@ escalation boundary before performance ends and before the retention window clos
 the records that never prompt, the card moving the prompt to a Revision and clearing
 it on a Final, audited setting and clearing, absence from the workspace, Compare,
 revision summary and XFA data, refused dates and read-only tabs, the calendar invite
-and the CSV column; and the demo portfolio, run from `demo_seed.html` in the test
+and the CSV column; a dashboard render from a stale snapshot not overwriting a
+note saved after it; and the demo portfolio, run from `demo_seed.html` in the test
 window: twelve labelled records in every status, clean validation where issued,
-holds and dates, prompt levels, a live revision summary, and no second seeding.
+holds and dates, prompt levels, seeding beside an open form without touching it,
+written counts equal to a fresh recount, a live revision summary, and no second
+seeding.

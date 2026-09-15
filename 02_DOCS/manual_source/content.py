@@ -7,6 +7,7 @@ DOC = [
 ("h1","Codex Astra v1.15.6 changes"),
 ("b","A card can carry the contract's <b>period of performance end date</b>, a tool-only date that never prints. Before it, and before the two-year retention window after it closes, the card prompts at 120, 60 and 30 days until a Final is issued. See 3.14."),
 ("b","The demonstration build opens with an example portfolio: fictitious DD-254s in every status, so its features can be seen without building a chain first."),
+("b","<b>Fixed:</b> a note or other change saved while the dashboard was redrawing could be overwritten on an older draft. The dashboard now updates only what it needs to on the stored record."),
 ("h2","Codex Astra v1.15.5 changes"),
 ("b","The <b>countersignature</b> badge now appears only on a SAP subcontract: the SAP flag with a subcontractor in Item 2b or 7a. It used to appear on every spawned Original, Revision or Final, including Revisions of prime contracts. See 3.11."),
 ("b","A contract is SAP or non-SAP for its whole life. A spawned Original, Revision or Final whose SAP flag differs from the issuance it was spawned from is a blocking error. See 2.2."),

@@ -26,7 +26,16 @@ field, validation rule, official PDF field or XFA data changed.
   Original, an Original with Revision 1 (review date) and a Draft Revision 2, a
   SAP subcontract Blocked on the Program Security Officer approval hold, a
   bulk-issued pair, a subcontract Final with its disposition clock, one Ready to
-  sign and one Cancelled. Validation counts are written by a recount.
+  sign and one Cancelled. Each record's error and warning counts are written with
+  it; seeding never runs a recount, because a recount drives the live form (the
+  verify workflow caught that race against the browser smoke test). The suite
+  recounts the examples and fails if a written count is no longer correct.
+
+- Fixed: `dashRenderCards` backfilled a missing `stage` and migrated "Awaiting info"
+  by writing back the copy it had read for display, so a note or edit saved in
+  between was lost. It now uses `draftPatch`, which reads and writes the stored
+  record in one transaction. Found when the demo seed rendered the dashboard during
+  the browser smoke test's note flush.
 
 Not done: the end date is entered by hand; the tool does not read it from the
 contract.

@@ -1,4 +1,4 @@
-BUILD_SHA256 3cc174fe48949c911f280635d1faf3888493be757de36b3e62e737472dff99de
+BUILD_SHA256 963289b4bdfd89b7ae09941c7a13919253aab6f86dfaa916b4aefdb25591956c
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1332,10 +1332,12 @@ BUILD_SHA256 3cc174fe48949c911f280635d1faf3888493be757de36b3e62e737472dff99de
   PASS  the calendar invite carries both deadlines with reminders at 120, 60 and 30 days
   PASS  the card control says the date is tool-only and that an option-year extension is not a reason to revise
   PASS  the portfolio export carries the Performance End column
+  PASS  a dashboard render never overwrites a note saved after it read the drafts
   PASS  the demo seed fills an empty dashboard with labelled examples and every status
   PASS  the demo portfolio shows the Final-due prompt at its escalation levels
+  PASS  seeding never touches the form, and the counts it writes are what validation says
   PASS  the seeded Revision 1 summary is the tool's own text, and a second run seeds nothing
 
 ================================
-  PASS 1128   FAIL 0
+  PASS 1130   FAIL 0
 ================================

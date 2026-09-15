@@ -6942,6 +6942,21 @@ await ta('the portfolio export carries the Performance End column', async()=>{
   /* By the ID column: the Revision and Final spawned from PO1 carry it as their Parent ID. */
   const col=hdr.indexOf('Performance End'), idc=hdr.lastIndexOf('ID'), row=rows.find(r=>r[idc]==='PO1')||[];
   return col>0 && hdr[col-1]==='Review Date' && row[col]===popAdd(popToday,300) ? true : {col,idc,hdr:hdr.slice(col-1,col+1),row:row.slice(col-1,col+1)}; });
+await ta('a dashboard render never overwrites a note saved after it read the drafts', async()=>{
+  /* The verify workflow lost a note: the demo seed rendered the dashboard during
+     the smoke test's note flush, and the render's stage backfill wrote back the
+     copy it had read. Rendering from a snapshot taken before the note was saved
+     reproduces that ordering exactly. */
+  await E("draftPut({id:'NR1',title:'Race',workspace:{},notes:'old note',status:'Awaiting info',holds:[{t:'x',s:'Awaiting info',done:false}]})");
+  E("window.__staleAll=null;");
+  await E("(async function(){ window.__staleAll=await draftAll(); })()");
+  E("dashNotesInput('NR1','new note');"); await E("dashNotesFlush()");
+  E("window.__realAll=draftAll;window.draftAll=async function(){ return JSON.parse(JSON.stringify(window.__staleAll)); };");
+  try{ await E("dashRenderCards()"); } finally { E("window.draftAll=window.__realAll;delete window.__realAll;delete window.__staleAll;"); }
+  await new Promise(r=>setTimeout(r,150));
+  const rec=await E("draftGet('NR1')");
+  await E("(async function(){ var r=await draftGet('NR1'); if(r) await draftDel('NR1'); })()");
+  return rec.notes==='new note' && rec.stage==='orig' && rec.status==='Blocked' && rec.holds[0].s==='Blocked' ? true : {notes:rec.notes,stage:rec.stage,status:rec.status}; });
 /* The demo seed, run in this window: it seeds an empty dashboard only. */
 const demoSeedCode=()=>fs.readFileSync('demo_seed.html','utf8').replace(/^\s*<script>/,'').replace(/<\/script>\s*$/,'');
 await ta('the demo seed fills an empty dashboard with labelled examples and every status', async()=>{
@@ -6966,6 +6981,21 @@ await ta('the demo portfolio shows the Final-due prompt at its escalation levels
   return /performance ends in 100 days/.test(get('demo-aur-orig')) && /performance ends in 25 days/.test(get('demo-nwd-to7'))
       && /performance ended .* retention window closes \d{4}-\d{2}-\d{2}/.test(get('demo-nwd-to8'))
       && get('demo-sub-orig')==='' && get('demo-sub-final')==='' && get('demo-mer-orig')==='' ? true : b; });
+await ta('seeding never touches the form, and the counts it writes are what validation says', async()=>{
+  /* CI caught the first version recounting the examples: the recount reset and
+     refilled the live form while the browser smoke test was using it. */
+  const counts=async()=>JSON.stringify((await E("draftAll()")).map(r=>[r.id,r.meta.errors,r.meta.warns]).sort());
+  const seededCounts=await counts();
+  await popIdle(); E("window.DD254_DEMO_PORTFOLIO=null;showFormView();document.getElementById('c11h').checked=true;document.getElementById('i9').value='typed before the seed finished';");
+  w.eval(demoSeedCode());
+  await waitFor(()=>E("!!window.DD254_DEMO_PORTFOLIO"),'seeding beside an open form',15000);
+  const seeded=await E("window.DD254_DEMO_PORTFOLIO");
+  const untouched=w.document.getElementById('c11h').checked===true && w.document.getElementById('i9').value==='typed before the seed finished';
+  const again=await counts();
+  E("showDashView();resetFormFields();");
+  await E("(async function(){ await dashRecountDrafts(await draftAll()); })()");
+  const recounted=await counts();
+  return seeded===true && untouched && again===seededCounts && recounted===seededCounts ? true : {seeded,untouched,seededCounts,recounted}; }, 90000);
 await ta("the seeded Revision 1 summary is the tool's own text, and a second run seeds nothing", async()=>{
   await E("dashOpen('demo-mer-rev1')");
   const live=(w.document.getElementById('rsumBar')||{getAttribute:()=>null}).getAttribute('data-state')==='live';

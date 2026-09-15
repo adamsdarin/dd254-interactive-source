@@ -20,18 +20,25 @@ dashboard is empty. `dashPopClock`/`dashPopBadge` show on the newest Original or
 Revision with no Final in the chain (`dashChainHasFinal`); `dashSetPopEnd` audited;
 `dashPopIcs` two events with 120/60/30 alarms; CSV column Performance End.
 `demo_seed.html` `seedPortfolio`: twelve "(example)" records dated relative to
-today, every status chip populated, counts written by `dashRecountDrafts`.
+today, every status chip populated. Seed writes each record's error/warning counts
+(`COUNTS`) and never recounts: a recount drives the live form and raced the CI
+smoke test (first verify run failed on the demo). The suite checks the written
+counts against a fresh recount, so update `COUNTS` when a rule change moves them.
+Also fixed: `dashRenderCards` stage/"Awaiting info" backfills wrote back stale
+display copies (lost a smoke-test note when the seed rendered mid-flush); now
+`draftPatch` (single IDB transaction).
 
 Earlier v1.15: v1.15.5 SAP-only countersignature, SAP lineage error, dialogs fit
 the window, selectable summary baseline; v1.15.4 revision summary and flow-down
 fix; v1.15.3 sensitive-terms screen; v1.15.2 SCG library; v1.15.1 received DD 254
 → template language; v1.15.0 card numbers, search, NISS re-confirm.
 
-Verification on the v1.15.6 build: regression 1128 PASS / 0 FAIL; all SETUP
+Verification on the v1.15.6 build: regression 1130 PASS / 0 FAIL; all SETUP
 step-6 checks pass; live browser smoke passes for official and demo; demo
-dashboard and card control inspected in headless Chrome. Negative control against
-v1.15.5: all 1117 earlier tests pass; 9 of 11 new tests fail, the other 2 test
-`demo_seed.html` itself and pass on any build.
+dashboard and card control inspected in headless Chrome; demo smoke passed 5 runs
+in a row after the fixes. Negative control against v1.15.5: all 1117 earlier tests
+pass; 10 of 13 new tests fail (the render test reproduces the lost note), the
+other 3 test `demo_seed.html` itself and pass on any build.
 
 Product boundaries: not an NCCS/PIEE tie-in (owner, 2026-09-14). v1.14.0 scope
 rule stands: keep only what is needed to prepare or issue a DD Form 254.
@@ -57,8 +64,9 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
 2026-09-15 10:30 Claude — Built and verified v1.15.6. Read 117.13(d)(5),
 117.15(j) and 117.17(c) before designing and put the corrected premise to the owner.
 Kept the end date off the form so no path can print it or turn an option-year
-extension into a revision. Demo seed records are validated by the tool's own
-recount; fixed a seed string broken by shell newline expansion and test helpers that
+extension into a revision. First verify run failed on the demo: the
+seed's recount reset the form under the smoke test; seed now writes counts and a
+test recounts them. Fixed a seed string broken by shell newline expansion and test helpers that
 raced a pending autosave.
 2026-09-15 01:30 Claude — Published v1.15.5 per SETUP.md: verify passed on
 f29e9bc, main fast-forwarded, tag pushed, release workflow passed, release and
