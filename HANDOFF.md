@@ -1,6 +1,6 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T19:30-05:00 by Claude
+Last updated: 2026-09-15T21:00-05:00 by Claude
 
 ## Current State
 
@@ -8,6 +8,18 @@ Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
 published release: **v2.0.0 (Tool 2.137)**, signed tag at 27a35e0 on `main`; assets,
 checksums, kit rebuild (byte-identical) and both HTML attestations verified from a
 fresh download; live demo (dd254-interactive 9ba65c9) serves the attested demo bytes.
+**v2.0.1 (Tool 2.138) is built and verified locally, release in progress** (branch
+`release/v2.0.1`); update this line when the tag is verified.
+
+v2.0.1 — Item 3 on spawned issuances (owner report). Both exports now print 3a's
+date for 3a/3b/3c (previously only when 3a was marked, so Revision/Final PDFs had an
+empty 3a). `run()` on 3b/3c: 3a required and must equal `DD254_PARENT.origin.date`
+(digits); 3b revision number required, `/^[1-9]\d*$/`. `dashIssuanceOrigin(rec)`
+walks stored parents to the Original/Solicitation; attached in `dashOpen` and
+`dashRecountDrafts`. `dashSpawn`: rev/final copy 3a from `dashIssuanceStartIn`; rev
+number = max(highest non-cancelled rev number in the same issuance, branch depth)+1;
+orig clears 3a. Owner decisions: blocking error (not a locked field), numbering per
+issuance, highest+1, clear 3a on award Original. Regression section 104.
 
 v2.0.0 — roadmap 4.3. `fullRestore` only reads the file; `fullRestoreData(data)`
 keeps the count/sha256 gate, then plans every library with `tplPackPlan` and shows
@@ -87,6 +99,12 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-15 21:00 Claude — Built and verified v2.0.1 from the owner's Item 3 report.
+Read the DD 254 Instructions (Items 3a, 3b, 3c) first: the stored draft already kept
+3a, but the exports dropped it on Revisions and Finals and nothing enforced it or the
+revision number. Asked four design questions; the owner chose a blocking error over a
+locked field. Compared 3a against the issuance's Original rather than the direct
+parent so an edited intermediate Revision cannot become the rule.
 2026-09-15 19:30 Claude — Published v2.0.0 per SETUP.md: verify passed on 27a35e0,
 main fast-forwarded, signed tag pushed (tags must be annotated: `git tag -m`), release
 workflow passed, release and served demo verified. Branch `release/v2.0.0` left.

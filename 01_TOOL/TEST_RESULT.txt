@@ -1,4 +1,4 @@
-BUILD_SHA256 bd765882f984ecd453314e28e185938678ad38ab9178961c8db6434f4f76b02c
+BUILD_SHA256 36dde8d5590fc857cc75e214f4f0c952e4611b39b4d700a5bb21fb3a56c8c15c
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1361,6 +1361,20 @@ BUILD_SHA256 bd765882f984ecd453314e28e185938678ad38ab9178961c8db6434f4f76b02c
   PASS  a tampered backup is refused before any preview
   PASS  a colleague's pack still gets its own preview and returns the ticked libraries
 
+### 104. v2.0.1 Item 3: original date carries forward, revisions numbered in sequence
+  PASS  a Revision spawned from the Original carries its 3a date and is Revision 1
+  PASS  a Revision of Revision 1 is Revision 2 and takes 3a from the Original, not from an edited Revision
+  PASS  another Revision spawned from the Original takes the next unused number; a cancelled one is not counted
+  PASS  a Final carries the Original’s 3a date
+  PASS  an award Original spawned from a Solicitation clears 3a, and its revisions start again at 1
+  PASS  opening a Revision: a missing or changed 3a date is a blocking error; the Original’s date clears it
+  PASS  the revision number is required and must be a whole number
+  PASS  a Final with no 3a date is blocked, and a recount counts a changed date
+  PASS  a stand-alone Revision with no chain is not compared, and an Original is unaffected
+  PASS  the dynamic XFA data carries 3a on a Revision and a Final as well as 3b
+  PASS  the flattened PDF of a Revision prints the original date and the revision date
+  PASS  the preparer's worksheet shows the original date with the revision
+
 ================================
-  PASS 1147   FAIL 0
+  PASS 1159   FAIL 0
 ================================

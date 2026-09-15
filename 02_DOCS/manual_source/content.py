@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v2.0.0 (tool version 2.137)"
+VER="Codex Astra v2.0.1 (tool version 2.138)"
 
 DOC = [
-("h1","Codex Astra v2.0.0 changes"),
+("h1","Codex Astra v2.0.1 changes"),
+("b","A Revision or Final keeps the <b>original date in Item 3a</b>, taken from the Original, and both PDFs now print it. A missing or changed original date is a blocking error. See 3.3."),
+("b","Revisions are <b>numbered 1, 2, 3</b> within each Original. A spawned Revision takes the next number not already held by a Revision that is not cancelled, and the revision number must be a whole number."),
+("b","An Original spawned from a Solicitation starts with Item 3a empty, because the award has its own signature date."),
+("h2","Codex Astra v2.0.0 changes"),
 ("b","<b>Restoring a Full Backup no longer deletes newer templates.</b> The restore shows what it would change in each library, then merges: templates in both return to the backup\u2019s version, templates only in the backup are added, and templates you created since are kept. Replacing every list is still available as a separate choice, after a backup of what you have now. See 8.1."),
 ("b","<b>Fixed:</b> <b>Undo last change</b> after importing a colleague\u2019s templates emptied that library instead of reverting it. It now puts the library back as it was."),
 ("h2","Codex Astra v1.16.0 changes"),
@@ -104,6 +108,12 @@ DOC = [
 ("note","<b>Awaiting info was retired.</b> It meant the same thing as Blocked and split the queue for no reason. Any record still sitting on it is moved to Blocked when the dashboard loads, keeping its holds and history, and the change is written to the audit log."),
 ("h2","3.3 Stages and the revision chain"),
 ("p","A record carries a stage: Solicitation, Original, Revision or Final. From a Solicitation you can spawn an Original; from an Original or Revision you can spawn a Revision or a Final. Spawned cards nest under their parent, keeping the whole chain for one contract together. <b>Compare</b> walks the entire retained chain, uses readable field names, reports Item 13 by reference section, and preserves the complete previous and revised text. <b>Export PDF change report</b> creates a paginated static record and writes the export to the audit history. If an earlier parent was deleted, the report identifies the missing record and starts with the earliest retained revision."),
+("p","Item 3 follows the DD Form 254 Instructions when you spawn:"),
+("tbl",[["Spawned","Item 3"],
+        ["Original, from a Solicitation","3a is marked and its date is empty. Enter the award\u2019s release or signature date; it may differ from the solicitation\u2019s."],
+        ["Revision, from an Original or a Revision","3b is marked. 3a keeps the Original\u2019s date. The revision number is the next one for that Original: one more than the highest held by any of its Revisions that is not cancelled, so two Revisions never share a number. Enter the revision date."],
+        ["Final, from an Original or a Revision","3c is marked. 3a keeps the Original\u2019s date. Enter the final date and complete Item 5."]]),
+("p","On a Revision or Final, Item 3a is required and must match the Original\u2019s date; a different date is a blocking error, because the original date does not change. The revision number is required and must be a whole number (1, 2, 3). Both the official PDF and the flattened PDF print the original date in 3a alongside the revision or final date, with only one box marked. Revision numbers restart at 1 for an award, whose Original has its own date."),
 ("p","A spawned child inherits the form content and the ongoing work — to-dos and notes. It does not inherit anything that happened to the parent: holds, distribution records, countersignature, issue date, review date, permission to bypass validation, or NISS verification."),
 ("note","NISS verification is a check for one issuance. An Original spawned from a solicitation, a Revision or a Final is a new issuance, often months later, so it starts unverified. If the parent was verified, the new card shows <b>NISS re-confirm</b>; hovering shows when and by whom the parent was verified. Verifying again clears it and the audit log records the re-confirmation. <b>Copy</b> is unchanged — see 3.4."),
 ("h2","3.4 Copying a DD-254"),

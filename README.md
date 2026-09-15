@@ -1,4 +1,4 @@
-# DD‑254 Interactive — Codex Astra v2.0.0
+# DD‑254 Interactive — Codex Astra v2.0.1
 
 A single HTML file that helps a Facility Security Officer prepare a
 **DD Form 254, DoD Contract Security Classification Specification**.
@@ -19,14 +19,14 @@ and no network traffic. Download one file, open it, work offline.
 
 | | |
 |---|---|
-| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v2.0.0 demo build, which opens with an example portfolio, covered by the release's signed provenance |
-| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v2.0.0.HTM` |
+| **Try it now** | *(demo build — fictitious data, nothing real)* → `https://adamsdarin.github.io/dd254-interactive/` — the exact v2.0.1 demo build, which opens with an example portfolio, covered by the release's signed provenance |
+| **Download** | [Releases](https://github.com/adamsdarin/dd254-interactive-source/releases/latest) → `DD254_Interactive_v2.0.1.HTM` |
 | **Read the code** | [`01_TOOL/`](01_TOOL/) |
 | **Verify it yourself** | [VERIFY.md](VERIFY.md) |
 
 ### Running it
 
-1. Download `DD254_Interactive_v2.0.0.HTM` from the latest release.
+1. Download `DD254_Interactive_v2.0.1.HTM` from the latest release.
 2. Double‑click it, or open it in Chrome or Edge.
 3. That's it.
 
@@ -99,6 +99,13 @@ released file. Because the demo build is one of the attested files, the live dem
 can be checked against it too. The logs are public.
 
 ---
+
+## What changed in v2.0.1
+
+- **Item 3 on Revisions and Finals.** The Original's date stays in Item 3a and now
+  prints on both PDFs; a missing or changed original date blocks export. Revisions
+  are numbered 1, 2, 3 within each Original, and the number must be a whole number.
+  An award Original spawned from a Solicitation starts with 3a empty.
 
 ## What changed in v2.0.0
 
@@ -276,15 +283,15 @@ These shortcuts use the existing form and browser database. Templates require
 contract-specific review; the tool does not establish classification, verify
 eligibility or decide authority. No server or new storage service is required.
 
-[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v2.0.0.md)
+[Implementation status and limitations](02_DOCS/product_planning/IMPLEMENTATION_v2.0.1.md)
 describe this release. Docker and Kubernetes remain a future phase.
 
 ## Documentation
 
 - [User manual](02_DOCS/DD254_Interactive_User_Manual.pdf)
 - [Security fact sheet](02_DOCS/DD254_Tool_Security_Fact_Sheet.md)
-- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v2.0.0.md)
-- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v2.0.0.md)
+- [Release assessment and change list](02_DOCS/RELEASE_ASSESSMENT_v2.0.1.md)
+- [Implementation notes for this release](02_DOCS/product_planning/IMPLEMENTATION_v2.0.1.md)
 - [Verifying a download and the live demo](VERIFY.md)
 - [Maintainer release and demo procedure](SETUP.md)
 - [Tool assessment and proposed enhancements (PDF)](output/pdf/DD254_Tool_Assessment_and_Recommendations.pdf)

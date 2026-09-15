@@ -7225,6 +7225,120 @@ await ta("a colleague's pack still gets its own preview and returns the ticked l
 E("window.alert=function(m){window.__A=m;};showDashView();resetFormFields();run();");
 await wipe();
 
+H('104. v2.0.1 Item 3: original date carries forward, revisions numbered in sequence');
+/* DD Form 254 Instructions, Item 3a: the original date "will not change and will
+   continue to show on any subsequent revisions"; 3b: "Give a sequential number to
+   each revision"; 3c(2): a Final enters the original date in 3a. Owner decisions
+   (2026-09-15): a changed 3a is a blocking error; numbering restarts per issuance;
+   the next number is the highest non-cancelled one plus one; an award Original
+   spawned from a Solicitation clears 3a. */
+const I3=async(pid,stage)=>(await E("draftAll()")).filter(x=>x.parentId===pid&&(!stage||x.stage===stage)).sort((a,b)=>a.createdAt<b.createdAt?-1:1).pop();
+const I3T=r=>((r.workspace||{}).texts||{});
+const I3ERR=re=>(E("window.DD254_ERRORS")||[]).filter(x=>re.test(x));
+const I3REC=(id,stage,parent,texts)=>"draftPut("+JSON.stringify({id:id,title:'Item3 Corp — '+({sol:'Solicitation',orig:'Original',final:'Final'}[stage]||'Rev 1'),stage:stage,parentId:parent||undefined,status:'Issued',
+  createdAt:'2026-01-05T00:00:00Z',updatedAt:'2026-01-05T00:00:00Z',todos:[],notes:'',
+  workspace:{texts:Object.assign({i2a:'W91-ITEM3',i6a:'Item3 Corp',i9:'Work'},texts),selects:{fcl1a:'S',sfg1b:'S'},
+    radios:{spec:stage==='rev'?'3b':(stage==='final'?'3c':'3a'),fo:'no',fin:stage==='final'?'yes':'no'},checks:{},perf:[]}})+")";
+E("window.uiConfirm=async function(){return true;};window.DD254_READONLY=false;showDashView();resetFormFields();");
+await wipe();
+await E(I3REC('IO','orig','',{i3a_date:'20250105'}));
+let I3R1='', I3R2='';
+await ta('a Revision spawned from the Original carries its 3a date and is Revision 1', async()=>{
+  await E("dashSpawn('IO','rev')"); const k=await I3('IO','rev'); I3R1=k.id;
+  return I3T(k).i3a_date==='20250105' && I3T(k).i3b_rev==='1' && k.revN===1 && k.workspace.radios.spec==='3b' && I3T(k).i3b_date===''
+    ? true : {t:I3T(k),revN:k.revN}; });
+await ta('a Revision of Revision 1 is Revision 2 and takes 3a from the Original, not from an edited Revision', async()=>{
+  await E("(async function(){var r=await draftGet('"+I3R1+"');r.workspace.texts.i3a_date='20251231';await draftPut(r);})()");
+  await E("dashSpawn('"+I3R1+"','rev')"); const k=await I3(I3R1,'rev'); I3R2=k.id;
+  return I3T(k).i3a_date==='20250105' && I3T(k).i3b_rev==='2' && k.title==='Item3 Corp — Rev 2' ? true : {t:I3T(k),title:k.title}; });
+await ta('another Revision spawned from the Original takes the next unused number; a cancelled one is not counted', async()=>{
+  await E("dashSpawn('IO','rev')"); const k=await I3('IO','rev');
+  const ok=I3T(k).i3b_rev==='3' && k.id!==I3R1;
+  await E("(async function(){var r=await draftGet('"+k.id+"');r.status='Cancelled';await draftPut(r);})()");
+  await E("dashSpawn('"+I3R2+"','rev')"); const k2=await I3(I3R2,'rev');
+  return ok && I3T(k2).i3b_rev==='3' ? true : {first:I3T(k).i3b_rev,afterCancel:I3T(k2).i3b_rev}; });
+await ta('a Final carries the Original’s 3a date', async()=>{
+  await E("dashSpawn('"+I3R2+"','final')"); const k=await I3(I3R2,'final');
+  return I3T(k).i3a_date==='20250105' && k.workspace.radios.spec==='3c' ? true : I3T(k); });
+await ta('an award Original spawned from a Solicitation clears 3a, and its revisions start again at 1', async()=>{
+  await E(I3REC('IS','sol','',{i3a_date:'20240601',i2c:'SOL-1'}));
+  await E(I3REC('ISR','rev','IS',{i3a_date:'20240601',i3b_rev:'1',i3b_date:'20240701'}));
+  await E("dashSpawn('IS','orig')"); const o=await I3('IS','orig');
+  const cleared=I3T(o).i3a_date==='';
+  await E("(async function(){var r=await draftGet('"+o.id+"');r.workspace.texts.i3a_date='20240901';await draftPut(r);})()");
+  await E("dashSpawn('"+o.id+"','rev')"); const k=await I3(o.id,'rev');
+  return cleared && I3T(k).i3b_rev==='1' && I3T(k).i3a_date==='20240901' ? true : {cleared,rev:I3T(k)}; });
+await ta('opening a Revision: a missing or changed 3a date is a blocking error; the Original’s date clears it', async()=>{
+  await E("dashOpen('"+I3R2+"')");
+  const clean=I3ERR(/^Item 3a/).length===0;
+  V('i3a_date',''); RUN();
+  const missing=I3ERR(/^Item 3a: the original date is required on a Revision/).length===1;
+  V('i3a_date','20251231'); RUN();
+  const changed=I3ERR(/^Item 3a: the original date must stay 20250105, the date on this contract.s Original/).length===1
+    && w.document.getElementById('i3a_date').classList.contains('req-missing');
+  V('i3a_date','2025-01-05'); RUN();
+  const same=I3ERR(/^Item 3a/).length===0 && !w.document.getElementById('i3a_date').classList.contains('req-missing');
+  V('i3a_date','20250105'); RUN();
+  return clean && missing && changed && same ? true : {clean,missing,changed,same,errs:E("window.DD254_ERRORS")}; });
+t('the revision number is required and must be a whole number', ()=>{
+  const out={};
+  for(const v of ['','A','1.5','0','02','-1','3']){ V('i3b_rev',v); RUN();
+    out[v]=I3ERR(/^Item 3b: revision number/).join('|')+(w.document.getElementById('i3b_rev').classList.contains('req-missing')?' [marked]':''); }
+  V('i3b_rev','2'); RUN();
+  return /is required.*\[marked\]/.test(out['']) && /whole number/.test(out['A']) && /whole number/.test(out['1.5'])
+      && /whole number/.test(out['0']) && /whole number/.test(out['02']) && /whole number/.test(out['-1']) && out['3']===''
+      && I3ERR(/^Item 3b: revision number/).length===0 ? true : out; });
+await ta('a Final with no 3a date is blocked, and a recount counts a changed date', async()=>{
+  const fin=await I3(I3R2,'final');
+  await E("dashOpen('"+fin.id+"')");
+  V('i3a_date',''); RUN();
+  const blocked=I3ERR(/^Item 3a: the original date is required on a Final/).length===1;
+  V('i3a_date','20250105'); RUN(); await E("dashSaveNow()");
+  const cleanErrs=(await E("draftGet('"+fin.id+"')")).meta.errors;
+  await E("showDashView()");
+  await E("(async function(){var r=await draftGet('"+fin.id+"');r.workspace.texts.i3a_date='20990101';await draftPut(r);})()");
+  await E("(async function(){ await dashRecountDrafts([await draftGet('"+fin.id+"')]); })()");
+  const r=await E("draftGet('"+fin.id+"')");
+  return blocked && r.meta && r.meta.errors===cleanErrs+1 ? true : {blocked,cleanErrs,meta:r.meta}; });
+t('a stand-alone Revision with no chain is not compared, and an Original is unaffected', ()=>{
+  E("showFormView();resetFormFields();window.DD254_PARENT=null;");
+  R('spec','3b'); V('i3a_date','20200101'); V('i3b_rev','4'); V('i3b_date','20260101'); RUN();
+  const lone=I3ERR(/^Item 3[ab]/).length===0;
+  R('spec','3a'); V('i3b_rev','x'); RUN();
+  const orig=I3ERR(/^Item 3a: the original date|^Item 3b: revision number/).length===0;
+  return lone && orig ? true : E("window.DD254_ERRORS"); });
+t('the dynamic XFA data carries 3a on a Revision and a Final as well as 3b', ()=>{
+  E("showFormView();resetFormFields();");
+  V('i3a_date','20250105'); V('i3b_rev','2'); V('i3b_date','20260315'); V('i3c_date','20270101');
+  R('spec','3b'); RUN();
+  const x=E("DD254XFA.buildXfaDatasets(collect254Data())");
+  const g=k=>{ const m=x.match(new RegExp('<'+k+'>([^<]*)</'+k+'>')); return m?m[1]:null; };
+  const rev=g('three_A')==='0' && g('three_B')==='1' && g('three_dateA')==='2025-01-05' && g('three_RevisionNum')==='2' && g('three_dateB')==='2026-03-15';
+  R('spec','3c'); RUN();
+  const y=E("DD254XFA.buildXfaDatasets(collect254Data())");
+  const h=k=>{ const m=y.match(new RegExp('<'+k+'>([^<]*)</'+k+'>')); return m?m[1]:null; };
+  const fin=h('three_C')==='1' && h('three_dateA')==='2025-01-05' && h('three_dateC')==='2027-01-01' && h('three_RevisionNum')==='';
+  return rev && fin ? true : {rev:[g('three_A'),g('three_dateA'),g('three_RevisionNum'),g('three_dateB')],fin:[h('three_dateA'),h('three_dateC'),h('three_RevisionNum')]}; });
+await ta('the flattened PDF of a Revision prints the original date and the revision date', async()=>{
+  F(); V('i2a','ITEM3-PDF-2601'); V('i3a_date','20250105'); V('i3b_rev','7'); V('i3b_date','20260315'); R('spec','3b'); RUN();
+  let bytes=null; const OB=w.Blob;
+  w.Blob=function(p,o){ try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){} return new OB(p,o); };
+  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
+  if(!bytes) return 'PDF bytes were not captured';
+  const out=path.join(os.tmpdir(),'dd254-item3-'+process.pid+'.pdf');
+  fs.writeFileSync(out,bytes);
+  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
+  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,'ITEM3-PDF-2601','1x:2025-01-05','1x:2026-03-15'],{encoding:'utf8'});
+  try{fs.unlinkSync(out);}catch(e){}
+  return chk.status===0 ? true : {status:chk.status,stdout:chk.stdout,stderr:chk.stderr}; });
+t("the preparer's worksheet shows the original date with the revision", ()=>{
+  F(); V('i3a_date','20250105'); V('i3b_rev','x'); V('i3b_date','20260315'); R('spec','3b'); RUN(); grabWindow(); E("exportPrep254();");
+  const a=/3b — Revised \(Rev x, Date 20260315; original date 20250105\)/.test(grabbed) && /Item 3b: Revision number must be a whole number/.test(grabbed);
+  V('i3a_date',''); R('spec','3c'); RUN(); grabWindow(); E("exportPrep254();");
+  return a && /3c — Final \(original date __\)/.test(grabbed) && /Item 3a: Original date required/.test(grabbed); });
+E("showDashView();resetFormFields();window.DD254_PARENT=null;run();");
+await wipe();
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

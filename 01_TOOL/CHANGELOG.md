@@ -1,3 +1,32 @@
+## v2.0.1 - 15 September 2026
+
+Tool version 2.138. Item 3 on spawned Revisions and Finals, following the DD Form 254
+Instructions: Item 3a's original date "will not change and will continue to show on
+any subsequent revisions"; Item 3b gives "a sequential number to each revision"; a
+Final enters the original date in 3a (3c(2)). Owner report and decisions (15
+September 2026): a changed 3a is a blocking error; numbering restarts per issuance;
+the next number is the highest non-cancelled one plus one; an award Original spawned
+from a Solicitation clears 3a. No storage format change.
+
+- Fixed: both exports printed the 3a date only when 3a was marked, so the official
+  and flattened PDFs of a Revision or Final had an empty 3a. They now print it for
+  3a, 3b and 3c; only one box is marked.
+- `run()` adds, on 3b and 3c: 3a required; 3a must equal the date on the issuance's
+  Original (or Solicitation), compared as digits; on 3b, the revision number required
+  and a whole number (`/^[1-9]\d*$/`). Messages carry digits only.
+- `dashIssuanceOrigin(rec)` walks the stored parents to the Original or Solicitation
+  and is attached to `DD254_PARENT.origin` by `dashOpen` and `dashRecountDrafts`, so
+  an open draft and a recount count the same findings. The rule comes from the
+  Original, not from an intermediate Revision.
+- `dashSpawn`: Revisions and Finals copy 3a from the issuance start
+  (`dashIssuanceStartIn`); a Revision's number is one more than the highest held by a
+  non-cancelled Revision of the same issuance (`dashRevNumberOf`), never below its
+  branch depth, so siblings no longer share a number and an award's Revisions no
+  longer count the solicitation's. An Original clears 3a.
+- The Preparer's Worksheet shows the original date with 3b and 3c and lists a missing
+  3a and a non-numeric revision number. Form hints updated; the revision number field
+  opens a numeric keypad.
+
 ## v2.0.0 - 15 September 2026
 
 Tool version 2.137. Restore merges templates instead of replacing them (roadmap item

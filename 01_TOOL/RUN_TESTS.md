@@ -272,3 +272,11 @@ replace-all needs a completed prior backup and leaves an undo copy; Undo reverts
 merged library and a colleague import, reads an old-format copy and refuses an
 unreadable one; a tampered backup is refused before the preview; a colleague pack
 keeps its own preview.
+
+The v2.0.1 tests (section 104) cover Item 3 on spawned issuances: a Revision takes the
+Original's 3a and the next number within its issuance (siblings do not share a number,
+a cancelled one is reused, an award restarts at 1); a Final keeps 3a; an award
+Original clears 3a; on an open Revision or Final a missing or changed 3a and a missing
+or non-numeric revision number block, and a recount counts them; a Revision without a
+chain is not compared; the XFA data and the flattened PDF text carry 3a on a Revision;
+the worksheet shows the original date.
