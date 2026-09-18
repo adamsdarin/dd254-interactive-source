@@ -1,15 +1,27 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-15T21:00-05:00 by Claude
+Last updated: 2026-09-18T17:30-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v2.0.0 (Tool 2.137)**, signed tag at 27a35e0 on `main`; assets,
+published release: **v2.0.1 (Tool 2.138)**, signed tag at 277179a on `main`; assets,
 checksums, kit rebuild (byte-identical) and both HTML attestations verified from a
-fresh download; live demo (dd254-interactive 9ba65c9) serves the attested demo bytes.
-**v2.0.1 (Tool 2.138) is built and verified locally, release in progress** (branch
-`release/v2.0.1`); update this line when the tag is verified.
+fresh download; live demo (dd254-interactive bbabb53) serves the attested demo bytes.
+**v2.0.2 (Tool 2.139) is built and verified locally, release in progress** (branch
+`release/v2.0.2`); update this line when the tag is verified. Commit and tag signing
+use the Windows OpenSSH agent: if it is stopped, `git commit`/`git tag` hang on a
+hidden passphrase prompt (2026-09-18) — the owner starts it; never type a passphrase.
+
+v2.0.2 — owner requests 2026-09-18. SCG entries take an optional `contracts` array
+of DD-254 Template Language `ioId`s (`scgLinkHtml`, `scgLink`, `scgUnlink`);
+`scgRenderPanel` lists guides linked to the open draft's contract first, marked
+(`scgDraftContracts`: applied template label or Item 2a vs template primeContract,
+normalised). Citing unchanged. Setting `reasonsOptional` (localStorage
+`dd254_reasons_optional`, default Required): when Optional, `dismissAdd`,
+`dashHoldPrompt`, `dashCancelPrompt` accept blank and store `REASON_NONE`; audit
+detail adds "(reasons optional in Settings)"; switching logs `setting-changed`. NISS
+initials stay required (owner did not select them). Regression section 105.
 
 v2.0.1 — Item 3 on spawned issuances (owner report). Both exports now print 3a's
 date for 3a/3b/3c (previously only when 3a was marked, so Revision/Final PDFs had an
@@ -99,6 +111,13 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-18 18:30 Claude — Published v2.0.1 per SETUP.md once the owner started the
+SSH agent: tag pushed, release workflow passed, release and served demo verified.
+2026-09-18 17:30 Claude — Built and verified v2.0.2 (SCG-contract links; optional
+reasons). Asked the owner which contract list, what a link does, which prompts and
+what to log; chose the DD-254 Template Language entries, surfacing without auto-cite,
+set-aside/Blocked/Cancel, and "No reason given" in the audit log with the setting
+change logged. v2.0.1 release blocked on tag signing (ssh-agent stopped).
 2026-09-15 21:00 Claude — Built and verified v2.0.1 from the owner's Item 3 report.
 Read the DD 254 Instructions (Items 3a, 3b, 3c) first: the stored draft already kept
 3a, but the exports dropped it on Revisions and Finals and nothing enforced it or the

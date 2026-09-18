@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="Codex Astra v2.0.1 (tool version 2.138)"
+VER="Codex Astra v2.0.2 (tool version 2.139)"
 
 DOC = [
-("h1","Codex Astra v2.0.1 changes"),
+("h1","Codex Astra v2.0.2 changes"),
+("b","Each <b>Security Classification Guide</b> can be linked to contracts from the DD-254 Template Language library. On a form for one of those contracts, its guides are listed first and marked <b>Linked to this contract</b>. See 5.9."),
+("b","A new setting makes the reason <b>optional</b> for setting a finding aside, marking a DD-254 Blocked and cancelling one. It is off by default; with it on, a blank reason is recorded as <b>No reason given</b> and the action is still in the audit log. See 2.5."),
+("h2","Codex Astra v2.0.1 changes"),
 ("b","A Revision or Final keeps the <b>original date in Item 3a</b>, taken from the Original, and both PDFs now print it. A missing or changed original date is a blocking error. See 3.3."),
 ("b","Revisions are <b>numbered 1, 2, 3</b> within each Original. A spawned Revision takes the next number not already held by a Revision that is not cancelled, and the revision number must be a whole number."),
 ("b","An Original spawned from a Solicitation starts with Item 3a empty, because the award has its own signature date."),
@@ -88,6 +91,7 @@ DOC = [
         ["Theme","Light or dark. Dark applies to the tool chrome only: the DD-254 facsimile, the print stylesheet and every export are untouched."],
         ["Workspace width","Reading, wide, full-window or a custom width set by dragging the dashboard edge. It changes the workspace only, never the DD-254 facsimile."],
         ["Text size","Compact, standard or large text for the application workspace. It does not change the form or exported documents."],
+        ["Reasons for set-aside, Blocked and Cancel","<b>Required</b> (the default) asks why whenever you set a finding aside, mark a DD-254 Blocked or cancel one. <b>Optional</b> lets you leave the reason blank for people who do not need the audit trail. The action is still written to the audit log, marked <b>No reason given</b>, and switching the setting either way is logged too."],
         ["Backup reminder","How many unsaved changes may accumulate before the reminder warns you. The default reproduces the previous behaviour, and it cannot be switched off entirely."],
         ["Your name","Recorded on template packs and read by the manager rollup. Changeable here without clearing site data."],
         ["Export filename","Which fields make up an exported file name, in what order, with which separator \u2014 see 6.5."]]),
@@ -103,7 +107,7 @@ DOC = [
         ["Ready to sign","Complete and validated, awaiting certification."],
         ["Issued","Signed and distributed."],
         ["Skipped","Solicitations only. The customer went straight to an Original, so this solicitation was never issued and never will be. Counted under Issued as closed-out work."],
-        ["Cancelled","Any stage. Requires a documented reason. Leaves the working list — see 3.6."]]),
+        ["Cancelled","Any stage. Requires a documented reason unless reasons are optional in Settings (2.5). Leaves the working list — see 3.6."]]),
 ("p","The chips along the top count each status and act as filters — click one to show only those cards, click again to clear. They run in the order work moves: <b>Draft, Blocked, Ready to sign, Issued, Cancelled</b>, then Total and the average draft-to-issue time. Skipped folds into the Issued chip."),
 ("note","<b>Awaiting info was retired.</b> It meant the same thing as Blocked and split the queue for no reason. Any record still sitting on it is moved to Blocked when the dashboard loads, keeping its holds and history, and the change is written to the audit log."),
 ("h2","3.3 Stages and the revision chain"),
@@ -131,7 +135,7 @@ DOC = [
 ("p","You cannot move a card out of Draft while it has validation errors; the status snaps back. Tick the override checkbox on the card to permit a status regardless of missing fields. Cancelling and skipping are exempt — those are exactly the moments a form is incomplete."),
 ("p","Records that already record something that happened — <b>Issued</b>, <b>Cancelled</b>, <b>Skipped</b> — are left alone by autosave. Opening an old issued DD-254 after a rule change will not quietly demote it to Draft; it went out the door, and the tool does not rewrite that. Setting a status by hand still runs the full gate."),
 ("h2","3.6 Holds — recording why something is stuck"),
-("p","Setting a card to Blocked requires a reason. You cannot skip it: the status will not change until you type one, and cancelling returns the card to its previous status."),
+("p","Setting a card to Blocked requires a reason. The status will not change until you type one, and cancelling returns the card to its previous status. If reasons are optional in Settings (2.5), you can save without one; the hold then reads <b>No reason given</b>."),
 ("p","The reason is stored as a hold and appears in a red panel on the card face, visible without opening anything. Each hold records the status that raised it and the date. Tick a hold to resolve it; the badge flips from a red open-hold count to a green <b>holds cleared</b>. You can add further holds from the panel without touching the status."),
 ("p","Issuing with an open hold is possible but challenged — you are shown the outstanding holds and must confirm, and the override is written to the audit log."),
 ("h2","3.7 Approval holds — the stop that makes you think"),
@@ -157,7 +161,7 @@ DOC = [
 ("note","Ticking 11i or 11j automatically sets Item 14 to YES, so those raise two holds rather than one. That is correct: both need answering."),
 ("p","Every raise, clearance and supersession goes to the audit log, so the Notes Report and the audit CSV together show what was approved, by whom, and on what basis."),
 ("h2","3.8 Cancelling and skipping"),
-("p","<b>Cancelled</b> is available at any stage and demands a reason. The reason, the date, and the status it was cancelled from are recorded and shown on the card. Cancelled work drops out of the working list; click the Cancelled chip to see it. A chain only disappears when the whole chain is cancelled — cancelling a solicitation does not hide a live Original spawned from it."),
+("p","<b>Cancelled</b> is available at any stage and demands a reason, unless reasons are optional in Settings (2.5). The reason, the date, and the status it was cancelled from are recorded and shown on the card. Cancelled work drops out of the working list; click the Cancelled chip to see it. A chain only disappears when the whole chain is cancelled — cancelling a solicitation does not hide a live Original spawned from it."),
 ("p","<b>Skipped</b> appears in the dropdown only on Solicitation cards. Use it when the customer dropped the solicitation and later came straight to an Original. Spawning never sets it for you; you mark the solicitation Skipped or Issued yourself."),
 ("h2","3.9 Notes and to-do items"),
 ("p","Click <b>Notes</b> on a card to expand its panel. <b>Notes</b> is free text and appears in the Notes Report and the Manager Rollup. <b>To-do</b> items are the running “I need…” list; each requires a note-taken date, and any item can be turned into an Outlook calendar reminder dated to that note."),
@@ -368,7 +372,7 @@ DOC = [
 ("p","The raw Item 13 field stays visible in this layout as a failsafe, and editing it directly is authoritative \u2014 the boxes follow. Switching layout never alters the stored text."),
 ("p","In sections layout the Item 10 and 11 template cards move out of the side panel into the section boxes themselves, each offering insert and save. Language for other items stays in the side panel as before."),
 ("h2","4.17 Setting a validation flag aside"),
-("p","A finding you have considered and judged not to apply can be set aside. It needs an open draft and a written reason; a dismissal without one is refused. The finding stays visible, struck through, with your reason attached, and stops counting toward the blocking total. Putting it back restores the count."),
+("p","A finding you have considered and judged not to apply can be set aside. It needs an open draft and a written reason; a dismissal without one is refused unless reasons are optional in Settings (2.5), when it is recorded as <b>No reason given</b>. The finding stays visible, struck through, with your reason attached, and stops counting toward the blocking total. Putting it back restores the count."),
 ("p","Every dismissal is written to the audit log with its reason, author and time. If the underlying rule is later reworded, the tool asks for your judgement again rather than carrying the old one forward."),
 ("warn","A dismissal cannot clear a compliance hold. Approval gates are not findings and are not dismissible."),
 ("h2","4.18 Two panels, not one"),
@@ -479,7 +483,8 @@ DOC = [
 ("p","Item 13 has to identify the classification guides that apply, and every guide it cites has to reach the contractor. The DD Form 254 instructions ask for the applicable guides with page numbers or other designations, for the unclassified titles or identities of the guides, and for every referenced document to be attached or forwarded under separate cover. This library keeps those details once, so the same guide is cited the same way on every form."),
 ("warn","Enter only unclassified titles and identifiers. The library holds references to guides, never the guides themselves."),
 ("n","Open <b>Templates</b>, then <b>Security Classification Guides</b>, and add one row per guide: unclassified title, identifier, date, issuing office, an optional distribution statement, and whether the guide is attached or forwarded under separate cover. The library also imports and exports by spreadsheet and travels in template packs and Full Backup."),
-("n","On the form, the <b>Security Classification Guides</b> section of the Checklist &amp; Templates panel lists every guide. <b>Cite</b> asks for the applicable portions (optional) and adds one line to Item 13, after your text and above the classified mailing addresses and the CUI block."),
+("n","To tie a guide to contracts, use <b>+ Link a contract</b> on its row and pick from your DD-254 Template Language entries; link as many as apply. Each linked contract shows as a chip with its prime contract number; the \u2715 on a chip unlinks it. A link survives renaming the contract template. A linked template that is not in this browser, for example after importing a colleague\u2019s guides without their contracts, is shown as such rather than dropped."),
+("n","On the form, the <b>Security Classification Guides</b> section of the Checklist &amp; Templates panel lists every guide. Guides linked to this draft\u2019s contract come first, marked <b>Linked to this contract</b>. The draft\u2019s contract is the DD-254 Template Language entry applied to it, or the one whose prime contract number matches Item 2a, ignoring spaces, hyphens and case. Linking only orders and marks the list: you still choose what to cite. <b>Cite</b> asks for the applicable portions (optional) and adds one line to Item 13, after your text and above the classified mailing addresses and the CUI block."),
 ("p","<font face='Courier'>Security Classification Guide: Programme ALDER Security Classification Guide (SCG-ALD-01), dated 2026-02-02, Programme ALDER Office; applicable portions: Sections 3-5. Attached.</font>"),
 ("n","A cited guide shows <b>cited in Item 13</b> and cannot be cited twice. The citation is ordinary text: edit or delete it as you would any other line."),
 ("n","Cited guides are named individually in the attachment reminder and in the distribution dialog. The generic reminder for Item 11c appears only while no guide is cited."),

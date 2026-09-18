@@ -1,3 +1,29 @@
+## v2.0.2 - 18 September 2026
+
+Tool version 2.139. Owner requests and decisions (18 September 2026): link each
+Security Classification Guide to contracts chosen from the DD-254 Template Language
+library, and surface linked guides on the form; a Settings choice, off by default,
+that makes the reason optional for set-aside, Blocked and Cancel, still logging the
+action as "No reason given". No storage format change: the link is an optional
+`contracts` field on a guide.
+
+- SCG editor rows gain a "Contracts" line (`scgLinkHtml`): a select of DD-254
+  Template Language entries (label and prime contract), chips for linked ones with
+  an unlink button. `scgLink`/`scgUnlink` store template `ioId`s in `contracts` and
+  save; the field is removed when the last link goes. A link to a template not in
+  this browser is shown as such. Library search also matches linked contracts.
+- `scgRenderPanel` orders guides linked to the open draft's contract first and
+  marks them "Linked to this contract". `scgDraftContracts` matches the applied
+  template (`DD254_CT_APPLIED`) or Item 2a against a template's prime contract,
+  ignoring case, spaces and hyphens. Citing is unchanged.
+- Settings: "Reasons for set-aside, Blocked and Cancel", Required (default) or
+  Optional, stored as `dd254_reasons_optional`. Changing it writes a
+  `setting-changed` audit entry. When optional, `dismissAdd`, `dashHoldPrompt` and
+  `dashCancelPrompt` accept a blank reason and record `REASON_NONE` ("No reason
+  given"); the audit detail adds "(reasons optional in Settings)". Dialog wording
+  says the reason is optional. Required mode is unchanged, and its refusal now
+  mentions the setting.
+
 ## v2.0.1 - 15 September 2026
 
 Tool version 2.138. Item 3 on spawned Revisions and Finals, following the DD Form 254

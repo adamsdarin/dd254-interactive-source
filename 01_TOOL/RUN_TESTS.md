@@ -280,3 +280,9 @@ Original clears 3a; on an open Revision or Final a missing or changed 3a and a m
 or non-numeric revision number block, and a recount counts them; a Revision without a
 chain is not compared; the XFA data and the flattened PDF text carry 3a on a Revision;
 the worksheet shows the original date.
+
+The v2.0.2 tests (section 105) cover guides linked to contracts (the editor's
+drop-down and unlink chips, a missing template, escaping, library search, and the
+form panel ordering and marking by Item 2a or applied template) and the reasons
+setting (default, logging, and blank reasons accepted for set-aside, Blocked and
+Cancel when optional and refused again when required).

@@ -1,4 +1,4 @@
-BUILD_SHA256 36dde8d5590fc857cc75e214f4f0c952e4611b39b4d700a5bb21fb3a56c8c15c
+BUILD_SHA256 4ac3ecb86095f188c1c1c9b702e4d7798ec1b30a0e6a1ffef9a1d6a73e2734de
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1375,6 +1375,21 @@ BUILD_SHA256 36dde8d5590fc857cc75e214f4f0c952e4611b39b4d700a5bb21fb3a56c8c15c
   PASS  the flattened PDF of a Revision prints the original date and the revision date
   PASS  the preparer's worksheet shows the original date with the revision
 
+### 105. v2.0.2 SCGs linked to contracts; reasons optional in Settings
+  PASS  each guide offers the contract templates in a drop-down and stores the link by template ID
+  PASS  a guide can be linked to several contracts and unlinked
+  PASS  unlinking the last contract removes the field, and a missing template is named, not dropped
+  PASS  library search finds a guide by its linked contract
+  PASS  the escaped contract label cannot inject markup
+  PASS  on the form, a guide linked to the draft’s contract is listed first and marked
+  PASS  the applied contract template also counts as the draft’s contract
+  PASS  Settings offers the reasons choice, required by default
+  PASS  turning reasons optional is itself logged, once
+  PASS  with reasons optional, a blank set-aside is kept, shown and logged as "No reason given"
+  PASS  with reasons optional, Blocked saves with no reason
+  PASS  with reasons optional, Cancel saves with no reason
+  PASS  back to required: a blank set-aside is refused and points to Settings; Blocked insists again
+
 ================================
-  PASS 1159   FAIL 0
+  PASS 1172   FAIL 0
 ================================

@@ -7339,6 +7339,131 @@ t("the preparer's worksheet shows the original date with the revision", ()=>{
 E("showDashView();resetFormFields();window.DD254_PARENT=null;run();");
 await wipe();
 
+H('105. v2.0.2 SCGs linked to contracts; reasons optional in Settings');
+/* Owner request and decisions (2026-09-18): an SCG entry picks contracts from the
+   DD-254 Template Language library; on the form, guides linked to the draft's
+   contract are listed first and marked, and citing stays a click. A Settings
+   choice, off by default, makes the reason optional for set-aside, Blocked and
+   Cancel; the action is still logged as "No reason given" and the setting change
+   is logged too. */
+const L2_CT=[{label:'ALDER prime (example)',ioId:'ct-ald',srcDate:'2026-01-01',data:{primeContract:'W91CRB-26-C-0042'}},
+             {label:'BIRCH prime (example)',ioId:'ct-bir',srcDate:'2026-01-01',data:{primeContract:'N00178-25-D-1111'}}];
+const L2_SCG=[{label:'Programme BIRCH guide (example)',ident:'SCG-B',date:'2026-03-03',ioId:'scg-b'},
+              {label:'Programme ALDER guide (example)',ident:'SCG-A',date:'2026-02-02',ioId:'scg-a'}];
+E("window.__L2P=uiPrompt;window.__L2A=uiAlert;window.uiConfirm=async function(){return true;};window.DD254_READONLY=false;localStorage.removeItem('dd254_reasons_optional');");
+E("tplSave(TPL_CT,"+JSON.stringify(L2_CT)+");tplSave(TPL_SCG,"+JSON.stringify(L2_SCG)+");window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+const L2row=i=>w.document.querySelectorAll('.scg-row')[i];
+await ta('each guide offers the contract templates in a drop-down and stores the link by template ID', async()=>{
+  await E("dashTplEdit('scg')");
+  const sel=L2row(1).querySelector('.scg-link-sel');
+  const opts=sel?[...sel.options].map(o=>o.value+'='+o.textContent):[];
+  sel.value='ct-ald'; sel.dispatchEvent(new w.Event('change'));
+  const saved=E("tplLoad(TPL_SCG)")[1];
+  const chip=L2row(1).querySelector('.scg-link');
+  const left=[...L2row(1).querySelector('.scg-link-sel').options].map(o=>o.value);
+  return opts.join('|')==='=+ Link a contract…|ct-ald=ALDER prime (example) — W91CRB-26-C-0042|ct-bir=BIRCH prime (example) — N00178-25-D-1111'
+      && JSON.stringify(saved.contracts)==='["ct-ald"]' && !!chip && /ALDER prime \(example\)/.test(chip.textContent)
+      && left.join('|')==='|ct-bir' ? true : {opts,saved,left}; });
+await ta('a guide can be linked to several contracts and unlinked', async()=>{
+  const sel=L2row(1).querySelector('.scg-link-sel'); sel.value='ct-bir'; sel.dispatchEvent(new w.Event('change'));
+  const two=E("tplLoad(TPL_SCG)")[1].contracts.join('|');
+  L2row(1).querySelectorAll('.scg-unlink')[1].click();
+  const one=E("tplLoad(TPL_SCG)")[1].contracts.join('|');
+  return two==='ct-ald|ct-bir' && one==='ct-ald' && /none linked/.test(L2row(0).textContent) ? true : {two,one}; });
+await ta('unlinking the last contract removes the field, and a missing template is named, not dropped', async()=>{
+  const sel=L2row(0).querySelector('.scg-link-sel'); sel.value='ct-bir'; sel.dispatchEvent(new w.Event('change'));
+  L2row(0).querySelector('.scg-unlink').click();
+  const gone=!('contracts' in E("tplLoad(TPL_SCG)")[0]);
+  E("(function(){var a=tplLoad(TPL_SCG);a[0].contracts=['ct-elsewhere'];tplSave(TPL_SCG,a);})()");
+  await E("dashTplEdit('scg')");
+  const named=/Contract template not in this browser/.test(L2row(0).textContent);
+  E("(function(){var a=tplLoad(TPL_SCG);delete a[0].contracts;tplSave(TPL_SCG,a);})()");
+  await E("dashTplEdit('scg')");
+  return gone && named; });
+t('library search finds a guide by its linked contract', ()=>{
+  const g=E("tplLoad(TPL_SCG)")[1];
+  return E("dashTplSearchText("+JSON.stringify(g)+")").indexOf('w91crb-26-c-0042')>=0; });
+t('the escaped contract label cannot inject markup', ()=>{
+  const h=E("scgLinkHtml({contracts:['x']},0)");
+  E("tplSave(TPL_CT,"+JSON.stringify(L2_CT.concat([{label:'<img src=x onerror=alert(9)>',ioId:'ct-bad',data:{}}]))+");");
+  const h2=E("scgLinkHtml({contracts:['ct-bad']},0)");
+  E("tplSave(TPL_CT,"+JSON.stringify(L2_CT)+");");
+  return /not in this browser/.test(h) && h2.indexOf('<img')<0 && h2.indexOf('&lt;img')>=0; });
+t('on the form, a guide linked to the draft’s contract is listed first and marked', ()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';showFormView();resetFormFields();window.DD254_CT_APPLIED='';");
+  V('i2a','w91crb 26 c 0042'); RUN();
+  const cards=[...w.document.querySelectorAll('#scgPanel .scg-card')];
+  const first=cards[0], second=cards[1];
+  const ok1=first&&first.getAttribute('data-scg')==='1' && /Linked to this contract: ALDER prime \(example\)/.test(first.textContent)
+    && !second.querySelector('.scg-linked') && !!first.querySelector('.scg-insert');
+  V('i2a','N00178-25-D-1111'); RUN();
+  const c2=[...w.document.querySelectorAll('#scgPanel .scg-card')];
+  const ok2=c2[0].getAttribute('data-scg')==='0' && !w.document.querySelector('#scgPanel .scg-linked');
+  return ok1 && ok2 ? true : {ok1,ok2,html:w.document.getElementById('scgPanel').innerHTML.slice(0,400)}; });
+t('the applied contract template also counts as the draft’s contract', ()=>{
+  V('i2a',''); E("window.DD254_CT_APPLIED='ALDER prime (example)';"); RUN();
+  const f=w.document.querySelector('#scgPanel .scg-card');
+  E("window.DD254_CT_APPLIED='';"); RUN();
+  return f.getAttribute('data-scg')==='1' && !!f.querySelector('.scg-linked'); });
+t('Settings offers the reasons choice, required by default', ()=>{
+  E("settingsRender()");
+  const txt=w.document.getElementById('settingsView').textContent;
+  return E("reasonsModeGet()")==='required' && /Reasons for set-aside, Blocked and Cancel/.test(txt) && /No reason given/.test(txt); });
+await ta('turning reasons optional is itself logged, once', async()=>{
+  E("AUD_CACHE=[];");
+  E("settingsSet('reasonsOptional','optional');settingsSet('reasonsOptional','optional');");
+  const a=E("audAll()").filter(x=>x.action==='setting-changed');
+  return E("reasonsModeGet()")==='optional' && a.length===1 && /optional$/.test(a[0].detail) ? true : a; });
+await ta('with reasons optional, a blank set-aside is kept, shown and logged as "No reason given"', async()=>{
+  await wipe();
+  await E("draftPut({id:'rs-1',title:'Reasons One',meta:{},workspace:{}})");
+  await E("dashOpen('rs-1')");
+  let prompt='';
+  w.uiPrompt=async function(m){ prompt=String(m); return '  '; };
+  const ok=await E("dismissAdd('Item 14: marked YES — the additional security requirements must be described.')");
+  const d=Object.values((await E("draftGet('rs-1')")).dismissed||{})[0]||{};
+  const a=E("audAll()").filter(x=>x.action==='flag dismissed').pop()||{};
+  return ok===true && d.reason==='No reason given' && /leave it blank/.test(prompt)
+      && /No reason given \(reasons optional in Settings\)/.test(a.detail||'') && /No reason given/.test(E("dismissRender()")) ? true : {ok,d,a,prompt}; });
+await ta('with reasons optional, Blocked saves with no reason', async()=>{
+  await E("showDashView()");
+  await E("draftPut({id:'rs-2',title:'Reasons Two',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],workspace:{checks:{},texts:{},radios:{},selects:{}}})");
+  await E("dashRenderCards()");
+  const pr=E("dashSetStatus('rs-2','Blocked')");
+  const d=await waitFor(()=>w.document.getElementById('dashHoldDlg'),'hold dialog');
+  const titled=/Reason for setting Blocked \(optional\)/.test(d.textContent);
+  d.querySelector('#hpSave').click(); await pr;
+  const r=await E("draftGet('rs-2')");
+  const a=E("audAll()").filter(x=>x.action==='hold-added').pop()||{};
+  return titled && r.status==='Blocked' && r.holds.length===1 && r.holds[0].t==='No reason given'
+      && /Blocked: No reason given \(reasons optional in Settings\)/.test(a.detail||'') ? true : {titled,r,a}; });
+await ta('with reasons optional, Cancel saves with no reason', async()=>{
+  const pr=E("dashSetStatus('rs-2','Cancelled')");
+  const d=await waitFor(()=>w.document.getElementById('dashCancelDlg'),'cancel dialog');
+  const said=/record why it was cancelled \(optional\)/.test(d.textContent);
+  d.querySelector('#cpSave').click(); await pr;
+  const r=await E("draftGet('rs-2')");
+  const a=E("audAll()").filter(x=>x.action==='cancelled').pop()||{};
+  return said && r.status==='Cancelled' && r.cancel.reason==='No reason given' && /\(reasons optional in Settings\)/.test(a.detail||'') ? true : {said,r,a}; });
+await ta('back to required: a blank set-aside is refused and points to Settings; Blocked insists again', async()=>{
+  E("settingsSet('reasonsOptional','required');");
+  const logged=E("audAll()").filter(x=>x.action==='setting-changed').length===2;
+  await E("dashOpen('rs-1')");
+  w.uiPrompt=async function(){ return ''; }; E("window.__A='';window.uiAlert=function(m){window.__A=m;};");
+  const ok=await E("dismissAdd('Item 15: marked YES — the inspection and review responsibility must be described.')");
+  const refused=ok===false && /reason is required/i.test(E("window.__A")) && /optional in Settings/.test(E("window.__A"));
+  await E("showDashView()");
+  await E("draftPut({id:'rs-3',title:'Reasons Three',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],workspace:{checks:{},texts:{},radios:{},selects:{}}})");
+  const pr=E("dashSetStatus('rs-3','Blocked')");
+  const d=await waitFor(()=>w.document.getElementById('dashHoldDlg'),'hold dialog');
+  const strict=/A reason is required to set Blocked/.test(d.textContent);
+  d.querySelector('#hpSave').click();
+  const held=!!w.document.getElementById('dashHoldDlg') && d.querySelector('#hpErr').style.display==='block';
+  d.querySelector('#hpCancel').click(); await pr;
+  return logged && refused && strict && held && E("reasonsModeGet()")==='required' ? true : {logged,refused,strict,held}; });
+E("window.uiPrompt=window.__L2P;window.uiAlert=window.__L2A;localStorage.removeItem('dd254_reasons_optional');tplSave(TPL_SCG,[]);tplSave(TPL_CT,[]);window.DD254_CT_APPLIED='';showDashView();resetFormFields();run();");
+await wipe();
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));
