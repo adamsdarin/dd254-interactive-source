@@ -1,4 +1,4 @@
-# Codex Astra v1.16.0 — separate government and prime review packages
+# DD254 Interactive v1.16.0 — separate government and prime review packages
 
 15 September 2026. Internal Tool v2.136. Single HTML file; existing browser storage.
 

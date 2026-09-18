@@ -20,7 +20,7 @@ Then drive the versioned file in a real browser:
 Exit code 0 means everything passed; 1 means at least one assertion failed, and
 the failing names are listed at the end.
 
-## Codex Astra coverage
+## Drafting tools coverage
 
 The real-browser smoke test drives the drafting tools — Item 8 site reuse,
 unfinished-prompt selection, combined Item 13 insertion and validation jump — as
@@ -286,3 +286,6 @@ drop-down and unlink chips, a missing template, escaping, library search, and th
 form panel ordering and marking by Item 2a or applied template) and the reasons
 setting (default, logging, and blank reasons accepted for set-aside, Blocked and
 Cancel when optional and refused again when required).
+
+The v2.0.3 test (section 106) checks that the header, window title and release label
+name the product, "DD254 Interactive", with the release version.

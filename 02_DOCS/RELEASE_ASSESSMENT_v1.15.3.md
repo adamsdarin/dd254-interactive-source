@@ -1,4 +1,4 @@
-# Codex Astra v1.15.3 — sensitive-terms screen
+# DD254 Interactive v1.15.3 — sensitive-terms screen
 
 14 September 2026. Internal Tool v2.131. Single HTML file; existing browser storage.
 

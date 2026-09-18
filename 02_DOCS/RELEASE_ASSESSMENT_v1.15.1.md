@@ -1,4 +1,4 @@
-# Codex Astra v1.15.1 — received DD Form 254 to template language
+# DD254 Interactive v1.15.1 — received DD Form 254 to template language
 
 14 September 2026. Internal Tool v2.129. Single HTML file; existing browser storage.
 

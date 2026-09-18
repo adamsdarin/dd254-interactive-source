@@ -1,4 +1,4 @@
-BUILD_SHA256 4ac3ecb86095f188c1c1c9b702e4d7798ec1b30a0e6a1ffef9a1d6a73e2734de
+BUILD_SHA256 07872212f07be76a960ee5a8795bea0620e0181023a78f7ef1b51f456c1bc85a
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1390,6 +1390,9 @@ BUILD_SHA256 4ac3ecb86095f188c1c1c9b702e4d7798ec1b30a0e6a1ffef9a1d6a73e2734de
   PASS  with reasons optional, Cancel saves with no reason
   PASS  back to required: a blank set-aside is refused and points to Settings; Blocked insists again
 
+### 106. v2.0.3 the product name is DD254 Interactive
+  PASS  the header, title and package release line use the product name
+
 ================================
-  PASS 1172   FAIL 0
+  PASS 1173   FAIL 0
 ================================

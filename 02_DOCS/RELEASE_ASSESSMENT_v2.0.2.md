@@ -1,4 +1,4 @@
-# Codex Astra v2.0.2 — SCGs linked to contracts; reasons optional
+# DD254 Interactive v2.0.2 — SCGs linked to contracts; reasons optional
 
 18 September 2026. Internal Tool v2.139. Single HTML file; existing browser storage.
 

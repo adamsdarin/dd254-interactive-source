@@ -123,7 +123,7 @@ else:
 
 # ------------------------------------------------------ 4. release identity
 #
-# v1.14.0 shipped with "Codex Astra v1.12.0" typed into its header while its
+# v1.14.0 shipped with release "v1.12.0" typed into its header while its
 # filename, title and release said v1.14.0 -- a second copy of the release name
 # that nothing compared. The filename, the RELEASE_VERSION constant the header
 # renders from, the <title>, and every literal release string in the file must
@@ -131,8 +131,8 @@ else:
 text = raw.decode("utf-8")
 file_ver = re.search(r"_v(\d+(?:\.\d+)+)\.HTM$", name, re.I)
 const_ver = re.search(r"RELEASE_VERSION='([^']+)'", text)
-title_ver = re.search(r"<title>[^<]*Codex Astra v(\d+(?:\.\d+)+)\s*</title>", text)
-literals = sorted(set(re.findall(r"Codex Astra v(\d+(?:\.\d+)+)", text)))
+title_ver = re.search(r"<title>[^<]*DD254 Interactive v(\d+(?:\.\d+)+)\s*</title>", text)
+literals = sorted(set(re.findall(r"DD254 Interactive v(\d+(?:\.\d+)+)", text)))
 identity = []
 if not const_ver:
     identity.append("the build has no RELEASE_VERSION constant")

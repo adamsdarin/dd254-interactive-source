@@ -294,7 +294,7 @@ class CDP {
     /* The rendered header, not the source, must name the release in the filename:
        v1.14.0 shipped a header announcing v1.12.0. */
     const fileRelease = (path.basename(build).match(/_v(\d+(?:\.\d+)+)(?:_DEMO)?\.HTM$/i) || [])[1];
-    value.releaseOk = !!fileRelease && value.release === 'Codex Astra v' + fileRelease;
+    value.releaseOk = !!fileRelease && value.release === 'DD254 Interactive v' + fileRelease;
     const ok = value && /^Tool v\d+\.\d+$/.test(value.version || '') && value.releaseOk && value.settingsOk && value.exportUiOk
       && value.signingUiOk && value.signingExportOk && value.validationSafe && value.advisoryUiOk && value.inserted && value.removed && value.undoOffered
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk

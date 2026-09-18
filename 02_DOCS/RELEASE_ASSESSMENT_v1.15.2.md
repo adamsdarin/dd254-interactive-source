@@ -1,4 +1,4 @@
-# Codex Astra v1.15.2 — Security Classification Guides library
+# DD254 Interactive v1.15.2 — Security Classification Guides library
 
 14 September 2026. Internal Tool v2.130. Single HTML file; existing browser storage.
 

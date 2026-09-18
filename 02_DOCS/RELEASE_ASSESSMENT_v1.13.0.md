@@ -1,4 +1,4 @@
-# Codex Astra v1.13.0 — what the form actually requires
+# DD254 Interactive v1.13.0 — what the form actually requires
 
 12 September 2026. Internal Tool v2.125. Single HTML file; existing browser storage.
 

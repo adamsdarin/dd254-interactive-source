@@ -6035,13 +6035,13 @@ console.log('\n### 92. v1.14.1 trust patch');
 t('the header release name renders from RELEASE_VERSION and agrees with the title', ()=>{
   const rv=E("typeof RELEASE_VERSION==='string'?RELEASE_VERSION:''");
   const hdr=(w.document.getElementById('releaseVer')||{}).textContent||'';
-  const lits=Array.from(new Set(fs.readFileSync('dd254.htm','utf8').match(/Codex Astra v\d+(?:\.\d+)+/g)||[]));
-  return !!rv && hdr==='Codex Astra v'+rv && w.document.title.endsWith('Codex Astra v'+rv)
-      && lits.length===1 && lits[0]==='Codex Astra v'+rv;
+  const lits=Array.from(new Set(fs.readFileSync('dd254.htm','utf8').match(/DD254 Interactive v\d+(?:\.\d+)+/g)||[]));
+  return !!rv && hdr==='DD254 Interactive v'+rv && w.document.title.endsWith('DD254 Interactive v'+rv)
+      && lits.length===1 && lits[0]==='DD254 Interactive v'+rv;
 });
 t('the OMB expiry sits with the OMB number, not with the release name', ()=>{
   const h=w.document.querySelector('h1').textContent.replace(/\s+/g,' ');
-  return /OMB 0704-0567 \(Exp\. Aug 31, 2028\)/.test(h) && !/Codex Astra v[\d.]+ \(Exp/.test(h);
+  return /OMB 0704-0567 \(Exp\. Aug 31, 2028\)/.test(h) && !/DD254 Interactive v[\d.]+ \(Exp/.test(h);
 });
 t('the worksheet and the CO package name Items 14 and 15 the way the form does', ()=>{
   CLEAN(); R('i14','yes'); V('i14text','Example additional requirement'); R('i15','yes'); V('i15text','Example inspection office'); RUN();
@@ -7069,7 +7069,7 @@ await ta('each package names the draft, its stage, the release and the form mark
   await E("draftPut({id:'COP1',title:'Review Co — Original',stage:'orig',status:'Draft',createdAt:'2026-09-01T00:00:00Z',updatedAt:'2026-09-01T00:00:00Z',todos:[],notes:'',"
     +"workspace:{texts:{i2a:'W91CRB-26-C-0902',i2b:'SUB-26-0902'},selects:{fcl1a:'S',sfg1b:'S',clsSel:'CUI'},radios:{spec:'3a'},checks:{},perf:[]}})");
   await E("dashOpen('COP1')");
-  const rel='Codex Astra v'+E("RELEASE_VERSION")+' (Tool '+E("TOOL_VERSION")+')';
+  const rel='DD254 Interactive v'+E("RELEASE_VERSION")+' (Tool '+E("TOOL_VERSION")+')';
   grabWindow(); E("exportCOPrep('prime')"); const prime=String(grabbed);
   grabWindow(); E("exportCOPrep('gov')"); const gov=String(grabbed);
   const ident=h=>h.indexOf('Draft: Review Co — Original')>=0 && h.indexOf('Stage: Original (Item 3a)')>=0 && h.indexOf('Release: '+rel)>=0
@@ -7079,7 +7079,7 @@ await ta('each package names the draft, its stage, the release and the form mark
   return ident(prime) && ident(gov) && /Audience: Prime subcontract review/.test(prime) && /Audience: Government CO \/ GCA review/.test(gov) ? true : {prime:ident(prime),gov:ident(gov)}; });
 await ta('the PDF edition carries the package, and every page names the release and the marking', async()=>{
   COP_FORM();
-  const rel='Codex Astra v'+E("RELEASE_VERSION")+' (Tool '+E("TOOL_VERSION")+')';
+  const rel='DD254 Interactive v'+E("RELEASE_VERSION")+' (Tool '+E("TOOL_VERSION")+')';
   const run=async(aud)=>{
     let bytes=null; const OB=w.Blob;
     w.Blob=function(p,o){ try{ if(o&&o.type==='application/pdf') bytes=Buffer.from(p[0]); }catch(e){} return new OB(p,o); };
@@ -7463,6 +7463,13 @@ await ta('back to required: a blank set-aside is refused and points to Settings;
   return logged && refused && strict && held && E("reasonsModeGet()")==='required' ? true : {logged,refused,strict,held}; });
 E("window.uiPrompt=window.__L2P;window.uiAlert=window.__L2A;localStorage.removeItem('dd254_reasons_optional');tplSave(TPL_SCG,[]);tplSave(TPL_CT,[]);window.DD254_CT_APPLIED='';showDashView();resetFormFields();run();");
 await wipe();
+
+H('106. v2.0.3 the product name is DD254 Interactive');
+/* Owner request (2026-09-18): the release label is the product name. */
+t('the header, title and package release line use the product name', ()=>{
+  const rv=E("RELEASE_VERSION");
+  return w.document.getElementById('releaseVer').textContent==='DD254 Interactive v'+rv
+      && w.document.title==='DD254 Interactive v'+rv && E("releaseLabel()")==='DD254 Interactive v'+rv; });
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

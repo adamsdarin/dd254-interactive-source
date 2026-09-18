@@ -1,4 +1,4 @@
-# Codex Astra v1.11.0 — release assessment
+# DD254 Interactive v1.11.0 — release assessment
 
 7 September 2026. Internal Tool v2.123. Implements the authorized browser-only
 enhancement release following v1.10.0. Release evidence and the exact file hash

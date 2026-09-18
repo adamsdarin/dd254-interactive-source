@@ -1,4 +1,4 @@
-# PRD implementation map — Codex Astra v1.11.0
+# PRD implementation map — DD254 Interactive v1.11.0
 
 7 September 2026. Internal Tool v2.123. Companion to the original
 [PRD draft 0.2](DD254_Tool_Enhancement_PRD.docx) and

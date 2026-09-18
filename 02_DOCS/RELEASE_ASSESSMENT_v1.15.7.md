@@ -1,4 +1,4 @@
-# Codex Astra v1.15.7 — biennial review attribution
+# DD254 Interactive v1.15.7 — biennial review attribution
 
 15 September 2026. Internal Tool v2.135. Single HTML file; existing browser storage.
 

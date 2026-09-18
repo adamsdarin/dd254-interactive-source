@@ -1,4 +1,4 @@
-# Codex Astra v1.12.0 — completion shortcuts
+# DD254 Interactive v1.12.0 — completion shortcuts
 
 8 September 2026. Internal Tool v2.124. Single HTML file; existing browser storage.
 

@@ -1,4 +1,4 @@
-# Codex Astra v2.0.0 — restore merges templates instead of replacing them
+# DD254 Interactive v2.0.0 — restore merges templates instead of replacing them
 
 15 September 2026. Internal Tool v2.137. Single HTML file; existing browser storage.
 

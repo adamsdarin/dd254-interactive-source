@@ -1,4 +1,4 @@
-# Codex Astra v1.15.5 — SAP countersignature badge, SAP lineage, dialogs and summary baseline
+# DD254 Interactive v1.15.5 — SAP countersignature badge, SAP lineage, dialogs and summary baseline
 
 14 September 2026. Internal Tool v2.133. Single HTML file; existing browser storage.
 

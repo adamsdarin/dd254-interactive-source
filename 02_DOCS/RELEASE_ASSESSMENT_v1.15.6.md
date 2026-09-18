@@ -1,4 +1,4 @@
-# Codex Astra v1.15.6 — Final-due prompt and demonstration portfolio
+# DD254 Interactive v1.15.6 — Final-due prompt and demonstration portfolio
 
 15 September 2026. Internal Tool v2.134. Single HTML file; existing browser storage.
 

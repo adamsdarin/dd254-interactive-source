@@ -1,4 +1,4 @@
-# Codex Astra v1.15.0 — dashboard numbers, search in any order, NISS re-confirmation
+# DD254 Interactive v1.15.0 — dashboard numbers, search in any order, NISS re-confirmation
 
 14 September 2026. Internal Tool v2.128. Single HTML file; existing browser storage.
 

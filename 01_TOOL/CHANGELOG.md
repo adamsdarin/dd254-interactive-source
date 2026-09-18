@@ -1,3 +1,13 @@
+## v2.0.3 - 18 September 2026
+
+Tool version 2.140. The release label is the product name (owner request, 18
+September 2026): the window title, the form header (`releaseLabel`) and the release
+line of the Contracting Officer review packages read "DD254 Interactive vX.Y.Z"
+instead of an internal codename. The documentation, release assessments, check
+script (`check_manifest.py` title and literal checks), smoke test and regression
+suite use the same name. No behaviour, validation, form or storage change. Archived
+builds of earlier releases are unchanged: their bytes are attested.
+
 ## v2.0.2 - 18 September 2026
 
 Tool version 2.139. Owner requests and decisions (18 September 2026): link each
@@ -383,7 +393,7 @@ Five were planned; the CO Package's 2b-only SAP test and the recount snapshot
 overwrite were found while fixing them. No rule, approval hold, validation gate
 or official PDF field changed.
 
-- The header named the wrong release. v1.14.0 displayed "Codex Astra v1.12.0",
+- The header named the wrong release. v1.14.0 displayed "v1.12.0",
   hand-typed into the markup beside a title and filename that said v1.14.0. The
   header now renders from a single `RELEASE_VERSION` constant, and
   `check_manifest.py` fails any build whose filename, constant, `<title>` or
@@ -531,7 +541,7 @@ Added Item 6/7 performance-site reuse, direct validation navigation, inline find
 
 # DD-254 Interactive — change notes
 
-## v1.11.0 — Codex Astra — 2026-09-07
+## v1.11.0 — 2026-09-07
 
 Tool version 2.123. A single-file release with additive review records stored
 inside each existing browser workspace; no new server, runtime dependency,

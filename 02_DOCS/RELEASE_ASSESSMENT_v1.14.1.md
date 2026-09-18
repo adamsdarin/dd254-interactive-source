@@ -1,4 +1,4 @@
-# Codex Astra v1.14.1 — trust patch
+# DD254 Interactive v1.14.1 — trust patch
 
 14 September 2026. Internal Tool v2.127. Single HTML file; existing browser storage.
 
@@ -6,7 +6,7 @@
 
 | Change | What was wrong | Safeguard now |
 | --- | --- | --- |
-| Release name in the header | v1.14.0 displayed "Codex Astra v1.12.0" | Rendered from `RELEASE_VERSION`; `check_manifest.py` fails a build whose filename, constant, title or literal release strings disagree; the browser smoke test reads the rendered header |
+| Release name in the header | v1.14.0 displayed "v1.12.0" | Rendered from `RELEASE_VERSION`; `check_manifest.py` fails a build whose filename, constant, title or literal release strings disagree; the browser smoke test reads the rendered header |
 | Item 14 and 15 titles in exports | Worksheet and CO Package called Item 14 "Gov't Approval Required" and Item 15 "Supplemental Information" | Titles are read from the form's own item labels |
 | CO Package signature block | A document marked not official carried signature and date lines, including subcontractor lines under the Item 6 prime's name | No signature lines; the package directs the signer to Item 17h/17i on the dynamic PDF and, for a SAP subcontract, names the Item 7 subcontractor |
 | SAP subcontract in the CO Package | Recognised from Item 2b only | Recognised from Item 2b or 7a, matching the rest of the tool since v1.13.0; a 7a-only form is no longer summarised as a prime form |

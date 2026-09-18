@@ -1,4 +1,4 @@
-# Codex Astra v1.14.0 — working-material records removed
+# DD254 Interactive v1.14.0 — working-material records removed
 
 13 September 2026. Internal Tool v2.126. Single HTML file; existing browser storage.
 

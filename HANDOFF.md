@@ -1,14 +1,21 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-18T19:00-05:00 by Claude
+Last updated: 2026-09-18T20:30-05:00 by Maintainer
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v2.0.2 (Tool 2.139)**, signed tag at 50780a3 on `main`; assets,
-checksums, kit rebuild (byte-identical) and both HTML attestations verified from a
-fresh download; live demo (dd254-interactive 65d0f7e) serves the attested demo bytes.
-v2.0.1 (Tool 2.138) published the same day (tag at 277179a, demo bbabb53). Commit and tag signing
+published release: **v2.0.2 (Tool 2.139)**, signed tag at 50780a3 on `main`.
+**v2.0.3 (Tool 2.140) is built and verified locally, release in progress** (branch
+`release/v2.0.3`); update this line when the tag is verified.
+
+v2.0.3 — owner request 2026-09-18: the product carries only its own name. Release
+label, title, header and review-package release line read "DD254 Interactive vX";
+docs, release assessments, `check_manifest.py`, `browser_smoke.js` and the suite
+use it. This file is signed "Maintainer". Do not name development tools or
+assistants in this public repository, its commits, tags or release notes. The
+stored draft key `astra` (v1.11-v1.13 legacy material) is data and stays. Archived
+builds, their release assets and git history were left unchanged (owner choice). Commit and tag signing
 use the Windows OpenSSH agent: if it is stopped, `git commit`/`git tag` hang on a
 hidden passphrase prompt (2026-09-18) — the owner starts it; never type a passphrase.
 
@@ -110,27 +117,30 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
-2026-09-18 19:00 Claude — Published v2.0.2 per SETUP.md: verify passed on 50780a3,
+2026-09-18 20:30 Maintainer — Built and verified v2.0.3 (product name only). Owner chose
+to scrub current files and editable release notes, neutral handoff wording, and to
+leave history and attested builds untouched.
+2026-09-18 19:00 Maintainer — Published v2.0.2 per SETUP.md: verify passed on 50780a3,
 main fast-forwarded, signed tag pushed, release workflow passed, release and served
 demo verified. Branches `release/v2.0.1` and `release/v2.0.2` left.
-2026-09-18 18:30 Claude — Published v2.0.1 per SETUP.md once the owner started the
+2026-09-18 18:30 Maintainer — Published v2.0.1 per SETUP.md once the owner started the
 SSH agent: tag pushed, release workflow passed, release and served demo verified.
-2026-09-18 17:30 Claude — Built and verified v2.0.2 (SCG-contract links; optional
+2026-09-18 17:30 Maintainer — Built and verified v2.0.2 (SCG-contract links; optional
 reasons). Asked the owner which contract list, what a link does, which prompts and
 what to log; chose the DD-254 Template Language entries, surfacing without auto-cite,
 set-aside/Blocked/Cancel, and "No reason given" in the audit log with the setting
 change logged. v2.0.1 release blocked on tag signing (ssh-agent stopped).
-2026-09-15 21:00 Claude — Built and verified v2.0.1 from the owner's Item 3 report.
+2026-09-15 21:00 Maintainer — Built and verified v2.0.1 from the owner's Item 3 report.
 Read the DD 254 Instructions (Items 3a, 3b, 3c) first: the stored draft already kept
 3a, but the exports dropped it on Revisions and Finals and nothing enforced it or the
 revision number. Asked four design questions; the owner chose a blocking error over a
 locked field. Compared 3a against the issuance's Original rather than the direct
 parent so an edited intermediate Revision cannot become the rule.
-2026-09-15 19:30 Claude — Published v2.0.0 per SETUP.md: verify passed on 27a35e0,
+2026-09-15 19:30 Maintainer — Published v2.0.0 per SETUP.md: verify passed on 27a35e0,
 main fast-forwarded, signed tag pushed (tags must be annotated: `git tag -m`), release
 workflow passed, release and served demo verified. Branch `release/v2.0.0` left.
 Trimmed log entries from 2026-09-14 and earlier (in git history).
-2026-09-15 19:00 Claude — Built and verified v2.0.0 (4.3 merge on restore). Reused
+2026-09-15 19:00 Maintainer — Built and verified v2.0.0 (4.3 merge on restore). Reused
 the colleague-import planner rather than a second merge rule, kept replace-all behind
 a completed backup, and took the major version because restore's effect on existing
 data changed. The new Undo test exposed a shipped bug (Undo after a colleague import
@@ -138,42 +148,42 @@ emptied the library); fixed in the same release. The Custodian corrected the
 library's mislabelled "DD 254 January 2026.pdf" by a `historical` metadata decision
 (effective 1999-12) in release dd254-dec1999-lifecycle-fix-20260915; its title and
 filename still await an owner decision in the Archivist handoff.
-2026-09-15 18:00 Claude — Owner skipped roadmap 3.5 after seeing the rule survey
+2026-09-15 18:00 Maintainer — Owner skipped roadmap 3.5 after seeing the rule survey
 (31 alerts carry authorities; ~59 error/warning sites and 5 helper sources mostly do
 not). Library mislabel handed to the Custodian through a background agent.
-2026-09-15 17:30 Claude — Owner dropped roadmap 3.3 before any code. Findings kept
+2026-09-15 17:30 Maintainer — Owner dropped roadmap 3.3 before any code. Findings kept
 for the record only: the April 2018 form is XFA-only with Reader Extensions (UR3);
 the tool's export removes UR3 on rewrite; the library's "DD 254 January 2026.pdf"
 (FOCI, active) is byte-for-byte the size of the expired December 1999 edition and
 titled December 1999 — a Custodian labelling question, not a tool change.
-2026-09-15 17:00 Claude — Published v1.16.0 per SETUP.md: verify passed on 664cf3d,
+2026-09-15 17:00 Maintainer — Published v1.16.0 per SETUP.md: verify passed on 664cf3d,
 tag pushed, release workflow passed, release and served demo verified.
-2026-09-15 16:30 Claude — Built and verified v1.16.0 (3.1). Filed three verified
+2026-09-15 16:30 Maintainer — Built and verified v1.16.0 (3.1). Filed three verified
 missing_source requests for CMMC text (acquisition.gov pages by title; Part 170 via
 the eCFR structure API, since eCFR pages bot-block fetches). Split the CO package
 by the actor each line names rather than rewording anything; kept one model for the
 view and the PDF so they cannot drift.
-2026-09-15 14:00 Claude — Published v1.15.7 per SETUP.md: verify passed on 922ab81,
+2026-09-15 14:00 Maintainer — Published v1.15.7 per SETUP.md: verify passed on 922ab81,
 tag pushed, release workflow passed, release and served demo verified.
-2026-09-15 13:30 Claude — Built v1.15.7 on the owner's clarification that the GCA
+2026-09-15 13:30 Maintainer — Built v1.15.7 on the owner's clarification that the GCA
 biennial review (DoD policy) and the Item 3b(3) review of revisions (DD 254
 instructions, binding industry with the NISPOM) are different obligations. Cited the
 current DoD source found in the library rather than the cancelled instruction.
-2026-09-15 12:30 Claude — Published v1.15.6 per SETUP.md. First verify run
+2026-09-15 12:30 Maintainer — Published v1.15.6 per SETUP.md. First verify run
 (30e11a9) failed the demo smoke test; fixed in 39bacf2 (seed writes counts; render
 backfills use draftPatch), verify passed, main fast-forwarded, tag pushed, release
 workflow passed, release and served demo verified. Branch `release/v1.15.6` left.
-2026-09-15 10:30 Claude — Built and verified v1.15.6. Read 117.13(d)(5),
+2026-09-15 10:30 Maintainer — Built and verified v1.15.6. Read 117.13(d)(5),
 117.15(j) and 117.17(c) before designing and put the corrected premise to the owner.
 Kept the end date off the form so no path can print it or turn an option-year
 extension into a revision. First verify run failed on the demo: the
 seed's recount reset the form under the smoke test; seed now writes counts and a
 test recounts them. Fixed a seed string broken by shell newline expansion and test helpers that
 raced a pending autosave.
-2026-09-15 01:30 Claude — Published v1.15.5 per SETUP.md: verify passed on
+2026-09-15 01:30 Maintainer — Published v1.15.5 per SETUP.md: verify passed on
 f29e9bc, main fast-forwarded, tag pushed, release workflow passed, release and
 served demo verified independently. Branch `release/v1.15.5` left in place.
-2026-09-15 01:00 Claude — Built and verified v1.15.5. Reproduced the badge on a
+2026-09-15 01:00 Maintainer — Built and verified v1.15.5. Reproduced the badge on a
 prime-contract Revision in jsdom, read DoDM 5205.07 10.1.d and the DD 254
 instructions, and asked the owner before changing it. Owner testing mid-release
 found the stuck language-review dialog (fixed in CSS for every modal) and asked for a

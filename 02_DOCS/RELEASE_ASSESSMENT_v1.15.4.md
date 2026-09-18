@@ -1,4 +1,4 @@
-# Codex Astra v1.15.4 — revision summary in Item 13
+# DD254 Interactive v1.15.4 — revision summary in Item 13
 
 14 September 2026. Internal Tool v2.132. Single HTML file; existing browser storage.
 
