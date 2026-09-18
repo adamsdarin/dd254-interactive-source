@@ -1,13 +1,14 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-18T20:30-05:00 by Maintainer
+Last updated: 2026-09-18T21:00-05:00 by Maintainer
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v2.0.2 (Tool 2.139)**, signed tag at 50780a3 on `main`.
-**v2.0.3 (Tool 2.140) is built and verified locally, release in progress** (branch
-`release/v2.0.3`); update this line when the tag is verified.
+published release: **v2.0.3 (Tool 2.140)**, signed tag at 4f27459 on `main`; assets,
+checksums, kit rebuild (byte-identical) and both HTML attestations verified from a
+fresh download; live demo (dd254-interactive 8555cb1) serves the attested demo bytes.
+Release titles and notes of v1.11.0 and v1.12.0 were rewritten without the codename.
 
 v2.0.3 — owner request 2026-09-18: the product carries only its own name. Release
 label, title, header and review-package release line read "DD254 Interactive vX";
@@ -117,6 +118,9 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-18 21:00 Maintainer — Published v2.0.3 per SETUP.md: verify passed on 4f27459,
+main fast-forwarded, signed tag pushed, release workflow passed, release, assets and
+served demo verified and scanned clean; v1.11.0/v1.12.0 release titles and notes edited.
 2026-09-18 20:30 Maintainer — Built and verified v2.0.3 (product name only). Owner chose
 to scrub current files and editable release notes, neutral handoff wording, and to
 leave history and attested builds untouched.
