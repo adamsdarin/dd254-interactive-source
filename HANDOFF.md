@@ -1,15 +1,14 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-18T17:30-05:00 by Claude
+Last updated: 2026-09-18T19:00-05:00 by Claude
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v2.0.1 (Tool 2.138)**, signed tag at 277179a on `main`; assets,
+published release: **v2.0.2 (Tool 2.139)**, signed tag at 50780a3 on `main`; assets,
 checksums, kit rebuild (byte-identical) and both HTML attestations verified from a
-fresh download; live demo (dd254-interactive bbabb53) serves the attested demo bytes.
-**v2.0.2 (Tool 2.139) is built and verified locally, release in progress** (branch
-`release/v2.0.2`); update this line when the tag is verified. Commit and tag signing
+fresh download; live demo (dd254-interactive 65d0f7e) serves the attested demo bytes.
+v2.0.1 (Tool 2.138) published the same day (tag at 277179a, demo bbabb53). Commit and tag signing
 use the Windows OpenSSH agent: if it is stopped, `git commit`/`git tag` hang on a
 hidden passphrase prompt (2026-09-18) — the owner starts it; never type a passphrase.
 
@@ -111,6 +110,9 @@ rule stands: keep only what is needed to prepare or issue a DD Form 254.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+2026-09-18 19:00 Claude — Published v2.0.2 per SETUP.md: verify passed on 50780a3,
+main fast-forwarded, signed tag pushed, release workflow passed, release and served
+demo verified. Branches `release/v2.0.1` and `release/v2.0.2` left.
 2026-09-18 18:30 Claude — Published v2.0.1 per SETUP.md once the owner started the
 SSH agent: tag pushed, release workflow passed, release and served demo verified.
 2026-09-18 17:30 Claude — Built and verified v2.0.2 (SCG-contract links; optional
