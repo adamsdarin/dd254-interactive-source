@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.0.3 (tool version 2.140)"
+VER="DD254 Interactive v2.1.0 (tool version 2.141)"
 
 DOC = [
-("h1","DD254 Interactive v2.0.3 changes"),
+("h1","DD254 Interactive v2.1.0 changes"),
+("b","A <b>Facility</b> template can name the <b>certifying official</b> who signs Item 17 for it. Choose one from the second dropdown on the facility row; applying that facility by CAGE then fills Items 17a, 17b, 17c, 17e, 17f and 17g as well as Item 6. A facility with no official linked leaves Item 17 exactly as it is. See 5.1 and 5.3."),
+("h2","DD254 Interactive v2.0.3 changes"),
 ("b","The window title, the form header and the release line on review-package PDFs now show the product name, <b>DD254 Interactive</b>, with the version. Nothing else changes."),
 ("h2","DD254 Interactive v2.0.2 changes"),
 ("b","Each <b>Security Classification Guide</b> can be linked to contracts from the DD-254 Template Language library. On a form for one of those contracts, its guides are listed first and marked <b>Linked to this contract</b>. See 5.9."),
@@ -342,7 +344,7 @@ DOC = [
 ("h3","Items 14 and 15"),
 ("p","Item 14 covers requirements over and above NISPOM — YES is required for 10f, 11i and 11j, and may be required for 11f. Item 15 covers inspections, and is required for SAP, for SCI (naming the Senior Intelligence Officer), and whenever inspections are by anyone other than the DCSA CSO."),
 ("h2","4.11 Steps 7 and 8 — Items 16, 17 and 18"),
-("p","Item 16 is the GCA block, 16a to 16f. The browser captures Items 17a through 17g from Certifier templates; 17e is for subcontracts only. Complete 17h Signature and 17i Date Signed in the generated dynamic PDF."),
+("p","Item 16 is the GCA block, 16a to 16f. The browser captures Items 17a, 17b, 17c, 17e, 17f and 17g from Certifier templates; 17d AAC is not held in a template and 17e is for subcontracts only. Complete 17h Signature and 17i Date Signed in the generated dynamic PDF."),
 ("n","Neither block is enforced by the validation panel — see 4.3. You can complete and issue a form with both left empty."),
 ("p","Item 18 is the required distribution: 18a contractor FSO, 18b subcontractor FSO, 18c cognizant security office, 18d overseas activity, 18e ACO, 18f other with a free-text field. 18d must be checked whenever 11f is checked, and 18b on any subcontract form. What you tick here becomes the checklist presented when you record distribution."),
 ("h2","4.12 Classified mailing addresses"),
@@ -398,10 +400,10 @@ DOC = [
 ("h1","5. Templates — building them and using them"),
 ("p","Nine libraries live under <b>Templates</b> on the dashboard. All are local to this browser and all are included in the Full Backup."),
 ("tbl",[["Library","Holds","Fills"],
-        ["Facility","Item 6 address, CAGE, FSO e-mail, linked 6c CSO","6a, 6b, 6c, FSO e-mail"],
+        ["Facility","Item 6 address, CAGE, FSO e-mail, linked 6c CSO, linked Item 17 certifying official","6a, 6b, 6c, FSO e-mail, 17a-c and 17e-g"],
         ["CSO","Security office name, address, phone, e-mail","6c, 7c, 8c"],
         ["Performance / Sub","Location, CAGE, CSO, FSO e-mail, classified mailing address","7a-c, 8a-c and their extras"],
-        ["Certifier","Name, title, address, CAGE, phone, e-mail of the official who certifies the form","17a-g"],
+        ["Certifier","Name, title, address, CAGE, phone, e-mail of the official who certifies the form","17a-c, 17e-g"],
         ["Contract Type","A whole DD-254 posture, offered when a draft is created","10, 11, 12, 13, 14, 15, 16, 18"],
         ["DD-254 Template Language","The same, insertable piece by piece from the form","10, 11, 12, 13, 14, 15, 16, 18"],
         ["Security Managers","Name, e-mail, program","Assigned to a language template"],
@@ -412,7 +414,7 @@ DOC = [
 ("n","The up and down arrows reorder the list, which is the order the dropdowns show."),
 ("n","The red cross deletes a row. <b>Undo last change</b> puts it back — one level, and it covers row deletions as well as spreadsheet uploads."),
 ("n","<b>Done</b> returns to the dashboard and flushes anything pending."),
-("p","Give every row a Label; that is what you see in the dropdown. In Facility and Performance / Sub, the CSO dropdown <i>links</i> a row to a CSO template rather than copying its text, so correcting the CSO once corrects everything using it."),
+("p","Give every row a Label; that is what you see in the dropdown. In Facility and Performance / Sub, the CSO dropdown <i>links</i> a row to a CSO template rather than copying its text, so correcting the CSO once corrects everything using it. The Facility row carries a second dropdown that links the <b>certifying official</b> who signs Item 17 for that facility, the same way: correct the official once in the Certifier library and every facility naming them follows."),
 ("note","Duplicate CAGE codes across rows are flagged as you type. Two rows with the same CAGE usually means one is stale."),
 ("h2","5.2 Saving from the form into a template"),
 ("p","You do not have to build the tables up front. Fill a form once, then push what you typed into the library."),
@@ -424,10 +426,10 @@ DOC = [
 ("p","Performance and subcontractor locations are also harvested automatically: every time you leave the form for the dashboard, any location you typed is added if it is not already there. Placeholder text such as <b>See Item 6a</b> is ignored."),
 ("note","Item 6 has no save-to-template button. Build facility entries in the Facility library directly, or import them by spreadsheet."),
 ("h2","5.3 Applying a template into a form"),
-("b","Item 6 — type a CAGE code into the facility filter above 6a. It fills 6a, 6b, the linked 6c and the FSO e-mail."),
+("b","Item 6 — type a CAGE code into the facility filter above 6a. It fills 6a, 6b, the linked 6c, the FSO e-mail and, if the facility names one, the Item 17 certifying official."),
 ("b","6c, 7c and 8c — each carries an apply CSO template dropdown above the field."),
 ("b","Items 7 and 8 — the Performance / Sub search fills location, CAGE, CSO, FSO e-mail and classified mailing address together."),
-("b","Item 17 — the certifying-official dropdown above 17a fills all seven fields."),
+("b","Item 17 — the certifying-official dropdown above 17a fills 17a, 17b, 17c, 17e, 17f and 17g. 17d AAC is not held in the template. A facility template that names an official fills the same six fields when you apply it at Item 6, so on a form for one of your own facilities you need not touch this dropdown at all."),
 ("b","A whole posture — the Contract type dropdown on the dashboard card applies a Contract Type template. It ticks Items 10, 11 and 18, sets the Item 12 routing, fills 14, 15 and 16, and writes Block 13. See 5.6."),
 ("h2","5.4 Building a DD-254 Template Language entry"),
 ("p","A single entry carries language for twelve items at once — what you reach for when a programme has a standard security posture you issue repeatedly."),

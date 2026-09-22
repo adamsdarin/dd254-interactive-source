@@ -1,4 +1,4 @@
-BUILD_SHA256 07872212f07be76a960ee5a8795bea0620e0181023a78f7ef1b51f456c1bc85a
+BUILD_SHA256 63d66b93907bece68fc7ead5cbbba1ca2b3cbbfa451dd42b5491bb034dd1c5a4
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1393,6 +1393,14 @@ BUILD_SHA256 07872212f07be76a960ee5a8795bea0620e0181023a78f7ef1b51f456c1bc85a
 ### 106. v2.0.3 the product name is DD254 Interactive
   PASS  the header, title and package release line use the product name
 
+### 107. v2.1.0 a facility names its certifying official
+  PASS  the facility editor offers the Certifying Officials library
+  PASS  selecting an official stores the link and its snapshot
+  PASS  applying the facility applies its official to Item 17
+  PASS  a corrected official reaches the facility that names them
+  PASS  a facility with no official leaves Item 17 alone
+  PASS  the link survives the facility spreadsheet round trip
+
 ================================
-  PASS 1173   FAIL 0
+  PASS 1179   FAIL 0
 ================================

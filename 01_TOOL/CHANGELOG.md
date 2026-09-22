@@ -1,3 +1,25 @@
+## v2.1.0 - 22 September 2026
+
+Tool version 2.141. A facility template can name the certifying official who
+signs Item 17 for it. Owner request (22 September 2026). No storage format
+change: the link is an optional certLabel/certSnap pair on a facility entry,
+the same shape the 6c CSO link has used.
+
+- The facility editor row gains a second dropdown, listing the Certifying
+  Officials library. dashTplFacCert stores the chosen label and a snapshot.
+- Applying a facility template by CAGE now also fills Item 17a, 17b, 17c, 17e,
+  17f and 17g from the linked official. A facility with no linked official
+  leaves Item 17 exactly as it was; it does not blank it.
+- The link is resolved against the library on every use, so correcting an
+  official reaches every facility that names them. The snapshot answers only
+  when the library no longer holds that label.
+- The facility spreadsheet export and upload carry a Certifier Link column.
+  Full Backup and template import/export already carried the whole entry.
+
+Item 17 certifies the security requirements of the activity issuing the form,
+which is the facility named in Item 6, so the pairing belongs to the facility.
+The tool records who certifies; it does not assert that they signed.
+
 ## v2.0.3 - 18 September 2026
 
 Tool version 2.140. The release label is the product name (owner request, 18

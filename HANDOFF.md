@@ -1,6 +1,6 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-18T21:00-05:00 by Maintainer
+Last updated: 2026-09-22T18:50-05:00 by Maintainer
 
 ## Current State
 
@@ -9,6 +9,17 @@ published release: **v2.0.3 (Tool 2.140)**, signed tag at 4f27459 on `main`; ass
 checksums, kit rebuild (byte-identical) and both HTML attestations verified from a
 fresh download; live demo (dd254-interactive 8555cb1) serves the attested demo bytes.
 Release titles and notes of v1.11.0 and v1.12.0 were rewritten without the codename.
+
+v2.1.0 — owner request 2026-09-22: a Facility template can name the certifying
+official who signs Item 17 for it. Built, verified and committed on branch
+`release/v2.1.0`; **not yet pushed, tagged or published** — awaiting the owner.
+1179 regression assertions pass (six new), both builds pass native Chrome (new
+`facCertLinkOk`), the four check scripts and `verify_pdflib` pass, and the shipped
+bytes are the tested bytes (63d66b93…). Negative control run against v2.0.3: no
+dropdown, no column, Item 17 left empty. The link is `certLabel`/`certSnap` on a
+facility entry, the same shape as the 6c CSO link, so no storage format change.
+The manual also stopped claiming the Item 17 dropdown fills “all seven fields”:
+17d AAC is not held in a Certifier template, so it fills six.
 
 v2.0.3 — owner request 2026-09-18: the product carries only its own name. Release
 label, title, header and review-package release line read "DD254 Interactive vX";

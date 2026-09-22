@@ -7471,6 +7471,63 @@ t('the header, title and package release line use the product name', ()=>{
   return w.document.getElementById('releaseVer').textContent==='DD254 Interactive v'+rv
       && w.document.title==='DD254 Interactive v'+rv && E("releaseLabel()")==='DD254 Interactive v'+rv; });
 
+H('107. v2.1.0 a facility names its certifying official');
+/* Item 17 certifies for the activity issuing the form, which is the facility in
+   Item 6, so the facility library carries the link. Same shape as the 6c CSO
+   link: label resolved against the library, snapshot only as a fallback. */
+t('the facility editor offers the Certifying Officials library', ()=>{ SEED();
+  E("tplSave(TPL_CERT,[{label:'J. Doe — HSV',name:'Doe, John Q'},{label:'J. Roe — Mesa',name:'Roe, Jane'}]);");
+  E("tplSave(TPL_FAC,[{label:'Plant',text:'Acme',cage:'1ABC2',certLabel:'J. Roe — Mesa'}]);dashTplEdit('fac');");
+  const sels=Array.from(w.document.querySelectorAll('#tplView select'))
+    .filter(x=>/dashTplFacCert/.test(x.getAttribute('onchange')||''));
+  if(sels.length!==1) return 'certifier selects: '+sels.length;
+  const opts=Array.from(sels[0].options).map(o=>o.value);
+  const sel=Array.from(sels[0].options).filter(o=>o.selected).map(o=>o.value);
+  return opts.length===3 && opts[1]==='J. Doe — HSV' && opts[2]==='J. Roe — Mesa'
+      && sel.length===1 && sel[0]==='J. Roe — Mesa'; });
+t('selecting an official stores the link and its snapshot', ()=>{ SEED();
+  E("tplSave(TPL_CERT,[{label:'J. Doe — HSV',name:'Doe, John Q',title:'FSO',address:'1 Main St',cage:'1ABC2',phone:'555-0100',email:'jdoe@acme.com'}]);");
+  E("tplSave(TPL_FAC,[{label:'Plant',text:'Acme',cage:'1ABC2'}]);dashTplEdit('fac');dashTplFacCert(0,'J. Doe — HSV');");
+  const f=E("tplLoad(TPL_FAC)")[0];
+  return f.certLabel==='J. Doe — HSV' && !!f.certSnap && f.certSnap.name==='Doe, John Q'; });
+t('applying the facility applies its official to Item 17', ()=>{ SEED();
+  E("tplSave(TPL_CERT,[{label:'J. Doe — HSV',name:'Doe, John Q',title:'FSO',address:'1 Main St, Huntsville AL 35801',cage:'1ABC2',phone:'555-0100',email:'jdoe@acme.com'}]);");
+  E("tplSave(TPL_FAC,[{label:'Plant',text:'Acme, 1 Main St',cage:'1ABC2',certLabel:'J. Doe — HSV'}]);buildTplSelects();");
+  E("showFormView();resetFormFields();applyFacTplFromSearch({value:'1ABC2'});");
+  const g=id=>w.document.getElementById(id).value;
+  return g('i6b')==='1ABC2' && g('i17a')==='Doe, John Q' && g('i17b')==='FSO'
+      && g('i17e')==='1ABC2' && g('i17f')==='555-0100' && g('i17g')==='jdoe@acme.com'; });
+t('a corrected official reaches the facility that names them', ()=>{ SEED();
+  E("tplSave(TPL_CERT,[{label:'J. Doe — HSV',name:'Doe, John Q',title:'FSO',address:'1 Main St',cage:'1ABC2',phone:'555-0100',email:'jdoe@acme.com'}]);");
+  E("tplSave(TPL_FAC,[{label:'Plant',text:'Acme',cage:'1ABC2'}]);dashTplEdit('fac');dashTplFacCert(0,'J. Doe — HSV');");
+  /* the official moves on; the library is corrected, the snapshot is not */
+  E("tplSave(TPL_CERT,[{label:'J. Doe — HSV',name:'Roe, Jane',title:'FSO',address:'1 Main St',cage:'1ABC2',phone:'555-0199',email:'jroe@acme.com'}]);buildTplSelects();");
+  E("showFormView();resetFormFields();applyFacTplFromSearch({value:'1ABC2'});");
+  const g=id=>w.document.getElementById(id).value;
+  const stale=E("tplLoad(TPL_FAC)")[0].certSnap.name;
+  return stale==='Doe, John Q' && g('i17a')==='Roe, Jane' && g('i17g')==='jroe@acme.com'; });
+t('a facility with no official leaves Item 17 alone', ()=>{ SEED();
+  E("tplSave(TPL_CERT,[]);tplSave(TPL_FAC,[{label:'Plant',text:'Acme',cage:'1ABC2'}]);buildTplSelects();");
+  E("showFormView();resetFormFields();");
+  E("document.getElementById('i17a').value='Typed, By Hand';document.getElementById('i17g').value='hand@acme.com';");
+  E("applyFacTplFromSearch({value:'1ABC2'});");
+  const g=id=>w.document.getElementById(id).value;
+  return g('i6b')==='1ABC2' && g('i17a')==='Typed, By Hand' && g('i17g')==='hand@acme.com'; });
+await ta('the link survives the facility spreadsheet round trip', async()=>{ SEED();
+  E("window.ioPreview=async function(){return {apply:true,del:false};};");
+  E("tplSave(TPL_CERT,[{label:'J. Doe — HSV',name:'Doe, John Q'}]);");
+  E("tplSave(TPL_FAC,[{label:'Plant',text:'Acme',cage:'1ABC2',email:'f@acme.com',certLabel:'J. Doe — HSV'}]);");
+  let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p,{type:'text/csv'});};
+  E("tplIoExport('fac');"); w.Blob=OB;
+  if(!cap) return 'no export';
+  const rows=E("ioCsvParse("+JSON.stringify(cap)+")");
+  if(!rows[1].includes('Certifier Link')) return 'missing column: '+rows[1].join('|');
+  E("tplSave(TPL_FAC,[]);");
+  await E("tplIoApply('fac',"+JSON.stringify(rows)+")");
+  const back=E("tplLoad(TPL_FAC)")[0];
+  return back.certLabel==='J. Doe — HSV' && !!back.certSnap && back.certSnap.name==='Doe, John Q'; });
+E("tplSave(TPL_CERT,[]);tplSave(TPL_FAC,[]);showDashView();resetFormFields();");
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

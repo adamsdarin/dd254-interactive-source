@@ -192,6 +192,27 @@ class CDP {
       const stored=(durable||[])[0]||{};
       const templateSaveOk=showedSaving && saveOk && /Saved/.test(document.getElementById('tplSaveState').textContent)
         && stored.label==='Browser durable save 195';
+      /* A facility names the official who certifies Item 17 for it. Checked in a
+         real browser because the dropdown is rendered markup and the fill crosses
+         from the template editor to the form. */
+      await tplSave(TPL_CERT,[{label:'Live certifier',name:'Doe, John Q',title:'FSO',address:'1 Main St',cage:'1ABC2',phone:'555-0100',email:'jdoe@acme.com'}]);
+      await tplSave(TPL_FAC,[{label:'Live plant',text:'Acme, 1 Main St',cage:'1ABC2'}]);
+      window.TPL_EDIT=null; window.TPL_EDIT_KIND='';
+      await dashTplEdit('fac');
+      const certSel=Array.from(document.querySelectorAll('#tplView select'))
+        .filter(x=>/dashTplFacCert/.test(x.getAttribute('onchange')||''));
+      certSel[0].value='Live certifier';
+      certSel[0].dispatchEvent(new Event('change',{bubbles:true}));
+      const linked=(tplLoad(TPL_FAC)[0]||{}).certLabel==='Live certifier';
+      showFormView(); resetFormFields(); buildTplSelects();
+      applyFacTplFromSearch({value:'1ABC2'});
+      const fv=id=>(document.getElementById(id)||{}).value;
+      const facCertDetail={sels:certSel.length,linked:linked,i6b:fv('i6b'),i17a:fv('i17a'),i17f:fv('i17f'),i17g:fv('i17g')};
+      const facCertLinkOk=certSel.length===1 && linked && fv('i6b')==='1ABC2'
+        && fv('i17a')==='Doe, John Q' && fv('i17f')==='555-0100' && fv('i17g')==='jdoe@acme.com';
+      await tplSave(TPL_CERT,[]); await tplSave(TPL_FAC,[]);
+      /* Back to the form view the later checkbox and export checks run in. */
+      showFormView(); resetFormFields();
       await draftPut({id:'live-note-a',title:'A',workspace:{},notes:'old A'});
       await draftPut({id:'live-note-b',title:'B',workspace:{},notes:'old B'});
       dashNotesInput('live-note-a','First quick note');dashNotesInput('live-note-b','Second quick note');
@@ -199,7 +220,7 @@ class CDP {
       const notesOk=(await draftGet('live-note-a')).notes==='First quick note'
         && (await draftGet('live-note-b')).notes==='Second quick note';
       return {version:document.getElementById('toolVer').textContent,release:(document.getElementById('releaseVer')||{}).textContent||'',settingsOk,exportUiOk,signingUiOk,signingExportOk,validationSafe,
-        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,notesOk};
+        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk};
     })()`;
     const result = await cdp.send('Runtime.evaluate', {
       expression, awaitPromise: true, returnByValue: true
@@ -297,7 +318,7 @@ class CDP {
     value.releaseOk = !!fileRelease && value.release === 'DD254 Interactive v' + fileRelease;
     const ok = value && /^Tool v\d+\.\d+$/.test(value.version || '') && value.releaseOk && value.settingsOk && value.exportUiOk
       && value.signingUiOk && value.signingExportOk && value.validationSafe && value.advisoryUiOk && value.inserted && value.removed && value.undoOffered
-      && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk
+      && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk && value.facCertLinkOk
       && value.completionReuseOk && value.completionPromptOk && value.completionInsertOk && value.completionJumpOk
       && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.map(e=>e.params.exceptionDetails) }));
