@@ -1,6 +1,6 @@
 # DD254 Interactive — security fact sheet
 
-DD254 Interactive v2.0.3 / Tool v2.140, 18 September 2026.
+DD254 Interactive v2.1.0 / Tool v2.141, 22 September 2026.
 
 This is an offline, single-user drafting aid. The official HTML embeds its
 JavaScript, PDF library and form assets. It uses local browser storage and

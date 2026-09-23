@@ -21,4 +21,12 @@ assert 'Only the backed-up changes clear when you confirm' in text
 assert 'The flat derivative is not the original Government download' in text
 assert 'may only be UNCLASSIFIED or CUI' not in text
 assert '\u25a0' not in text, 'Possible missing-font glyph in manual'
+
+# The security fact sheet names the release it describes, and nothing checked it:
+# v1.13.0 shipped one labelled v1.12.0 and v2.1.0 shipped one labelled v2.0.3.
+release=re.search(r"RELEASE_VERSION='([^']+)'",build.read_text(encoding='utf-8')).group(1)
+sheet=(ROOT/'02_DOCS/DD254_Tool_Security_Fact_Sheet.md').read_text(encoding='utf-8')
+assert f'DD254 Interactive v{release} / Tool v{version}' in sheet, (
+    f'The security fact sheet does not name v{release} / Tool v{version}')
+
 print('DOCUMENTATION: PASS (manual versions, published copies and updated guidance)')
