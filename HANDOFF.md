@@ -1,23 +1,36 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-22T18:50-05:00 by Maintainer
+Last updated: 2026-09-22T21:45-05:00 by Maintainer
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v2.0.3 (Tool 2.140)**, signed tag at 4f27459 on `main`; assets,
-checksums, kit rebuild (byte-identical) and both HTML attestations verified from a
-fresh download; live demo (dd254-interactive 8555cb1) serves the attested demo bytes.
+published release: **v2.1.0 (Tool 2.141)**, signed tag at 227acbd on `main`; assets,
+checksums and both HTML attestations verified from a fresh download; live demo
+published as dd254-interactive 1042694.
 Release titles and notes of v1.11.0 and v1.12.0 were rewritten without the codename.
 
 v2.1.0 — owner request 2026-09-22: a Facility template can name the certifying
-official who signs Item 17 for it. Built, verified and committed on branch
-`release/v2.1.0`; **not yet pushed, tagged or published** — awaiting the owner.
-1179 regression assertions pass (six new), both builds pass native Chrome (new
-`facCertLinkOk`), the four check scripts and `verify_pdflib` pass, and the shipped
-bytes are the tested bytes (63d66b93…). Negative control run against v2.0.3: no
-dropdown, no column, Item 17 left empty. The link is `certLabel`/`certSnap` on a
-facility entry, the same shape as the 6c CSO link, so no storage format change.
+official who signs Item 17 for it; applying that facility fills 17a, 17b, 17c,
+17e, 17f and 17g alongside Item 6, and a facility with no official linked leaves
+Item 17 untouched. Stored as `certLabel`/`certSnap`, the shape the 6c CSO link
+already used, so no storage format change. Published: signed tag v2.1.0 at
+227acbd on `main`; assets, checksums and both HTML attestations verified from a
+fresh download (official 9b71313a…, demo b83e7c3f…, attestation ref
+refs/tags/v2.1.0). 1179 regression assertions pass (six new), both builds pass
+native Chrome (new `facCertLinkOk`). Negative controls run against v2.0.3: no
+dropdown, no column, Item 17 left empty.
+
+Two things this release had to work around. The owner pushed 830268f to `main`
+(codename removed from archived builds) while the release branch was open, so
+the branch was rebased onto it and `verify` re-run on the rebased commit before
+the fast-forward — a pushed branch is not a private one. And the security fact
+sheet shipped labelled v2.0.3/2.140: no check read that line, which is how
+v1.13.0 shipped one labelled v1.12.0. The asset was replaced and SHA256SUMS.txt
+regenerated (attested HTML untouched), and `check_documentation.py` now derives
+RELEASE_VERSION and TOOL_VERSION from the build and fails if the sheet does not
+name both — confirmed by restoring the stale label.
+
 The manual also stopped claiming the Item 17 dropdown fills “all seven fields”:
 17d AAC is not held in a Certifier template, so it fills six.
 
