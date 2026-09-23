@@ -5,8 +5,11 @@ Last updated: 2026-09-23T06:30-05:00 by Maintainer
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v2.1.1 (Tool 2.142)**; assets, checksums and both HTML
-attestations verified from a fresh download.
+published release: **v2.1.1 (Tool 2.142)**, signed tag at 0db06bc on `main`; assets,
+checksums and both HTML attestations verified from a fresh download (official
+658a7cd3…, demo ed845d8c…, attestation ref refs/tags/v2.1.1); live demo published
+as dd254-interactive 189bdbd. The fact-sheet label check added in v2.1.0 held:
+this release's sheet named v2.1.1/2.142 on the published asset, unprompted.
 Release titles and notes of v1.11.0 and v1.12.0 were rewritten without the codename.
 
 v2.1.1 — owner report 2026-09-23: the v2.1.0 link reached Item 17 only inside
