@@ -1,3 +1,23 @@
+## v2.1.1 - 23 September 2026
+
+Tool version 2.142. Fixed: the certifying official linked to a facility reached
+Item 17 only while a facility template was being applied by CAGE. A draft whose
+Item 6 was typed, restored from storage or copied from its parent never goes
+through that step, so Item 17 stayed blank through the ordinary workflow — the
+case the feature was asked for. Owner report, 23 September 2026.
+
+- Item 17 is now also read back from the CAGE standing in Item 6b: when a draft
+  is opened, and when that field is committed. `facCertSync` resolves the
+  facility, then the official linked to it.
+- The lookup is exact, unlike the prefix match the Item 6 CAGE filter uses, so a
+  half-typed code cannot pull in a neighbouring facility.
+- Item 17 is filled only when every one of its fields is empty. Filling the empty
+  ones field by field was tried first and was worse: a preparer who had typed
+  another name into 17a got the facility official's title and telephone number
+  beside it, which is two people in one certification block.
+- Applying a facility template by CAGE still replaces Item 17 outright. That is
+  an explicit instruction to use that facility, not a read-back.
+
 ## v2.1.0 - 22 September 2026
 
 Tool version 2.141. A facility template can name the certifying official who

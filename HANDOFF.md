@@ -1,14 +1,29 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-22T21:45-05:00 by Maintainer
+Last updated: 2026-09-23T06:30-05:00 by Maintainer
 
 ## Current State
 
 Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v2.1.0 (Tool 2.141)**, signed tag at 227acbd on `main`; assets,
-checksums and both HTML attestations verified from a fresh download; live demo
-published as dd254-interactive 1042694.
+published release: **v2.1.1 (Tool 2.142)**; assets, checksums and both HTML
+attestations verified from a fresh download.
 Release titles and notes of v1.11.0 and v1.12.0 were rewritten without the codename.
+
+v2.1.1 — owner report 2026-09-23: the v2.1.0 link reached Item 17 only inside
+`applyFacTplFromSearch`, so a draft that was opened, typed by hand or spawned as
+a Revision or Final never passed through it and Item 17 stayed blank — the case
+the feature was asked for. Item 17 is now also read back from the CAGE in Item 6b
+(`facCertSync`, from `dashOpen` and a `change` listener wired once at load), with
+an exact CAGE match rather than the filter's prefix match.
+
+Filling only the empty Item 17 fields was built first and rejected on the
+evidence: a preparer who had typed another name into 17a was handed the facility
+official's title and telephone number beside it, which is two people in one
+certification block. `certFillBlank17` acts only when every Item 17 field is
+empty. The explicit apply path is unchanged and still replaces Item 17 outright.
+1186 regression assertions pass (seven new); both builds pass native Chrome. The
+whole-file `Block 17` check caught the wording in a new source comment — the
+form's term is Item, and that rule applies to comments too.
 
 v2.1.0 — owner request 2026-09-22: a Facility template can name the certifying
 official who signs Item 17 for it; applying that facility fills 17a, 17b, 17c,

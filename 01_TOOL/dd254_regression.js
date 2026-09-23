@@ -7528,6 +7528,43 @@ await ta('the link survives the facility spreadsheet round trip', async()=>{ SEE
   return back.certLabel==='J. Doe — HSV' && !!back.certSnap && back.certSnap.name==='Doe, John Q'; });
 E("tplSave(TPL_CERT,[]);tplSave(TPL_FAC,[]);showDashView();resetFormFields();");
 
+H('108. v2.1.1 Item 17 is read back from the CAGE in Item 6b');
+/* v2.1.0 filled Item 17 only while a facility template was being applied by
+   CAGE. A draft whose Item 6 was typed, restored or copied from its parent
+   never goes through that, so Block 17 stayed blank in the ordinary workflow. */
+const CERTSEED=()=>{
+  E("tplSave(TPL_CERT,[{label:'Doe HSV',name:'Doe, John Q',title:'FSO',address:'1 Redstone Rd',cage:'1ABC2',phone:'555-0100',email:'jdoe@acme.com'}]);");
+  E("tplSave(TPL_FAC,[{label:'Huntsville',text:'Acme, 1 Redstone Rd',cage:'1ABC2',certLabel:'Doe HSV'},{label:'Unlinked',text:'Beta Corp',cage:'9ZZZ9'}]);");
+  E("showFormView();resetFormFields();buildTplSelects();");
+};
+const g17=id=>w.document.getElementById(id).value;
+await ta('opening a saved draft fills Item 17 from the facility in Item 6b',async()=>{ CERTSEED();
+  await E("draftPut({id:'wf-cert-1',title:'Existing',workspace:{texts:{i6a:'Acme, 1 Redstone Rd',i6b:'1ABC2'}}})");
+  await E("dashOpen('wf-cert-1')");
+  const r={i6b:g17('i6b'),i17a:g17('i17a'),i17b:g17('i17b'),i17g:g17('i17g')};
+  await E("draftDel('wf-cert-1')");
+  return r.i6b==='1ABC2' && r.i17a==='Doe, John Q' && r.i17b==='FSO' && r.i17g==='jdoe@acme.com' ? true : r; });
+t('typing the CAGE into Item 6b fills Item 17', ()=>{ CERTSEED();
+  E("document.getElementById('i6b').value='1ABC2';facCertSync();");
+  return g17('i17a')==='Doe, John Q' && g17('i17f')==='555-0100'; });
+t('a half-typed CAGE pulls in nobody', ()=>{ CERTSEED();
+  E("document.getElementById('i6b').value='1A';facCertSync();");
+  return g17('i17a')==='' && g17('i17f')===''; });
+t('anything already in Item 17 leaves the whole block alone', ()=>{ CERTSEED();
+  E("document.getElementById('i17a').value='Someone, Else';document.getElementById('i6b').value='1ABC2';facCertSync();");
+  /* field-by-field filling would put Doe's title and telephone number beside
+     another person's name, which is two people in one certification block */
+  return g17('i17a')==='Someone, Else' && g17('i17b')==='' && g17('i17f')===''; });
+t('a facility with no official linked changes nothing', ()=>{ CERTSEED();
+  E("document.getElementById('i6b').value='9ZZZ9';facCertSync();");
+  return g17('i17a')==='' && g17('i17g')===''; });
+t('applying the facility outright still replaces Item 17', ()=>{ CERTSEED();
+  E("document.getElementById('i17a').value='Stale, Person';applyFacTplFromSearch({value:'1ABC2'});");
+  return g17('i17a')==='Doe, John Q' && g17('i17b')==='FSO'; });
+t('the Item 6b listener is wired once', ()=>{
+  return w.document.getElementById('i6b').dataset.certSync==='1'; });
+E("tplSave(TPL_CERT,[]);tplSave(TPL_FAC,[]);showDashView();resetFormFields();");
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

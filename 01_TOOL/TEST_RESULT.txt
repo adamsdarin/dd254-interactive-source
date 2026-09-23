@@ -1,4 +1,4 @@
-BUILD_SHA256 9b71313af9f10b76070fb88b28ce9bec254a4d60e9d6bea34bfdc07e5530bfc9
+BUILD_SHA256 658a7cd3ced41337157c250084420a400a708f2c47f7c5b4d013d6e9f88b9d3a
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1401,6 +1401,15 @@ BUILD_SHA256 9b71313af9f10b76070fb88b28ce9bec254a4d60e9d6bea34bfdc07e5530bfc9
   PASS  a facility with no official leaves Item 17 alone
   PASS  the link survives the facility spreadsheet round trip
 
+### 108. v2.1.1 Item 17 is read back from the CAGE in Item 6b
+  PASS  opening a saved draft fills Item 17 from the facility in Item 6b
+  PASS  typing the CAGE into Item 6b fills Item 17
+  PASS  a half-typed CAGE pulls in nobody
+  PASS  anything already in Item 17 leaves the whole block alone
+  PASS  a facility with no official linked changes nothing
+  PASS  applying the facility outright still replaces Item 17
+  PASS  the Item 6b listener is wired once
+
 ================================
-  PASS 1179   FAIL 0
+  PASS 1186   FAIL 0
 ================================

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.1.0 (tool version 2.141)"
+VER="DD254 Interactive v2.1.1 (tool version 2.142)"
 
 DOC = [
-("h1","DD254 Interactive v2.1.0 changes"),
+("h1","DD254 Interactive v2.1.1 changes"),
+("b","<b>Fixed:</b> the certifying official linked to a facility only reached Item 17 while a facility template was being applied by CAGE, so Item 17 stayed blank on a DD-254 you opened, typed by hand or spawned as a Revision or Final. Item 17 is now also filled from the CAGE already in <b>Item 6b</b> — when you open a draft, and when you finish entering that field. It fills only when Item 17 is completely empty, so anything you have entered is left alone. See 5.3."),
+("h2","DD254 Interactive v2.1.0 changes"),
 ("b","A <b>Facility</b> template can name the <b>certifying official</b> who signs Item 17 for it. Choose one from the second dropdown on the facility row; applying that facility by CAGE then fills Items 17a, 17b, 17c, 17e, 17f and 17g as well as Item 6. A facility with no official linked leaves Item 17 exactly as it is. See 5.1 and 5.3."),
 ("h2","DD254 Interactive v2.0.3 changes"),
 ("b","The window title, the form header and the release line on review-package PDFs now show the product name, <b>DD254 Interactive</b>, with the version. Nothing else changes."),
@@ -426,7 +428,7 @@ DOC = [
 ("p","Performance and subcontractor locations are also harvested automatically: every time you leave the form for the dashboard, any location you typed is added if it is not already there. Placeholder text such as <b>See Item 6a</b> is ignored."),
 ("note","Item 6 has no save-to-template button. Build facility entries in the Facility library directly, or import them by spreadsheet."),
 ("h2","5.3 Applying a template into a form"),
-("b","Item 6 — type a CAGE code into the facility filter above 6a. It fills 6a, 6b, the linked 6c, the FSO e-mail and, if the facility names one, the Item 17 certifying official."),
+("b","Item 6 — type a CAGE code into the facility filter above 6a. It fills 6a, 6b, the linked 6c, the FSO e-mail and, if the facility names one, the Item 17 certifying official. You do not have to use the filter for Item 17: whenever the CAGE in 6b names a facility that has an official linked, opening the draft or finishing that field fills Item 17, provided Item 17 is completely empty. Anything already in Item 17 is left alone, so the block never ends up holding two people."),
 ("b","6c, 7c and 8c — each carries an apply CSO template dropdown above the field."),
 ("b","Items 7 and 8 — the Performance / Sub search fills location, CAGE, CSO, FSO e-mail and classified mailing address together."),
 ("b","Item 17 — the certifying-official dropdown above 17a fills 17a, 17b, 17c, 17e, 17f and 17g. 17d AAC is not held in the template. A facility template that names an official fills the same six fields when you apply it at Item 6, so on a form for one of your own facilities you need not touch this dropdown at all."),
