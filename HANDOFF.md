@@ -1,11 +1,20 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-02T13:08-05:00 by Maintainer
+Last updated: 2026-10-05T08:30-05:00 by Maintainer
 
 ## Current State
 
-Owner-requested creation-only coverage correction is built as **v2.4.1
-(Tool 2.147)** and verified locally. The candidate is not published.
+Latest published release: **v2.4.1 (Tool 2.147)**, signed tag at 3589277 on
+`main`. v2.1.2, v2.2.0, v2.3.0, v2.4.0 and v2.4.1 had all been built and
+verified locally without being published; the owner chose (5 October 2026) to
+ship them together under the v2.4.1 tag, each keeping its own changelog entry,
+release assessment and implementation map. Published assets, checksums, both
+HTML attestations (`refs/tags/v2.4.1`) and a byte-identical kit rebuild were
+verified from a fresh download; official 07de4ee9..., demo c8c31c1e....
+Live demo published as dd254-interactive f939647.
+
+1264 regression assertions were reproduced here against the shipped bytes
+rather than taken from the recorded log, and both builds pass native Chrome.
 
 - Prime/own coverage is chosen only in Add task order. Saved order headers
   show the coverage as a label and have no switching buttons.
