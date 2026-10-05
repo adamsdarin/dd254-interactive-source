@@ -29,4 +29,24 @@ sheet=(ROOT/'02_DOCS/DD254_Tool_Security_Fact_Sheet.md').read_text(encoding='utf
 assert f'DD254 Interactive v{release} / Tool v{version}' in sheet, (
     f'The security fact sheet does not name v{release} / Tool v{version}')
 
-print('DOCUMENTATION: PASS (manual versions, published copies and updated guidance)')
+# The rule catalog is generated from the build. A committed copy that no
+# longer matches it would be a second statement of what the tool enforces,
+# and the whole point of the catalog is that it cannot say something the
+# build does not.
+rc_spec=importlib.util.spec_from_file_location('rule_catalog',ROOT/'02_DOCS/make_rule_catalog.py')
+rule_catalog=importlib.util.module_from_spec(rc_spec);rc_spec.loader.exec_module(rule_catalog)
+catalog=ROOT/'02_DOCS/DD254_Rule_Catalog.md'
+assert catalog.exists(), 'The rule catalog is missing; run python 02_DOCS/make_rule_catalog.py'
+assert catalog.read_text(encoding='utf-8')==rule_catalog.build_doc(), (
+    'The rule catalog does not match the build; run python 02_DOCS/make_rule_catalog.py')
+
+# The SBOM is derived from the rebuild manifest and the pdf-lib verifier for
+# the same reason: a hand-kept component list goes stale without anyone noticing.
+sb_spec=importlib.util.spec_from_file_location('sbom',ROOT/'02_DOCS/make_sbom.py')
+sbom=importlib.util.module_from_spec(sb_spec);sb_spec.loader.exec_module(sbom)
+bom=ROOT/'02_DOCS/DD254_Interactive_SBOM.cdx.json'
+assert bom.exists(), 'The SBOM is missing; run python 02_DOCS/make_sbom.py'
+assert bom.read_text(encoding='utf-8')==sbom.build_doc(), (
+    'The SBOM does not match the build; run python 02_DOCS/make_sbom.py')
+
+print('DOCUMENTATION: PASS (manual, published copies, guidance, rule catalog and SBOM)')

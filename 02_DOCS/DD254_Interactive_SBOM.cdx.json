@@ -1,0 +1,141 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-05T00:00:00Z",
+    "component": {
+      "type": "application",
+      "bom-ref": "dd254-interactive",
+      "name": "DD254 Interactive",
+      "version": "2.4.1",
+      "description": "Single-file offline DD Form 254 preparation tool. No installer, no network access at run time, no server component; data stays in the browser profile that opened the file.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "07de4ee987d09af095be961c1a646e4786e5531581506275da9d6d604e63bebd"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/adamsdarin/dd254-interactive-source"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "dd254:toolVersion",
+        "value": "2.147"
+      },
+      {
+        "name": "dd254:buildFile",
+        "value": "DD254_Interactive_v2.4.1.HTM"
+      },
+      {
+        "name": "dd254:runtimeNetworkAccess",
+        "value": "none"
+      },
+      {
+        "name": "dd254:installer",
+        "value": "none"
+      },
+      {
+        "name": "dd254:dataLocation",
+        "value": "browser profile (IndexedDB, localStorage)"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/pdf-lib@1.17.1",
+      "name": "pdf-lib",
+      "version": "1.17.1",
+      "purl": "pkg:npm/pdf-lib@1.17.1",
+      "description": "PDF generation library, embedded in the single HTML file as dist/pdf-lib.min.js. Byte-identical to the published npm release; verify_pdflib.py proves it on every build.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0f9a5cad07941f0826586c94e089d89b918c46e5c17cf2d5a3c6f666e3bc694f"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://www.npmjs.com/package/pdf-lib"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/Hopding/pdf-lib"
+        }
+      ]
+    },
+    {
+      "type": "data",
+      "bom-ref": "dd254-xfa",
+      "name": "DD Form 254 (APR 2018) dynamic XFA",
+      "version": "APR 2018",
+      "description": "DD Form 254 dynamic XFA, sourced from esd.whs.mil, base64. Verify against your own official download.",
+      "licenses": [
+        {
+          "license": {
+            "name": "U.S. Government work, not subject to copyright"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "86d380749d592f2a900c695bf651de2ebfb962b2d8b0071b244b90045ff217b1"
+        }
+      ],
+      "externalReferences": [
+        {
+          "type": "distribution",
+          "url": "https://www.esd.whs.mil/Directives/forms/"
+        }
+      ]
+    },
+    {
+      "type": "data",
+      "bom-ref": "dd254-flat",
+      "name": "DD Form 254 flat derivative",
+      "version": "APR 2018",
+      "description": "Flat print-to-PDF derivative of DD Form 254; exact rendering procedure is undocumented. Not a byte-identical Government download.",
+      "licenses": [
+        {
+          "license": {
+            "name": "U.S. Government work, not subject to copyright"
+          }
+        }
+      ],
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ff0b984f0a217339904eb037c4c27f344c5dd42804df2d9ed614cca35d025cf0"
+        }
+      ]
+    },
+    {
+      "type": "application",
+      "bom-ref": "dd254-application",
+      "name": "DD254 Interactive application code",
+      "version": "2.147",
+      "description": "Application code, markup and CSS. THIS is the part to review.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0391d4e5e1f3a6879d16a8b092d0c2577857365358dc5ace2b0b03312b183d3a"
+        }
+      ]
+    }
+  ]
+}
