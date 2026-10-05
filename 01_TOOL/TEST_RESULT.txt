@@ -1,4 +1,4 @@
-BUILD_SHA256 e5c218db85770de2a3616aaf05c95f5a0fac91d8fc2ae46a322bf474ea4a7364
+BUILD_SHA256 91d36f7b909d6526c2e79ab0764d142edafeb61c496cee2f4b3fc9025496f17b
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1520,6 +1520,13 @@ BUILD_SHA256 e5c218db85770de2a3616aaf05c95f5a0fac91d8fc2ae46a322bf474ea4a7364
   PASS  a template carrying a task order no longer claims to be order-specific
   PASS  a template that records the choice still honours it
 
+### 112. v2.7.0 contract type is chosen from its own picker, not at origination
+  PASS  creating a DD-254 asks nothing about contract type
+  PASS  the picker lists the contract vehicles
+  PASS  applying one fills the form and records the type
+  PASS  the picker and the dashboard card share one apply path
+  PASS  it refuses rather than applying to nothing when no draft is open
+
 ================================
-  PASS 1282   FAIL 0
+  PASS 1287   FAIL 0
 ================================

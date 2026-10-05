@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.6.0 (tool version 2.149)"
+VER="DD254 Interactive v2.7.0 (tool version 2.150)"
 
 DOC = [
-("h1","DD254 Interactive v2.6.0 changes"),
+("h1","DD254 Interactive v2.7.0 changes"),
+("b","Creating a solicitation or an Original <b>no longer asks you to pick a contract type</b>. Most contracts are ordinary FAR-based ones that have none, so the question is gone from origination."),
+("b","Contract vehicles that carry their own boilerplate now have a <b>Contract Type</b> picker of their own, in the Checklist and Templates panel above DD-254 Template Language. Choose one when the contract calls for it; applying it fills Items 10, 11, 12, 13, 14, 15, 16 and 18 and still asks before replacing Block 13 text. See 5.5."),
+("h2","DD254 Interactive v2.6.0 changes"),
 ("b","Every DD Form 254 now carries <b>Please direct all questions to the prime contractor.</b> in Item 13, directly above the classified mailing addresses. It is added to an existing DD-254 when you open it, and maintained with the addresses rather than typed by hand. An <b>Issued</b> DD-254 is never changed — it is the record of what went out — and nor are Cancelled or Skipped ones; move one back to Draft, Ready to sign or Blocked and it gains the line next time you open it. A Revision does not report Item 13 as revised just because of this line. See 4.12."),
 ("b","<b>Contract Type</b> templates now have the same <b>Program</b> field as DD-254 Template Language entries. Assigning a security manager fills it from that manager. See 5.5."),
 ("b","<b>Fixed:</b> applying a template that carried a task order always ticked <b>This outgoing DD Form 254 is specific to the order above</b>, so Block 2a exported the contract and the task order together even when the order was covered by the prime’s DD-254. A template that does not record that choice no longer makes one. See 4.5."),

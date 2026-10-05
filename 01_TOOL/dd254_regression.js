@@ -2825,7 +2825,7 @@ t('strip removes it and leaves the description', ()=>
 t('strip is safe on text that never had it', ()=>
   E("solStrip('Widget development.')")==='Widget development.');
 await ta('a new solicitation opens Item 9 with the marker', async()=>{
-  /* no contract types saved, or dashNewDraft stops on the picker */
+  /* v2.7.0: creating a DD-254 no longer stops on a contract-type picker. */
   E("tplSave(TPL_B13,[]);");
   E("window.uiPrompt=async function(){return 'Widget solicitation';};");
   await E("dashNewDraft('sol')");
@@ -4173,7 +4173,7 @@ t('validation output lives in the validation panel', ()=>{
 });
 t('the things you act on live in the checklist panel', ()=>{
   const c=w.document.getElementById('rpanelChecklist');
-  const want=['slPanel','ctTplSel','emailDistSection','attachReminderSection'];
+  const want=['slPanel','ctTypeSel','ctTplSel','emailDistSection','attachReminderSection'];
   const missing=want.filter(id=>!c.querySelector('#'+id));
   return missing.length===0 ? true : missing;
 });
@@ -4181,8 +4181,9 @@ t('nothing was dropped in the split', ()=>{
   const v=w.document.getElementById('rpanelValidation');
   const c=w.document.getElementById('rpanelChecklist');
   const n=v.querySelectorAll('.rp-section').length+c.querySelectorAll('.rp-section').length;
-  /* v1.15.2 added the Security Classification Guides section to the checklist panel. */
-  return n===12 ? true : n+' sections, expected 12';
+  /* v1.15.2 added the Security Classification Guides section to the checklist
+     panel; v2.7.0 added Contract Type, which used to be a chooser at origination. */
+  return n===13 ? true : n+' sections, expected 13';
 });
 t('no panel content ended up outside either panel', ()=>{
   const stray=Array.from(w.document.querySelectorAll('.panel-col .rp-section'))
@@ -8080,6 +8081,49 @@ t('a template that records the choice still honours it', ()=>{
   const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{taskOrder:'0007',standalone:true}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
   return ws.checks.iStandalone===true; });
 E("tplSave(TPL_B13,[]);tplSave(TPL_SM,[]);showDashView();resetFormFields();");
+
+H('112. v2.7.0 contract type is chosen from its own picker, not at origination');
+const CTV=()=>{
+  E("(function(){var mk=function(l,t){var b=ctBlankData();b.i13=t;b.c10['10b']=true;return {label:l,data:b};};"
+   +"tplSave(TPL_B13,[mk('IRAD — self funded','IRAD boilerplate.'),mk('CRADA','CRADA boilerplate.')]);})();buildTplSelects();");
+};
+await ta('creating a DD-254 asks nothing about contract type', async()=>{ CTV();
+  E("window.__asked=false;window.__realPick=window.ctPickContractType;window.ctPickContractType=async function(){window.__asked=true;return null;};");
+  E("window.uiPrompt=async function(){return 'Traditional FAR contract';};");
+  await E("dashNewDraft('orig')");
+  const asked=E("window.__asked"), i13=E("document.getElementById('item13').value");
+  E("window.ctPickContractType=window.__realPick;");
+  /* The vast majority of contracts are ordinary FAR-based ones with no contract
+     type, so the question is not worth everyone's attention at origination. */
+  return asked===false && i13==='' ? true : {asked,i13}; });
+t('the picker lists the contract vehicles', ()=>{ CTV();
+  const sel=w.document.getElementById('ctTypeSel');
+  if(!sel) return 'no picker';
+  const opts=Array.from(sel.options).map(o=>o.textContent);
+  return opts.length===3 && /IRAD/.test(opts[1]) && /CRADA/.test(opts[2]) ? true : opts; });
+await ta('applying one fills the form and records the type', async()=>{ CTV();
+  E("window.uiConfirm=async function(){return true;};");
+  const sel=w.document.getElementById('ctTypeSel');
+  sel.value='0';
+  await E("ctTypeApply(document.getElementById('ctTypeSel'))");
+  const rec=await E("draftGet(DASH.current)");
+  return /IRAD boilerplate\./.test(w.document.getElementById('item13').value)
+      && E("document.getElementById('c10b').checked")===true
+      && rec.ctType==='IRAD — self funded'
+      && sel.value==='' ? true : {i13:w.document.getElementById('item13').value,ct:rec.ctType}; });
+await ta('the picker and the dashboard card share one apply path', async()=>{
+  /* ctTypeApply hands to dashApplyB13 rather than repeating the overwrite
+     confirm, the ctType write and the audit entry. */
+  return /dashApplyB13/.test(E("String(ctTypeApply)")); });
+await ta('it refuses rather than applying to nothing when no draft is open', async()=>{ CTV();
+  E("window.__alerted='';window.__realAlert=window.alert;window.alert=function(m){window.__alerted=String(m);};");
+  E("window.__savedCur=DASH.current;DASH.current=null;");
+  const sel=w.document.getElementById('ctTypeSel'); sel.value='0';
+  await E("ctTypeApply(document.getElementById('ctTypeSel'))");
+  const msg=E("window.__alerted");
+  E("DASH.current=window.__savedCur;window.alert=window.__realAlert;");
+  return /Save this DD-254/.test(msg) ? true : msg; });
+E("tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

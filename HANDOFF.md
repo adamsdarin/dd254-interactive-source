@@ -4,28 +4,25 @@ Last updated: 2026-10-05T10:20-05:00 by Maintainer
 
 ## Current State
 
-Latest published release: **v2.6.0 (Tool 2.149)**, signed tag at 769247d on
-`main`; assets, checksums and both HTML attestations verified from a fresh
-download (official e5c218db..., demo f5a959af..., ref refs/tags/v2.6.0); live
-demo published as dd254-interactive f731326. Three owner requests of
-5 October 2026: the required Item 13 line, Program on Contract Type templates,
-and Block 2a carrying a task order only when the DD-254 is specific to it.
+Latest published release: **v2.7.0 (Tool 2.150)**. Contract types are chosen
+when wanted rather than asked about on every form (owner, 5 October 2026).
 
-The Item 13 line is maintained as part of the classified-mailing-address region
-so it cannot drift away from it. An **issued** DD-254 is never rewritten - owner
-decision, an issued form is finite - and nor are Cancelled or Skipped; the guard
-is evaluated on each open, so a record moved back to Draft, Ready to sign or
-Blocked gains the line next time. `rsumItem13` excludes the line from the
-revision-summary comparison.
+`dashNewDraft` no longer calls `ctPickContractType`: creating a solicitation or
+an Original goes straight to the form with nothing applied. Contract vehicles
+have their own picker (`ctTypeSel`) in the Checklist and Templates panel, above
+DD-254 Template Language. `ctTypeApply` hands to `dashApplyB13`, so the
+overwrite confirmation, the ctType write and the audit entry are not duplicated.
+The owner's reasoning, worth keeping: nearly every contract is an ordinary
+FAR-based one, so a prompt answered "no" on almost every DD-254 trains people
+to dismiss it - and then it is dismissed on the one that mattered.
 
-Worth knowing for the next change here: making that line unconditional
-invalidated sixteen assertions, and one was a real regression - every Revision
-opened reporting "Item 13 Reference 10a: revised" when nobody had touched it,
-because the tool was attributing its own text to the preparer. Ordering the
-writes did not fix it; excluding the line from the comparison did. The other
-fifteen encoded "Item 13 is untouched unless you touch it" and now read Item 13
-through a `stripPdq` helper so they keep testing what they were written to test.
-1282 regression assertions pass (eleven new); both builds pass native Chrome.
+1287 regression assertions pass (five new). Two existing assertions counted the
+panel's sections and listed what the preparer acts on; both now include the new
+picker.
+
+Earlier in the same day: v2.6.0 (required Item 13 line, Program on Contract Type
+templates, task-order Block 2a), v2.5.0 (contract authority and Item 16 in the
+review packages), and the rule catalog, SBOM and ISSM brief at 5b8e966.
 
 Still open from the owner's list: a Settings switch making Standard Language
 mandatory (auto-insert and block), and the program/classification prompt at

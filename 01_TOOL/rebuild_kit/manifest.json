@@ -1,6 +1,6 @@
 {
-  "source": "DD254_Interactive_v2.6.0.HTM",
-  "sha256": "e5c218db85770de2a3616aaf05c95f5a0fac91d8fc2ae46a322bf474ea4a7364",
+  "source": "DD254_Interactive_v2.7.0.HTM",
+  "sha256": "91d36f7b909d6526c2e79ab0764d142edafeb61c496cee2f4b3fc9025496f17b",
   "parts": {
     "01_pdflib.js": {
       "chars": 525598,
@@ -22,8 +22,8 @@
       "decoded_bytes": 62461
     },
     "04_application.html": {
-      "chars": 1018204,
-      "sha256": "40309587a1f487df1ebddade8b1aeb8e7f1027157d196994c6075b7271bdc2b3",
+      "chars": 1019946,
+      "sha256": "47c68c0fbf84e48f4590a21f8a157777301c900b73627e6ea4c60484bf7bb8d8",
       "note": "Application code, markup and CSS. THIS is the part to review."
     }
   }

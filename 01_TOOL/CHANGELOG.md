@@ -1,3 +1,21 @@
+## v2.7.0 - 5 October 2026
+
+Tool version 2.150. Contract types are chosen when they are wanted, not asked
+about on every DD Form 254. Owner request, 5 October 2026. No storage format
+change.
+
+- Creating a solicitation or an Original no longer opens a contract-type
+  chooser. Nearly every contract is an ordinary FAR-based one with no contract
+  type, so the question was spending everyone's attention on a minority case -
+  and a prompt that is nearly always answered "no" is one people learn to
+  dismiss without reading, which is worse than not asking at all.
+- Contract vehicles now have their own **Contract Type** picker in the Checklist
+  and Templates panel, above DD-254 Template Language and Standard Language: the
+  same search-and-apply motion already used for every other library.
+- Applying from the picker goes through the same path as the dashboard card, so
+  it still asks before overwriting Item 13, records the contract type on the
+  draft and writes the audit entry. One apply path, not two.
+
 ## v2.6.0 - 5 October 2026
 
 Tool version 2.149. Three owner requests of 5 October 2026. No storage format
