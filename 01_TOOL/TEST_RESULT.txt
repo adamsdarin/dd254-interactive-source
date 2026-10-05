@@ -1,4 +1,4 @@
-BUILD_SHA256 722df5eaccb4e991f6c4a821570ca01b3563197a1cc9a636aad3edddd8c6edc1
+BUILD_SHA256 e5c218db85770de2a3616aaf05c95f5a0fac91d8fc2ae46a322bf474ea4a7364
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -969,7 +969,7 @@ BUILD_SHA256 722df5eaccb4e991f6c4a821570ca01b3563197a1cc9a636aad3edddd8c6edc1
 
 ### 76. Task order templates
   PASS  a blank template carries the two new fields
-  PASS  applying a task order template fills the task order and ticks standalone
+  PASS  a task order template fills the order but does not claim to be order-specific
   PASS  the prime contract fills 2a when the draft has none
   PASS  a contract number already on the draft is never replaced
   PASS  a contract number on the live form is not replaced either
@@ -1507,6 +1507,19 @@ BUILD_SHA256 722df5eaccb4e991f6c4a821570ca01b3563197a1cc9a636aad3edddd8c6edc1
   PASS  an Item 16 field already entered is shown instead of the placeholder
   PASS  listing Item 16 does not make the preparer responsible for it
 
+### 111. v2.6.0 the required Item 13 line, Program on Contract Type, task-order 2a
+  PASS  a draft gains the required line when it is opened
+  PASS  opening it again does not add a second copy
+  PASS  the line sits above the classified mailing addresses
+  PASS  a draft written before v2.6.0 keeps one copy of its addresses
+  PASS  an issued DD-254 is not rewritten when it is opened
+  PASS  the same DD-254 gains the line once it is no longer issued
+  PASS  Contract Type rows carry a Program field
+  PASS  assigning a security manager fills the program from that manager
+  PASS  the linked manager reaches the distribution when the template is applied
+  PASS  a template carrying a task order no longer claims to be order-specific
+  PASS  a template that records the choice still honours it
+
 ================================
-  PASS 1271   FAIL 0
+  PASS 1282   FAIL 0
 ================================

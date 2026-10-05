@@ -4,40 +4,35 @@ Last updated: 2026-10-05T10:20-05:00 by Maintainer
 
 ## Current State
 
-Latest published release: **v2.5.0 (Tool 2.148)**, signed tag at fb3d332 on
-`main`; assets, checksums and both HTML attestations verified from a fresh
-download (official 722df5ea..., demo 56b85cf4..., ref refs/tags/v2.5.0); live
-demo published as dd254-interactive 152f4df and confirmed by hashing the
-served page. Selected roadmap items from
-the FSO and contracting officer review (owner, 5 October 2026).
+Latest published release: **v2.6.0 (Tool 2.149)**. Three owner requests of
+5 October 2026: the required Item 13 line, Program on Contract Type templates,
+and Block 2a carrying a task order only when the DD-254 is specific to it.
 
-Four were documents and shipped first at 5b8e966, with no tool change: the
-generated rule catalog and its authority-baseline table (3.5, previously
-skipped), a CycloneDX SBOM and a two-page ISSM brief (both part of 4.4). The
-catalog and the SBOM are derived from the build and `check_documentation.py`
-fails if a committed copy differs, so neither can become a second statement of
-what the tool does. `make_rule_catalog.py` also refuses to write a catalog that
-omits a claim; that guard caught its own first version, which silently dropped
-the last claim in every box, 20 of 96. The ISSM brief's no-network claim was
-verified under CDP with the Network domain enabled: one request, the file
-itself, zero network requests.
+The Item 13 line is maintained as part of the classified-mailing-address region
+so it cannot drift away from it. An **issued** DD-254 is never rewritten - owner
+decision, an issued form is finite - and nor are Cancelled or Skipped; the guard
+is evaluated on each open, so a record moved back to Draft, Ready to sign or
+Blocked gains the line next time. `rsumItem13` excludes the line from the
+revision-summary comparison.
 
-v2.5.0 is the product change: a Contract authority table on both review
-packages, and Items 16a-16f listed in the government package only. It also
-fixes a real loss - the package reported the first filled of Items 2a/2b/2c, so
-a subcontract showed the prime number and hid the subcontract number.
-1271 regression assertions pass (seven new) against the shipped bytes; both
-builds pass native Chrome.
+Worth knowing for the next change here: making that line unconditional
+invalidated sixteen assertions, and one was a real regression - every Revision
+opened reporting "Item 13 Reference 10a: revised" when nobody had touched it,
+because the tool was attributing its own text to the preparer. Ordering the
+writes did not fix it; excluding the line from the comparison did. The other
+fifteen encoded "Item 13 is untouched unless you touch it" and now read Item 13
+through a `stripPdq` helper so they keep testing what they were written to test.
+1282 regression assertions pass (eleven new); both builds pass native Chrome.
 
-Still open from that review: 508 conformance needs a funded external audit and
-cannot be self-certified; validating the received-DD 254 import still needs one
-sanitized, Acrobat-saved DD Form 254 from the owner. NCCS mapping and a
-machine-readable export were considered and dropped as outside what a
-single-file offline tool should take on.
-
-
-1264 regression assertions were reproduced here against the shipped bytes
-rather than taken from the recorded log, and both builds pass native Chrome.
+Still open from the owner's list: a Settings switch making Standard Language
+mandatory (auto-insert and block), and the program/classification prompt at
+creation that selects the matching Standard Language entry. Standard Language
+entries have no program or classification field yet; the program vocabulary is
+to come from the Security Managers library, which already carries one.
+Also open: the reported 18f copy-then-paste defect could not be reproduced in
+four separate paths, and the owner is checking whether the Contract Type
+template's summary line shows "18f addr" - if it does not, the tick was never
+stored in the template and the paste is correctly applying nothing.
 
 - Prime/own coverage is chosen only in Add task order. Saved order headers
   show the coverage as a label and have no switching buttons.

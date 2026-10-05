@@ -42,6 +42,20 @@ const E=s=>w.eval(s);
 const t=(n,f)=>{ try{ const r=f(); if(r===true){pass++;console.log('  PASS  '+n);} else {fail++;failures.push(n);console.log('  FAIL  '+n+'  -> '+JSON.stringify(r));} }catch(e){ fail++; failures.push(n); console.log('  THROW '+n+'  -> '+e.message); } };
 const ta=async(n,f,limit)=>{ const budget=limit||30000; let timer; try{ const r=await Promise.race([f(),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Asynchronous test exceeded '+Math.round(budget/1000)+' seconds: '+n)),budget);})]); if(r===true){pass++;console.log('  PASS  '+n);} else {fail++;failures.push(n);console.log('  FAIL  '+n+'  -> '+JSON.stringify(r));} }catch(e){ fail++; failures.push(n); console.log('  THROW '+n+'  -> '+e.message); if(/Asynchronous test exceeded/.test(e.message)){dom.window.close();process.exit(1);} } finally{clearTimeout(timer);} };
 const H=n=>console.log('\n### '+n);
+/* v2.6.0 writes a required line into every Item 13. The tests below are about
+   other Item 13 content, so they read it without that line rather than each
+   restating it; section 111 is what asserts the line itself. */
+const PDQ_LINE='Please direct all questions to the prime contractor.';
+const stripPdq=function(v){
+  var t=String(v==null?'':v); var i=t.indexOf(PDQ_LINE);
+  if(i<0) return t;
+  /* Remove the line and ONE blank-line separator either side, never a general
+     collapse: the six-newline gap below it is deliberate and is what another
+     test exists to protect. */
+  var before=t.slice(0,i).replace(/\n{2}$/,'');
+  var after=t.slice(i+PDQ_LINE.length).replace(/^\n{2}/,'');
+  return (before&&after)?(before+'\n\n'+after):(before||after);
+};
 const wipe=async()=>E("(async function(){var a=await draftAll();for(const d of a)await draftDel(d.id);})()");
 /* Scope to the live dashboard. The manager rollup renders its own .dash-card
    elements into a separate container and closing it only hides that container,
@@ -736,10 +750,10 @@ t('fields exist on 7 and on each location', ()=>{
 t('they are not printed-form fields', ()=>{const s=E("String(collect254Data)"); return !s.includes('i7cma') && !s.includes('cma-loc');});
 t('block 13 untouched while every address is blank', ()=>{
   E("resetFormFields();addPerf();document.getElementById('item13').value='Ref. 10a: COMSEC guidance.';cmaSync();");
-  return E("i13RawText()")==='Ref. 10a: COMSEC guidance.';});
+  return stripPdq(E("i13RawText()"))==='Ref. 10a: COMSEC guidance.';});
 t('one address renders exactly as specified', ()=>{
   E("document.getElementById('i7a').value='Beta Corp\\n9 Elm St';document.getElementById('i7cma').value='PO Box 0000\\nAnytown, ST 00000';cmaSync();");
-  const v=E("i13RawText()");
+  const v=stripPdq(E("i13RawText()"));
   return v==='Ref. 10a: COMSEC guidance.\n\nClassified Mailing Address (Beta Corp):\nPO Box 0000\nAnytown, ST 00000';});
 t('editing the address rewrites, never duplicates', ()=>{
   E("document.getElementById('i7cma').value='PO Box 1111\\nOtherville, ST 11111';cmaSync();");
@@ -2350,7 +2364,7 @@ await ta('Item 18, Item 12 routing, 14 and 16 all land on the open form', async(
   const i16=E("document.getElementById('i16a').value");
   return ok18 && r12==='thru' && r14==='yes' && i16==='AFLCMC'; });
 await ta('the box language reaches Item 13 under the free text', async()=>{
-  const v=E("document.getElementById('item13').value");
+  const v=stripPdq(E("document.getElementById('item13').value"));
   return v==='General guidance.\n\nReference 10a:\n\nCOMSEC per NSA policy.' ? true : JSON.stringify(v); });
 await ta('the contract type is remembered on the draft', async()=>{
   const r=await E("draftGet('CT1')");
@@ -2571,7 +2585,7 @@ await ta('insert all applies every section at once', async()=>{
   await E("ctInsertAll(0)");
   return E("document.getElementById('c10b').checked")===true
       && E("document.getElementById('dist18c').checked")===true
-      && E("document.getElementById('item13').value")==='Guidance body.'
+      && stripPdq(E("document.getElementById('item13').value"))==='Guidance body.'
       && E("document.getElementById('i16a').value")==='AFLCMC'
       && E("document.getElementById('clsSel').value")==='CUI'; });
 t('insert all and applying a contract type share one path', ()=>
@@ -3464,7 +3478,7 @@ t('the five blank rows survive removing a classified mailing address', ()=>{
   E("document.getElementById('i7a').value='Example Corp';document.getElementById('i7cma').value='PO Box 1\\nAnytown, ST 00000';cmaSync();");
   setCui({cuiCtrlBy:'DCSA'});
   E("document.getElementById('i7cma').value='';cmaSync();");
-  const v=i13().value;
+  const v=stripPdq(i13().value);
   const gap=/Ref\. 10a: operator typing\.(\n+)Controlled By:/.exec(v);
   return (gap && gap[1].length-1===5 && v.indexOf('Classified Mailing Address')<0) ? true : JSON.stringify(v);
 });
@@ -4701,10 +4715,12 @@ t('a blank template carries the two new fields', ()=>{
   const d=E("ctBlankData()");
   return ('primeContract' in d && 'taskOrder' in d && d.primeContract==='' && d.taskOrder==='') ? true : Object.keys(d).slice(-4);
 });
-t('applying a task order template fills the task order and ticks standalone', ()=>{
+t('a task order template fills the order but does not claim to be order-specific', ()=>{
   mkCt({primeContract:'N00178-24-D-1234',taskOrder:'0042'});
   const ws=E("ctApplyDataToWorkspace(tplLoad(TPL_CT)[0].data,{texts:{},checks:{},radios:{},selects:{},perf:[],vlog:null})");
-  return (ws.texts.iEffort==='0042' && ws.checks.iStandalone===true) ? true : {t:ws.texts.iEffort,c:ws.checks.iStandalone};
+  /* v2.6.0: a template recording no choice no longer makes one, so Block 2a
+     does not combine contract and order for prime-covered work. */
+  return (ws.texts.iEffort==='0042' && ws.checks.iStandalone===false) ? true : {t:ws.texts.iEffort,c:ws.checks.iStandalone};
 });
 t('the prime contract fills 2a when the draft has none', ()=>{
   mkCt({primeContract:'N00178-24-D-1234',taskOrder:'0042'});
@@ -4738,6 +4754,8 @@ await ta('applying to the live form produces the combined Block 2a', async()=>{
   mkCt({primeContract:'N00178-24-D-1234',taskOrder:'0042'});
   E("document.getElementById('i2a').value='';document.getElementById('iEffort').value='';document.getElementById('iStandalone').checked=false;");
   E("ctApplyWsToForm(ctApplyDataToWorkspace(tplLoad(TPL_CT)[0].data,null)); run();");
+  /* the combined form is what an order-specific DD-254 exports */
+  E("document.getElementById('iStandalone').checked=true; run();");
   const combined=E("collect254Data(false).v.i2a");
   return combined==='N00178-24-D-1234 | Task Order 0042' ? true : combined;
 });
@@ -6602,7 +6620,7 @@ E("resetFormFields();run();");
 H('97. v1.15.4 revision summary in Item 13; no flow-down ceiling between issuances');
 const RS13='Reference 10a:\n\nCOMSEC guidance for this contract.';
 const RS_REF='\n\nReference 11c:\n\nUse the programme classification guide.';
-const rsI13=()=>String(w.document.getElementById('item13').value);
+const rsI13=()=>stripPdq(w.document.getElementById('item13').value);
 const rsBar=()=>w.document.getElementById('rsumBar')||{style:{},getAttribute:()=>null};
 const rsKid=async(pid,stage)=>(await E("draftAll()")).filter(x=>x.parentId===pid&&(!stage||x.stage===stage)).sort((a,b)=>a.createdAt<b.createdAt?-1:1).pop();
 E("window.uiConfirm=async function(){return true;};window.DD254_READONLY=false;resetFormFields();");
@@ -6617,7 +6635,7 @@ await ta('first open proposes the summary above the rest of Item 13, once', asyn
   await E("dashOpen('"+RS1+"')");
   const want='Summary of changes in Revision 1 (from the Original dated 20260105):\n- No changes recorded.\n\n'+RS13;
   const rec=await E("draftGet('"+RS1+"')");
-  return rsI13()===want && !rec.rsumPending && rec.workspace.texts.item13===want
+  return rsI13()===want && !rec.rsumPending && stripPdq(rec.workspace.texts.item13)===want
       && rsBar().style.display==='flex' && rsBar().getAttribute('data-state')==='live' ? true : rsI13(); });
 t('changing Item 1a rewrites the summary with both values', ()=>{
   V('fcl1a','TS'); RUN();
@@ -7654,7 +7672,7 @@ await ta('whole insertion snapshots assigned manager and blank template clears t
 });
 t('full replacement clears stale text, unchecked boxes, radio selections and CUI marking',()=>{
   E("resetFormFields();document.getElementById('item13').value='Old guidance';document.getElementById('dist18fOther').value='old@example.com';document.getElementById('dist18f').checked=true;document.getElementById('i14yes').checked=true;document.getElementById('i15yes').checked=true;document.getElementById('i16a').value='OLD';document.getElementById('c10a').checked=true;document.getElementById('c11c').checked=true;document.getElementById('clsSel').value='CUI';ctApplyWsToForm(ctApplyDataToWorkspace(ctBlankData(),null));run();");
-  return E("ctGv('item13')")===''&&E("ctGv('dist18fOther')")===''&&!E("ctCk('dist18f')")&&!E("ctCk('c10a')")&&!E("ctCk('c11c')")&&E("ctGv('i16a')")===''&&!E("ctCk('i14yes')")&&!E("ctCk('i15yes')")&&E("ctGv('clsSel')")==='';
+  return stripPdq(E("ctGv('item13')"))===''&&E("ctGv('dist18fOther')")===''&&!E("ctCk('dist18f')")&&!E("ctCk('c10a')")&&!E("ctCk('c11c')")&&E("ctGv('i16a')")===''&&!E("ctCk('i14yes')")&&!E("ctCk('i15yes')")&&E("ctGv('clsSel')")==='';
 });
 t('absent legacy sections do not erase unrelated draft sections',()=>{
   const ws=E("ctApplyDataToWorkspace({i13:'New'},{texts:{i16a:'Keep',i6a:'Facility'},checks:{c10a:true},radios:{i14:'yes'},selects:{clsSel:'CUI'},perf:[]})");
@@ -7996,6 +8014,72 @@ t('listing Item 16 does not make the preparer responsible for it', ()=>{ PKGSEED
   /* Items 16 and 17 are deliberately outside the preparer's required set. */
   return !errs.some(x=>/Item 16/.test(x)); });
 E("showFormView();resetFormFields();run();showDashView();");
+
+H('111. v2.6.0 the required Item 13 line, Program on Contract Type, task-order 2a');
+const PDQ='Please direct all questions to the prime contractor.';
+const g13=()=>w.document.getElementById('item13').value;
+const countPdq=()=>g13().split(PDQ).length-1;
+await ta('a draft gains the required line when it is opened', async()=>{
+  /* dashOpen returns without doing anything if a template editor is still open,
+     and earlier sections leave one behind. */
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';TPL_DIRTY=false;clearTimeout(TPL_TOUCH_T);TPL_TOUCH_T=0;showDashView();");
+  await E("draftPut({id:'pdq1',title:'Legacy',workspace:{texts:{item13:'Existing guidance.'},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("dashOpen('pdq1')");
+  const ok=countPdq()===1 && /Existing guidance\./.test(g13());
+  return ok ? true : g13().substring(0,200); });
+await ta('opening it again does not add a second copy', async()=>{
+  await E("dashSaveNow()"); await E("dashOpen('pdq1')");
+  return countPdq()===1 ? true : countPdq(); });
+t('the line sits above the classified mailing addresses', ()=>{
+  V('i7a','Sub Corp');
+  E("document.getElementById('i7cma').value='PO Box 42'+String.fromCharCode(10)+'Anytown, ST 00000';cmaSync();");
+  const t13=g13();
+  const line=t13.indexOf(PDQ), cma=t13.indexOf('Classified Mailing Address');
+  return line>=0 && cma>line && countPdq()===1 ? true : {line,cma,n:countPdq()}; });
+await ta('a draft written before v2.6.0 keeps one copy of its addresses', async()=>{
+  /* its stored Item 13 carries the addresses with no line above them */
+  const legacy='Guidance.'+String.fromCharCode(10,10)+'Classified Mailing Address (Sub Corp):'+String.fromCharCode(10)+'PO Box 42';
+  await E("draftPut({id:'pdq2',title:'Pre-2.6.0',workspace:{texts:{item13:"+JSON.stringify(legacy)+",i7a:'Sub Corp',i7cma:'PO Box 42'},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("dashOpen('pdq2')");
+  const t13=g13();
+  const addrs=t13.split('Classified Mailing Address').length-1;
+  return countPdq()===1 && addrs===1 ? true : {pdq:countPdq(),addrs:addrs,t:t13.substring(0,220)}; });
+await ta('an issued DD-254 is not rewritten when it is opened', async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';TPL_DIRTY=false;clearTimeout(TPL_TOUCH_T);TPL_TOUCH_T=0;showDashView();");
+  const body='Issued guidance, exactly as it went out.';
+  await E("draftPut({id:'pdq3',title:'Issued',status:'Issued',workspace:{texts:{item13:"+JSON.stringify(body)+"},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("dashOpen('pdq3')");
+  /* The record of what was sent is finite. */
+  return g13()===body && countPdq()===0 ? true : g13(); });
+await ta('the same DD-254 gains the line once it is no longer issued', async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';TPL_DIRTY=false;clearTimeout(TPL_TOUCH_T);TPL_TOUCH_T=0;showDashView();");
+  await E("(async function(){var r=await draftGet('pdq3');r.status='Draft';await draftPut(r);})()");
+  await E("dashOpen('pdq3')");
+  return countPdq()===1 && /Issued guidance, exactly as it went out\./.test(g13()) ? true : g13(); });
+t('Contract Type rows carry a Program field', ()=>{
+  E("tplSave(TPL_B13,[{label:'CT prog',data:ctBlankData()}]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  E("dashTplEdit('b13');");
+  const h=w.document.getElementById('tplView').innerHTML;
+  return /TPL_EDIT\[0\]\.program=this\.value/.test(h) && /ctProgramList/.test(h); });
+t('assigning a security manager fills the program from that manager', ()=>{
+  E("tplSave(TPL_SM,[{label:'M',name:'Reed, Ann',email:'areed@acme.com',program:'FALCON'}]);");
+  E("tplSave(TPL_B13,[{label:'CT prog',data:ctBlankData()}]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';dashTplEdit('b13');");
+  E("ctSetSm(0,'Reed, Ann');");
+  /* ctSetSm writes the row being edited; it reaches storage on flush. */
+  const t=E("window.TPL_EDIT[0]");
+  return t.smEmail==='areed@acme.com' && t.smProgram==='FALCON' && E("ctProgram(window.TPL_EDIT[0])")==='FALCON'; });
+t('the linked manager reaches the distribution when the template is applied', ()=>{
+  const ws=E("ctApplyDataToWorkspace(ctBlankData(),{texts:{},checks:{},radios:{},selects:{},perf:[]},{smName:'Reed, Ann',smEmail:'areed@acme.com',smProgram:'FALCON'})");
+  const assigned=JSON.parse(ws.texts.distSmAssigned||'[]');
+  return assigned.length===1 && assigned[0].email==='areed@acme.com'; });
+t('a template carrying a task order no longer claims to be order-specific', ()=>{
+  const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{taskOrder:'0007'}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
+  /* Block 2a carries the order only when the form says it is specific to it */
+  return ws.checks.iStandalone===false && ws.texts.iEffort==='0007' ? true : ws.checks; });
+t('a template that records the choice still honours it', ()=>{
+  const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{taskOrder:'0007',standalone:true}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
+  return ws.checks.iStandalone===true; });
+E("tplSave(TPL_B13,[]);tplSave(TPL_SM,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

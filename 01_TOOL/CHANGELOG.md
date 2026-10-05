@@ -1,3 +1,31 @@
+## v2.6.0 - 5 October 2026
+
+Tool version 2.149. Three owner requests of 5 October 2026. No storage format
+change.
+
+- Every DD Form 254 now carries "Please direct all questions to the prime
+  contractor." in Item 13, immediately above the classified mailing addresses.
+  An **issued** DD-254 is never rewritten: it is the record of what was sent.
+  Cancelled and Skipped are closed the same way, and a record that moves back to
+  Draft, Ready to sign or Blocked gains the line the next time it is opened.
+  The line is excluded from the revision-summary comparison, so a Revision does
+  not report Item 13 as revised because of text the tool maintains.
+  It is written as part of the same managed region as those addresses, so it
+  cannot drift away from them, and it is added to an existing draft when that
+  draft is opened. A draft written before this release keeps exactly one copy of
+  its addresses: the adopt step recognises the older block and replaces it
+  rather than leaving it behind.
+- Contract Type templates gain the **Program** field that DD-254 Template
+  Language entries already had. Assigning a security manager fills it from that
+  manager's own programme. The security-manager link itself already existed on
+  these rows and already joins the e-mail distribution on CC; only the field was
+  missing.
+- Fixed: applying a template that carried a task order force-ticked "This
+  outgoing DD Form 254 is specific to the order above", so Block 2a exported as
+  "CONTRACT | Task Order NNNN" even for an order covered by the prime's DD-254.
+  A template that records no choice no longer makes one; one that records the
+  choice is honoured as before.
+
 ## v2.5.0 - 5 October 2026
 
 Tool version 2.148. Contract authority and Item 16 in the Contracting Officer

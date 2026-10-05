@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.5.0 (tool version 2.148)"
+VER="DD254 Interactive v2.6.0 (tool version 2.149)"
 
 DOC = [
-("h1","DD254 Interactive v2.5.0 changes"),
+("h1","DD254 Interactive v2.6.0 changes"),
+("b","Every DD Form 254 now carries <b>Please direct all questions to the prime contractor.</b> in Item 13, directly above the classified mailing addresses. It is added to an existing DD-254 when you open it, and maintained with the addresses rather than typed by hand. An <b>Issued</b> DD-254 is never changed — it is the record of what went out — and nor are Cancelled or Skipped ones; move one back to Draft, Ready to sign or Blocked and it gains the line next time you open it. A Revision does not report Item 13 as revised just because of this line. See 4.12."),
+("b","<b>Contract Type</b> templates now have the same <b>Program</b> field as DD-254 Template Language entries. Assigning a security manager fills it from that manager. See 5.5."),
+("b","<b>Fixed:</b> applying a template that carried a task order always ticked <b>This outgoing DD Form 254 is specific to the order above</b>, so Block 2a exported the contract and the task order together even when the order was covered by the prime’s DD-254. A template that does not record that choice no longer makes one. See 4.5."),
+("h2","DD254 Interactive v2.5.0 changes"),
 ("b","Both Contracting Officer review packages now open with a <b>Contract authority</b> table: each Item 2 number separately, the issuance stage, and the classification guides cited in Item 13. A guide whose cited date differs from the one you hold is flagged. <b>Fixed:</b> the package used to show a single contract number, so on a subcontract it showed the prime number and hid the subcontract number. See 6.1."),
 ("b","The <b>government</b> package also lists Items 16a to 16f, showing what is entered or <b>To be completed by the GCA</b>. The prime package does not: Item 16 is the GCA’s block. Nothing about this changes what the tool requires of you — a blank Item 16 still raises no error. See 4.11 and 6.1."),
 ("h2","DD254 Interactive v2.4.1 changes"),
