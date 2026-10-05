@@ -60,6 +60,10 @@ jobs:
 
       - name: Re-run every check
         timeout-minutes: 20
+        # Same reason as verify.yml: a hosted runner cannot give Chrome a
+        # usable sandbox, and the smoke test is the one step that needs it.
+        env:
+          DD254_BROWSER_CI: '1'
         run: |
           python3 .github/scripts/check_scripts.py
           python3 .github/scripts/check_release_tools.py

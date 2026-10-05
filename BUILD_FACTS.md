@@ -5,11 +5,11 @@ The documents stream reads this instead of asking for numbers.
 
 | | |
 |---|---|
-| **File** | `DD254_Interactive_v2.7.0.HTM` |
-| **Tool version** | `2.150` |
-| **Size** | 2,374,618 bytes |
-| **SHA-256** | `91d36f7b909d6526c2e79ab0764d142edafeb61c496cee2f4b3fc9025496f17b` |
-| **Regression assertions** | 1287 |
+| **File** | `DD254_Interactive_v2.7.1.HTM` |
+| **Tool version** | `2.151` |
+| **Size** | 2,377,020 bytes |
+| **SHA-256** | `144c5f6d82415ecb9918efe2aeef3bff0ca892ff50485ca1b4c1db973e4913a6` |
+| **Regression assertions** | 1292 |
 
 ## Component split
 
@@ -22,8 +22,8 @@ would download; both figures are given so neither is misleading.
 | pdf-lib (MIT) | 525,667 UTF-8 bytes | — | 22.1% |
 | DD Form 254, flat | 738,164 chars | 553,623 bytes | 31.1% |
 | DD Form 254, dynamic XFA | 83,284 chars | 62,461 bytes | 3.5% |
-| **Application code** | **807,507 UTF-8 bytes** | — | **34.0%** |
-| Markup and CSS | 219,996 UTF-8 bytes | — | 9.3% |
+| **Application code** | **809,353 UTF-8 bytes** | — | **34.0%** |
+| Markup and CSS | 220,552 UTF-8 bytes | — | 9.3% |
 
 Not the author's code: **56.7%** of the file.
 

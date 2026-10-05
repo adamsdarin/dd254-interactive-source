@@ -1,6 +1,6 @@
 # DD254 Interactive - rule catalog
 
-DD254 Interactive v2.7.0 / Tool v2.150. Generated from the shipped build by `02_DOCS/make_rule_catalog.py`; do not edit by hand.
+DD254 Interactive v2.7.1 / Tool v2.151. Generated from the shipped build by `02_DOCS/make_rule_catalog.py`; do not edit by hand.
 
 This lists every claim the tool states about the DD Form 254 and enforces. It exists to be read against the form and its authorities by an FSO. The residual risk in this product is not a missing rule but an enforced rule that is wrong, and only that reading finds one.
 
@@ -22,7 +22,7 @@ The rules were written against the authorities below. When one is reissued, the 
 ## Summary
 
 - 28 access and performance boxes
-- 96 stated claims (69 requirements, 27 notes)
+- 97 stated claims (69 requirements, 28 notes)
 - 30 blocking messages, 14 advisory messages
 - 13 further messages are assembled from values at run time and are not reproduced here
 
@@ -252,8 +252,10 @@ No claims stated.
 - **REQUIREMENT** - Contractor must be provided with a copy of the system/command/unit OPSEC requirements or plan — include in Item 13 or as attachment
 - **REQUIREMENT** - Item 13 must identify pertinent contract clauses and provide OPSEC guidance
 - **NOTE** - Prime contractors may NOT impose OPSEC requirements on subcontractors without GCA approval
-- **REQUIREMENT** - OPSEC clauses are cited in Item 14 — see DoDD 5205.02E  
-  Cited: DoDD 5205.02E
+- **REQUIREMENT** - Item 14 must be YES, with the additional requirements stated there or in an attachment; identify the pertinent contract clauses and add clarifying guidance to Item 13 — DD Form 254 Instructions, Item 11j(1)  
+  Cited: DD Form 254 Instructions
+- **NOTE** - OPSEC requirements are additional to the NISPOM and apply when the GCA determines extra safeguards are essential for the contract. The DoD OPSEC programme itself is DoDD 5205.02E; it is not what obliges Item 14 — that is the form instructions.  
+  Cited: DoDD 5205.02E, NISPOM
 
 ### 11k. Be authorized to use Defense Courier Service
 

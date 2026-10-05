@@ -1,3 +1,29 @@
+## v2.7.1 - 5 October 2026
+
+Tool version 2.151. Two corrections and a verification fix. No storage format
+change.
+
+- Fixed: a task order carrying its own DD-254 could not be found in the form's
+  template picker. Orders are kept in their own store and the picker read only
+  the template store, so they were absent entirely. Own-coverage orders are now
+  listed under their own identity -- prime contract, order number and order type
+  -- and choosing one selects the template bound to it. The bound template is
+  not listed a second time, and an order whose source still needs review is
+  shown but cannot be chosen, because there is nothing to apply yet.
+- Corrected: box 11j attributed the Item 14 obligation to DoDD 5205.02E. The
+  requirement comes from the DD Form 254 Instructions, Item 11j(1), which states
+  that if 11j is checked then Item 14 must be marked YES with the additional
+  requirements given there or in an attachment, the pertinent contract clauses
+  identified, and clarifying guidance added to Item 13. DoDD 5205.02E is the DoD
+  OPSEC programme directive and is named as such; it is not what obliges Item 14.
+  The rule the tool enforces is unchanged -- only the authority behind it.
+- `browser_smoke.js` reports why a browser would not start. Chrome's stderr was
+  captured and discarded, so a failure to launch said only "timeout waiting for
+  Chrome DevTools port" -- the symptom, never the cause. It now names the
+  browser, whether the sandbox was dropped, and what Chrome said. The browser
+  path can be set with `DD254_BROWSER_PATH`, and `DD254_BROWSER_CI=1` drops the
+  sandbox, which a hosted runner requires and a local run does not.
+
 ## v2.7.0 - 5 October 2026
 
 Tool version 2.150. Contract types are chosen when they are wanted, not asked

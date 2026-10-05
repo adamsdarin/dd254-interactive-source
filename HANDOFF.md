@@ -4,25 +4,34 @@ Last updated: 2026-10-05T10:20-05:00 by Maintainer
 
 ## Current State
 
-Latest published release: **v2.7.0 (Tool 2.150)**. Contract types are chosen
-when wanted rather than asked about on every form (owner, 5 October 2026).
+Latest published release: **v2.7.1 (Tool 2.151)**, which carries v2.7.0 as well;
+v2.7.0 was built and verified but never tagged, so the two ship under one tag.
 
-`dashNewDraft` no longer calls `ctPickContractType`: creating a solicitation or
-an Original goes straight to the form with nothing applied. Contract vehicles
-have their own picker (`ctTypeSel`) in the Checklist and Templates panel, above
-DD-254 Template Language. `ctTypeApply` hands to `dashApplyB13`, so the
-overwrite confirmation, the ctType write and the audit entry are not duplicated.
-The owner's reasoning, worth keeping: nearly every contract is an ordinary
-FAR-based one, so a prompt answered "no" on almost every DD-254 trains people
-to dismiss it - and then it is dismissed on the one that mattered.
+v2.7.0 removed the contract-type chooser from origination and gave contract
+vehicles their own picker in the Checklist and Templates panel. v2.7.1 fixes a
+defect the owner found in that area: a task order carrying its own DD-254 could
+not be found in the form's template picker at all, because orders live in their
+own store and `buildCtSelect` read only the template store. Own-coverage orders
+are now listed under prime contract, order number and type; a selection resolves
+to the template bound to the order, that template is not listed twice, and an
+order awaiting source review is shown but disabled.
 
-1287 regression assertions pass (five new). Two existing assertions counted the
-panel's sections and listed what the preparer acts on; both now include the new
-picker.
+v2.7.1 also corrects an authority: box 11j cited DoDD 5205.02E for the rule that
+Item 14 must be YES. The obligation is in the DD Form 254 Instructions, Item
+11j(1), confirmed verbatim against the approved library. DoDD 5205.02E is the
+OPSEC programme directive and is now named as that. Same defect class as the CUI
+marking and the Item 17 signature location: right rule, wrong authority.
 
-Earlier in the same day: v2.6.0 (required Item 13 line, Program on Contract Type
-templates, task-order Block 2a), v2.5.0 (contract authority and Item 16 in the
-review packages), and the rule catalog, SBOM and ISSM brief at 5b8e966.
+**CI browser, read this before trusting a red verify.** On 5 October every
+workflow run began failing at the headless browser step, including on unchanged
+`main` -- Chrome would not start on the hosted runner and the harness reported
+only "timeout waiting for Chrome DevTools port", because it captured Chrome's
+stderr and discarded it. `browser_smoke.js` now reports the browser, the sandbox
+state and what Chrome said; `DD254_BROWSER_CI=1` (set by both workflows) adds
+`--no-sandbox` and `--disable-dev-shm-usage`, and a local run keeps the sandbox.
+`DD254_BROWSER_PATH` overrides the browser. Whether the flags are sufficient is
+unproven: the fault could not be reproduced locally, and CI is the first test.
+1292 regression assertions pass locally against the shipped bytes.
 
 Still open from the owner's list: a Settings switch making Standard Language
 mandatory (auto-insert and block), and the program/classification prompt at

@@ -18,15 +18,40 @@ const chromeCandidates = process.platform === 'win32' ? [
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
   'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
 ] : ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'];
-const chrome = chromeCandidates.find(fs.existsSync);
+/* An explicit path lets CI name the browser it installed, and lets this
+   harness be pointed at a deliberately broken one to prove its own
+   diagnostics actually report a failure to start. */
+const chrome = process.env.DD254_BROWSER_PATH || chromeCandidates.find(fs.existsSync);
 if (!chrome) throw new Error('Chrome or Edge was not found');
 
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'dd254-browser-'));
-const child = cp.spawn(chrome, [
+/* A hosted runner gives Chrome no usable user namespace and a small /dev/shm,
+   and it refuses to start. The sandbox is only dropped where the environment
+   says so -- a local run keeps it, because there the browser is the operator's
+   own and the protection is worth having. */
+const ciBrowser = process.env.DD254_BROWSER_CI === '1';
+const chromeArgs = [
   '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
   '--remote-debugging-port=0', '--user-data-dir=' + profile,
-  '--allow-file-access-from-files', pathToFileURL(build).href
-], { stdio: ['ignore', 'ignore', 'pipe'] });
+  '--allow-file-access-from-files'
+];
+if (ciBrowser) chromeArgs.push('--no-sandbox', '--disable-dev-shm-usage');
+chromeArgs.push(pathToFileURL(build).href);
+const child = cp.spawn(chrome, chromeArgs, { stdio: ['ignore', 'ignore', 'pipe'] });
+/* Chrome's own complaint is the only thing that says WHY it would not start.
+   It used to be captured and thrown away, so a browser that refused to launch
+   reported nothing but "timeout waiting for Chrome DevTools port" -- which is
+   the symptom, never the cause. */
+let chromeStderr = '';
+child.stderr.on('data', function (buf) { chromeStderr += String(buf); });
+child.on('error', function (err) { chromeStderr += 'spawn failed: ' + err.message; });
+function browserDiagnostics() {
+  const lines = chromeStderr.trim().split(/\r?\n/).slice(-12);
+  const tail = lines.join('\n    ');
+  return '\n  browser: ' + chrome
+       + '\n  sandbox dropped for CI: ' + (ciBrowser ? 'yes' : 'no')
+       + (chromeStderr.trim() ? '\n  chrome said:\n    ' + tail : '\n  chrome said nothing');
+}
 
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function waitFor(fn, ms, label) {
@@ -73,7 +98,7 @@ class CDP {
     const port = await waitFor(() => {
       if (!fs.existsSync(portFile)) return 0;
       return Number(fs.readFileSync(portFile, 'utf8').split(/\r?\n/)[0]);
-    }, 15000, 'Chrome DevTools port');
+    }, 15000, 'Chrome DevTools port' + browserDiagnostics());
     const target = await waitFor(async () => {
       const list = await (await fetch('http://127.0.0.1:' + port + '/json/list')).json();
       return list.find(x => x.type === 'page');

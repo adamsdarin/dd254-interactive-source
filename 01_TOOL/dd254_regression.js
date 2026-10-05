@@ -8125,6 +8125,40 @@ await ta('it refuses rather than applying to nothing when no draft is open', asy
   return /Save this DD-254/.test(msg) ? true : msg; });
 E("tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
+H('113. v2.7.1 task orders with their own DD-254 appear in the template picker');
+const ORDSEED=async()=>{
+  E("(function(){var p=Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',i13:'Prime language.'});"
+   +"var o=Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',taskOrder:'0042',i13:'Order language.'});"
+   +"tplSave(TPL_CT,[{label:'Prime template',ioId:'ct-prime',srcDate:'2026-01-05',data:p},"
+   +"{label:'Order 0042 language',ioId:'ct-own',srcDate:'2026-02-01',data:o}]);})();");
+  await E("tplSave(TPL_ORDERS,[])");
+  await E("ctOrderCreate('N00178-24-D-1234','0042','task','order','ct-own')");
+  await E("ctOrderCreate('N00178-24-D-1234','0099','task','order',null)");
+  E("showFormView();resetFormFields();window.CT_FILTER='';buildCtSelect();");
+};
+const ctOpts=()=>Array.from(w.document.getElementById('ctTplSel').options);
+await ta('an order with its own DD-254 is listed under its order number', async()=>{ await ORDSEED();
+  /* Orders live in their own store, so a picker reading only templates could
+     not show them at all - the defect this section exists for. */
+  const o=ctOpts().find(x=>/0042/.test(x.textContent));
+  return !!o && /N00178-24-D-1234/.test(o.textContent) && o.value==='ct-own' ? true : ctOpts().map(x=>x.textContent); });
+await ta('choosing the order selects the template bound to it', async()=>{ await ORDSEED();
+  const sel=w.document.getElementById('ctTplSel');
+  sel.value=ctOpts().find(x=>/0042/.test(x.textContent)&&!x.disabled).value;
+  return E("ctFind(document.getElementById('ctTplSel').value).label")==='Order 0042 language'; });
+await ta('the bound template is not listed a second time', async()=>{ await ORDSEED();
+  return ctOpts().filter(x=>x.value==='ct-own').length===1
+      && ctOpts().some(x=>x.value==='ct-prime') ? true : ctOpts().map(x=>x.textContent); });
+await ta('an order whose source still needs review is shown but cannot be chosen', async()=>{ await ORDSEED();
+  const o=ctOpts().find(x=>/0099/.test(x.textContent));
+  return !!o && o.disabled===true && /source needs review/.test(o.textContent) ? true : (o?o.textContent:'absent'); });
+await ta('the picker searches orders by order number', async()=>{ await ORDSEED();
+  E("ctFilterSel('0099');");
+  const t=ctOpts().map(x=>x.textContent).join('|');
+  E("ctFilterSel('');");
+  return /0099/.test(t) && !/Prime template/.test(t) ? true : t; });
+E("tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);window.CT_FILTER='';showDashView();resetFormFields();");
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

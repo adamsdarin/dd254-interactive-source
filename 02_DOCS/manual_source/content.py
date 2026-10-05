@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.7.0 (tool version 2.150)"
+VER="DD254 Interactive v2.7.1 (tool version 2.151)"
 
 DOC = [
-("h1","DD254 Interactive v2.7.0 changes"),
+("h1","DD254 Interactive v2.7.1 changes"),
+("b","<b>Fixed:</b> a task order with its own DD-254 now appears in the template picker on the form, listed by its prime contract and order number. Choosing it selects the template bound to that order. An order whose source still needs review is shown but cannot be chosen. See 5.3."),
+("b","<b>Corrected:</b> Item 11j cited DoDD 5205.02E for the rule that Item 14 must be YES. That requirement is in the <b>DD Form 254 Instructions, Item 11j(1)</b>, which also calls for the pertinent contract clauses to be identified and clarifying guidance added to Item 13. DoDD 5205.02E is the DoD OPSEC programme directive; it is not what obliges Item 14. What the tool asks of you has not changed."),
+("h2","DD254 Interactive v2.7.0 changes"),
 ("b","Creating a solicitation or an Original <b>no longer asks you to pick a contract type</b>. Most contracts are ordinary FAR-based ones that have none, so the question is gone from origination."),
 ("b","Contract vehicles that carry their own boilerplate now have a <b>Contract Type</b> picker of their own, in the Checklist and Templates panel above DD-254 Template Language. Choose one when the contract calls for it; applying it fills Items 10, 11, 12, 13, 14, 15, 16 and 18 and still asks before replacing Block 13 text. See 5.5."),
 ("h2","DD254 Interactive v2.6.0 changes"),

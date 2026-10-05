@@ -1,4 +1,4 @@
-BUILD_SHA256 91d36f7b909d6526c2e79ab0764d142edafeb61c496cee2f4b3fc9025496f17b
+BUILD_SHA256 144c5f6d82415ecb9918efe2aeef3bff0ca892ff50485ca1b4c1db973e4913a6
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1527,6 +1527,13 @@ BUILD_SHA256 91d36f7b909d6526c2e79ab0764d142edafeb61c496cee2f4b3fc9025496f17b
   PASS  the picker and the dashboard card share one apply path
   PASS  it refuses rather than applying to nothing when no draft is open
 
+### 113. v2.7.1 task orders with their own DD-254 appear in the template picker
+  PASS  an order with its own DD-254 is listed under its order number
+  PASS  choosing the order selects the template bound to it
+  PASS  the bound template is not listed a second time
+  PASS  an order whose source still needs review is shown but cannot be chosen
+  PASS  the picker searches orders by order number
+
 ================================
-  PASS 1287   FAIL 0
+  PASS 1292   FAIL 0
 ================================

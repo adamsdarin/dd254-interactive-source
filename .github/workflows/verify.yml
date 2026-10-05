@@ -82,6 +82,11 @@ jobs:
           echo "::error::browser_smoke.js cannot run without Chrome or Chromium"; exit 1
 
       - name: Headless browser smoke test
+        # A hosted runner gives Chrome no usable user namespace and a small
+        # /dev/shm, so it will not start with the sandbox on. Dropped only
+        # here: a maintainer running this locally keeps it.
+        env:
+          DD254_BROWSER_CI: '1'
         timeout-minutes: 8
         run: |
           node 01_TOOL/browser_smoke.js "${{ steps.build.outputs.path }}"
