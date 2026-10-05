@@ -4,7 +4,11 @@ Last updated: 2026-10-05T10:20-05:00 by Maintainer
 
 ## Current State
 
-Latest published release: **v2.5.0 (Tool 2.148)**. Selected roadmap items from
+Latest published release: **v2.5.0 (Tool 2.148)**, signed tag at fb3d332 on
+`main`; assets, checksums and both HTML attestations verified from a fresh
+download (official 722df5ea..., demo 56b85cf4..., ref refs/tags/v2.5.0); live
+demo published as dd254-interactive 152f4df and confirmed by hashing the
+served page. Selected roadmap items from
 the FSO and contracting officer review (owner, 5 October 2026).
 
 Four were documents and shipped first at 5b8e966, with no tool change: the
