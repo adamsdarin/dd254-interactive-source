@@ -1,4 +1,4 @@
-BUILD_SHA256 07de4ee987d09af095be961c1a646e4786e5531581506275da9d6d604e63bebd
+BUILD_SHA256 722df5eaccb4e991f6c4a821570ca01b3563197a1cc9a636aad3edddd8c6edc1
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1498,6 +1498,15 @@ BUILD_SHA256 07de4ee987d09af095be961c1a646e4786e5531581506275da9d6d604e63bebd
   PASS  read-only tabs cannot create primes or editable children
   PASS  unconfirmed storage does not report a successfully created prime
 
+### 110. v2.5.0 contract authority and Item 16 in the review packages
+  PASS  each Item 2 number is reported in its own right
+  PASS  the guides cited in Item 13 reach the package
+  PASS  a form citing no guide says so rather than staying silent
+  PASS  both packages carry the contract trail
+  PASS  only the government package lists Item 16
+  PASS  an Item 16 field already entered is shown instead of the placeholder
+  PASS  listing Item 16 does not make the preparer responsible for it
+
 ================================
-  PASS 1264   FAIL 0
+  PASS 1271   FAIL 0
 ================================

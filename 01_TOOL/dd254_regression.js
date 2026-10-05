@@ -7954,6 +7954,49 @@ await ta('unconfirmed storage does not report a successfully created prime',asyn
 });
 await E("tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';resetFormFields()");
 
+H('110. v2.5.0 contract authority and Item 16 in the review packages');
+const PKGSEED=()=>{
+  E("showFormView();resetFormFields();");
+  V('i2a','N00178-24-D-1234'); V('i2b','SUB-2024-007');
+  E("document.getElementById('item13').value='Security Classification Guide: Widget SCG, identifier SCG-1234, dated 2026-03-12, issued by NAVSEA.';run();");
+};
+t('each Item 2 number is reported in its own right', ()=>{ PKGSEED();
+  const trail=E("coPackageIdentity().trail");
+  /* collapsing them with || showed the prime number and hid the subcontract
+     number, which is the one the reviewer is being asked about */
+  return trail.length===2 && /2a/.test(trail[0].label) && trail[0].value==='N00178-24-D-1234'
+      && /2b/.test(trail[1].label) && trail[1].value==='SUB-2024-007' ? true : trail; });
+t('the guides cited in Item 13 reach the package', ()=>{ PKGSEED();
+  const g=E("coPackageIdentity().guides");
+  const html=E("coPackageHtml(coPackageModel('gov'))");
+  return g.length===1 && /SCG-1234/.test(html) ? true : {g:g.length}; });
+t('a form citing no guide says so rather than staying silent', ()=>{ PKGSEED();
+  E("document.getElementById('item13').value='No guides here.';run();");
+  const html=E("coPackageHtml(coPackageModel('gov'))");
+  return /None cited/.test(html) && /must identify the exact guides/.test(html); });
+t('both packages carry the contract trail', ()=>{ PKGSEED();
+  const gov=E("coPackageHtml(coPackageModel('gov'))");
+  const prime=E("coPackageHtml(coPackageModel('prime'))");
+  return /data-trail="1"/.test(gov) && /data-trail="1"/.test(prime)
+      && /SUB-2024-007/.test(gov) && /SUB-2024-007/.test(prime); });
+t('only the government package lists Item 16', ()=>{ PKGSEED();
+  const gov=E("coPackageHtml(coPackageModel('gov'))");
+  const prime=E("coPackageHtml(coPackageModel('prime'))");
+  /* Item 16 is the GCA's own block; a prime issuing a subcontract does not
+     complete it and should not be handed a checklist for it. */
+  return /data-item16="1"/.test(gov) && !/data-item16="1"/.test(prime)
+      && /To be completed by the GCA/.test(gov); });
+t('an Item 16 field already entered is shown instead of the placeholder', ()=>{ PKGSEED();
+  V('i16a','NAVSEA 05'); E("run();");
+  const gov=E("coPackageHtml(coPackageModel('gov'))");
+  return /NAVSEA 05/.test(gov); });
+t('listing Item 16 does not make the preparer responsible for it', ()=>{ PKGSEED();
+  E("['i16a','i16b','i16c','i16d','i16e','i16f'].forEach(function(id){document.getElementById(id).value='';});run();");
+  const errs=w.DD254_ERRORS||[];
+  /* Items 16 and 17 are deliberately outside the preparer's required set. */
+  return !errs.some(x=>/Item 16/.test(x)); });
+E("showFormView();resetFormFields();run();showDashView();");
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));

@@ -1,6 +1,6 @@
 # DD254 Interactive - rule catalog
 
-DD254 Interactive v2.4.1 / Tool v2.147. Generated from the shipped build by `02_DOCS/make_rule_catalog.py`; do not edit by hand.
+DD254 Interactive v2.5.0 / Tool v2.148. Generated from the shipped build by `02_DOCS/make_rule_catalog.py`; do not edit by hand.
 
 This lists every claim the tool states about the DD Form 254 and enforces. It exists to be read against the form and its authorities by an FSO. The residual risk in this product is not a missing rule but an enforced rule that is wrong, and only that reading finds one.
 

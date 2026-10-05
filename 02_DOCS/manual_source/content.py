@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.4.1 (tool version 2.147)"
+VER="DD254 Interactive v2.5.0 (tool version 2.148)"
 
 DOC = [
-("h1","DD254 Interactive v2.4.1 changes"),
+("h1","DD254 Interactive v2.5.0 changes"),
+("b","Both Contracting Officer review packages now open with a <b>Contract authority</b> table: each Item 2 number separately, the issuance stage, and the classification guides cited in Item 13. A guide whose cited date differs from the one you hold is flagged. <b>Fixed:</b> the package used to show a single contract number, so on a subcontract it showed the prime number and hid the subcontract number. See 6.1."),
+("b","The <b>government</b> package also lists Items 16a to 16f, showing what is entered or <b>To be completed by the GCA</b>. The prime package does not: Item 16 is the GCA’s block. Nothing about this changes what the tool requires of you — a blank Item 16 still raises no error. See 4.11 and 6.1."),
+("h2","DD254 Interactive v2.4.1 changes"),
 ("b","Choose prime or task-order-specific DD254 coverage only when creating a task order. Saved orders show their coverage as a label; there are no coverage-switching buttons. Reviewing a changed or newer DD254 stays within the coverage chosen for that order."),
 ("h2","DD254 Interactive v2.4.0 changes"),
 ("b","<b>Add template</b> creates a prime-contract DD254 template with its Block 2A number, name and program. New prime templates appear first. The repository retains the existing editable rows, toolbar and block editor. All matching contracts and orders remain on one continuously scrolling page; prime groups can still be collapsed."),

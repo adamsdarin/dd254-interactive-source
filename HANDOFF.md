@@ -1,17 +1,36 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-05T08:30-05:00 by Maintainer
+Last updated: 2026-10-05T10:20-05:00 by Maintainer
 
 ## Current State
 
-Latest published release: **v2.4.1 (Tool 2.147)**, signed tag at 3589277 on
-`main`. v2.1.2, v2.2.0, v2.3.0, v2.4.0 and v2.4.1 had all been built and
-verified locally without being published; the owner chose (5 October 2026) to
-ship them together under the v2.4.1 tag, each keeping its own changelog entry,
-release assessment and implementation map. Published assets, checksums, both
-HTML attestations (`refs/tags/v2.4.1`) and a byte-identical kit rebuild were
-verified from a fresh download; official 07de4ee9..., demo c8c31c1e....
-Live demo published as dd254-interactive f939647.
+Latest published release: **v2.5.0 (Tool 2.148)**. Selected roadmap items from
+the FSO and contracting officer review (owner, 5 October 2026).
+
+Four were documents and shipped first at 5b8e966, with no tool change: the
+generated rule catalog and its authority-baseline table (3.5, previously
+skipped), a CycloneDX SBOM and a two-page ISSM brief (both part of 4.4). The
+catalog and the SBOM are derived from the build and `check_documentation.py`
+fails if a committed copy differs, so neither can become a second statement of
+what the tool does. `make_rule_catalog.py` also refuses to write a catalog that
+omits a claim; that guard caught its own first version, which silently dropped
+the last claim in every box, 20 of 96. The ISSM brief's no-network claim was
+verified under CDP with the Network domain enabled: one request, the file
+itself, zero network requests.
+
+v2.5.0 is the product change: a Contract authority table on both review
+packages, and Items 16a-16f listed in the government package only. It also
+fixes a real loss - the package reported the first filled of Items 2a/2b/2c, so
+a subcontract showed the prime number and hid the subcontract number.
+1271 regression assertions pass (seven new) against the shipped bytes; both
+builds pass native Chrome.
+
+Still open from that review: 508 conformance needs a funded external audit and
+cannot be self-certified; validating the received-DD 254 import still needs one
+sanitized, Acrobat-saved DD Form 254 from the owner. NCCS mapping and a
+machine-readable export were considered and dropped as outside what a
+single-file offline tool should take on.
+
 
 1264 regression assertions were reproduced here against the shipped bytes
 rather than taken from the recorded log, and both builds pass native Chrome.

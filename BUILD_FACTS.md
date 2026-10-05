@@ -1,15 +1,15 @@
 # Build facts — generated, do not hand-edit
 
-Produced by `01_TOOL/make_build_facts.py` on 2026-10-02.
+Produced by `01_TOOL/make_build_facts.py` on 2026-10-05.
 The documents stream reads this instead of asking for numbers.
 
 | | |
 |---|---|
-| **File** | `DD254_Interactive_v2.4.1.HTM` |
-| **Tool version** | `2.147` |
-| **Size** | 2,367,593 bytes |
-| **SHA-256** | `07de4ee987d09af095be961c1a646e4786e5531581506275da9d6d604e63bebd` |
-| **Regression assertions** | 1264 |
+| **File** | `DD254_Interactive_v2.5.0.HTM` |
+| **Tool version** | `2.148` |
+| **Size** | 2,370,104 bytes |
+| **SHA-256** | `722df5eaccb4e991f6c4a821570ca01b3563197a1cc9a636aad3edddd8c6edc1` |
+| **Regression assertions** | 1271 |
 
 ## Component split
 
@@ -20,12 +20,12 @@ would download; both figures are given so neither is misleading.
 | Component | In the file | Decoded | Share of file |
 |---|---|---|---|
 | pdf-lib (MIT) | 525,667 UTF-8 bytes | — | 22.2% |
-| DD Form 254, flat | 738,164 chars | 553,623 bytes | 31.2% |
+| DD Form 254, flat | 738,164 chars | 553,623 bytes | 31.1% |
 | DD Form 254, dynamic XFA | 83,284 chars | 62,461 bytes | 3.5% |
-| **Application code** | **801,014 UTF-8 bytes** | — | **33.8%** |
+| **Application code** | **803,525 UTF-8 bytes** | — | **33.9%** |
 | Markup and CSS | 219,464 UTF-8 bytes | — | 9.3% |
 
-Not the author's code: **56.9%** of the file.
+Not the author's code: **56.8%** of the file.
 
 ## Component hashes
 

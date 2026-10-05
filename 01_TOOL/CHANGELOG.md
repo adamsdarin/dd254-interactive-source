@@ -1,3 +1,24 @@
+## v2.5.0 - 5 October 2026
+
+Tool version 2.148. Contract authority and Item 16 in the Contracting Officer
+review packages. Selected from the FSO and contracting officer roadmap review
+(owner, 5 October 2026). No change to the form, its validation or storage.
+
+- Both packages gain a **Contract authority** table: each Item 2 number in its
+  own right, the issuance stage, and the security classification guides cited in
+  Item 13. A guide whose cited date differs from the held guide is flagged, and
+  one not held in this browser is marked as such. Neither is corrected; the form
+  is the record.
+- Fixed: the package reported one contract number, chosen as the first of Items
+  2a, 2b and 2c that was filled. On a subcontract that showed the prime number
+  and hid the subcontract number, which is the one the reviewer is being asked
+  about.
+- A form citing no guide now says so, instead of leaving the row empty.
+- The **government package only** lists Items 16a to 16f with what is entered or
+  "To be completed by the GCA". Item 16 is the GCA's own block; a prime issuing a
+  subcontract does not complete it and is not handed a checklist for it. The
+  preparer's required set is unchanged: a blank Item 16 still raises no error.
+
 ## v2.4.1 - 2 October 2026
 
 Tool version 2.147. Creation-only task-order coverage.
