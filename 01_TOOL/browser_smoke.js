@@ -219,8 +219,67 @@ class CDP {
       await dashNotesFlush();
       const notesOk=(await draftGet('live-note-a')).notes==='First quick note'
         && (await draftGet('live-note-b')).notes==='Second quick note';
+      await tplSave(TPL_SM,[{name:'Live program manager',email:'manager@example.test',program:'EXAMPLE'}]);
+      showFormView();resetFormFields();window.CURRENT_REQUESTOR_EMAIL='req@example.test';
+      distSmRender();const smPick=document.getElementById('distSmPick');smPick.selectedIndex=1;
+      byText(document.getElementById('step7'),/^Add to CC$/).click();
+      document.getElementById('i6fsoEmail').value='facility@example.test';addPerf();
+      const pf=perfFields(document.querySelector('#perfBlocks > div[id^="perf-"]'));pf.email.value='location@example.test';run();
+      const mail=emailDistSets();
+      const managerDropdownOk=mail.to.includes('location@example.test')&&mail.to.includes('req@example.test')
+        &&!mail.to.includes('facility@example.test')&&mail.cc.includes('facility@example.test')&&mail.cc.includes('manager@example.test')
+        &&document.getElementById('distSmList').textContent.includes('Live program manager');
+      document.getElementById('dist18f').checked=true;document.getElementById('dist18fOther').value='stale@example.test';
+      document.getElementById('i14yes').checked=true;document.getElementById('i16a').value='STALE';
+      ctApplyWsToForm(ctApplyDataToWorkspace(ctBlankData(),null,{label:'Blank template'}));run();
+      const templateReplaceOk=!document.getElementById('dist18f').checked&&fv('dist18fOther')===''
+        &&!document.getElementById('i14yes').checked&&fv('i16a')==='';
+      await tplSave(TPL_CT,[]);window.TPL_EDIT_KIND='';window.TPL_EDIT=null;
+      document.getElementById('i2a').value='EXAMPLE-PRIME';document.getElementById('item13').value='EXAMPLE reusable language';
+      document.getElementById('i3a_date').value='20261001';document.querySelector('input[name="spec"][value="3a"]').checked=true;
+      const oldPrompt=uiPrompt;uiPrompt=async()=> 'Browser saved language';
+      document.getElementById('ctSaveFormBtn').click();
+      for(let i=0;i<100&&!tplLoad(TPL_CT).length;i++)await new Promise(r=>setTimeout(r,20));
+      await TPL_WRITE;uiPrompt=oldPrompt;
+      const saved=tplLoad(TPL_CT)[0];
+      const workflowSaveOk=!!saved&&saved.label==='Browser saved language'&&saved.data.primeContract==='EXAMPLE-PRIME'
+        &&saved.data.i13==='EXAMPLE reusable language'&&saved.srcType==='orig'&&saved.srcDate==='2026-10-01'&&/Saved/.test(document.getElementById('ctSaveFormState').textContent);
+      const copy=JSON.parse(JSON.stringify(saved));copy.label='Different duplicate name';copy.ioId=ioNewId();
+      await tplSave(TPL_CT,[saved,copy]);await dashTplEdit('ct');
+      const sort=document.getElementById('ctRepoSort');sort.value='newest';sort.dispatchEvent(new Event('change',{bubbles:true}));
+      const filter=document.getElementById('ctRepoPrime');filter.value='EXAMPLE-PRIME';filter.dispatchEvent(new Event('change',{bubbles:true}));
+      const warning=document.querySelector('.ct-dup-warning');byText(warning,/Compare/).click();
+      const repoOrganizationOk=TPL_DIRTY===false&&tplLoad(TPL_CT)[0].ioId===saved.ioId
+        &&document.querySelectorAll('#tplRows .tpl-row').length===2
+        &&document.querySelectorAll('.ct-group-heading').length===1
+        &&/Duplicate prime contract.*order number/.test(warning.textContent)&&!!document.querySelector('.ct-dup-compare');
+      await tplSave(TPL_ORDERS,[]);
+      await tplSave(TPL_CT,[{ioId:'native-prime',label:'Native prime source',srcType:'rev',srcRev:'2',srcDate:'2026-09-15',data:Object.assign(ctBlankData(),{primeContract:'NATIVE-PRIME',i13:'Native prime language'})},{ioId:'native-own',label:'Native own source',srcType:'orig',srcDate:'2026-09-20',data:Object.assign(ctBlankData(),{primeContract:'NATIVE-PRIME',taskOrder:'0021',i13:'Native own language'})}]);
+      await dashTplEdit('ct');
+      byText(document.querySelector('#tplRows'),/Add task order/).click();
+      const creationCoverageOk=document.getElementById('ctNewOrderMode').options.length===2;
+      document.getElementById('ctNewOrderMode').value='prime';document.getElementById('ctNewOrderNumber').value='0001';document.getElementById('ctNewOrderType').value='BPA';
+      await ctOrderAddSubmit(document.querySelector('#ctOrderPanel button'));
+      const nativeOrder=ctOrderRows().find(o=>o.number==='0001');
+      const orderCreateOk=!!nativeOrder&&nativeOrder.sourceMode==='prime'&&document.querySelectorAll('.ct-order-row').length===2;
+      const savedCoverageOk=creationCoverageOk&&nativeOrder.coverageMode==='prime'&&!document.getElementById('ctNewOrderMode')&&!Array.from(document.querySelectorAll('.ct-order-row button')).some(b=>/^Use (prime|task-order-specific) DD254$/.test(b.textContent));
+      const coverageGuardOk=(await ctOrderBind(nativeOrder.ioId,'order','native-own'))===false;
+      ctOrderSourcePanel(nativeOrder.ioId,'order');
+      const reviewCoverageOk=/Select prime DD254/.test(document.getElementById('ctOrderPanel').textContent)&&!Array.from(document.getElementById('ctOrderSourceChoice').options).some(o=>o.value==='native-own');
+      ctOrderPanelClose();
+      await ctOrderStart(nativeOrder.ioId);
+      const orderStartOk=document.getElementById('i2a').value==='NATIVE-PRIME'&&document.getElementById('iEffort').value==='0001'&&document.getElementById('iOrderType').value==='BPA'&&!document.getElementById('iStandalone').checked&&document.getElementById('item13').value.includes('Native prime language')&&document.getElementById('ctSourceBanner').textContent.includes('Revision 2');
+      await dashTplEdit('ct');const nativeOwn=ctOrderRows().find(o=>o.number==='0021');
+      await ctOrderStart(nativeOwn.ioId);
+      const orderOwnOk=document.getElementById('item13').value.includes('Native own language')&&collectWorkspace().ctSource.sourceMode==='order';
+      const orderRecordCopy=JSON.parse(JSON.stringify(nativeOrder));orderRecordCopy.ioId='independent-copy';
+      const orderDuplicateOk=tplPackPlan('orders',[orderRecordCopy],'','').add.length===0;
+      await tplSave(TPL_ORDERS,[]);DASH.current=null;
+
+      await tplSave(TPL_CT,[]);await tplSave(TPL_SM,[]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';
+      showFormView();resetFormFields();window.CURRENT_REQUESTOR_EMAIL='';
       return {version:document.getElementById('toolVer').textContent,release:(document.getElementById('releaseVer')||{}).textContent||'',settingsOk,exportUiOk,signingUiOk,signingExportOk,validationSafe,
-        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk};
+        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
     })()`;
     const result = await cdp.send('Runtime.evaluate', {
       expression, awaitPromise: true, returnByValue: true
@@ -321,6 +380,7 @@ class CDP {
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk && value.facCertLinkOk
       && value.completionReuseOk && value.completionPromptOk && value.completionInsertOk && value.completionJumpOk
       && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
+    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.map(e=>e.params.exceptionDetails) }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));
   } finally {

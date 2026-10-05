@@ -359,19 +359,19 @@ t('parties derive from Item 18 on that draft', ()=>{
   const p=E("dashDistParties({workspace:{checks:{dist18a:true,dist18c:true,dist18f:true},texts:{dist18fOther:'ACO Bldg 4'}},requestedBy:'po@x.mil'})");
   return p.length===4 && p[0].key==='18a' && p[2].key==='18f' && /ACO Bldg 4/.test(p[2].to) && p[3].key==='req' && p[3].to==='po@x.mil';});
 t('no Item 18 boxes means no parties', ()=> E("dashDistParties({workspace:{checks:{},texts:{}}})").length===0);
-t('issue e-mail maps requestor and Item 6/7/8 FSOs to To, then CSOs and Block 18f to CC', ()=>{
+t('issue e-mail maps requestor/performance/sub FSOs to To; facility/CSO/manager/additional contacts to CC', ()=>{
   const r={title:'Alpha',requestedBy:'REQ@gov.mil',workspace:{checks:{dist18f:true},texts:{
     i6fsoEmail:'prime@acme.com; req@GOV.mil',i7fsoEmail:'sub@beta.com',fsoEmails:'manual@other.com',
     i6c:'cso1@dcsa.mil REQ@gov.mil',i7c:'cso2@dcsa.mil',item13:'item13@other.com',dist18fOther:'18f@other.com'
   },perf:[{email:'SUB@BETA.COM loc@plant.com',cso:'CSO2@dcsa.mil cso3@dcsa.mil'}]}};
   const m=E("dashIssueMail("+JSON.stringify(r)+")");
-  return m.to.join('|')==='REQ@gov.mil|prime@acme.com|sub@beta.com|loc@plant.com'
-      && m.cc.join('|')==='cso1@dcsa.mil|cso2@dcsa.mil|cso3@dcsa.mil|18f@other.com'
-      && !/manual@other|item13@other/i.test(m.to.concat(m.cc).join('|')); });
+  return m.to.join('|')==='REQ@gov.mil|sub@beta.com|loc@plant.com'
+      && m.cc.join('|')==='cso1@dcsa.mil|cso2@dcsa.mil|cso3@dcsa.mil|prime@acme.com|manual@other.com|18f@other.com'
+      && !/item13@other/i.test(m.to.concat(m.cc).join('|')); });
 t('issue e-mail mailto separates every To and CC address with semicolon-space and carries an identifying subject', ()=>{
   const m=E("dashIssueMail({title:'Contract 47',requestedBy:'req@gov.mil',workspace:{checks:{dist18f:true},texts:{i6fsoEmail:'fso@acme.com',i7fsoEmail:'sub@beta.com',i6c:'cso@dcsa.mil',i7c:'cso2@dcsa.mil',dist18fOther:'other@example.mil'},perf:[]}})");
   const u=decodeURIComponent(m.href);
-  return u.indexOf('mailto:req@gov.mil; fso@acme.com; sub@beta.com?cc=cso@dcsa.mil; cso2@dcsa.mil; other@example.mil&subject=Issued DD Form 254 — Contract 47')===0; });
+  return u.indexOf('mailto:req@gov.mil; sub@beta.com?cc=cso@dcsa.mil; cso2@dcsa.mil; fso@acme.com; other@example.mil&subject=Issued DD Form 254 — Contract 47')===0; });
 t('a CUI issuance prefixes the subject with the triple visual warning', ()=>{
   const m=E("dashIssueMail({title:'CUI Contract',requestedBy:'req@gov.mil',workspace:{selects:{clsSel:'CUI'},texts:{},perf:[]}})");
   return m.cui===true && m.subject==='(CUI)(CUI)(CUI) Issued DD Form 254 — CUI Contract'
@@ -380,7 +380,7 @@ t('bulk issue e-mail separates differing audiences and keeps semicolon-space sep
   const a={title:'A',requestedBy:'req@gov.mil',workspace:{selects:{},checks:{dist18f:true},texts:{i6fsoEmail:'fso1@a.com',i6c:'cso1@gov.mil',dist18fOther:'other@gov.mil; req@gov.mil'},perf:[]}};
   const b={title:'B',requestedBy:'REQ@gov.mil',workspace:{selects:{clsSel:'CUI'},checks:{dist18f:true},texts:{i7fsoEmail:'fso2@b.com',i7c:'CSO1@gov.mil cso2@gov.mil',dist18fOther:'OTHER@gov.mil extra@gov.mil'},perf:[]}};
   const g=E("dashIssueMailGroups("+JSON.stringify([a,b])+")"), urls=g.map(function(x){return decodeURIComponent(x.mail.href);});
-  return g.length===2 && urls.every(function(u){return /mailto:[^?]+; [^?]+/.test(u);})
+  return g.length===2 && urls.every(function(u){return /; /.test(u);})
       && urls.some(function(u){return /fso1@a\.com/.test(u)&&!/fso2@b\.com/.test(u);})
       && urls.some(function(u){return /fso2@b\.com/.test(u)&&!/fso1@a\.com/.test(u)&&/\(CUI\)\(CUI\)\(CUI\)/.test(u);}); });
 await ta('issue dialog uses the actual clicked anchor for the default-mail handoff', async()=>{
@@ -389,12 +389,12 @@ await ta('issue dialog uses the actual clicked anchor for the default-mail hando
   const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
   const b=d.querySelector('#ddEmail'), txt=d.textContent;
   const href=decodeURIComponent(b.getAttribute('href')||'');
-  const ok=!!b && b.tagName==='A' && /^mailto:req@gov\.mil; fso@acme\.com\?cc=cso@dcsa\.mil; other@example\.mil/.test(href)
+  const ok=!!b && b.tagName==='A' && /^mailto:req@gov\.mil\?cc=cso@dcsa\.mil; fso@acme\.com; other@example\.mil/.test(href)
       && b.getAttribute('target')===null && E("typeof dashOpenIssueMail")==='undefined'
-      && /Open e-mail/.test(b.textContent) && /requestor and Item 6\/7\/8 FSOs/.test(txt)
-      && /Item 6\/7\/8 CSOs plus e-mail addresses in Block 18f/.test(txt) && /Duplicate addresses are removed/.test(txt)
+      && /Open e-mail/.test(b.textContent) && /requestor, subcontractor FSO and performance-location FSOs/.test(txt)
+      && /facility FSOs, security \/ program security managers, CSOs, additional FSOs and checked Item 18f addresses/.test(txt) && /Duplicate addresses are removed/.test(txt)
       && /semicolon and space/.test(txt)
-      && /does not open a web window/.test(txt) && /To: 2 · CC: 2/.test(txt);
+      && /does not open a web window/.test(txt) && /To: 1 · CC: 3/.test(txt);
   d.querySelector('#ddSkip').click(); await E("window.__issueMailDlg"); return ok; });
 await ta('an empty issue audience leaves the e-mail link inert and explains why', async()=>{
   E("window.__A='';window.__emptyMailDlg=dashDistDialog({id:'MAIL0',title:'No mail',workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
@@ -519,7 +519,7 @@ t('MUST SEND TO FSOs aggregates 6, 7, 8 deduped', ()=>{
   PB().email.value='SUB@BETA.COM';
   E("document.getElementById('fsoEmails').value='extra@x.com';updateEmailDist();");
   const s=E("emailDistSets()"); const h=w.document.getElementById('fsoEmailList').innerHTML;
-  return s.fsoAuto.length===2 && s.fso.length===3 && /prime@acme.com/.test(h) && !/extra@x.com/.test(h);});
+  return s.fsoAuto.length===2 && s.fso.length===3 && /sub@beta.com/.test(h) && !/prime@acme.com|extra@x.com/.test(h);});
 t('subcontractor e-mail required once a sub exists', ()=>{
   E("resetFormFields();document.getElementById('i7a').value='Beta Corp';document.getElementById('i7fsoEmail').value='';run();");
   return (w.DD254_ERRORS||[]).some(x=>/Subcontractor FSO e-mail is required/.test(x))
@@ -855,10 +855,10 @@ t('an address in a CSO field and an FSO field appears once, under CSO', ()=>{
   return s.cso.length===1 && s.fsoAuto.length===0 && s.req.length===0;});
 t('the panel says it is listed above, not that it is missing', ()=>{
   const txt=w.document.getElementById('fsoEmailList').textContent;
-  return /already listed above/.test(txt) && !/no FSO e-mails yet/.test(txt);});
+  return /same@beta.com/.test(txt) && !/same@beta.com/i.test(w.document.getElementById('csoEmailList').textContent);});
 t('a genuinely empty FSO list still says so', ()=>{
   E("resetFormFields();updateEmailDist();");
-  return /no FSO e-mails yet/.test(w.document.getElementById('fsoEmailList').textContent);});
+  return /no To recipients yet/.test(w.document.getElementById('fsoEmailList').textContent);});
 t('an Item 13 address does not repeat one already listed', ()=>{
   E("resetFormFields();document.getElementById('i7fsoEmail').value='dup@x.mil';document.getElementById('item13').value='contact dup@x.mil and other@y.mil';updateEmailDist();");
   const s=E("emailDistSets()");
@@ -1379,7 +1379,7 @@ const SEED=()=>E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
 H('29. Template libraries — all seven');
 t('all nine libraries are addressable', ()=>{
   /* v1.15.2 added the Security Classification Guides library (scg). */
-  const kinds=['fac','cso','perf','cert','b13','ct','sm','sl','scg'];
+  const kinds=['fac','cso','perf','cert','b13','ct','sm','sl','scg','orders'];
   return kinds.every(k=>{ const key=E("tplKeyOf('"+k+"')"); return typeof key==='string' && key.length>0; })
     && JSON.stringify(E("BK_KINDS"))===JSON.stringify(kinds); });
 await ta('add, edit and delete a row in each library', async()=>{
@@ -1410,11 +1410,11 @@ t('CAGE duplicates are detected', ()=>{ SEED();
   return marked; });
 t('the search box hides non-matching rows', ()=>{ SEED();
   E("tplSave(TPL_CSO,[{label:'Dayton',name:'DCSA Dayton'},{label:'Mesa',name:'DCSA Mesa'}]);dashTplEdit('cso');dashTplFilter('mesa');");
-  const rows=Array.from(w.document.querySelectorAll('#tplRows > .tpl-row'));
+  const rows=Array.from(w.document.querySelectorAll('#tplRows .tpl-row'));
   const hidden=rows.filter(r=>r.style.display==='none');
   const shownRows=rows.filter(r=>r.style.display!=='none');
   E("dashTplFilter('');");
-  const restored=Array.from(w.document.querySelectorAll('#tplRows > .tpl-row')).every(r=>r.style.display!=='none');
+  const restored=Array.from(w.document.querySelectorAll('#tplRows .tpl-row')).every(r=>r.style.display!=='none');
   return rows.length===2 && hidden.length===1 && /dayton/.test(hidden[0].getAttribute('data-lbl'))
       && /mesa/.test(shownRows[0].getAttribute('data-lbl')) && restored;});
 await ta('CSV round trip for every library that supports it', async()=>{
@@ -1423,7 +1423,9 @@ await ta('CSV round trip for every library that supports it', async()=>{
   for(const k of kinds){
     SEED();
     let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p,{type:'text/csv'});};
-    E("tplSave(tplKeyOf('"+k+"'),[]);dashTplEdit('"+k+"');dashTplAdd();window.TPL_EDIT[0].label='RT-"+k+"';tplSave(tplKeyOf('"+k+"'),window.TPL_EDIT);");
+    await E("tplSave(tplKeyOf('"+k+"'),[]);dashTplEdit('"+k+"')");
+    if(k==='ct'){await E("ctPrimeCreate('RT-PRIME','RT-ct','Round trip program')");await E("dashTplEdit('ct')");}
+    else E("dashTplAdd();window.TPL_EDIT[0].label='RT-"+k+"';tplSave(tplKeyOf('"+k+"'),window.TPL_EDIT);");
     E("tplIoExport('"+k+"');"); w.Blob=OB;
     if(!cap) return k+': export produced nothing';
     const rows=E("ioCsvParse("+JSON.stringify(cap)+")");
@@ -2296,11 +2298,11 @@ t('12, 14, 15 and 16 all travel with the template', ()=>{
   return ws.radios.i12route==='thru' && ws.texts.i12specify==='AFLCMC/PA'
       && ws.radios.i14==='yes' && ws.texts.i14text==='More' && ws.radios.i15==='no'
       && ws.texts.i16a==='AFLCMC' && ws.texts.dist18fOther==='Others'; });
-t('an empty template field never wipes what the draft already has', ()=>{
+t('an explicitly empty template field clears the supported draft section', ()=>{
   const ws0={texts:{item13:'existing',i12:'keep'},checks:{},radios:{},selects:{},perf:[]};
   const d=E("ctBlankData()");
   const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+","+JSON.stringify(ws0)+")");
-  return ws.texts.item13==='existing' && ws.texts.i12==='keep'; });
+  return ws.texts.item13==='' && ws.texts.i12===''; });
 await ta('applying a contract type to a closed draft writes the whole thing', async()=>{
   await E("draftPut({id:'B13T',title:'T',status:'Draft',stage:'orig',todos:[],meta:{},workspace:null})");
   E("tplSave(TPL_B13,[{label:'CPFF',data:(function(){var d=ctBlankData();d.c10['10a']=true;d.i13='Guidance';d.i16.a='GCA';return d;})()}]);");
@@ -2489,10 +2491,10 @@ t('capture records UNCLASSIFIED as empty', ()=>{
 t('the marking travels into a draft workspace', ()=>{
   const d=E("(function(){var d=ctBlankData();d.cls='CUI';return d;})()");
   return E("ctApplyDataToWorkspace("+JSON.stringify(d)+",null)").selects.clsSel==='CUI'; });
-t('an unmarked template does not overwrite a CUI draft', ()=>{
+t('an explicitly unclassified template replaces a previous CUI marking', ()=>{
   const ws0={texts:{},checks:{},radios:{},selects:{clsSel:'CUI'},perf:[]};
   const d=E("ctBlankData()");
-  return E("ctApplyDataToWorkspace("+JSON.stringify(d)+","+JSON.stringify(ws0)+")").selects.clsSel==='CUI'; });
+  return E("ctApplyDataToWorkspace("+JSON.stringify(d)+","+JSON.stringify(ws0)+")").selects.clsSel===''; });
 await ta('applying a CUI contract type marks the open form and repaints the banner', async()=>{
   E("showFormView();resetFormFields();DASH.current='CLS1';");
   await E("draftPut({id:'CLS1',title:'T',status:'Draft',stage:'orig',todos:[],meta:{},workspace:null})");
@@ -2861,7 +2863,7 @@ await ta('the pack carries templates and no drafts', async()=>{
   await wipe();
   await E("draftPut({id:'PK',title:'a draft',status:'Draft',stage:'orig',todos:[],meta:{},workspace:{}})");
   const p=await packMake();
-  return p.tool==='DD254 Template Pack' && !('drafts' in p) && !!p.libs && Object.keys(p.libs).length===9; });
+  return p.tool==='DD254 Template Pack' && !('drafts' in p) && !!p.libs && Object.keys(p.libs).length===10; });
 await ta('it is stamped with who exported it and when', async()=>{
   const p=await packMake();
   return p.owner==='Alice' && /^\d{4}-\d{2}-\d{2}/.test(String(p.exported||'')); });
@@ -2911,7 +2913,7 @@ await ta('applying records an undo for that library', async()=>{
 t('site-specific libraries are flagged so they default off', ()=>
   E("!!PACK_LOCAL.fac")===true && E("!!PACK_LOCAL.perf")===true && E("!!PACK_LOCAL.sl")===false);
 t('all nine libraries travel in a pack', ()=>
-  E("PACK_KINDS").length===9 && E("PACK_KINDS").includes('sl') && E("PACK_KINDS").includes('ct') && E("PACK_KINDS").includes('scg'));
+  E("PACK_KINDS").length===10 && E("PACK_KINDS").includes('sl') && E("PACK_KINDS").includes('ct') && E("PACK_KINDS").includes('scg'));
 await ta('a file that is not a pack is refused', async()=>{
   E("window.__A='';");
   const ev={target:{files:[new w.Blob(['{\"tool\":\"something else\"}'],{type:'application/json'})],value:'x'}};
@@ -3252,7 +3254,7 @@ t('the field exists under Item 2 and is not dressed as an official sub-letter', 
   const e=eff(); if(!e) return 'no iEffort field';
   const lab=w.document.querySelector('label[for="iEffort"]');
   const badge=lab?lab.querySelector('.sub-ltr'):null;
-  return (lab && !badge && /Effort Number/i.test(lab.textContent)) ? true : {lab:!!lab,badge:!!badge};
+  return (lab && !badge && /Task Order \/ BPA \/ Delivery Order Number/i.test(lab.textContent)) ? true : {lab:!!lab,badge:!!badge};
 });
 t('entering a number writes the line at the top of Item 13', ()=>{
   i13().value=''; E("SUP_LAST=''");
@@ -4579,7 +4581,7 @@ t('every save in the editor goes through the one writer', ()=>{
   for(const fn of ['dashTplDone','dashTplSaveNow','dashTplLeave']){
     const b=body(fn);
     if(!b) return fn+' not found';
-    if(!/dashTplFlush|TPL_WRITE/.test(b)) return fn+' bypasses the writer';
+    if(!/dashTplFlush|TPL_WRITE/.test(b)&&!(fn==='dashTplDone'&&/dashTplSaveNow/.test(b))) return fn+' bypasses the writer';
   }
   return true;
 });
@@ -4644,7 +4646,7 @@ t('both exports read Block 2a from the same upstream', ()=>{
   const src=fs.readFileSync('dd254.htm','utf8');
   const flat=/const data=collect254Data\(draft\);[\s\S]{0,200}?DD254Export\./.test(src);
   const xfa=/const data=collect254Data\(draft\);[\s\S]{0,200}?DD254XFA\.buildXfaDatasets/.test(src);
-  const composedOnce=(src.match(/\| Task Order '/g)||[]).length;
+  const composedOnce=(src.match(/v\.i2a = v\.i2a \+ ' \| ' \+ ctOrderType/g)||[]).length;
   return (flat && xfa && composedOnce===1) ? true : {flat,xfa,composedOnce};
 });
 t('the combined value survives a draft round-trip', ()=>{
@@ -4721,17 +4723,16 @@ t('a contract number on the live form is not replaced either', ()=>{
   w.document.getElementById('i2a').value='';
   return (ws.texts.i2a===undefined||ws.texts.i2a==='') ? true : ws.texts.i2a;
 });
-t('a template with no task order behaves exactly as before', ()=>{
+t('a prime-only template fills empty 2a without creating a task order', ()=>{
   mkCt({primeContract:'N00178-24-D-1234',taskOrder:''});
   const ws=E("ctApplyDataToWorkspace(tplLoad(TPL_CT)[0].data,{texts:{},checks:{},radios:{},selects:{},perf:[],vlog:null})");
-  return (!ws.texts.iEffort && !ws.checks.iStandalone && !ws.texts.i2a) ? true : {e:ws.texts.iEffort,c:ws.checks.iStandalone,a:ws.texts.i2a};
+  return (!ws.texts.iEffort && !ws.checks.iStandalone && ws.texts.i2a==='N00178-24-D-1234') ? true : {e:ws.texts.iEffort,c:ws.checks.iStandalone,a:ws.texts.i2a};
 });
-t('standalone is derived from the task order, never stored separately', ()=>{
-  const d=E("ctBlankData()");
-  const src=fs.readFileSync('dd254.htm','utf8');
-  const m=/function ctApplyDataToWorkspace\(d,ws\)\{[\s\S]*?\n\}/.exec(src);
-  return (!('standalone' in d) && m && /d\.taskOrder/.test(m[0]) && /ws\.checks\.iStandalone=true/.test(m[0]))
-    ? true : 'standalone is stored rather than derived';
+t('order identity survives capture independently of the outgoing standalone selection', ()=>{
+  E("document.getElementById('iEffort').value='0099';document.getElementById('iStandalone').checked=false;document.getElementById('iOrderType').value='BPA';");
+  const d=E('ctCaptureData()'),ws=E('ctApplyDataToWorkspace('+JSON.stringify(d)+',{texts:{},checks:{},radios:{},selects:{},perf:[]})');
+  E("document.getElementById('iOrderType').value='Task Order';");
+  return d.taskOrder==='0099'&&d.standalone===false&&d.orderType==='BPA'&&ws.checks.iStandalone===false&&ws.selects.iOrderType==='BPA';
 });
 await ta('applying to the live form produces the combined Block 2a', async()=>{
   mkCt({primeContract:'N00178-24-D-1234',taskOrder:'0042'});
@@ -4756,7 +4757,7 @@ await ta('the fields appear in the DD-254 Template Language editor, populated', 
 await ta('the editor writes them back into the template', async()=>{
   mkCt({});
   await E("dashTplEdit('ct')");
-  E("ctSetPrime(0,'N00178-24-D-9999'); ctSetTask(0,'0100'); dashTplSaveNow();");
+  await E("ctSetPrime(0,'N00178-24-D-9999'); ctSetTask(0,'0100'); dashTplSaveNow();");
   const t0=E("tplLoad(TPL_CT)[0].data");
   return (t0.primeContract==='N00178-24-D-9999' && t0.taskOrder==='0100') ? true : t0;
 });
@@ -5403,9 +5404,9 @@ await ta('changing one selected status to Issued opens one bulk window and issue
   const links=Array.from(d.querySelectorAll('[id^="bddEmail_"]')).map(function(a){return decodeURIComponent(a.getAttribute('href')||'');});
   const screenOk=/Bulk issuance — 2 DD-254s/.test(d.textContent) && /CUI — SEND ENCRYPTED/.test(d.textContent)
     && /Prepared e-mails — 2 audience groups/.test(d.textContent) && /Never attach a record to a different audience group/.test(d.textContent)
-    && /Bulk Issue One/.test(d.textContent) && /Bulk Issue Two/.test(d.textContent) && /checked Block 18f/.test(d.textContent)
+    && /Bulk Issue One/.test(d.textContent) && /Bulk Issue Two/.test(d.textContent) && /checked Item 18f/.test(d.textContent)
     && links.length===2
-    && links.some(function(h){return h.indexOf('mailto:req@gov.mil; fso1@a.com?cc=cso1@gov.mil&subject=Issued DD Form 254 — Bulk Issue One')===0;})
+    && links.some(function(h){return h.indexOf('mailto:req@gov.mil?cc=cso1@gov.mil; fso1@a.com&subject=Issued DD Form 254 — Bulk Issue One')===0;})
     && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com\?cc=CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil&subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two$/i.test(h);})
     && !links.some(function(h){return /fso1@a\.com/.test(h)&&/fso2@b\.com/.test(h);});
   d.querySelector('#bddSave').click(); await pr; w.uiAlert=oldAlert;
@@ -6378,7 +6379,7 @@ await ta('confirming the preview creates exactly one DD-254 Template Language en
   w.__RF=rcvFile(bytes,'received-rev2.pdf');
   const t=await E("rcv254Import(window.__RF)");
   E("window.uiConfirm=async function(){return true;};");
-  const list=E("tplLoad(TPL_CT)"), added=list[list.length-1];
+  const list=E("tplLoad(TPL_CT)"), added=list[0];
   const hash=require('crypto').createHash('sha256').update(Buffer.from(bytes)).digest('hex');
   const aud=E("audAll()").filter(x=>x.action==='template-imported-from-dd254');
   const msg=w.__RCVMSG;
@@ -6392,7 +6393,7 @@ await ta('confirming the preview creates exactly one DD-254 Template Language en
       && /Not imported: Items 1–9 and 17/.test(msg) && /No draft or dashboard record is created/.test(msg) && /Item 10: 10a, 10j/.test(msg);
 });
 await ta('the imported template applies to a form like any other', async()=>{
-  const added=E("tplLoad(TPL_CT)").slice(-1)[0]; w.__RT=added;
+  const added=E("tplLoad(TPL_CT)")[0]; w.__RT=added;
   const ws=E("ctApplyDataToWorkspace(window.__RT.data)");
   return ws.checks.c10a===true && ws.checks.c11l===true && ws.checks.dist18a===true && /Example COMSEC guidance/.test(ws.texts.item13||'') && ws.texts.i14text==='Example additional requirement';
 });
@@ -6433,8 +6434,8 @@ await ta('importing from the open Template Language page adds the entry to that 
   E("window.uiConfirm=async function(){return true;};window.alert=function(){};");
   w.__RF=rcvFile(bytes,'from-page.pdf');
   await E("rcv254Upload({target:{files:[window.__RF],value:'x'}})");
-  const rows=w.document.querySelectorAll('#tplRows > .tpl-row').length;
-  const ok=E("window.TPL_EDIT.length")===before+1 && rows===before+1 && E("tplLoad(TPL_CT).length")===before+1;
+  const rows=w.document.querySelectorAll('#tplRows .tpl-row').length;
+  const ok=E("window.TPL_EDIT.length")===before+1 && !!w.document.querySelector('#tplRows .tpl-row[data-index="'+before+'"]') && rows<=12 && E("tplLoad(TPL_CT).length")===before+1;
   E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
   return ok; });
 
@@ -7564,6 +7565,394 @@ t('applying the facility outright still replaces Item 17', ()=>{ CERTSEED();
 t('the Item 6b listener is wired once', ()=>{
   return w.document.getElementById('i6b').dataset.certSync==='1'; });
 E("tplSave(TPL_CERT,[]);tplSave(TPL_FAC,[]);showDashView();resetFormFields();");
+
+H('109. v2.1.2 the issue pop-up lists every required attachment');
+/* The form merged the DD-254 Template Language entry and the applied Contract
+   Type template; the pop-up read only the first. Attachments recorded on a
+   Contract Type template were shown on the form and missing from the pop-up
+   that tells the preparer what to attach. */
+const ATTSEED=()=>{
+  E("(function(){var b=ctBlankData();"
+   +"tplSave(TPL_CT,[{label:'Lang tpl',ioId:'ct-1',data:Object.assign({},b,{attText:'SCG-1234 Guide'+String.fromCharCode(10)+'Attachment J-5'})}]);"
+   +"tplSave(TPL_B13,[{label:'CPFF R&D',data:Object.assign({},b,{attText:'CT Attachment A'+String.fromCharCode(10)+'SCG-1234 Guide'})}]);"
+   +"})();");
+};
+const attRec=(o)=>Object.assign({id:'x',title:'t',workspace:{selects:{},texts:{},checks:{},radios:{}}},o);
+const attOf=(o)=>E("dashDistAttachments("+JSON.stringify(attRec(o))+").tpl");
+t('a Contract Type template’s attachments reach the pop-up', ()=>{ ATTSEED();
+  const r=attOf({ctType:'CPFF R&D'});
+  return r.length===2 && r[0]==='CT Attachment A' && r[1]==='SCG-1234 Guide' ? true : r; });
+t('a DD-254 Template Language entry still reaches the pop-up', ()=>{ ATTSEED();
+  const r=attOf({workspace:{selects:{ctTplSel:'ct-1'},texts:{},checks:{},radios:{}}});
+  return r.length===2 && r[0]==='SCG-1234 Guide' ? true : r; });
+t('both sources merge and a shared attachment is listed once', ()=>{ ATTSEED();
+  const r=attOf({ctType:'CPFF R&D',workspace:{selects:{ctTplSel:'ct-1'},texts:{},checks:{},radios:{}}});
+  return r.length===3 && r.filter(x=>x==='SCG-1234 Guide').length===1 ? true : r; });
+t('the form and the pop-up agree on the same Contract Type template', ()=>{ ATTSEED();
+  E("window.DD254_CT_APPLIED='CPFF R&D';");
+  const form=E("ctTplAttachments().att");
+  E("window.DD254_CT_APPLIED='';");
+  const dash=attOf({ctType:'CPFF R&D'});
+  return JSON.stringify(form)===JSON.stringify(dash) ? true : {form,dash}; });
+t('a draft built from no template lists nothing from templates', ()=>{ ATTSEED();
+  return attOf({}).length===0; });
+H('109b. v2.1.2 the pop-up warns on the marking only');
+await ta('a contract that merely involves CUI gets no notice on the pop-up', async()=>{
+  E("window.__P3=dashDistDialog({id:'H1',title:'Contract CUI',workspace:{selects:{clsSel:''},checks:{dist18a:true,c10j:true},radios:{},texts:{},perf:[]}})");
+  await new Promise(r=>setTimeout(r,90));
+  const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
+  const x=d.textContent;
+  /* The marking is the only thing that changes how the document is sent. */
+  const ok=!/contract involves CUI/i.test(x) && !/SEND ENCRYPTED/.test(x);
+  d.querySelector('#ddSkip').click(); await E("window.__P3");
+  return ok ? true : x.substring(0,300); });
+t('its dashboard helper is gone with it', ()=> E("typeof dashContractCui")==='undefined');
+t('the form still warns that the contract involves CUI', ()=>{
+  E("showFormView();resetFormFields();document.getElementById('c10j').checked=true;document.getElementById('clsSel').value='';run();");
+  const warns=w.DD254_WARNS||[];
+  return warns.filter(x=>/This contract involves CUI/.test(x)).length===1; });
+E("tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
+
+H('110. v2.2.0 recipients, template replacement and repository organisation');
+t('performance-location FSO is To; facility FSO and assigned/program managers are CC',()=>{
+  const r={requestedBy:'req@example.com',workspace:{texts:{i6fsoEmail:'facility@example.com',distSmAssigned:JSON.stringify([{name:'Manager',email:'assigned@example.com'}]),distSmRecipients:JSON.stringify([{name:'PSM',email:'psm@example.com'}]),i6c:'cso@example.com'},checks:{},selects:{},perf:[{email:'location@example.com'}]}};
+  const m=E('dashIssueMail('+JSON.stringify(r)+')');
+  return m.to.join('|')==='req@example.com|location@example.com'&&m.cc.join('|')==='cso@example.com|facility@example.com|assigned@example.com|psm@example.com';
+});
+t('To wins when a manager and a performance FSO share an address',()=>{
+  const m=E("dashIssueMail({workspace:{texts:{distSmRecipients:JSON.stringify([{email:'SHARED@example.com'}])},perf:[{email:'shared@example.com'}]}})");
+  return m.to.join('|')==='shared@example.com'&&m.cc.length===0;
+});
+await ta('manager dropdown snapshots the repository entry and rejects repeat selection',async()=>{
+  E("resetFormFields();window.CURRENT_REQUESTOR_EMAIL='';");
+  await E("tplSave(TPL_SM,[{name:'Synthetic Manager',email:'manager@example.com',program:'Test program'}]);");
+  E("distSmRender();document.getElementById('distSmPick').selectedIndex=1;distSmAdd();document.getElementById('distSmPick').selectedIndex=1;distSmAdd();");
+  const a=E("distSmRead(ctGv('distSmRecipients'))");
+  return a.length===1&&a[0].email==='manager@example.com'&&a[0].program==='Test program'&&E('emailDistSets().cc').includes('manager@example.com');
+});
+t('managers survive workspace save/open and deletion from the repository',()=>{
+  const ws=E('collectWorkspace()');
+  E('resetFormFields();applyWorkspace('+JSON.stringify(ws)+');tplSave(TPL_SM,[]);');
+  return E('emailDistSets().cc').includes('manager@example.com');
+});
+t('an older workspace does not inherit the previous draft manager',()=>{
+  E("applyWorkspace({texts:{},checks:{},selects:{},perf:[]});");
+  return E("distSmRead(ctGv('distSmRecipients')).length")===0;
+});
+t('assigned manager resolves for an older draft that only references a template',()=>{
+  E("tplSave(TPL_CT,[{ioId:'mgr-tpl',label:'Manager template',smName:'Assigned',smEmail:'assigned@example.com',data:ctBlankData()}]);");
+  return E("dashIssueMail({workspace:{selects:{ctTplSel:'mgr-tpl'},texts:{},perf:[]}}).cc").includes('assigned@example.com');
+});
+await ta('whole insertion snapshots assigned manager and blank template clears that assignment',async()=>{
+  E("resetFormFields();buildCtSelect();document.getElementById('ctTplSel').value='mgr-tpl';");
+  await E("ctInsertAll('mgr-tpl');");
+  const saved=E('collectWorkspace()');
+  E("tplSave(TPL_CT,[]);");
+  const retained=E('dashIssueMail({workspace:'+JSON.stringify(saved)+'}).cc').includes('assigned@example.com');
+  E("ctApplyWsToForm(ctApplyDataToWorkspace(ctBlankData(),null,{label:'No manager'}));");
+  return retained&&E("ctGv('distSmAssigned')")==='[]'&&!E('emailDistSets().cc').includes('assigned@example.com');
+});
+t('full replacement clears stale text, unchecked boxes, radio selections and CUI marking',()=>{
+  E("resetFormFields();document.getElementById('item13').value='Old guidance';document.getElementById('dist18fOther').value='old@example.com';document.getElementById('dist18f').checked=true;document.getElementById('i14yes').checked=true;document.getElementById('i15yes').checked=true;document.getElementById('i16a').value='OLD';document.getElementById('c10a').checked=true;document.getElementById('c11c').checked=true;document.getElementById('clsSel').value='CUI';ctApplyWsToForm(ctApplyDataToWorkspace(ctBlankData(),null));run();");
+  return E("ctGv('item13')")===''&&E("ctGv('dist18fOther')")===''&&!E("ctCk('dist18f')")&&!E("ctCk('c10a')")&&!E("ctCk('c11c')")&&E("ctGv('i16a')")===''&&!E("ctCk('i14yes')")&&!E("ctCk('i15yes')")&&E("ctGv('clsSel')")==='';
+});
+t('absent legacy sections do not erase unrelated draft sections',()=>{
+  const ws=E("ctApplyDataToWorkspace({i13:'New'},{texts:{i16a:'Keep',i6a:'Facility'},checks:{c10a:true},radios:{i14:'yes'},selects:{clsSel:'CUI'},perf:[]})");
+  return ws.texts.item13==='New'&&ws.texts.i16a==='Keep'&&ws.texts.i6a==='Facility'&&ws.checks.c10a===true&&ws.radios.i14==='yes'&&ws.selects.clsSel==='CUI';
+});
+t('applying a contract type cannot append language from a previously selected DD254 template',()=>{
+  E("tplSave(TPL_CT,[{ioId:'old-lang',label:'Old',data:Object.assign(ctBlankData(),{l10:{'10a':'OLD TEMPLATE LANGUAGE'}})}]);buildCtSelect();document.getElementById('ctTplSel').value='old-lang';resetFormFields();document.getElementById('ctTplSel').value='old-lang';var d=ctBlankData();d.c10['10a']=true;ctApplyWsToForm(ctApplyDataToWorkspace(d,null));");
+  return !E("ctGv('item13')").includes('OLD TEMPLATE LANGUAGE');
+});
+t('capture retains contract/order metadata and captures the current form',()=>{
+  E("resetFormFields();document.getElementById('i2a').value='TEST-PRIME';document.getElementById('iEffort').value='0007';document.getElementById('iStandalone').checked=true;document.getElementById('item13').value='Current wording';");
+  const d=E('ctCaptureData()');return d.primeContract==='TEST-PRIME'&&d.taskOrder==='0007'&&d.i13==='Current wording';
+});
+await ta('save language from Item 18 names a new entry without leaving or changing the form',async()=>{
+  await E("tplSave(TPL_CT,[]);");E("window.TPL_EDIT_KIND='';window.DASH.current=null;");
+  E("document.getElementById('i3a_date').value='20261001';document.querySelector('input[name=\"spec\"][value=\"3a\"]').checked=true;");
+  const prompt=w.uiPrompt;w.uiPrompt=async()=> 'Synthetic saved template';
+  try{await E('ctSaveFormTemplate(document.getElementById("ctSaveFormBtn"))');}finally{w.uiPrompt=prompt;}
+  const a=E('tplLoad(TPL_CT)');
+  return a.length===1&&a[0].label==='Synthetic saved template'&&a[0].data.primeContract==='TEST-PRIME'&&a[0].data.taskOrder==='0007'&&a[0].srcType==='orig'&&a[0].srcDate==='2026-10-01'&&E("ctGv('item13')")==='Current wording'&&/Saved/.test(w.document.getElementById('ctSaveFormState').textContent);
+});
+await ta('saving duplicate content allows cancellation without adding another entry',async()=>{
+  const prompt=w.uiPrompt,confirm=w.uiConfirm;w.uiPrompt=async()=> 'Another name';w.uiConfirm=async()=>false;
+  try{await E('ctSaveFormTemplate()');}finally{w.uiPrompt=prompt;w.uiConfirm=confirm;}
+  return E('tplLoad(TPL_CT).length')===1;
+});
+t('duplicate identity ignores names, wording, source revision, timestamps and attachments',()=>{
+  const d=E("ctCaptureData()");
+  const a={label:'A',ioId:'a',updatedAt:'2026-01-01',data:d},b={label:'B',ioId:'b',updatedAt:'2026-03-01',data:JSON.parse(JSON.stringify(d))};
+  const first=E('ctDuplicatePairs('+JSON.stringify([a,b])+')');b.data.attText='New attachment';
+  return first.length===1&&first[0].kind==='duplicate'&&E('ctDuplicatePairs('+JSON.stringify([a,b])+')').length===1;
+});
+t('blank identities and shared language under different contracts are not flagged',()=>{
+  const empty=E('ctDuplicatePairs([{data:ctBlankData()},{data:ctBlankData()}])');
+  const p=E("ctDuplicatePairs([{data:Object.assign(ctBlankData(),{i13:'Same',primeContract:'A'})},{data:Object.assign(ctBlankData(),{i13:'Same',primeContract:'B'})}])");
+  return empty.length===0&&p.length===0;
+});
+t('matching applied language without a contract identity is not a duplicate',()=>{
+  const p=E("ctDuplicatePairs([{data:Object.assign(ctBlankData(),{c10:{'10a':true},l10:{'10a':'Checked language'}})},{data:Object.assign(ctBlankData(),{c10:{'10a':true},i13:'Checked language'})}])");return p.length===0;
+});
+t('same prime and order with different language raises an identity duplicate flag',()=>{
+  const p=E("ctDuplicatePairs([{srcDate:'2026-01-01',data:Object.assign(ctBlankData(),{i13:'A',primeContract:'P',taskOrder:'T'})},{srcDate:'2026-01-01',data:Object.assign(ctBlankData(),{i13:'B',primeContract:'P',taskOrder:'T'})}])");return p.length===1&&p[0].kind==='duplicate';
+});
+await ta('repository filters and grouping retain original data order and stable insertion references',async()=>{
+  await E("tplSave(TPL_CT,[{label:'Z',ioId:'z',data:Object.assign(ctBlankData(),{i13:'Same',primeContract:'Z-PRIME',taskOrder:'0002'})},{label:'A',ioId:'a',data:Object.assign(ctBlankData(),{i13:'Same',primeContract:'A-PRIME',taskOrder:'0001'})}]);dashTplEdit('ct');");
+  E("document.getElementById('ctRepoSort').value='newest';CT_REPO_VIEW.open={'A-PRIME':true,'Z-PRIME':true};CT_REPO_VIEW.sourceOpen={'A-PRIME':true,'Z-PRIME':true};ctRepoFilter();");
+  const ids=E('TPL_EDIT.map(t=>t.ioId).join("|")'),first=w.document.querySelector('#tplRows .tpl-row').dataset.index;
+  E("document.getElementById('ctRepoPrime').value='A-PRIME';document.getElementById('ctRepoOrder').value='0001';ctRepoFilter();");
+  const visible=Array.from(w.document.querySelectorAll('#tplRows .tpl-row')).filter(r=>r.style.display!=='none');
+  return ids==='z|a'&&first==='0'&&visible.length===1&&visible[0].dataset.index==='1'&&E("ctFind('z').label")==='Z';
+});
+t('filtering leaves the template save state clean',()=>{
+  E("TPL_DIRTY=false;document.getElementById('ctRepoPrime').value='';document.getElementById('ctRepoPrime').dispatchEvent(new Event('input',{bubbles:true}));");return E('TPL_DIRTY')===false;
+});
+t('typing in a row retains keyboard focus during duplicate recalculation',()=>{
+  E("var e=document.querySelector('#tplRows .tpl-row[data-index=\"1\"] input[type=\"text\"]');e.focus();e.value='Typing safely';e.dispatchEvent(new Event('input',{bubbles:true}));window.__focused=e;");return w.document.activeElement===w.__focused;
+});
+t('duplicate comparison names selected boxes and contact fields without exposing stored JSON',()=>{
+  const value=E("ctDupDisplay({data:{c10:{'10a':false,'10e1':true},c18:{'18a':true,'18f':false},l10:{'10a':'Pending COMSEC wording'},i16:{a:'Example GCA',f:'gca@example.com'},i12route:'dir',i15:'no'}},'c10')");
+  const contacts=E("ctDupDisplay({data:{i16:{a:'Example GCA',f:'gca@example.com'}}},'i16')");
+  const language=E("ctDupDisplay({data:{c10:{'10a':false},l10:{'10a':'Pending COMSEC wording'}}},'l10')");
+  return value.includes('10e1')&&value.includes('SCI')&&!value.includes('10a')&&!value.includes('true')&&contacts==='GCA name: Example GCA\\nEmail: gca@example.com'.replace(/\\n/g,'\n')&&language.includes('(not selected)')&&E("ctDupDisplay({data:{c18:{'18a':true}}},'c18')").includes('Contractor (FSO)')&&E("ctDupDisplay({data:{c10:{}}},'c10')")==='None selected';
+});
+await ta('comparison stays inline and reviewed duplicates remain reviewed after reorder',async()=>{
+  E("TPL_EDIT[0].data.primeContract='A-PRIME';TPL_EDIT[0].data.taskOrder='0001';CT_REPO_VIEW=ctRepoDefaultView();ctRepoRestore();ctRepoCompare(1,0);ctRepoKeepBoth(1,0);");
+  const inline=!!w.document.querySelector('.tpl-row[data-index="1"] .ct-dup-compare');
+  const reviewed=E('ctDuplicatePairs(TPL_EDIT)[0].reviewed');
+  E('TPL_EDIT.reverse();');const reordered=E('ctDuplicatePairs(TPL_EDIT)[0].reviewed');
+  E("TPL_EDIT[0].data.taskOrder='CHANGED-ORDER';");
+  return inline&&reviewed&&reordered&&E('ctDuplicatePairs(TPL_EDIT).length')===0;
+});
+t('template pack preview reports differently named copies without losing either',()=>{
+  const base=E('tplLoad(TPL_CT)[0]');const copy=JSON.parse(JSON.stringify(base));copy.label='New name';copy.ioId='new-copy';
+  const p=E('tplPackPlan("ct",'+JSON.stringify([copy])+',"","2026-10-01")');return p.add.length===1&&p.duplicates.length>0;
+});
+E("tplSave(TPL_CT,[]);tplSave(TPL_SM,[]);window.TPL_EDIT_KIND='';showDashView();resetFormFields();");
+
+H('Prime contract orders and saved received-DD254 sources');
+const ORD_SEED=async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';window.DASH.current=null;resetFormFields();");
+  await E("tplSave(TPL_ORDERS,[]);tplSave(TPL_CT,[{ioId:'prime-src',label:'Prime language',srcType:'rev',srcRev:'2',srcDate:'2026-09-15',data:Object.assign(ctBlankData(),{primeContract:'TEST-PRIME',i13:'PRIME WORDING'})},{ioId:'own-src',label:'Order language',srcType:'orig',srcDate:'2026-09-20',data:Object.assign(ctBlankData(),{primeContract:'TEST-PRIME',taskOrder:'0021',i13:'ORDER WORDING',c11:{'11c':true},l11:{'11c':'SAVED CHECKBOX LANGUAGE'},attText:'Saved attachment.pdf'})}]);");
+};
+await ta('twenty orders share one saved prime-source version without duplicating templates',async()=>{
+  await ORD_SEED();
+  for(let i=1;i<=20;i++){w.__ON=String(i).padStart(4,'0');await E("ctOrderCreate('TEST-PRIME',window.__ON,'Task Order','prime')");}
+  return E("ctOrderRows().length===20&&ctOrderStore().filter(r=>r.recordType==='source').length===1&&tplLoad(TPL_CT).length===2&&new Set(ctOrderRows().map(o=>o.sourceVersionId)).size===1");
+});
+await ta('prime plus order is the unique identity, case-insensitively; other primes may reuse order numbers',async()=>{
+  const duplicate=await E("ctOrderCreate(' test-prime ','0001','BPA','prime')"),other=await E("ctOrderCreate('OTHER-PRIME','0001','Delivery Order','review')");
+  return duplicate.duplicate===true&&!!other.order&&other.order.sourceMode==='review'&&E('ctOrderRows().length')===21;
+});
+await ta('an order-specific received DD254 uses its own saved language',async()=>{
+  const own=await E("ctOrderCreate('TEST-PRIME','0021','Delivery Order','order')");w.__ORDER_ID=own.order.ioId;
+  return E("ctOrderSource(ctOrderRows().find(o=>o.ioId===window.__ORDER_ID)).snapshot.data.i13==='ORDER WORDING'");
+});
+await ta('new workflow preserves order type and prime identity without deriving the outgoing standalone flag',async()=>{
+  const rec=await E('ctOrderStart(window.__ORDER_ID)');w.__OWN_DRAFT=rec.id;
+  const ws=E('collectWorkspace()');
+  return ws.texts.i2a==='TEST-PRIME'&&ws.texts.iEffort==='0021'&&ws.selects.iOrderType==='Delivery Order'&&!ws.checks.iStandalone&&ws.texts.item13.includes('ORDER WORDING')&&ws.ctSource.sourceMode==='order'&&ws.ctSource.snapshot.label==='Order language';
+});
+await ta('open-existing order does not create another outgoing DD254',async()=>{
+  const before=(await E('draftAll()')).length;const rec=await E('ctOrderStart(window.__ORDER_ID)');
+  return rec.id===w.__OWN_DRAFT&&(await E('draftAll()')).length===before;
+});
+await ta('automatic checkbox language, attachments and marking use the workflow snapshot after repository edits',async()=>{
+  await E("var a=tplLoad(TPL_CT);a[1].data.l11['11c']='NEW REPOSITORY LANGUAGE';a[1].data.attText='New attachment.pdf';a[1].data.cls='CUI';tplSave(TPL_CT,a);dashOpen(window.__OWN_DRAFT)");
+  E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  const rec=await E('draftGet(window.__OWN_DRAFT)');w.__SNAP_REC=rec;
+  await E("ctInsertAll('own-src')");
+  return E("ctGv('item13').includes('SAVED CHECKBOX LANGUAGE')&&!ctGv('item13').includes('NEW REPOSITORY LANGUAGE')&&ctGv('iEffort')==='0021'&&!ctCk('iStandalone')&&ctTplAttachments().att.includes('Saved attachment.pdf')&&!ctTplAttachments().att.includes('New attachment.pdf')&&dashDistAttachments(window.__SNAP_REC).tpl.includes('Saved attachment.pdf')&&!dd254WorkspaceCuiMarking(window.__SNAP_REC.workspace)");
+});
+await ta('template edits flag review and keep saved source wording and existing drafts intact',async()=>{
+  await E("var a=tplLoad(TPL_CT);a[0].data.i13='NEW PRIME WORDING';tplSave(TPL_CT,a);");
+  const o=E("ctOrderRows().find(o=>o.number==='0001'&&o.primeContract==='TEST-PRIME')");w.__PRIME_ORDER=o.ioId;
+  return E("ctOrderReview(ctOrderRows().find(o=>o.ioId===window.__PRIME_ORDER))==='Saved source changed'&&ctOrderSource(ctOrderRows().find(o=>o.ioId===window.__PRIME_ORDER)).snapshot.data.i13==='PRIME WORDING'")&&(await E('draftGet(window.__OWN_DRAFT)')).workspace.ctSource.snapshot.data.i13==='ORDER WORDING';
+});
+await ta('an unstarted order with changed source is held for review before workflow creation',async()=>{
+  await E("dashTplEdit('ct')");const n=(await E('draftAll()')).length;
+  const result=await E('ctOrderStart(window.__PRIME_ORDER)');
+  return result===false&&(await E('draftAll()')).length===n&&/Select prime DD254/.test(w.document.getElementById('ctOrderPanel').textContent);
+});
+await ta('explicit re-link creates one new source version and retains the old shared version',async()=>{
+  const result=await E("ctOrderBind(window.__PRIME_ORDER,'prime','prime-src')");
+  return result===true&&E("ctOrderStore().filter(r=>r.recordType==='source'&&r.templateId==='prime-src').length===2&&ctOrderSource(ctOrderRows().find(o=>o.ioId===window.__PRIME_ORDER)).snapshot.data.i13==='NEW PRIME WORDING'&&ctOrderSource(ctOrderRows().find(o=>o.number==='0002')).snapshot.data.i13==='PRIME WORDING'");
+});
+await ta('prime-language workflow copies the reviewed source and survives save/reopen',async()=>{
+  const rec=await E('ctOrderStart(window.__PRIME_ORDER)');w.__PRIME_DRAFT=rec.id;await E('dashSaveNow();resetFormFields();dashOpen(window.__PRIME_DRAFT)');
+  return E("ctGv('iEffort')==='0001'&&ctGv('item13').includes('NEW PRIME WORDING')&&collectWorkspace().ctSource.sourceMode==='prime'");
+});
+await ta('deleting a repository source leaves history and existing workflow provenance readable',async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");await E("tplSave(TPL_CT,tplLoad(TPL_CT).filter(t=>t.ioId!=='own-src'));dashOpen(window.__OWN_DRAFT)");
+  return E("ctGv('item13').includes('ORDER WORDING')&&collectWorkspace().ctSource.snapshot.data.i13==='ORDER WORDING'")&&/changed or was removed/.test(w.document.getElementById('ctSourceBanner').textContent);
+});
+await ta('saved coverage cannot switch to prime and existing workflows keep their source',async()=>{
+  const old=(await E('draftGet(window.__OWN_DRAFT)')).workspace.ctSource.snapshot.data.i13;
+  const result=await E("ctOrderBind(window.__ORDER_ID,'prime','prime-src')");
+  return result===false&&E("ctOrderRows().find(o=>o.ioId===window.__ORDER_ID).sourceMode==='order'&&ctOrderSource(ctOrderRows().find(o=>o.ioId===window.__ORDER_ID)).snapshot.data.i13==='ORDER WORDING'")&&(await E('draftGet(window.__OWN_DRAFT)')).workspace.ctSource.snapshot.data.i13===old;
+});
+t('full backup and pack include the order store; shared order records default off on pack import',()=>E("BK_KINDS.includes('orders')&&PACK_KINDS.includes('orders')&&PACK_LOCAL.orders===1&&tplKeyOf('orders')===TPL_ORDERS"));
+await ta('Full Backup and language JSON carry shared source versions and order links',async()=>{
+  const old=w.Blob,create=w.URL.createObjectURL,revoke=w.URL.revokeObjectURL,confirm=w.uiConfirm;let captured;
+  w.Blob=function(parts,options){captured=String(parts[0]);return new old(parts,options);};w.URL.createObjectURL=()=> 'blob:orders';w.URL.revokeObjectURL=()=>{};w.uiConfirm=async()=>true;
+  try{
+    E("window.TPL_EDIT_KIND='ct';window.TPL_EDIT=tplLoad(TPL_CT);tplExport()");const language=JSON.parse(captured);
+    await E('fullBackup()');const backup=JSON.parse(captured);
+    return language.orders.filter(r=>r.recordType==='order').length===22&&language.orders.some(r=>r.recordType==='source'&&r.snapshot.data.i13==='PRIME WORDING')&&backup.templates.orders.length===language.orders.length&&!!backup.sha256;
+  }finally{w.Blob=old;w.URL.createObjectURL=create;w.URL.revokeObjectURL=revoke;w.uiConfirm=confirm;}
+});
+t('natural-key import does not create duplicate orders from another browser',()=>{
+  const o=E('ctOrderRows()[0]');o.ioId='external-order';o.orderType='BPA';
+  const plan=E('tplPackPlan("orders",'+JSON.stringify([o])+',"","2026-10-02")');return plan.update.length===1&&plan.add.length===0;
+});
+t('a conflicting immutable source ID is refused before import',()=>{
+  const s=E("ctOrderStore().find(r=>r.recordType==='source')");s.snapshot.data.i13='CONFLICT';
+  try{E('tplPackPlan("orders",'+JSON.stringify([s])+',"","")');return false;}catch(err){return /conflicting content/.test(err.message);}
+});
+await ta('orders persist in IndexedDB and read-only tabs cannot add or change them',async()=>{
+  await E('TPL_WRITE');const stored=await E('tdbGet(TPL_ORDERS)');
+  E('window.DD254_READONLY=true');let added,bound;try{added=await E("ctOrderCreate('TEST-PRIME','0099','BPA','prime')");bound=await E("ctOrderBind(window.__ORDER_ID,'review')");}finally{E('window.DD254_READONLY=false');}
+  return Array.isArray(stored)&&stored.filter(r=>r.recordType==='order').length===22&&!!added.error&&bound===false;
+});
+await ta('repository continuously displays every order without changing stored array order',async()=>{
+  await E("dashTplEdit('ct');CT_REPO_VIEW.open['TEST-PRIME']=true;ctRepoRender(true);");
+  const ids=E('TPL_EDIT.map(t=>t.ioId).join("|")');
+  return w.document.querySelectorAll('.ct-order-row').length===E('ctOrderRows().length')&&!/Previous|Next/.test(w.document.getElementById('tplRows').textContent)&&E('TPL_EDIT.map(t=>t.ioId).join("|")')===ids;
+});
+await ta('source filter and search find order records even when no outgoing workflow exists',async()=>{
+  E("document.getElementById('ctRepoBasis').value='review';ctRepoFilter();");
+  const review=Array.from(w.document.querySelectorAll('.ct-order-row')).length;
+  E("document.getElementById('ctRepoBasis').value='';document.getElementById('tplFilter').value='0020';ctRepoFilter();");
+  return review>0&&w.document.querySelectorAll('.ct-order-row').length===1&&/0020/.test(w.document.querySelector('.ct-order-row').textContent);
+});
+await ta('order creation reports unconfirmed storage; it never claims the write succeeded',async()=>{
+  const save=w.tplSave;w.tplSave=async()=>false;let result;try{result=await E("ctOrderCreate('FAIL-PRIME','1','BPA','review')");}finally{w.tplSave=save;}
+  return !!result.error&&!result.order;
+});
+await ta('a large duplicate library uses bounded representative comparisons and flags every copy',async()=>{
+  const rows=Array.from({length:2000},(_,i)=>({ioId:'large-'+i,label:'Copy '+i,data:{primeContract:'SCALE-PRIME',i13:'SAME LANGUAGE'}}));
+  const pairs=E('ctDuplicatePairs('+JSON.stringify(rows)+')');const set=new Set(pairs.flatMap(p=>[p.a,p.b]));return pairs.length===1999&&set.size===2000;
+});
+await ta('legacy order-specific templates become one order record per prime and number, idempotently',async()=>{
+  await E('tplSave(TPL_ORDERS,[])');
+  E("window.__LEGACY_ORDER=[{ioId:'legacy-order',label:'Legacy source',srcDate:'2026-09-01',data:{primeContract:'LEGACY-PRIME',taskOrder:'0099',i13:'LEGACY LANGUAGE'}}]");
+  await E('ctOrderMigrate(window.__LEGACY_ORDER);ctOrderMigrate(window.__LEGACY_ORDER)');
+  return E("ctOrderRows().length===1&&ctOrderRows()[0].sourceMode==='order'&&ctOrderStore().filter(r=>r.recordType==='source').length===1");
+});
+E("window.DASH.current=null;window.TPL_EDIT=null;window.TPL_EDIT_KIND='';resetFormFields();");
+await E('tplSave(TPL_ORDERS,[])');
+
+H('Approved template storage: primes, editable children and program navigation');
+await E("tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';dashTplEdit('ct')");
+await ta('main Add template offers prime creation only',async()=>{
+  E('dashTplAdd()');return !!w.document.getElementById('ctNewPrime')&&!w.document.getElementById('ctNewOrderNumber')&&/Block 2A/.test(w.document.getElementById('ctOrderPanel').textContent);
+});
+await ta('new prime is saved first without changing existing stable IDs',async()=>{
+  await E("(async()=>{await ctPrimeCreate('P-OLD','Older prime','Alpha');await dashTplEdit('ct');await ctPrimeCreate('P-NEW','Newer prime','Beta');await dashTplEdit('ct');})()");
+  return E("TPL_EDIT.map(t=>t.data.primeContract).join('|')")==='P-NEW|P-OLD'&&w.document.querySelector('.ct-prime-group').dataset.prime==='P-NEW';
+});
+await ta('prime creation refuses normalized duplicate contract numbers even when wording differs',async()=>{
+  const r=await E("ctPrimeCreate(' p-new ','Different wording','Gamma')");return r.duplicate===true&&E('tplLoad(TPL_CT).length')===2;
+});
+await ta('prime creation requires a contract identity',async()=>{const r=await E("ctPrimeCreate('','No contract','')");return !!r.error&&E('tplLoad(TPL_CT).length')===2;});
+await ta('nested Add task order inherits the parent contract and program',async()=>{
+  E('ctOrderAddPanel(0)');const p=w.document.getElementById('ctOrderPanel');return p.querySelector('input[readonly]').value==='P-NEW'&&w.document.getElementById('ctNewOrderProgram').value==='Beta'&&w.document.getElementById('ctNewOrderMode').value==='order';
+});
+await ta('a task-order-specific DD254 creates its own editable template beneath the prime',async()=>{
+  const r=await E("(async()=>{await ctOrderCreateEditable('P-NEW','0042','Delivery Order','order','Specific delivery DD254','Beta');await dashTplEdit('ct');})()");
+  const o=E("ctOrderRows().find(o=>o.number==='0042')");w.__V24_ORDER=o.ioId;
+  const own=E("TPL_EDIT.find(t=>t.data.taskOrder==='0042')");
+  return !!o&&o.sourceMode==='order'&&own.data.primeContract==='P-NEW'&&own.data.orderType==='Delivery Order'&&own.data.i13===''&&own.program==='Beta'&&!!w.document.querySelector('.ct-prime-group[data-prime="P-NEW"] .ct-order-card .tpl-row');
+});
+t('prime and task-order templates use the same complete block editor',()=>{
+  const i=E("TPL_EDIT.findIndex(t=>t.data.taskOrder==='0042')");E('ctMgrToggle('+i+')');
+  const editor=w.document.getElementById('ctEd_'+i);
+  return editor.style.display==='block'&&editor.querySelectorAll('input[type="checkbox"]').length===E('CT_10.length+CT_11.length+CT_18.length')&&/Required attachments/.test(editor.textContent)&&!!editor.querySelector('textarea[placeholder="Block 13 language…"]');
+});
+await ta('editing a child autosaves the child without overwriting prime language',async()=>{
+  const tx=w.document.querySelector('.ct-order-card textarea[placeholder="Block 13 language…"]');tx.value='Unique order guidance';tx.dispatchEvent(new w.Event('input',{bubbles:true}));await E('dashTplFlush()');
+  return E("tplLoad(TPL_CT).find(t=>t.data.taskOrder==='0042').data.i13")==='Unique order guidance'&&E("tplLoad(TPL_CT).find(t=>t.data.primeContract==='P-NEW'&&!t.data.taskOrder).data.i13")===''&&E("ctOrderReview(ctOrderRows().find(o=>o.ioId===window.__V24_ORDER))")==='Saved source changed';
+});
+await ta('saved own orders show coverage without switching buttons and retain their editor',async()=>{
+  E('ctRepoRender(true)');
+  const row=w.document.querySelector('.ct-order-row');
+  return E("ctOrderRows().find(o=>o.ioId===window.__V24_ORDER).coverageMode")==='order'&&E("tplLoad(TPL_CT).find(t=>t.data.taskOrder==='0042').data.i13")==='Unique order guidance'&&!!w.document.querySelector('.ct-order-card .tpl-row')&&/Task-order-specific DD254/.test(row.textContent)&&!Array.from(row.querySelectorAll('button')).some(b=>/^Use (prime|task-order-specific) DD254$/.test(b.textContent))&&!w.document.getElementById('ctNewOrderMode');
+});
+await ta('source review stays within saved own coverage and can refresh its current language',async()=>{
+  E("ctOrderSourcePanel(window.__V24_ORDER,'prime')");
+  const panel=w.document.getElementById('ctOrderPanel'),choice=w.document.getElementById('ctOrderSourceChoice');
+  const locked=/Select order-specific DD254/.test(panel.textContent)&&choice.options.length===1&&E("TPL_EDIT.find(t=>t.ioId===ctGv('ctOrderSourceChoice')).data.taskOrder")==='0042';
+  const result=await E('ctOrderLinkSubmit()');
+  return locked&&result===true&&E("ctOrderRows().find(o=>o.ioId===window.__V24_ORDER).sourceMode==='order'&&ctOrderSource(ctOrderRows().find(o=>o.ioId===window.__V24_ORDER)).snapshot.data.i13==='Unique order guidance'&&ctOrderReview(ctOrderRows().find(o=>o.ioId===window.__V24_ORDER))===''")&&!!w.document.querySelector('.ct-order-card .tpl-row');
+});
+await ta('a prime-following order creates no copied language template',async()=>{
+  const n=E('tplLoad(TPL_CT).length');await E("(async()=>{await ctOrderCreateEditable('P-NEW','0043','BPA','prime','','Beta');await dashTplEdit('ct');})()");return E('tplLoad(TPL_CT).length')===n&&E("ctOrderRows().find(o=>o.number==='0043').sourceMode")==='prime';
+});
+await ta('saved prime coverage cannot create or link an own template',async()=>{
+  const id=E("ctOrderRows().find(o=>o.number==='0043').ioId"),n=E('tplLoad(TPL_CT).length'),own=E("tplLoad(TPL_CT).find(t=>t.data.taskOrder==='0042').ioId");
+  const bound=await E('ctOrderBind('+JSON.stringify(id)+',"order",'+JSON.stringify(own)+')'),repaired=await E('ctOrderRepairTemplate('+JSON.stringify(id)+')');
+  E('ctOrderSourcePanel('+JSON.stringify(id)+',"order")');
+  const options=Array.from(w.document.getElementById('ctOrderSourceChoice').options).map(x=>x.value);
+  return bound===false&&repaired===false&&E('tplLoad(TPL_CT).length')===n&&E("ctOrderRows().find(o=>o.number==='0043').sourceMode")==='prime'&&/Select prime DD254/.test(w.document.getElementById('ctOrderPanel').textContent)&&!options.includes(own);
+});
+await ta('duplicate order creation is refused before adding another template',async()=>{
+  const n=E('tplLoad(TPL_CT).length'),r=await E("ctOrderCreateEditable(' p-new ','0042','BPA','order','','Beta')");return r.duplicate===true&&E('tplLoad(TPL_CT).length')===n;
+});
+t('same order number under different primes and distinct orders under one prime are separate identities',()=>{
+  return E("ctDuplicatePairs([{data:{primeContract:'A',taskOrder:'1',i13:'Same'}},{data:{primeContract:'B',taskOrder:'1',i13:'Same'}},{data:{primeContract:'A',taskOrder:'2',i13:'Same'}},{data:{primeContract:'A',i13:'Same'}}]).length")===0;
+});
+await ta('program filtering shows only matching prime and own templates, retaining contract search',async()=>{
+  await E("dashTplEdit('ct');document.getElementById('ctRepoProgram').value='Beta';ctRepoFilter()");
+  const beta=Array.from(w.document.querySelectorAll('.ct-prime-group')).every(g=>g.dataset.prime==='P-NEW');
+  E("document.getElementById('tplFilter').value='0042';ctRepoFilter()");
+  return beta&&w.document.querySelectorAll('.ct-order-card').length===1&&/0042/.test(w.document.getElementById('tplRows').textContent)&&E('TPL_DIRTY')===false;
+});
+t('filtered prime groups can be collapsed and reopened without changing matching templates',()=>{
+  const before=w.document.querySelectorAll('#tplRows .tpl-row').length;E('ctRepoToggle(0)');
+  const closed=w.document.querySelector('.ct-group-heading button').getAttribute('aria-expanded')==='false'&&w.document.querySelectorAll('#tplRows .tpl-row').length===0;
+  E('ctRepoToggle(0)');return before>0&&closed&&w.document.querySelectorAll('#tplRows .tpl-row').length===before;
+});
+t('program metadata round-trips through spreadsheet columns',()=>{
+  return E("(function(){const c=TPL_IO.ct.cols.find(c=>c.h==='Program'),t={data:ctBlankData()};c.s(t,'Saved program');return c.g(t)==='Saved program';})()");
+});
+t('older order records retain their saved coverage, including a source awaiting review',()=>{
+  const o=E("ctOrderRows().find(o=>o.ioId===window.__V24_ORDER)");delete o.coverageMode;
+  const existing=E('ctOrderCoverage('+JSON.stringify(o)+')');o.sourceMode='review';
+  return existing==='order'&&E('ctOrderCoverage('+JSON.stringify(o)+')')==='order';
+});
+await ta('creation preserves own coverage even before a source is available',async()=>{
+  const r=await E("ctOrderCreate('MISSING-SOURCE','0001','Task Order','order')");w.__V241_MISSING=r.order.ioId;
+  E('ctOrderSourcePanel(window.__V241_MISSING)');
+  return r.order.coverageMode==='order'&&r.order.sourceMode==='review'&&/Select order-specific DD254/.test(w.document.getElementById('ctOrderPanel').textContent)&&/Create editable task-order template/.test(w.document.getElementById('ctOrderPanel').textContent);
+});
+await ta('missing own templates can be repaired without offering a coverage switch',async()=>{
+  const result=await E('ctOrderRepairTemplate(window.__V241_MISSING)');
+  return result===true&&E("ctOrderRows().find(o=>o.ioId===window.__V241_MISSING).coverageMode==='order'&&ctOrderRows().find(o=>o.ioId===window.__V241_MISSING).sourceMode==='order'&&tplLoad(TPL_CT).some(t=>t.data.primeContract==='MISSING-SOURCE'&&t.data.taskOrder==='0001')")&&!!w.document.querySelector('.ct-order-card .tpl-row');
+});
+await ta('review flags keep the creation choice and cannot rebind a different coverage type',async()=>{
+  const prime=E("ctOrderRows().find(o=>o.number==='0043').ioId");
+  await E('ctOrderBind('+JSON.stringify(prime)+',"review")');
+  const denied=await E('ctOrderBind('+JSON.stringify(prime)+',"order",'+JSON.stringify(E("tplLoad(TPL_CT).find(t=>t.data.taskOrder==='0042').ioId"))+')');
+  E('ctOrderSourcePanel('+JSON.stringify(prime)+')');
+  return denied===false&&E('ctOrderCoverage(ctOrderRows().find(o=>o.ioId==='+JSON.stringify(prime)+'))')==='prime'&&/Select prime DD254/.test(w.document.getElementById('ctOrderPanel').textContent);
+});
+await ta('every prime is available in one continuous repository, with unopened block editors kept lightweight',async()=>{
+  const rows=Array.from({length:125},(_,i)=>({ioId:'scroll-'+i,label:'Prime '+i,program:i%2?'Odd':'Even',data:E('ctBlankData()')}));rows.forEach((t,i)=>t.data.primeContract='SCROLL-'+i);
+  await E('tplSave(TPL_CT,'+JSON.stringify(rows)+');tplSave(TPL_ORDERS,[]);window.TPL_EDIT_KIND="";dashTplEdit("ct")');
+  return w.document.querySelectorAll('.ct-prime-group').length===125&&w.document.querySelectorAll('.tpl-row').length===125&&!!w.document.querySelector('.ct-prime-group[data-prime="SCROLL-124"]')&&!/Previous|Next/.test(w.document.getElementById('tplRows').textContent)&&w.document.querySelectorAll('#tplRows textarea').length===0;
+});
+await ta('sorting by contract or program does not reorder saved template identities',async()=>{
+  const before=E('TPL_EDIT.map(t=>t.ioId).join("|")');E("document.getElementById('ctRepoSort').value='contract';ctRepoFilter();document.getElementById('ctRepoSort').value='program';ctRepoFilter()");return E('TPL_EDIT.map(t=>t.ioId).join("|")')===before;
+});
+await ta('read-only tabs cannot create primes or editable children',async()=>{
+  E('window.DD254_READONLY=true');let p,o;try{p=await E("ctPrimeCreate('READONLY','No','')");o=await E("ctOrderCreateEditable('SCROLL-0','1','Task Order','order','','')");}finally{E('window.DD254_READONLY=false');}return !!p.error&&!!o.error&&E('tplLoad(TPL_CT).length')===125;
+});
+await ta('unconfirmed storage does not report a successfully created prime',async()=>{
+  const save=w.tplSave;w.tplSave=async()=>false;let r;try{r=await E("ctPrimeCreate('FAIL-V24','No','')");}finally{w.tplSave=save;}return !!r.error&&!r.template;
+});
+await E("tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';resetFormFields()");
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

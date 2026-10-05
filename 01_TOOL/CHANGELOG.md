@@ -1,3 +1,92 @@
+## v2.4.1 - 2 October 2026
+
+Tool version 2.147. Creation-only task-order coverage.
+
+- Choose prime or task-order-specific DD254 coverage only in Add task order.
+  Saved order headers show the chosen coverage without switching buttons.
+- Source review and missing-template repair stay within the saved coverage.
+  Existing order selections, editable templates, source history and workflows
+  are retained. Older order records infer coverage from their current source.
+
+## v2.4.0 - 2 October 2026
+
+Tool version 2.146. Approved template-storage layout.
+
+- Add template creates prime contracts only. New primes appear first; all
+  matching contracts and orders are available by continuous scrolling.
+- Add task order beneath a prime creates a Task Order, BPA or Delivery Order
+  with the inherited Block 2A number. Own-order DD254s use the same complete
+  editable row and block editor as prime templates.
+- Use prime DD254 creates a compact linked entry without copied language.
+  Switching coverage retains saved own-template edits and immutable history.
+- Add an independent Program field and filter, retaining contract/order search
+  and view-only sorting by newest, contract or program. Program travels in CSV.
+- Duplicate warnings compare prime/order identity only, regardless of source
+  revision or wording. Shared language on different contracts is not flagged.
+- Remove the separate source-selection strip. Review saved versions only when
+  needed, using readable DD254 block names. Existing workflow freezing remains.
+- Load full block editors on demand so continuous lists remain lighter.
+
+## v2.3.0 - 2 October 2026
+
+Tool version 2.145. Prime contract orders and received-DD254 source links.
+
+- Separate Task Order, BPA and Delivery Order records from received source
+  templates. Every order has a parent prime and chooses a prime source,
+  order-specific source or source review. Many orders share one saved version.
+- Keep the existing editable rows inside collapsible prime groups. Search,
+  source filters and bounded prime/source/order pages support large libraries.
+- Start an Original from the selected source; preserve source name, revision,
+  date and snapshot with the outgoing workflow. Reopen an existing linked draft.
+- Flag changed, removed or newer sources before starting new work. Earlier
+  saved versions and workflows retain their wording. Incoming source selection
+  does not choose the outgoing order-specific checkbox.
+- Capture order identity/type independently of the outgoing selection. Index
+  legacy order-specific templates idempotently without removing source rows.
+- Preserve order links and source history in Full Backup, template packs and
+  language JSON. CSV exports source rows only. Prevent duplicate prime/order
+  identities and conflicting immutable-source imports.
+- Bound duplicate comparisons for large source libraries while preserving
+  inline flags/comparison. Legitimate order references are not source duplicates.
+
+## v2.2.0 - 1 October 2026
+
+Tool version 2.144. Recipient and template workflow improvements.
+
+- Performance-location and subcontractor FSOs join the requestor on To.
+  Facility FSOs, CSOs, security/program managers, additional manual FSOs and
+  checked Item 18f addresses appear on CC. To takes precedence when an address
+  has several roles. Item 18 selects additional managers from Security Managers;
+  assigned and added manager snapshots survive draft save/open and library deletion.
+- Save this language template at Item 18 saves a named DD-254 language entry
+  without leaving the workflow, with contract/order metadata and a duplicate warning.
+- Whole-template application replaces supported sections including blanks,
+  unchecked boxes and cleared radio selections. Missing legacy sections remain
+  untouched. Previous-template automatic language is suppressed during replacement.
+- The existing repository rows gain prime/task-order filters, optional grouping,
+  duplicate-only filtering and inline comparison. Duplicate detection ignores
+  names and IDs, distinguishes shared language and source conflicts, and never
+  merges or deletes records automatically. Capture preserves contract metadata.
+- Includes the attachment and document-marking fixes prepared for v2.1.2.
+
+## v2.1.2 - 24 September 2026
+
+Tool version 2.143. Two owner reports, 24 September 2026.
+
+- Fixed: required attachments recorded on a **Contract Type** template were
+  listed on the form but missing from the ready-to-issue pop-up. The form merged
+  both template sources; the pop-up read only the DD-254 Template Language entry
+  and never looked at the Contract Type template the draft was built from. Both
+  now derive from one function, `dd254AttFromTemplates`, so they cannot disagree
+  again. Attachments named by both sources are listed once.
+- The pop-up no longer says the contract involves CUI. That dialog is about
+  sending the document, and the only thing that changes how the document is sent
+  is the marking on it. The marked-CUI encryption warning is unchanged, and
+  Item 10j/11l still raises its warning on the form, where the preparer can act
+  on it by writing Item 13.
+
+No storage format change.
+
 ## v2.1.1 - 23 September 2026
 
 Tool version 2.142. Fixed: the certifying official linked to a facility reached

@@ -1,6 +1,6 @@
 # DD254 Interactive — security fact sheet
 
-DD254 Interactive v2.1.1 / Tool v2.142, 23 September 2026.
+DD254 Interactive v2.4.1 / Tool v2.147, 2 October 2026.
 
 This is an offline, single-user drafting aid. The official HTML embeds its
 JavaScript, PDF library and form assets. It uses local browser storage and
@@ -73,3 +73,9 @@ adds no automatic sending or remote lookup.
   of every possible browser, imported file or contractual fact pattern.
 
 Report vulnerabilities using [SECURITY.md](../SECURITY.md).
+
+Contract order records and immutable received-source snapshots use the existing
+journaled browser template database. Orders reference a shared version, and an
+outgoing workflow retains its starting source snapshot. Full Backup and DD254
+language JSON include these records; source-only CSV does not. No server,
+network transfer, added runtime library or automatic message sending is added.

@@ -1,69 +1,44 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-09-23T06:30-05:00 by Maintainer
+Last updated: 2026-10-02T13:08-05:00 by Maintainer
 
 ## Current State
 
-Canonical source for the DD-254 Interactive tool (single-file HTML). Latest
-published release: **v2.1.1 (Tool 2.142)**, signed tag at 0db06bc on `main`; assets,
-checksums and both HTML attestations verified from a fresh download (official
-658a7cd3…, demo ed845d8c…, attestation ref refs/tags/v2.1.1); live demo published
-as dd254-interactive 189bdbd. The fact-sheet label check added in v2.1.0 held:
-this release's sheet named v2.1.1/2.142 on the published asset, unprompted.
-Release titles and notes of v1.11.0 and v1.12.0 were rewritten without the codename.
+Owner-requested creation-only coverage correction is built as **v2.4.1
+(Tool 2.147)** and verified locally. The candidate is not published.
 
-v2.1.1 — owner report 2026-09-23: the v2.1.0 link reached Item 17 only inside
-`applyFacTplFromSearch`, so a draft that was opened, typed by hand or spawned as
-a Revision or Final never passed through it and Item 17 stayed blank — the case
-the feature was asked for. Item 17 is now also read back from the CAGE in Item 6b
-(`facCertSync`, from `dashOpen` and a `change` listener wired once at load), with
-an exact CAGE match rather than the filter's prefix match.
+- Prime/own coverage is chosen only in Add task order. Saved order headers
+  show the coverage as a label and have no switching buttons.
+- Source review and missing-own-template repair stay within saved coverage.
+  Older records retain their existing choice, inferred from their current
+  source mode or immutable snapshot. Review status does not erase the choice.
+- Own-order templates retain the same complete editable row and block editor
+  as prime templates. Existing source versions and workflows remain unchanged.
+- v2.4 prime-only creation, newest-first placement, program fields/filter,
+  contract/order search, continuous scrolling, lazy editors, group collapse and
+  normalized prime/order duplicate flags remain.
+- v2.3 separate order/source storage, migration and frozen workflow provenance
+  remain. Full Backup, language JSON and packs retain the saved coverage field.
+- v2.2 recipient, Item 18 save and blank-replacement behavior remains:
+  performance/sub FSOs and requestor on To; facility FSOs, CSOs and managers CC.
 
-Filling only the empty Item 17 fields was built first and rejected on the
-evidence: a preparer who had typed another name into 17a was handed the facility
-official's title and telephone number beside it, which is two people in one
-certification block. `certFillBlank17` acts only when every Item 17 field is
-empty. The explicit apply path is unchanged and still replaces Item 17 outright.
-1186 regression assertions pass (seven new); both builds pass native Chrome. The
-whole-file `Block 17` check caught the wording in a new source comment — the
-form's term is Item, and that rule applies to comments too.
+All **1,264 regression assertions** pass against the exact candidate.
+Official and demo native-browser checks, syntax, demo parity, documentation,
+manifest, byte-identical reconstruction and pdf-lib provenance gates pass.
+The 37-page manual and changed instructions were visually reviewed, as
+were the actual repository creation form, saved labels and full child editor.
+Official SHA-256:
+`07de4ee987d09af095be961c1a646e4786e5531581506275da9d6d604e63bebd`.
 
-v2.1.0 — owner request 2026-09-22: a Facility template can name the certifying
-official who signs Item 17 for it; applying that facility fills 17a, 17b, 17c,
-17e, 17f and 17g alongside Item 6, and a facility with no official linked leaves
-Item 17 untouched. Stored as `certLabel`/`certSnap`, the shape the 6c CSO link
-already used, so no storage format change. Published: signed tag v2.1.0 at
-227acbd on `main`; assets, checksums and both HTML attestations verified from a
-fresh download (official 9b71313a…, demo b83e7c3f…, attestation ref
-refs/tags/v2.1.0). 1179 regression assertions pass (six new), both builds pass
-native Chrome (new `facCertLinkOk`). Negative controls run against v2.0.3: no
-dropdown, no column, Item 17 left empty.
+Prior uncommitted v2.1.2, v2.2.0, v2.3.0 and v2.4.0 candidates/demos remain.
+v2.4.0 retains its prior SHA-256. The live demonstration remains untouched.
+No commit, tag, push, publication or production change was made.
+Latest published release remains **v2.1.1 (Tool 2.142)**. Publication, when
+requested, follows SETUP.md and its exact-commit release checks.
 
-Two things this release had to work around. The owner pushed 830268f to `main`
-(codename removed from archived builds) while the release branch was open, so
-the branch was rebased onto it and `verify` re-run on the rebased commit before
-the fast-forward — a pushed branch is not a private one. And the security fact
-sheet shipped labelled v2.0.3/2.140: no check read that line, which is how
-v1.13.0 shipped one labelled v1.12.0. The asset was replaced and SHA256SUMS.txt
-regenerated (attested HTML untouched), and `check_documentation.py` now derives
-RELEASE_VERSION and TOOL_VERSION from the build and fails if the sheet does not
-name both — confirmed by restoring the stale label.
-
-The manual also stopped claiming the Item 17 dropdown fills “all seven fields”:
-17d AAC is not held in a Certifier template, so it fills six.
-
-v2.0.3 — owner request 2026-09-18: the product carries only its own name. Release
-label, title, header and review-package release line read "DD254 Interactive vX";
-docs, release assessments, `check_manifest.py`, `browser_smoke.js` and the suite
-use it. This file is signed "Maintainer". Do not name development tools or
-assistants in this public repository, its commits, tags or release notes. The
-stored draft key `astra` (v1.11-v1.13 legacy material) is data and stays. Archived
-builds, their release assets and git history were left unchanged (owner choice). Commit and tag signing
-use the Windows OpenSSH agent: if it is stopped, `git commit`/`git tag` hang on a
-hidden passphrase prompt (2026-09-18) — the owner starts it; never type a passphrase.
-
-Detail for v2.0.2 and earlier releases, and log entries from 2026-09-15 and before,
-moved verbatim to HANDOFF-archive.md on 2026-09-19 to keep this file under 100 lines.
+Do not name development assistants or tools in this public repository's prose.
+Sign this file Maintainer. Signing uses the owner's Windows OpenSSH agent;
+a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
 
 ## Next
 
@@ -92,19 +67,9 @@ moved verbatim to HANDOFF-archive.md on 2026-09-19 to keep this file under 100 l
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
-2026-09-18 21:00 Maintainer — Published v2.0.3 per SETUP.md: verify passed on 4f27459,
-main fast-forwarded, signed tag pushed, release workflow passed, release, assets and
-served demo verified and scanned clean; v1.11.0/v1.12.0 release titles and notes edited.
-2026-09-18 20:30 Maintainer — Built and verified v2.0.3 (product name only). Owner chose
-to scrub current files and editable release notes, neutral handoff wording, and to
-leave history and attested builds untouched.
-2026-09-18 19:00 Maintainer — Published v2.0.2 per SETUP.md: verify passed on 50780a3,
-main fast-forwarded, signed tag pushed, release workflow passed, release and served
-demo verified. Branches `release/v2.0.1` and `release/v2.0.2` left.
-2026-09-18 18:30 Maintainer — Published v2.0.1 per SETUP.md once the owner started the
-SSH agent: tag pushed, release workflow passed, release and served demo verified.
-2026-09-18 17:30 Maintainer — Built and verified v2.0.2 (SCG-contract links; optional
-reasons). Asked the owner which contract list, what a link does, which prompts and
-what to log; chose the DD-254 Template Language entries, surfacing without auto-cite,
-set-aside/Blocked/Cancel, and "No reason given" in the audit log with the setting
-change logged. v2.0.1 release blocked on tag signing (ssh-agent stopped).
+
+2026-10-02 Maintainer — Completed creation-only coverage correction as v2.4.1.
+All 1,264 assertions and release gates pass. Saved orders cannot switch
+coverage through their header or source review; full editing and prior source
+history remain. Manual/build facts match; production and prior builds preserved.
+Earlier state and checkpoints moved verbatim to HANDOFF-archive.md.

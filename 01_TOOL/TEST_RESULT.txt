@@ -1,4 +1,4 @@
-BUILD_SHA256 658a7cd3ced41337157c250084420a400a708f2c47f7c5b4d013d6e9f88b9d3a
+BUILD_SHA256 07de4ee987d09af095be961c1a646e4786e5531581506275da9d6d604e63bebd
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -100,7 +100,7 @@ BUILD_SHA256 658a7cd3ced41337157c250084420a400a708f2c47f7c5b4d013d6e9f88b9d3a
 ### 9. Distribution capture and log
   PASS  parties derive from Item 18 on that draft
   PASS  no Item 18 boxes means no parties
-  PASS  issue e-mail maps requestor and Item 6/7/8 FSOs to To, then CSOs and Block 18f to CC
+  PASS  issue e-mail maps requestor/performance/sub FSOs to To; facility/CSO/manager/additional contacts to CC
   PASS  issue e-mail mailto separates every To and CC address with semicolon-space and carries an identifying subject
   PASS  a CUI issuance prefixes the subject with the triple visual warning
   PASS  bulk issue e-mail separates differing audiences and keeps semicolon-space separators
@@ -534,7 +534,7 @@ BUILD_SHA256 658a7cd3ced41337157c250084420a400a708f2c47f7c5b4d013d6e9f88b9d3a
   PASS  box language is folded into Block 13 beneath the free text
   PASS  language for an unchecked box is not carried over
   PASS  12, 14, 15 and 16 all travel with the template
-  PASS  an empty template field never wipes what the draft already has
+  PASS  an explicitly empty template field clears the supported draft section
   PASS  applying a contract type to a closed draft writes the whole thing
   PASS  the Contract Type spreadsheet has the same columns as DD-254 Language
   PASS  the Contract Type spreadsheet no longer carries a 2a column
@@ -577,7 +577,7 @@ BUILD_SHA256 658a7cd3ced41337157c250084420a400a708f2c47f7c5b4d013d6e9f88b9d3a
   PASS  capture from form records the marking
   PASS  capture records UNCLASSIFIED as empty
   PASS  the marking travels into a draft workspace
-  PASS  an unmarked template does not overwrite a CUI draft
+  PASS  an explicitly unclassified template replaces a previous CUI marking
   PASS  applying a CUI contract type marks the open form and repaints the banner
   PASS  and the dashboard card then shows CUI
   PASS  the spreadsheet carries the marking and rejects anything higher
@@ -973,8 +973,8 @@ BUILD_SHA256 658a7cd3ced41337157c250084420a400a708f2c47f7c5b4d013d6e9f88b9d3a
   PASS  the prime contract fills 2a when the draft has none
   PASS  a contract number already on the draft is never replaced
   PASS  a contract number on the live form is not replaced either
-  PASS  a template with no task order behaves exactly as before
-  PASS  standalone is derived from the task order, never stored separately
+  PASS  a prime-only template fills empty 2a without creating a task order
+  PASS  order identity survives capture independently of the outgoing standalone selection
   PASS  applying to the live form produces the combined Block 2a
   PASS  the fields appear in the DD-254 Template Language editor, populated
   PASS  the editor writes them back into the template
@@ -1410,6 +1410,94 @@ BUILD_SHA256 658a7cd3ced41337157c250084420a400a708f2c47f7c5b4d013d6e9f88b9d3a
   PASS  applying the facility outright still replaces Item 17
   PASS  the Item 6b listener is wired once
 
+### 109. v2.1.2 the issue pop-up lists every required attachment
+  PASS  a Contract Type template’s attachments reach the pop-up
+  PASS  a DD-254 Template Language entry still reaches the pop-up
+  PASS  both sources merge and a shared attachment is listed once
+  PASS  the form and the pop-up agree on the same Contract Type template
+  PASS  a draft built from no template lists nothing from templates
+
+### 109b. v2.1.2 the pop-up warns on the marking only
+  PASS  a contract that merely involves CUI gets no notice on the pop-up
+  PASS  its dashboard helper is gone with it
+  PASS  the form still warns that the contract involves CUI
+
+### 110. v2.2.0 recipients, template replacement and repository organisation
+  PASS  performance-location FSO is To; facility FSO and assigned/program managers are CC
+  PASS  To wins when a manager and a performance FSO share an address
+  PASS  manager dropdown snapshots the repository entry and rejects repeat selection
+  PASS  managers survive workspace save/open and deletion from the repository
+  PASS  an older workspace does not inherit the previous draft manager
+  PASS  assigned manager resolves for an older draft that only references a template
+  PASS  whole insertion snapshots assigned manager and blank template clears that assignment
+  PASS  full replacement clears stale text, unchecked boxes, radio selections and CUI marking
+  PASS  absent legacy sections do not erase unrelated draft sections
+  PASS  applying a contract type cannot append language from a previously selected DD254 template
+  PASS  capture retains contract/order metadata and captures the current form
+  PASS  save language from Item 18 names a new entry without leaving or changing the form
+  PASS  saving duplicate content allows cancellation without adding another entry
+  PASS  duplicate identity ignores names, wording, source revision, timestamps and attachments
+  PASS  blank identities and shared language under different contracts are not flagged
+  PASS  matching applied language without a contract identity is not a duplicate
+  PASS  same prime and order with different language raises an identity duplicate flag
+  PASS  repository filters and grouping retain original data order and stable insertion references
+  PASS  filtering leaves the template save state clean
+  PASS  typing in a row retains keyboard focus during duplicate recalculation
+  PASS  duplicate comparison names selected boxes and contact fields without exposing stored JSON
+  PASS  comparison stays inline and reviewed duplicates remain reviewed after reorder
+  PASS  template pack preview reports differently named copies without losing either
+
+### Prime contract orders and saved received-DD254 sources
+  PASS  twenty orders share one saved prime-source version without duplicating templates
+  PASS  prime plus order is the unique identity, case-insensitively; other primes may reuse order numbers
+  PASS  an order-specific received DD254 uses its own saved language
+  PASS  new workflow preserves order type and prime identity without deriving the outgoing standalone flag
+  PASS  open-existing order does not create another outgoing DD254
+  PASS  automatic checkbox language, attachments and marking use the workflow snapshot after repository edits
+  PASS  template edits flag review and keep saved source wording and existing drafts intact
+  PASS  an unstarted order with changed source is held for review before workflow creation
+  PASS  explicit re-link creates one new source version and retains the old shared version
+  PASS  prime-language workflow copies the reviewed source and survives save/reopen
+  PASS  deleting a repository source leaves history and existing workflow provenance readable
+  PASS  saved coverage cannot switch to prime and existing workflows keep their source
+  PASS  full backup and pack include the order store; shared order records default off on pack import
+  PASS  Full Backup and language JSON carry shared source versions and order links
+  PASS  natural-key import does not create duplicate orders from another browser
+  PASS  a conflicting immutable source ID is refused before import
+  PASS  orders persist in IndexedDB and read-only tabs cannot add or change them
+  PASS  repository continuously displays every order without changing stored array order
+  PASS  source filter and search find order records even when no outgoing workflow exists
+  PASS  order creation reports unconfirmed storage; it never claims the write succeeded
+  PASS  a large duplicate library uses bounded representative comparisons and flags every copy
+  PASS  legacy order-specific templates become one order record per prime and number, idempotently
+
+### Approved template storage: primes, editable children and program navigation
+  PASS  main Add template offers prime creation only
+  PASS  new prime is saved first without changing existing stable IDs
+  PASS  prime creation refuses normalized duplicate contract numbers even when wording differs
+  PASS  prime creation requires a contract identity
+  PASS  nested Add task order inherits the parent contract and program
+  PASS  a task-order-specific DD254 creates its own editable template beneath the prime
+  PASS  prime and task-order templates use the same complete block editor
+  PASS  editing a child autosaves the child without overwriting prime language
+  PASS  saved own orders show coverage without switching buttons and retain their editor
+  PASS  source review stays within saved own coverage and can refresh its current language
+  PASS  a prime-following order creates no copied language template
+  PASS  saved prime coverage cannot create or link an own template
+  PASS  duplicate order creation is refused before adding another template
+  PASS  same order number under different primes and distinct orders under one prime are separate identities
+  PASS  program filtering shows only matching prime and own templates, retaining contract search
+  PASS  filtered prime groups can be collapsed and reopened without changing matching templates
+  PASS  program metadata round-trips through spreadsheet columns
+  PASS  older order records retain their saved coverage, including a source awaiting review
+  PASS  creation preserves own coverage even before a source is available
+  PASS  missing own templates can be repaired without offering a coverage switch
+  PASS  review flags keep the creation choice and cannot rebind a different coverage type
+  PASS  every prime is available in one continuous repository, with unopened block editors kept lightweight
+  PASS  sorting by contract or program does not reorder saved template identities
+  PASS  read-only tabs cannot create primes or editable children
+  PASS  unconfirmed storage does not report a successfully created prime
+
 ================================
-  PASS 1186   FAIL 0
+  PASS 1264   FAIL 0
 ================================
