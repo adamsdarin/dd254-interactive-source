@@ -4,7 +4,10 @@ Last updated: 2026-10-05T10:20-05:00 by Maintainer
 
 ## Current State
 
-Latest published release: **v2.6.0 (Tool 2.149)**. Three owner requests of
+Latest published release: **v2.6.0 (Tool 2.149)**, signed tag at 769247d on
+`main`; assets, checksums and both HTML attestations verified from a fresh
+download (official e5c218db..., demo f5a959af..., ref refs/tags/v2.6.0); live
+demo published as dd254-interactive f731326. Three owner requests of
 5 October 2026: the required Item 13 line, Program on Contract Type templates,
 and Block 2a carrying a task order only when the DD-254 is specific to it.
 
