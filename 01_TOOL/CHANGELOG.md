@@ -1,3 +1,47 @@
+## v2.9.0 - 6 October 2026
+
+Tool version 2.154. Three owner reports of 6 October 2026. Standard Language
+entries gain two optional fields; no other storage format change.
+
+- Fixed: the form's template picker listed only orders carrying their own
+  DD-254, so an order that follows the prime could not be found by its own
+  number at all and the preparer had to remember which prime covered it --
+  which is the one thing the picker exists to avoid. Every saved order is now
+  listed under its own number. One that follows the prime resolves to the
+  prime's template and says which template that is, because the preparer
+  searched for an order number and is about to insert something filed under a
+  contract number. A prime template stays listed as itself as well; an order
+  with no prime template saved yet is shown but cannot be chosen.
+- Task orders can be deleted. The delete removes the order identity and its
+  link to a saved DD-254. It keeps the order-specific template, which is
+  language somebody wrote and may be the only copy, and it keeps any DD-254
+  already created from the order, which exists and carries its own immutable
+  source snapshot. The confirmation names what goes and what stays.
+- Coverage can be changed after creation: an order can be moved from its own
+  DD-254 to following the prime, or the other way. v2.4.1 removed this because
+  switching silently re-pointed a saved source at language written for a
+  different scope. It returns with that problem addressed rather than
+  reintroduced: the order drops to "source needs review" and ctOrderStart
+  refuses until that is answered. Moving to its own DD-254 seeds an editable
+  template from the prime's language, carrying this order number; the prime
+  template is not touched. Moving to the prime keeps the order-specific
+  template in the library, unbound.
+- Standard language is inserted automatically instead of being asked about.
+  The programme comes from the language applied to the DD-254 -- which is in
+  turn filled from the Security Manager template -- and the level from Item 1a,
+  so a CONFIDENTIAL DD-254 on a programme with a CONFIDENTIAL entry gets that
+  entry without anyone choosing it. Only when the answer is unambiguous: two
+  matching entries is a judgement the library has not expressed, so the
+  blocking error stands and names both. The creation-time chooser added in
+  v2.8.0 is gone -- at creation Item 1a is empty and the programme unknown, so
+  it could only ask the preparer to describe the form they were about to fill
+  in.
+- The auto-insert verifies that the text actually landed in Item 13 before
+  reporting success, and reads the library once so the entry it chose is the
+  entry it inserts. The first cut did neither: slAll() deserialises afresh on
+  every call, so an index taken across two calls was always -1, and the
+  function reported an insert that never happened.
+
 ## v2.8.0 - 6 October 2026
 
 Tool version 2.153. Three owner reports of 6 October 2026: a copy that carried

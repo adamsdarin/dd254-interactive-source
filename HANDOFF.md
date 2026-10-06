@@ -1,8 +1,18 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-06T14:30-05:00 by Maintainer
+Last updated: 2026-10-06T17:10-05:00 by Maintainer
 
 ## Current State
+
+Built and gated, not yet tagged: **v2.9.0 (Tool 2.154)**. Three owner reports of
+6 October 2026: the form picker could not find a task order that follows the
+prime, orders could not be deleted, and an order's coverage could not be
+changed after creation. Standard language was reworked rather than extended -
+the owner's intent is that it is ALWAYS inserted, from the programme and the
+Item 1a level, so the v2.8.0 creation-time chooser is gone. 1334 assertions
+pass against build fb4b8025; all five gates pass, the kit round-trips
+byte-identically and the native-browser smoke test passes. Each change was
+driven against the published v2.8.0 first and reported absent there.
 
 Latest published release: **v2.8.0 (Tool 2.153)**, carrying v2.7.2 as well.
 Signed tag at 3c37f72 on `main`; assets, checksums, the provenance attestation,
@@ -133,6 +143,15 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-06 Maintainer - Built v2.9.0. Coverage switching returns after being
+removed in v2.4.1: the reason it was removed (a saved source silently
+re-pointed at language written for another scope) is addressed by dropping the
+order to "source needs review" rather than by withholding the function. Two of
+my own defects were caught by the new tests before release: the auto-insert
+took an index across two separate library loads, so it inserted nothing and
+reported success, and the suite was reading a stale 01_TOOL/dd254.htm because
+the copy is made by hand - re-copy after every build edit.
 
 2026-10-06 Maintainer - Published v2.8.0 and the live demo; verified both from a
 fresh download rather than from the workflow result, including the first use of

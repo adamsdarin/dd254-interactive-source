@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.8.0 (tool version 2.153)"
+VER="DD254 Interactive v2.9.0 (tool version 2.154)"
 
 DOC = [
-("h1","DD254 Interactive v2.8.0 changes"),
+("h1","DD254 Interactive v2.9.0 changes"),
+("b","<b>Fixed:</b> the template picker on the form now lists <b>every saved order</b> under its own number. An order that follows the prime used to be absent, so searching its order number found nothing and you had to remember which prime covered it. Choosing one inserts the prime's template, and the entry says which template that is. An order with no prime template saved yet is shown but cannot be chosen."),
+("b","<b>Task orders can be deleted</b>, and an order's coverage can be <b>changed after creation</b> \u2014 from its own DD-254 to following the prime, or the other way. Deleting keeps the order-specific template and any DD-254 already created from the order. Moving an order to its own DD-254 starts an editable template from the prime's language; moving it to the prime keeps its own template in the library, unbound. Either way the order asks for its source to be reviewed before a new DD-254 is started from it."),
+("b","<b>Standard language is now inserted for you</b> when it is mandatory. The programme comes from the language applied to the DD-254 and the level from Item 1a, so a CONFIDENTIAL DD-254 on a programme that has a CONFIDENTIAL entry gets that entry automatically. Two matching entries are never chosen for you: the blocking error names both and you insert the one that applies. The question asked at creation in v2.8.0 is gone. See 5.6."),
+("h2","DD254 Interactive v2.8.0 changes"),
 ("b","<b>Settings: Standard language</b> can now be <b>Mandatory</b> instead of Optional. Mandatory offers a new DD-254 the Standard Language entry that matches its programme and its Item 1a level, and a DD-254 whose Item 13 carries none of the library wording cannot leave Draft. What is checked is what is in Item 13, so deleting the paragraph removes it. The offer can be declined; the blocking error then stands until the wording is there, and like any other finding it can be set aside with a written reason. See 2.5 and 5.6."),
 ("b","<b>Standard Language</b> entries carry an optional <b>programme</b> and <b>Item 1a level</b>, which is what lets the right entry be offered. Blank means the entry fits any programme or any level. See 5.6."),
 ("b","<b>Fixed:</b> the Contract Type repository showed a security / program manager box with no picker behind it — the list was built only for DD-254 Template Language. Both repositories now offer it."),
@@ -510,7 +514,7 @@ DOC = [
 ("p","Some organisations put the same wording on every DD-254 they issue. This library keeps that text in one place so it goes on identically every time, instead of being retyped or pasted from the last form."),
 ("n","A <b>Name</b> and the <b>text</b>, plus an optional <b>programme</b> and <b>Item 1a level</b>. The two optional fields exist only so the right entry can be offered when standard language is mandatory; blank means the entry fits any programme or any level. The programme options come from your Security Manager templates."),
 ("n","<b>While standard language is Optional, nothing is applied automatically.</b> The form’s side panel lists your saved entries; you pick one and click <b>Insert</b>. Organisations keep several and use different ones on different contracts."),
-("n","<b>Set to Mandatory in Settings</b> (2.5), a new DD-254 is offered the entries matching the programme and Item 1a level you choose, and the one you pick is inserted at the top of Item 13. Choosing the level also fills Item 1a if it is still empty. You can decline the offer."),
+("n","<b>Set to Mandatory in Settings</b> (2.5), the entry that fits is inserted for you. The programme comes from the language applied to the DD-254, which takes it from the Security Manager template; the level comes from <b>Item 1a</b>. When exactly one entry matches, it goes to the top of Item 13 as soon as the form carries both. When two match, neither is inserted and the blocking error names both, because which one applies is your judgement, not the tool\u2019s."),
 ("n","Inserted text goes to the very top of Block 13 \u2014 above the Item 10 and 11 box language and above anything you have typed."),
 ("n","Insert more than one and they read in the order you added them."),
 ("n","The same entry cannot be inserted twice. The panel marks what is already in Block 13."),

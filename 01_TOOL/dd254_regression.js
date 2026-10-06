@@ -8283,32 +8283,18 @@ t('an empty library says so rather than demanding the impossible', ()=>{
   E("tplSave(TPL_SL,[]);run();");
   const m=ERRS().filter(x=>/Standard Language library is empty/.test(x));
   return m.length===1 ? true : JSON.stringify(ERRS().slice(0,3)); });
-await ta('creating a DD-254 offers the matching entries and inserts the chosen one', async()=>{
+/* v2.9.0: creating a DD-254 no longer asks about standard language. At that
+   moment Item 1a is empty and the programme is unknown, so the only thing the
+   dialog could do was ask the preparer to describe the form they were about to
+   fill in. Section 117 covers the automatic insertion that replaced it. */
+await ta('creating a DD-254 asks nothing about standard language', async()=>{
   SLSEED(); E("slRequiredModeSet('on')");
   E("window.uiPrompt=async function(){return 'Mandatory SL draft';};");
   const pr=E("dashNewDraft('orig')");
-  const d=await waitDlg('#slPickDlg',15000);
-  if(!d) return 'no standard-language dialog';
-  d.querySelector('#slPickLvl').value='TS';
-  d.querySelector('#slPickLvl').onchange();
-  const names=Array.from(d.querySelectorAll('.slPickOne b')).map(b=>b.textContent);
-  d.querySelectorAll('.slPickOne')[0].click();
-  await pr; await new Promise(r=>setTimeout(r,80));
-  const i13=w.document.getElementById('item13').value;
-  return names.join()==='Acme top secret,Any and all'
-      && /TOP SECRET work/.test(i13)
-      && w.document.getElementById('fcl1a').value==='TS'
-      ? true : ('offered='+names.join()+' level='+w.document.getElementById('fcl1a').value); });
-await ta('declining the offer leaves the blocking error standing', async()=>{
-  SLSEED(); E("slRequiredModeSet('on')");
-  E("window.uiPrompt=async function(){return 'Skipped SL draft';};");
-  const pr=E("dashNewDraft('orig')");
-  const d=await waitDlg('#slPickDlg',15000);
-  if(!d) return 'no standard-language dialog';
-  d.querySelector('#slPickSkip').click();
-  await pr; await new Promise(r=>setTimeout(r,80));
-  E("run();");
-  return E("slApplied()").length===0 && hasE(/Standard language is mandatory/); });
+  const asked=await Promise.race([pr.then(()=>null), waitDlg('#slPickDlg',4000)]);
+  if(asked){ try{ asked.querySelector('#slPickSkip').click(); }catch(e){} await pr; return 'it asked'; }
+  return E("typeof slPickForNew")==='undefined'
+      ? true : 'the creation-time chooser is still defined'; });
 await ta('while optional, creating a DD-254 asks nothing', async()=>{
   E("slRequiredModeSet('off')");
   E("window.uiPrompt=async function(){return 'Quiet draft';};");
@@ -8336,6 +8322,169 @@ t('the Standard Language rows carry programme and Item 1a level', ()=>{
   return /TPL_EDIT\[0\]\.program=this\.value/.test(h) && /TPL_EDIT\[0\]\.level=this\.value/.test(h)
       && !!w.document.getElementById('ctProgramList'); });
 E("slRequiredModeSet('off');tplSave(TPL_SL,[]);showDashView();resetFormFields();");
+
+H('115. v2.9.0 every saved order is findable in the form picker');
+/* Owner report, 6 October 2026: an order that follows the prime could not be
+   found by its order number at all, so the preparer had to remember which
+   prime it belonged to -- the one thing the picker exists to avoid. */
+const PRIMESEED=async()=>{
+  E("(function(){var p=Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',i13:'Prime language.'});"
+   +"var q=Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',taskOrder:'0042',i13:'Order language.'});"
+   +"tplSave(TPL_CT,[{label:'Prime template',ioId:'ct-prime',srcDate:'2026-01-05',data:p},"
+   +"{label:'Order 0042 language',ioId:'ct-own',srcDate:'2026-02-01',data:q}]);})();");
+  await E("tplSave(TPL_ORDERS,[])");
+  await E("ctOrderCreate('N00178-24-D-1234','0077','Task Order','prime')");
+  await E("ctOrderCreate('N00178-24-D-1234','0042','Task Order','order')");
+  E("window.CT_FILTER='';buildTplSelects();");
+};
+const pOpts=()=>Array.from(w.document.getElementById('ctTplSel').options).map(o=>({t:o.textContent,v:o.value,d:o.disabled}));
+await ta('an order that follows the prime is listed by its own number', async()=>{
+  await PRIMESEED();
+  const o=pOpts().find(x=>/0077/.test(x.t));
+  return o && /follows the prime/.test(o.t) && o.d===false
+      ? true : (o?JSON.stringify(o):'0077 absent'); });
+await ta('choosing it selects the prime template', async()=>{
+  await PRIMESEED();
+  const o=pOpts().find(x=>/0077/.test(x.t));
+  return o.v==='ct-prime' && /Prime template/.test(o.t)
+      ? true : ('value='+o.v+' text='+o.t); });
+await ta('the prime template is still listed as itself', async()=>{
+  await PRIMESEED();
+  return pOpts().filter(x=>x.v==='ct-prime').length===2
+      ? true : pOpts().filter(x=>x.v==='ct-prime').map(x=>x.t); });
+await ta('searching the order number finds it', async()=>{
+  await PRIMESEED();
+  E("ctFilterSel('0077');");
+  const txt=pOpts().map(x=>x.t).join('|');
+  E("ctFilterSel('');");
+  return /0077/.test(txt) && !/0042/.test(txt) ? true : txt; });
+await ta('an order with no prime template saved is shown but cannot be chosen', async()=>{
+  await PRIMESEED();
+  await E("tplSave(TPL_ORDERS,[])");
+  await E("ctOrderCreate('W911-ZZ-24-D-9999','0001','Task Order','prime')");
+  E("buildTplSelects();");
+  const o=pOpts().find(x=>/0001/.test(x.t));
+  return o && o.d===true && /no prime template saved yet/.test(o.t) ? true : (o?JSON.stringify(o):'absent'); });
+
+H('116. v2.9.0 orders can be deleted and their coverage changed');
+await ta('deleting an order keeps the template and the DD-254 made from it', async()=>{
+  await PRIMESEED();
+  E("window.uiConfirm=async function(){return true;};");
+  const id=(await E("ctOrderRows()")).find(o=>o.number==='0042').ioId;
+  await E("(async function(){var r=ctOrderStore();r.find(function(x){return x.ioId==='"+id+"';}).draftId='keepme';await tplSave(TPL_ORDERS,r);})()");
+  const ok=await E("ctOrderDelete('"+id+"')");
+  const left=(await E("ctOrderRows()")).map(o=>o.number);
+  const tpls=(await E("tplLoad(TPL_CT)")).map(t=>t.ioId);
+  return ok===true && left.join()==='0077' && tpls.indexOf('ct-own')>=0
+      ? true : ('ok='+ok+' orders='+left.join()+' templates='+tpls.join()); });
+await ta('the deletion is written to the audit log', async()=>
+  E("audAll()").some(a=>a.action==='order-deleted'));
+await ta('declining the confirmation deletes nothing', async()=>{
+  await PRIMESEED();
+  E("window.uiConfirm=async function(){return false;};");
+  const id=(await E("ctOrderRows()")).find(o=>o.number==='0042').ioId;
+  await E("ctOrderDelete('"+id+"')");
+  E("window.uiConfirm=async function(){return true;};");
+  return (await E("ctOrderRows()")).length===2; });
+await ta('an order can be moved from its own DD-254 to following the prime', async()=>{
+  await PRIMESEED();
+  const id=(await E("ctOrderRows()")).find(o=>o.number==='0042').ioId;
+  const ok=await E("ctOrderSetCoverage('"+id+"','prime')");
+  const o=(await E("ctOrderRows()")).find(x=>x.ioId===id);
+  const cov=E("ctOrderCoverage("+JSON.stringify(o)+")");
+  const kept=(await E("tplLoad(TPL_CT)")).some(t=>t.ioId==='ct-own');
+  return ok===true && cov==='prime' && o.sourceMode==='review'
+      && !('sourceVersionId' in o) && kept
+      ? true : ('ok='+ok+' coverage='+cov+' kept='+kept); });
+await ta('moving an order to its own DD-254 seeds a template from the prime', async()=>{
+  await PRIMESEED();
+  const id=(await E("ctOrderRows()")).find(o=>o.number==='0077').ioId;
+  const ok=await E("ctOrderSetCoverage('"+id+"','order')");
+  const all=await E("tplLoad(TPL_CT)");
+  const seeded=all.filter(t=>(t.data||{}).taskOrder==='0077')[0];
+  return ok===true && !!seeded
+      && seeded.data.primeContract==='N00178-24-D-1234'
+      && seeded.data.i13==='Prime language.'
+      && seeded.ioId!=='ct-prime'
+      && all.some(t=>t.ioId==='ct-prime')
+      ? true : ('ok='+ok+' seeded='+JSON.stringify(seeded&&seeded.label)); });
+await ta('the coverage change is logged and leaves the source needing review', async()=>{
+  const logged=E("audAll()").some(a=>a.action==='order-coverage-changed');
+  const o=(await E("ctOrderRows()")).find(x=>x.number==='0077');
+  return logged && o.sourceMode==='review'; });
+t('coverage is no longer locked after creation, but binding still refuses a mismatch', ()=>
+  E("String(ctOrderSetCoverage)").includes("o.sourceMode='review'")
+  && E("String(ctOrderBind)").includes("mode!==coverage"));
+
+H('117. v2.9.0 standard language is inserted automatically');
+const SLAUTO=async()=>{
+  E("tplSave(TPL_SM,[{label:'M',name:'Reed, Ann',email:'a@x.com',program:'SHOES'}]);");
+  E("tplSave(TPL_SL,["
+   +"{label:'Shoes confidential',program:'SHOES',level:'C',text:'Shoes standard language for CONFIDENTIAL.'},"
+   +"{label:'Shoes secret',program:'SHOES',level:'S',text:'Shoes standard language for SECRET.'}]);");
+  E("(function(){var d=Object.assign(ctBlankData(),{primeContract:'W911-SHOES',i13:'Programme language.'});"
+   +"tplSave(TPL_CT,[{label:'Shoes prime',ioId:'ct-shoes',program:'SHOES',srcDate:'2026-01-05',data:d}]);})();");
+  E("slRequiredModeSet('on');showFormView();resetFormFields();buildTplSelects();");
+  await new Promise(r=>setTimeout(r,30));
+};
+await ta('the programme comes from the applied template, not from asking', async()=>{
+  await SLAUTO();
+  E("document.getElementById('ctTplSel').value='ct-shoes';");
+  return E("slProgramForForm()")==='SHOES' ? true : ('got '+E("slProgramForForm()")); });
+await ta('setting Item 1a inserts the entry for that programme and level', async()=>{
+  await SLAUTO();
+  E("document.getElementById('ctTplSel').value='ct-shoes';");
+  E("document.getElementById('fcl1a').value='C';");
+  await E("slAutoAfterEdit()");
+  const i13=w.document.getElementById('item13').value;
+  return /Shoes standard language for CONFIDENTIAL/.test(i13)
+      && !/for SECRET/.test(i13) ? true : i13.slice(0,120); });
+await ta('it is not inserted twice', async()=>{
+  await E("slAutoAfterEdit()"); await E("slAutoAfterEdit()");
+  const i13=w.document.getElementById('item13').value;
+  return (i13.match(/Shoes standard language for CONFIDENTIAL/g)||[]).length===1; });
+await ta('changing the level does not stack a second entry', async()=>{
+  E("document.getElementById('fcl1a').value='S';");
+  await E("slAutoAfterEdit()");
+  const i13=w.document.getElementById('item13').value;
+  /* Standard language is already present, so nothing is called for. Swapping
+     one paragraph for another is a judgement the tool does not make. */
+  return /for CONFIDENTIAL/.test(i13) && !/for SECRET/.test(i13); });
+await ta('with no Item 1a level it waits, and says so', async()=>{
+  await SLAUTO();
+  E("document.getElementById('ctTplSel').value='ct-shoes';run();");
+  const i13=w.document.getElementById('item13').value;
+  return !/Shoes standard language/.test(i13)
+      && hasE(/Enter the Item 1a level/) ? true : ('i13='+i13.slice(0,60)+' errs='+JSON.stringify(ERRS().slice(0,3))); });
+await ta('two matching entries are not chosen for you', async()=>{
+  await SLAUTO();
+  E("tplSave(TPL_SL,["
+   +"{label:'A',program:'SHOES',level:'C',text:'First shoes paragraph.'},"
+   +"{label:'B',program:'SHOES',level:'C',text:'Second shoes paragraph.'}]);");
+  E("document.getElementById('ctTplSel').value='ct-shoes';");
+  E("document.getElementById('fcl1a').value='C';");
+  await E("slAutoAfterEdit()"); E("run();");
+  const i13=w.document.getElementById('item13').value;
+  return !/shoes paragraph/.test(i13) && hasE(/2 library entries match/) ? true
+    : ('i13='+i13.slice(0,60)+' errs='+JSON.stringify(ERRS().filter(x=>/Standard language/.test(x)))); });
+await ta('a programme with no entry at that level names both', async()=>{
+  await SLAUTO();
+  E("document.getElementById('ctTplSel').value='ct-shoes';");
+  E("document.getElementById('fcl1a').value='TS';run();");
+  return hasE(/no library entry is written for programme SHOES at Item 1a TS/)
+      ? true : JSON.stringify(ERRS().filter(x=>/Standard language/.test(x))); });
+await ta('an issued DD-254 is never rewritten by the auto-insert', async()=>{
+  await SLAUTO();
+  await E("draftPut({id:'SLI',title:'Issued shoes',status:'Issued',stage:'orig',issuedAt:'2026-03-03T00:00:00Z',holds:[],dist:[],todos:[],notes:'',meta:{},workspace:{texts:{item13:'What went out.'},checks:{},radios:{spec:'3a'},selects:{fcl1a:'C',ctTplSel:'ct-shoes'},perf:[]}})");
+  E("DASH.current='SLI';");
+  E("document.getElementById('ctTplSel').value='ct-shoes';document.getElementById('fcl1a').value='C';document.getElementById('item13').value='What went out.';");
+  const n=await E("slAutoAfterEdit()");
+  const i13=w.document.getElementById('item13').value;
+  E("DASH.current=null;");
+  return n===0 && i13==='What went out.' ? true : ('returned '+n+' i13='+i13.slice(0,60)); });
+t('nothing inside run() rewrites Item 13 for this', ()=>
+  !E("String(run)").includes('slAutoApply'));
+E("slRequiredModeSet('off');tplSave(TPL_SL,[]);tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);window.CT_FILTER='';showDashView();resetFormFields();");
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

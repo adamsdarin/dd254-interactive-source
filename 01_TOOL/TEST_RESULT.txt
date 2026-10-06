@@ -1,4 +1,4 @@
-BUILD_SHA256 1deac1426248ab39b3b3bd2523847bb93e7342d1e9d9d545ef162283c7a9cacf
+BUILD_SHA256 fb4b802573709b3acf801c192b92707dbef39df18378a09c6d6b68d6c8eb2bf2
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1552,12 +1552,38 @@ BUILD_SHA256 1deac1426248ab39b3b3bd2523847bb93e7342d1e9d9d545ef162283c7a9cacf
   PASS  made mandatory, a DD-254 with no standard language is blocked
   PASS  inserting the entry clears the block, deleting it brings the block back
   PASS  an empty library says so rather than demanding the impossible
-  PASS  creating a DD-254 offers the matching entries and inserts the chosen one
-  PASS  declining the offer leaves the blocking error standing
+  PASS  creating a DD-254 asks nothing about standard language
   PASS  while optional, creating a DD-254 asks nothing
   PASS  the gate and the issue checklist read one statement of the rule
   PASS  the Standard Language rows carry programme and Item 1a level
 
+### 115. v2.9.0 every saved order is findable in the form picker
+  PASS  an order that follows the prime is listed by its own number
+  PASS  choosing it selects the prime template
+  PASS  the prime template is still listed as itself
+  PASS  searching the order number finds it
+  PASS  an order with no prime template saved is shown but cannot be chosen
+
+### 116. v2.9.0 orders can be deleted and their coverage changed
+  PASS  deleting an order keeps the template and the DD-254 made from it
+  PASS  the deletion is written to the audit log
+  PASS  declining the confirmation deletes nothing
+  PASS  an order can be moved from its own DD-254 to following the prime
+  PASS  moving an order to its own DD-254 seeds a template from the prime
+  PASS  the coverage change is logged and leaves the source needing review
+  PASS  coverage is no longer locked after creation, but binding still refuses a mismatch
+
+### 117. v2.9.0 standard language is inserted automatically
+  PASS  the programme comes from the applied template, not from asking
+  PASS  setting Item 1a inserts the entry for that programme and level
+  PASS  it is not inserted twice
+  PASS  changing the level does not stack a second entry
+  PASS  with no Item 1a level it waits, and says so
+  PASS  two matching entries are not chosen for you
+  PASS  a programme with no entry at that level names both
+  PASS  an issued DD-254 is never rewritten by the auto-insert
+  PASS  nothing inside run() rewrites Item 13 for this
+
 ================================
-  PASS 1314   FAIL 0
+  PASS 1334   FAIL 0
 ================================
