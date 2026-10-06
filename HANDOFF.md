@@ -9,8 +9,11 @@ Built and gated, not yet tagged: **v2.9.0 (Tool 2.154)**. Three owner reports of
 prime, orders could not be deleted, and an order's coverage could not be
 changed after creation. Standard language was reworked rather than extended -
 the owner's intent is that it is ALWAYS inserted, from the programme and the
-Item 1a level, so the v2.8.0 creation-time chooser is gone. 1334 assertions
-pass against build fb4b8025; all five gates pass, the kit round-trips
+Item 1a level, so the v2.8.0 creation-time chooser is gone. A fourth request of
+the same day added three start-from pickers to the dashboard - contract type,
+task order, DD-254 template - each routing through the apply path that already
+existed for that kind of thing. 1345 assertions
+pass against build e7e4c23c; all five gates pass, the kit round-trips
 byte-identically and the native-browser smoke test passes. Each change was
 driven against the published v2.8.0 first and reported absent there.
 

@@ -1,4 +1,4 @@
-BUILD_SHA256 fb4b802573709b3acf801c192b92707dbef39df18378a09c6d6b68d6c8eb2bf2
+BUILD_SHA256 e7e4c23cce22e4fc79f5dd00ee2da2ddbf2578a919c88dba75b8f158df6cc778
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1584,6 +1584,19 @@ BUILD_SHA256 fb4b802573709b3acf801c192b92707dbef39df18378a09c6d6b68d6c8eb2bf2
   PASS  an issued DD-254 is never rewritten by the auto-insert
   PASS  nothing inside run() rewrites Item 13 for this
 
+### 118. v2.9.0 the dashboard starts a DD-254 from something saved
+  PASS  the dashboard carries all three pickers and a search
+  PASS  each picker lists what it is for
+  PASS  the template picker is the same list the form picker offers
+  PASS  choosing a template starts a DD-254 with it applied
+  PASS  it is written to the audit log as created from that template
+  PASS  choosing a contract vehicle starts a DD-254 with the vehicle applied
+  PASS  choosing a task order routes through the order start path
+  PASS  the search narrows the order and template pickers
+  PASS  an empty library leaves its picker disabled rather than empty-looking
+  PASS  the two new-DD-254 buttons still prompt for a title
+  PASS  the starters reuse one creation path
+
 ================================
-  PASS 1334   FAIL 0
+  PASS 1345   FAIL 0
 ================================

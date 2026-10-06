@@ -497,6 +497,13 @@ body.ws-dragging{user-select:none;}
     <div style="font-size:20px;font-weight:bold;">DD-254 Workspace Dashboard</div>
     <div style="font-size:11.5px;color:#9ab8d8;margin-top:4px;">Drafts autosave to this browser as you work. Clearing browser site data erases them — take a backup regularly. UNCLASSIFIED / CUI only.</div>
   </div>
+  <div id="dashStartRow" style="display:flex;align-items:flex-end;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 14px;max-width:980px;background:#fff;border:1px solid #c0d0e0;border-radius:8px;padding:10px 14px;">
+    <div style="font-size:11.5px;color:#5a6a80;align-self:center;font-weight:bold;">Start from something saved</div>
+    <label style="font-size:10px;color:#5a6a80;">Contract type<br><select id="dashStartType" style="font-size:11px;min-width:170px;" onchange="dashStartFromType(this)" title="Start a DD-254 on a contract vehicle that carries its own boilerplate. The vehicle is applied to the new form."><option value="">— contract vehicle… —</option></select></label>
+    <label style="font-size:10px;color:#5a6a80;">Task order<br><select id="dashStartOrder" style="font-size:11px;min-width:230px;" onchange="dashStartFromOrder(this)" title="Start the DD-254 for a saved task order, or open the one already started from it."><option value="">— task order… —</option></select></label>
+    <label style="font-size:10px;color:#5a6a80;">DD-254 template<br><select id="dashStartTpl" style="font-size:11px;min-width:260px;" onchange="dashStartFromTemplate(this)" title="Start a DD-254 with this saved template applied. Orders are listed under their own number."><option value="">— DD-254 template… —</option></select></label>
+    <label style="font-size:10px;color:#5a6a80;">Search<br><input type="search" id="dashStartSearch" placeholder="contract or order number…" style="font-size:11px;width:180px;" oninput="dashStartFilter(this.value)"></label>
+  </div>
   <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
     <button class="pbtn dash-btn-primary" style="font-size:14px;padding:12px 26px;" onclick="dashNewDraft('sol')">＋ New Solicitation</button>
     <button class="pbtn pbtn-tertiary" style="font-size:13px;padding:12px 22px;" onclick="dashNewDraft('orig')">＋ Original (no solicitation)</button>
@@ -5594,7 +5601,7 @@ async function dashSaveNow(){
 }
 
 /* views */
-function showDashView(){ if(DASH.current){ dashSaveNow(); if(typeof tplHarvestPerf==='function') tplHarvestPerf(); } document.body.classList.add('dash-mode'); dashRenderCards(); }
+function showDashView(){ if(DASH.current){ dashSaveNow(); if(typeof tplHarvestPerf==='function') tplHarvestPerf(); } document.body.classList.add('dash-mode'); dashRenderCards(); if(typeof dashBuildStartPickers==='function') dashBuildStartPickers(); }
 function showFormView(){ document.body.classList.remove('dash-mode'); const b=document.getElementById('draftBar'); if(b) b.style.display='block'; }
 
 /* actions */
@@ -7413,11 +7420,17 @@ function ctPickContractType(list){
   });
 }
 
-async function dashNewDraft(stage){
-  stage=stage||'orig';
-  let t=await uiPrompt('Title this DD-254 '+(stage==='sol'?'solicitation ':'')+'(you can rename it any time):','');
-  if(t==null) return;
-  t=t.trim()||'Untitled DD-254';
+/* opts.title skips the prompt and opts.after runs once the form is on screen,
+   so the dashboard's start-from pickers reuse this rather than assembling a
+   second idea of what a new draft is. */
+async function dashNewDraft(stage,opts){
+  stage=stage||'orig'; opts=opts||{};
+  let t=opts.title;
+  if(t==null){
+    t=await uiPrompt('Title this DD-254 '+(stage==='sol'?'solicitation ':'')+'(you can rename it any time):','');
+    if(t==null) return;
+  }
+  t=String(t).trim()||'Untitled DD-254';
   if(stage==='sol'&&!/solicitation/i.test(t)) t+=' — Solicitation';
   /* Contract type offer. These templates used to carry Block 13 text alone;
      they now carry the same structure as a DD-254 Template Language entry, so
@@ -7452,8 +7465,95 @@ async function dashNewDraft(stage){
     const e9=document.getElementById('i9');
     if(e9&&typeof solApply==='function') e9.value=solApply(e9.value);
   }
+  if(typeof opts.after==='function') await opts.after(rec);
   if(typeof run==='function') run();
   dashSaveNow();
+  return rec;
+}
+/* ── STARTING A DD-254 FROM SOMETHING ALREADY SAVED ──────────────────
+   The dashboard's two buttons start an empty form, and the saved language was
+   reachable only from inside that form. A preparer who already knows which
+   contract vehicle, which task order or which template this DD-254 is for had
+   to create a blank one first and then go looking. These pickers close that
+   gap: choose the thing, and the workflow starts with it applied.
+
+   Each routes through the path that already applies that kind of thing -
+   dashApplyB13 for a contract type, ctOrderStart for an order, the template
+   apply for a template - so none of them is a second way of doing it. */
+function dashStartTitleFor(t){
+  const d=(t&&t.data)||{};
+  const prime=String(d.primeContract||'').trim();
+  const order=String(d.taskOrder||'').trim();
+  if(prime) return prime+(order?(' · '+(d.orderType||'Order')+' '+order):'');
+  return String((t&&t.label)||'').trim()||'Untitled DD-254';
+}
+async function dashStartFromType(sel){
+  if(!sel||sel.value==='') return;
+  const idx=sel.value; sel.value='';
+  const b13=(typeof tplLoad==='function')?(tplLoad(TPL_B13)||[]):[];
+  const t=b13[+idx];
+  if(!t||!t.data){ alert('That Contract Type template has no content saved.'); return; }
+  return dashNewDraft('orig',{title:t.label||'Untitled DD-254',after:async function(rec){
+    await dashApplyB13(rec.id,idx);
+  }});
+}
+async function dashStartFromTemplate(sel){
+  if(!sel||sel.value==='') return;
+  const ref=sel.value; sel.value='';
+  const t=(typeof ctFind==='function')?ctFind(ref):null;
+  if(!t||!t.data){ alert('That template has no content saved.'); return; }
+  return dashNewDraft('orig',{title:dashStartTitleFor(t),after:async function(rec){
+    window.DD254_CT_APPLIED='';
+    ctApplyWsToForm(ctApplyDataToWorkspace(t.data,null,t));
+    const sl=document.getElementById('ctTplSel'); if(sl) sl.value=t.ioId||'';
+    if(typeof buildCtPanel==='function') buildCtPanel();
+    audLog(rec.id,rec.title,'created-from-template',[t.label,(typeof ctSrcLabel==='function'?ctSrcLabel(t):''),t.srcDate].filter(Boolean).join(' · '));
+  }});
+}
+async function dashStartFromOrder(sel){
+  if(!sel||sel.value==='') return;
+  const id=sel.value; sel.value='';
+  return ctOrderStart(id);
+}
+function dashStartFilter(q){
+  window.DASH_START_FILTER=q;
+  dashBuildStartPickers();
+}
+/* Rebuilt whenever the dashboard is drawn, from the same stores the
+   repositories hold, so a template saved a moment ago is offered. */
+function dashBuildStartPickers(){
+  const ty=document.getElementById('dashStartType');
+  if(ty){
+    const b13=(typeof tplLoad==='function')?(tplLoad(TPL_B13)||[]):[];
+    ty.innerHTML='<option value="">— contract vehicle… —</option>'
+      +b13.map(function(t,i){ return '<option value="'+i+'">'+tplEsc(t.label||('Contract type '+(i+1)))+'</option>'; }).join('');
+    ty.disabled=!b13.length;
+  }
+  const od=document.getElementById('dashStartOrder');
+  if(od){
+    const records=(typeof ctOrderStore==='function')?ctOrderStore():[];
+    const rows=(typeof ctOrderRows==='function')?ctOrderRows(records):[];
+    const q=String(window.DASH_START_FILTER||'').trim().toLowerCase();
+    const opts=rows.filter(function(o){
+      const text=((o.primeContract||'')+' '+(o.number||'')+' '+(o.orderType||'')+' '+(o.label||'')).toLowerCase();
+      return !q||text.indexOf(q)>=0;
+    }).map(function(o){
+      const coverage=(typeof ctOrderCoverage==='function')?ctOrderCoverage(o,records):o.coverageMode;
+      return '<option value="'+tplEsc(o.ioId)+'">'
+        +tplEsc((o.primeContract||'')+' · '+(o.number||'')+' — '+(o.orderType||'Order')
+          +(coverage==='order'?' DD-254':' follows the prime')
+          +(o.draftId?' — opens the DD-254 started from it':''))+'</option>';
+    }).join('');
+    od.innerHTML='<option value="">— task order… —</option>'+opts;
+    od.disabled=!rows.length;
+  }
+  const tp=document.getElementById('dashStartTpl');
+  if(tp){
+    const arr=(typeof ctEnsureIds==='function')?ctEnsureIds():[];
+    tp.innerHTML='<option value="">— DD-254 template… —</option>'
+      +ctPickerOptions(arr,window.DASH_START_FILTER);
+    tp.disabled=!arr.length;
+  }
 }
 
 /* ── DISMISSING A VALIDATION FLAG ────────────────────────────────
@@ -11118,13 +11218,12 @@ function ctFind(ref){
    selects its bound template, so everything downstream is unchanged; the bound
    template is not listed twice. An order whose source still needs review is
    shown and cannot be chosen, because there is nothing to apply yet. */
-function buildCtSelect(){
-  const sel=document.getElementById('ctTplSel'); if(!sel) return;
-  let arr=ctEnsureIds();
-  const link=window.DD254_ORDER_SOURCE;
-  if(link&&link.snapshot){const saved=Object.assign({},link.snapshot,{label:(link.snapshot.label||'Source')+' — saved workflow source'});arr=arr.map(function(t){return t.ioId===link.templateId?saved:t;});if(!arr.some(function(t){return t.ioId===link.templateId;}))arr.push(saved);}
-  const cur=sel.value;
-  const q=(window.CT_FILTER||'').trim().toLowerCase();
+/* The options every DD-254 template picker offers: the saved orders, each under
+   the number a preparer searches by, and the templates. The form's picker and
+   the dashboard's start-from picker call this, because what the picker lists has
+   been wrong twice and two copies of it would be two places to be wrong. */
+function ctPickerOptions(arr,filter){
+  const q=String(filter||'').trim().toLowerCase();
   const hit=function(text){ return !q || String(text||'').toLowerCase().indexOf(q)>=0; };
 
   /* Every saved order is listed under the number the preparer searches by. An
@@ -11178,9 +11277,17 @@ function buildCtSelect(){
     return '<option value="'+tplEsc(t.ioId)+'">'+tplEsc((t.label||('Template '+(i+1)))+(t.srcDate?' — src '+t.srcDate:' — NO SOURCE DATE'))+'</option>';
   }).join('');
 
-  sel.innerHTML='<option value="">— select a template… —</option>'
-    +(orderOpts.length?'<optgroup label="Task orders, BPAs and delivery orders">'+orderOpts.join('')+'</optgroup>':'')
+  return (orderOpts.length?'<optgroup label="Task orders, BPAs and delivery orders">'+orderOpts.join('')+'</optgroup>':'')
     +(tplOpts?'<optgroup label="Templates">'+tplOpts+'</optgroup>':'');
+}
+function buildCtSelect(){
+  const sel=document.getElementById('ctTplSel'); if(!sel) return;
+  let arr=ctEnsureIds();
+  const link=window.DD254_ORDER_SOURCE;
+  if(link&&link.snapshot){const saved=Object.assign({},link.snapshot,{label:(link.snapshot.label||'Source')+' — saved workflow source'});arr=arr.map(function(t){return t.ioId===link.templateId?saved:t;});if(!arr.some(function(t){return t.ioId===link.templateId;}))arr.push(saved);}
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— select a template… —</option>'
+    +ctPickerOptions(arr,window.CT_FILTER);
   if(cur && ctFormTemplate(cur) && Array.from(sel.options).some(function(o){return o.value===cur;})) sel.value=cur; else if(cur) sel.value='';
 }
 function ctFilterSel(q){

@@ -26,6 +26,16 @@ entries gain two optional fields; no other storage format change.
   template from the prime's language, carrying this order number; the prime
   template is not touched. Moving to the prime keeps the order-specific
   template in the library, unbound.
+- The dashboard can start a DD-254 from something already saved. Its two
+  buttons started an empty form, and the saved language was reachable only
+  from inside that form, so a preparer who already knew which contract
+  vehicle, which task order or which template this DD-254 was for had to
+  create a blank one first and then go looking. Three pickers and a search sit
+  above the buttons: a contract vehicle, a saved task order, and a DD-254
+  template. Each routes through the path that already applies that kind of
+  thing, so none of them is a second way of doing it, and the template picker
+  offers the same list as the picker on the form -- including orders under
+  their own number -- because both read one function.
 - Standard language is inserted automatically instead of being asked about.
   The programme comes from the language applied to the DD-254 -- which is in
   turn filled from the Security Manager template -- and the level from Item 1a,

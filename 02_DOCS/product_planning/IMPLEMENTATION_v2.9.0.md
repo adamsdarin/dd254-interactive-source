@@ -42,6 +42,18 @@ Added:
 - `slCandidates(program,level,arr)` takes an optional list so a caller can keep
   one array identity.
 
+- `ctPickerOptions(arr,filter)` is extracted from `buildCtSelect`, which now
+  calls it; `dashBuildStartPickers` calls it for the dashboard's template
+  picker. One statement of what a DD-254 template picker lists.
+- `dashNewDraft(stage,opts)` takes `opts.title` (skipping the prompt) and
+  `opts.after(rec)` (run once the form is on screen) and returns the record, so
+  the starters reuse the one creation path instead of assembling a second.
+- `dashStartFromType`, `dashStartFromOrder` and `dashStartFromTemplate` route to
+  `dashApplyB13`, `ctOrderStart` and the template apply respectively.
+  `dashStartTitleFor` titles the draft from the template's contract number, or
+  its label when it has none. `dashStartFilter`/`dashBuildStartPickers` populate
+  the row, which `showDashView` rebuilds.
+
 Removed:
 
 - `slPickForNew()`, the v2.8.0 creation-time chooser, and its `dashNewDraft`
