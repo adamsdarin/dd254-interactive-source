@@ -675,8 +675,7 @@ await ta('a hold on the child does not reach the parent', async()=>{
    produced a second blocked DD-254 that nothing had happened to. */
 const copyAs=async(id,which)=>{
   const pr=E("dashDuplicate('"+id+"')");
-  await new Promise(r=>setTimeout(r,120));
-  const d=w.document.getElementById('dashCopyDlg');
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000);
   if(!d) return {err:'no copy dialog'};
   d.querySelector(which==='form'?'#cpForm':'#cpKeep').click();
   await pr; await new Promise(r=>setTimeout(r,60));
@@ -730,9 +729,9 @@ await ta('Copy the form only leaves the notes and to-dos on the original', async
 await ta('the dialog no longer offers to bring the holds across', async()=>{
   await dropCopies();
   const pr=E("dashDuplicate('S9')");
-  await new Promise(r=>setTimeout(r,120));
-  const d=w.document.getElementById('dashCopyDlg');
-  const txt=d?d.textContent:'';
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000);
+  if(!d) return 'no copy dialog';
+  const txt=d.textContent;
   d.querySelector('#cpCancel').click(); await pr;
   if(txt.indexOf('including holds')>=0) return 'the dialog still offers to bring the holds across';
   if(!/stay with the original/.test(txt)) return 'the dialog does not say the workflow stays with the original';
@@ -741,8 +740,7 @@ await ta('backing out of the copy dialog creates nothing', async()=>{
   await dropCopies();
   const before=(await E("draftAll()")).length;
   const pr=E("dashDuplicate('S9')");
-  await new Promise(r=>setTimeout(r,120));
-  w.document.getElementById('dashCopyDlg').querySelector('#cpCancel').click();
+  (await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000)).querySelector('#cpCancel').click();
   await pr;
   return (await E("draftAll()")).length===before; });
 t('spawn and copy both route through one reset', ()=>
@@ -1836,8 +1834,7 @@ await ta('a copy of an issued DD-254 takes none of its workflow', async()=>{
     todos:[{text:'t',due:'2026-01-01',done:false}],notes:'n',meta:{},workspace:{texts:{i6a:'Acme'},checks:{},radios:{},selects:{},perf:[]}})");
   E("window.uiConfirm=async function(){return true;};");
   const pr=E("dashDuplicate('CP')");
-  await new Promise(r=>setTimeout(r,120));
-  w.document.getElementById('dashCopyDlg').querySelector('#cpForm').click();
+  (await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000)).querySelector('#cpForm').click();
   await pr; await new Promise(r=>setTimeout(r,60));
   const c=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of')===0)[0];
   if(!c) return 'no copy';
@@ -2750,8 +2747,7 @@ await ta('the reset is written to the audit log', async()=>
 await ta('a copy records where it came from', async()=>{
   await wipe(); await seedR('R8');
   const pr=E("dashDuplicate('R8')");
-  await new Promise(r=>setTimeout(r,120));
-  w.document.getElementById('dashCopyDlg').querySelector('#cpKeep').click();
+  (await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000)).querySelector('#cpKeep').click();
   await pr; await new Promise(r=>setTimeout(r,60));
   const c=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of')===0)[0];
   return c && c.copiedFrom==='R8' && !!c.copiedOn; });
@@ -8291,8 +8287,7 @@ await ta('creating a DD-254 offers the matching entries and inserts the chosen o
   SLSEED(); E("slRequiredModeSet('on')");
   E("window.uiPrompt=async function(){return 'Mandatory SL draft';};");
   const pr=E("dashNewDraft('orig')");
-  await new Promise(r=>setTimeout(r,200));
-  const d=w.document.getElementById('slPickDlg');
+  const d=await waitDlg('#slPickDlg',15000);
   if(!d) return 'no standard-language dialog';
   d.querySelector('#slPickLvl').value='TS';
   d.querySelector('#slPickLvl').onchange();
@@ -8308,8 +8303,7 @@ await ta('declining the offer leaves the blocking error standing', async()=>{
   SLSEED(); E("slRequiredModeSet('on')");
   E("window.uiPrompt=async function(){return 'Skipped SL draft';};");
   const pr=E("dashNewDraft('orig')");
-  await new Promise(r=>setTimeout(r,200));
-  const d=w.document.getElementById('slPickDlg');
+  const d=await waitDlg('#slPickDlg',15000);
   if(!d) return 'no standard-language dialog';
   d.querySelector('#slPickSkip').click();
   await pr; await new Promise(r=>setTimeout(r,80));
@@ -8319,10 +8313,12 @@ await ta('while optional, creating a DD-254 asks nothing', async()=>{
   E("slRequiredModeSet('off')");
   E("window.uiPrompt=async function(){return 'Quiet draft';};");
   const pr=E("dashNewDraft('orig')");
-  await new Promise(r=>setTimeout(r,200));
-  const asked=!!w.document.getElementById('slPickDlg');
-  await pr;
-  return asked===false; });
+  /* Whichever happens first: the draft is created, or a dialog appears that
+     should not have. Sleeping and then looking would only prove the dialog is
+     slower than the sleep. */
+  const asked=await Promise.race([pr.then(()=>null), waitDlg('#slPickDlg',4000)]);
+  if(asked){ try{ asked.querySelector('#slPickSkip').click(); }catch(e){} await pr; return 'it asked'; }
+  return true; });
 /* Two sources of truth is the recurring defect in this tool, and a blocking
    message written out twice is one of them. The gate and the issue checklist
    both read slRequiredError(). */
