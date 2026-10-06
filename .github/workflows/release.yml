@@ -93,6 +93,10 @@ jobs:
           IMPL="02_DOCS/product_planning/IMPLEMENTATION_v${VERSION}.md"
           for f in "$ASSESS" "$IMPL"; do [ -f "$f" ] || { echo "Missing release document: $f"; exit 1; }; done
           cp BUILD_FACTS.md VERIFY.md 02_DOCS/DD254_Tool_Security_Fact_Sheet.md "$ASSESS" "$IMPL" dist/
+          # The ISSM brief tells a reviewer that every release carries the SBOM
+          # and the rule catalog. It did not: both sat on main and nothing
+          # attached them, so the brief promised evidence the download lacked.
+          cp 02_DOCS/DD254_ISSM_Brief.md 02_DOCS/DD254_Rule_Catalog.md 02_DOCS/DD254_Interactive_SBOM.cdx.json dist/
           # The review kit, so a reviewer can start from the split parts
           # without running anything first.
           (cd 01_TOOL/rebuild_kit && python3 split.py >/dev/null)

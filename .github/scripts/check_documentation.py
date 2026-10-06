@@ -29,6 +29,16 @@ sheet=(ROOT/'02_DOCS/DD254_Tool_Security_Fact_Sheet.md').read_text(encoding='utf
 assert f'DD254 Interactive v{release} / Tool v{version}' in sheet, (
     f'The security fact sheet does not name v{release} / Tool v{version}')
 
+# The ISSM brief names the release too, and shipped v2.4.1's label on a v2.7.1
+# build because only the fact sheet was checked. It also states the file size,
+# which an ISSM reads as a fact about the download, so that is checked as well.
+brief=(ROOT/'02_DOCS/DD254_ISSM_Brief.md').read_text(encoding='utf-8')
+assert f'DD254 Interactive v{release} / Tool v{version}' in brief, (
+    f'The ISSM brief does not name v{release} / Tool v{version}')
+mb=round(build.stat().st_size/1048576,1)
+assert f'about {mb} MB' in brief, (
+    f'The ISSM brief states a file size the build does not have ({mb} MB)')
+
 # The rule catalog is generated from the build. A committed copy that no
 # longer matches it would be a second statement of what the tool enforces,
 # and the whole point of the catalog is that it cannot say something the
@@ -49,4 +59,4 @@ assert bom.exists(), 'The SBOM is missing; run python 02_DOCS/make_sbom.py'
 assert bom.read_text(encoding='utf-8')==sbom.build_doc(), (
     'The SBOM does not match the build; run python 02_DOCS/make_sbom.py')
 
-print('DOCUMENTATION: PASS (manual, published copies, guidance, rule catalog and SBOM)')
+print('DOCUMENTATION: PASS (manual, published copies, guidance, fact sheet, ISSM brief, rule catalog and SBOM)')

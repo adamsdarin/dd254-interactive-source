@@ -1,6 +1,6 @@
 # DD254 Interactive — brief for the ISSM
 
-DD254 Interactive v2.4.1 / Tool v2.147. Two pages, for the officer deciding
+DD254 Interactive v2.7.1 / Tool v2.151. Two pages, for the officer deciding
 whether this file may be opened on a managed workstation.
 
 The longer [security fact sheet](DD254_Tool_Security_Fact_Sheet.md) is written
@@ -77,7 +77,7 @@ document:
 | Artefact | What it proves |
 | --- | --- |
 | `SHA256SUMS.txt` | The bytes received are the bytes published |
-| Build provenance attestation | The files were built by the project's own release workflow from the tagged commit; verify with `gh attestation verify` |
+| Build provenance attestation | The HTML you run was built by the project's own release workflow from the tagged commit; verify with `gh attestation verify` |
 | `rebuild_kit.tar.gz` | Splits the file into its parts and rebuilds it **byte-identically**, so the application code can be read on its own |
 | `verify_pdflib.py` | The embedded PDF library is byte-identical to the published `pdf-lib@1.17.1` release |
 | `DD254_Interactive_SBOM.cdx.json` | CycloneDX component inventory with licences and hashes |

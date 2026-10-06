@@ -1,11 +1,16 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-05T10:20-05:00 by Maintainer
+Last updated: 2026-10-06T00:20-05:00 by Maintainer
 
 ## Current State
 
 Latest published release: **v2.7.1 (Tool 2.151)**, which carries v2.7.0 as well;
 v2.7.0 was built and verified but never tagged, so the two ship under one tag.
+Signed tag at 86cdc61 on `main`; assets, checksums, both HTML attestations, the
+kit rebuild and the pdf-lib check all verified from a fresh download (official
+144c5f6d..., demo 0a05b87b..., ref refs/tags/v2.7.1, rebuild byte-identical);
+live demo published as dd254-interactive aabb31c and served from Pages at the
+attested demo hash.
 
 v2.7.0 removed the contract-type chooser from origination and gave contract
 vehicles their own picker in the Checklist and Templates panel. v2.7.1 fixes a
@@ -103,6 +108,15 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-06 Maintainer — Published v2.7.1 and the live demo; verified both
+from a fresh download rather than from the workflow result. Closed the
+approval-package gap in the same pass: the ISSM brief still named v2.4.1 on a
+v2.7.1 build, and promised an SBOM and rule catalog that no release attached.
+Both documents and the brief are now release assets, and the brief's version
+and stated file size are checked against the build the way the fact sheet is.
+The attestation row no longer claims more than the attestation covers: only
+the HTML files are attested.
 
 2026-10-02 Maintainer — Completed creation-only coverage correction as v2.4.1.
 All 1,264 assertions and release gates pass. Saved orders cannot switch
