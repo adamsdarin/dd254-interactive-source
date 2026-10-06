@@ -1,3 +1,31 @@
+## v2.7.2 - 6 October 2026
+
+Tool version 2.152. One owner-reported defect. No storage format change.
+
+- Fixed: copying a DD-254 carried its workflow across. A copy of a blocked
+  DD-254 arrived holding the original's holds -- raised against the original and
+  dated before the copy existed -- together with its distribution record and its
+  countersignature, so a record nothing had happened to showed open holds and
+  stalled a queue it had never been in. Status, holds, distribution record,
+  countersignature, issue date, review date and the validation override now stay
+  with the DD-254 they happened to, which is the rule a spawned Original,
+  Revision or Final has always followed. The copy carries the form and the NISS
+  verification; Copy also carries the notes and to-dos, Copy the form only
+  leaves them on the original.
+- A copy reconciles its own approval holds after the reset. If the copy's own
+  Item 10, 11 or 14 boxes call for GCA approval it raises its own hold, dated
+  the day of the copy, exactly as a workflow reset does. Starting clean is not a
+  way past a GCA gate -- it is only a way of not inheriting someone else's.
+- The copy dialog said "Full copy -- everything comes across, including holds,
+  distribution and countersignature" while the code it ran cleared the notes and
+  the to-dos. Both halves of that were wrong. The choices are now Copy and Copy
+  the form only, and the dialog states that the workflow stays with the original.
+- Workflow actions bumped off the deprecated Node 20 runtime: checkout v4 to v7,
+  setup-node v4 to v7, setup-python v5 to v7, attest-build-provenance v2 to v4.
+- The SBOM, the rule catalog and the ISSM brief are attached to the release. The
+  brief promised reviewers both derived documents and no release carried either;
+  its version and stated file size are now checked against the build.
+
 ## v2.7.1 - 5 October 2026
 
 Tool version 2.151. Two corrections and a verification fix. No storage format

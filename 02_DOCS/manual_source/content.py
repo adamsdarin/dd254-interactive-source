@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.7.1 (tool version 2.151)"
+VER="DD254 Interactive v2.7.2 (tool version 2.152)"
 
 DOC = [
-("h1","DD254 Interactive v2.7.1 changes"),
+("h1","DD254 Interactive v2.7.2 changes"),
+("b","<b>Fixed:</b> copying a DD-254 no longer brings its workflow with it. A copy of a blocked DD-254 used to arrive carrying the original's holds \u2014 raised against the original, dated before the copy existed \u2014 along with its distribution record and countersignature, so the copy showed a queue it had never been in. Status, holds, distribution, countersignature and the issue and review dates now stay with the DD-254 they happened to. If the copy's own Item 10, 11 or 14 boxes call for GCA approval it raises its own hold, dated today. See 3.4."),
+("h2","DD254 Interactive v2.7.1 changes"),
 ("b","<b>Fixed:</b> a task order with its own DD-254 now appears in the template picker on the form, listed by its prime contract and order number. Choosing it selects the template bound to that order. An order whose source still needs review is shown but cannot be chosen. See 5.3."),
 ("b","<b>Corrected:</b> Item 11j cited DoDD 5205.02E for the rule that Item 14 must be YES. That requirement is in the <b>DD Form 254 Instructions, Item 11j(1)</b>, which also calls for the pertinent contract clauses to be identified and clarifying guidance added to Item 13. DoDD 5205.02E is the DoD OPSEC programme directive; it is not what obliges Item 14. What the tool asks of you has not changed."),
 ("h2","DD254 Interactive v2.7.0 changes"),
@@ -154,15 +156,15 @@ DOC = [
 ("p","A spawned child inherits the form content and the ongoing work — to-dos and notes. It does not inherit anything that happened to the parent: holds, distribution records, countersignature, issue date, review date, permission to bypass validation, or NISS verification."),
 ("note","NISS verification is a check for one issuance. An Original spawned from a solicitation, a Revision or a Final is a new issuance, often months later, so it starts unverified. If the parent was verified, the new card shows <b>NISS re-confirm</b>; hovering shows when and by whom the parent was verified. Verifying again clears it and the audit log records the re-confirmation. <b>Copy</b> is unchanged — see 3.4."),
 ("h2","3.4 Copying a DD-254"),
-("p","<b>Copy</b> asks which kind you want, because copying means two different things."),
+("p","<b>Copy</b> asks which kind you want, because copying means two different things. Neither kind carries the original's workflow."),
 ("tbl",[["Choice","What comes across"],
-        ["Full copy","Everything, including holds, distribution record and countersignature. Right when the new form is the same work in a new place and those are all still live questions. Notes and to-dos start clean."],
-        ["Copy and reset the workflow","The dashboard face stays exactly as it is \u2014 title, contract, contractor, notes, to-dos, NISS verification, the whole form. Only the workflow events clear: status, holds, distribution, countersignature, issue date, review date and the validation override. Right when the paperwork is correct but this is a fresh run of it."]]),
-("note","Neither carries an issue date. An inherited one would be a plain falsehood, and it feeds the portfolio export and the draft-to-issue average. The reset uses the same routine a spawned revision uses, so \u201creset the workflow\u201d means the same thing everywhere."),
-("p","<b>Resetting later.</b> You do not have to decide at copy time. A card carrying workflow history shows a <b>Reset workflow</b> button, so a full copy you have already started working can be cleaned up without copying again and losing everything done since. It is the same reset, with a confirmation listing exactly what will go."),
+        ["Copy","The whole dashboard face \u2014 title, contract, contractor, notes, to-dos, NISS verification and the form. Right when the paperwork is correct and this is a fresh run of it."],
+        ["Copy the form only","The form and the NISS verification. The notes and to-dos stay on the original, because they are the record of work already done on it."]]),
+("note","Either way the copy starts at <b>Draft</b> with no workflow history: status, holds, distribution record, countersignature, issue date, review date and the validation override stay with the original. Those are things that happened to that DD-254, and a copy they did not happen to must not claim them. Copying uses the same routine a spawned revision uses, so this means the same thing everywhere."),
+("p","<b>Resetting a DD-254 in place.</b> A card carrying workflow history shows a <b>Reset workflow</b> button, so a DD-254 you have worked on can be put back to a clean run without copying it and losing everything done since. It is the same reset a copy performs, with a confirmation listing exactly what will go."),
 ("n","Kept: the form, your notes, to-dos and NISS verification."),
 ("n","Cleared: status, holds, distribution records, countersignature, issue date, review date and the Draft override."),
-("warn","A record that states something already happened \u2014 <b>Issued</b>, <b>Cancelled</b>, <b>Skipped</b> \u2014 cannot be reset. Clearing the distribution record off a DD-254 that went out the door does not make it unissued; it only makes the tool lie about it. Copy it and reset the copy instead."),
+("warn","A record that states something already happened \u2014 <b>Issued</b>, <b>Cancelled</b>, <b>Skipped</b> \u2014 cannot be reset. Clearing the distribution record off a DD-254 that went out the door does not make it unissued; it only makes the tool lie about it. Copy it instead \u2014 the copy starts clean."),
 ("note","Resetting is not a way past an approval hold. Any Item 10, 11 or 14 box still ticked raises its hold again immediately and the card returns to Blocked. The reset clears the workflow, not the reasons for it."),
 ("h2","3.5 Status is gated by validation"),
 ("p","You cannot move a card out of Draft while it has validation errors; the status snaps back. Tick the override checkbox on the card to permit a status regardless of missing fields. Cancelling and skipping are exempt — those are exactly the moments a form is incomplete."),
@@ -655,7 +657,7 @@ DOC = [
 ("h2","11.2 What the tool does not do"),
 ("b","It does not track DD Forms 254 <i>received</i> from customers, only those you issue. Importing a received form creates a template entry and nothing else — see 5.4."),
 ("b","It does not treat contract completion as creating a Final or authorizing retention; disposition and any continued requirements need their own evidence."),
-("b","A <b>Full copy</b> carries the source's holds, distribution log and NISS verification. <b>Copy and reset the workflow</b> keeps the form and NISS verification but clears the workflow events. Neither carries the issue date."),
+("b","A copy carries the form and the NISS verification; <b>Copy</b> also carries the notes and to-dos. Neither kind carries the original's status, holds, distribution record, countersignature or dates."),
 ("h2","11.3 Keeping this manual honest"),
 ("p","This manual is generated from a content file and a build script kept alongside the PDF. Every release that changes the HTML must update this source and rebuild both published copies of the manual; never patch the PDF by hand."),
 ('h2', '11.4 Hosting remains a separate future phase'),

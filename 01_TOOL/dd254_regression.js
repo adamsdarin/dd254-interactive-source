@@ -669,37 +669,76 @@ await ta('a hold on the child does not reach the parent', async()=>{
   const o=await kid();
   await E("(async function(){var r=await draftGet('"+o.id+"');r.holds=[{t:'child',s:'Blocked',d:'2026-07-30',done:false}];await draftPut(r);})()");
   const p=await E("draftGet('S9')"); return p.holds.length===2 && p.holds[0].t==='SCG missing';});
-/* Copy now asks which kind. Full copy is the original behaviour. */
+/* Copy asks which kind, and NEITHER kind carries the parent's workflow.
+   v2.7.2: Full copy used to bring the holds, the distribution record, the
+   countersignature and the Blocked status across, so copying a blocked DD-254
+   produced a second blocked DD-254 that nothing had happened to. */
 const copyAs=async(id,which)=>{
   const pr=E("dashDuplicate('"+id+"')");
   await new Promise(r=>setTimeout(r,120));
   const d=w.document.getElementById('dashCopyDlg');
   if(!d) return {err:'no copy dialog'};
-  d.querySelector(which==='reset'?'#cpReset':'#cpFull').click();
+  d.querySelector(which==='form'?'#cpForm':'#cpKeep').click();
   await pr; await new Promise(r=>setTimeout(r,60));
   return {};
 };
-await ta('Full copy keeps its original behaviour', async()=>{
-  const e=await copyAs('S9','full'); if(e.err) return e.err;
-  const c=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of')===0)[0];
-  if(!c) return 'no copy';
-  /* Copy still carries holds, distribution, NISS and countersignature by
-     design; only the issue date is dropped, because a copy has not been issued. */
-  return c.status==='Draft' && c.reviewDate==='' && c.todos.length===0 && c.notes===''
-      && c.holds.length===2 && c.dist.length===1 && !!c.niss && !!c.countersign
-      && !('issuedAt' in c) && !('parentId' in c);});
-await ta('Copy and reset the workflow clears the events, keeps the face', async()=>{
-  await E("(async function(){for(const d of await draftAll()){ if((d.title||'').indexOf('Copy of')===0) await draftDel(d.id); }})()");
-  const e=await copyAs('S9','reset'); if(e.err) return e.err;
-  const c=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of')===0)[0];
-  if(!c) return 'no copy';
-  /* events gone */
-  const cleared=c.status==='Draft' && c.reviewDate==='' && c.holds.length===0
-             && c.dist.length===0 && !c.countersign && !('issuedAt' in c) && c.statusOverride===false;
-  /* dashboard face untouched */
-  const kept=!!c.niss && c.todos.length>0 && c.notes!=='' && !!c.workspace;
-  return cleared && kept ? true : ('cleared='+cleared+' kept='+kept); });
+const dropCopies=()=>E("(async function(){for(const d of await draftAll()){ if((d.title||'').indexOf('Copy of')===0) await draftDel(d.id); }})()");
+const theCopy=async()=>(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of')===0)[0];
+await ta('a copy does not carry the parent EVENTS', async()=>{
+  const e=await copyAs('S9','keep'); if(e.err) return e.err;
+  const c=await theCopy(); if(!c) return 'no copy';
+  const texts=(c.holds||[]).map(h=>h.t).join(' | ');
+  return c.dist.length===0 && !c.countersign && !('issuedAt' in c)
+      && c.reviewDate==='' && c.statusOverride===false
+      && texts.indexOf('SCG missing')<0 && texts.indexOf('old')<0
+      && !('parentId' in c) && c.copiedFrom==='S9'
+      ? true : ('dist='+c.dist.length+' cs='+!!c.countersign+' holds='+texts);});
+await ta('a copy carries the working CONTEXT', async()=>{
+  const c=await theCopy();
+  return !!c.niss && c.todos.length===2 && c.notes==='parent notes'
+      && c.workspace.texts.i6a==='Juliet Corp';});
+await ta('copying leaves the blocked parent exactly as it was', async()=>{
+  const p=await E("draftGet('S9')");
+  return p.status==='Blocked' && p.holds.length===2 && p.dist.length===1
+      && !!p.countersign && !!p.issuedAt && p.statusOverride===true
+      ? true : ('parent changed: status='+p.status+' holds='+p.holds.length);});
+/* The copy's OWN form still speaks for itself. S9 has COMSEC ticked, so the
+   copy raises its own 10a hold dated today -- the gate is not slippable by
+   copying -- but it is the copy's hold, not the parent's aged record. */
+await ta('a copy whose own form needs GCA approval raises its OWN hold', async()=>{
+  const c=await theCopy();
+  const h=(c.holds||[]);
+  const today=new Date().toISOString().split('T')[0];
+  return h.length===1 && h[0].k==='10a' && h[0].c===true && h[0].done===false
+      && h[0].d===today && c.status==='Blocked'
+      ? true : ('holds='+JSON.stringify(h.map(x=>[x.k,x.d,x.t.slice(0,20)])));});
+await ta('a blocked DD-254 with no approval boxes copies clean to Draft', async()=>{
+  await dropCopies();
+  await E("draftPut({id:'B7',title:'Kilo — Original',stage:'orig',status:'Blocked',statusOverride:true,reviewDate:'2028-01-01',notes:'n',holds:[{t:'waiting on the GCA',s:'Blocked',d:'2026-03-03',done:false}],dist:[{ts:'2026-02-02',party:'18a',to:'fso@x.com',method:'e-mail'}],todos:[],countersign:{received:true,date:'2026-02-05'},meta:{contract:'W911-K'},workspace:{texts:{i6a:'Kilo Corp'},checks:{},radios:{},selects:{},perf:[]}})");
+  const e=await copyAs('B7','keep'); if(e.err) return e.err;
+  const c=await theCopy(); if(!c) return 'no copy';
+  return c.status==='Draft' && (c.holds||[]).length===0 && c.dist.length===0
+      && !c.countersign && c.statusOverride===false
+      ? true : ('status='+c.status+' holds='+(c.holds||[]).length);});
+await ta('Copy the form only leaves the notes and to-dos on the original', async()=>{
+  await dropCopies();
+  const e=await copyAs('S9','form'); if(e.err) return e.err;
+  const c=await theCopy(); if(!c) return 'no copy';
+  const p=await E("draftGet('S9')");
+  return c.notes==='' && c.todos.length===0 && !!c.workspace && !!c.niss
+      && p.notes==='parent notes' && p.todos.length===2;});
+await ta('the dialog no longer offers to bring the holds across', async()=>{
+  await dropCopies();
+  const pr=E("dashDuplicate('S9')");
+  await new Promise(r=>setTimeout(r,120));
+  const d=w.document.getElementById('dashCopyDlg');
+  const txt=d?d.textContent:'';
+  d.querySelector('#cpCancel').click(); await pr;
+  if(txt.indexOf('including holds')>=0) return 'the dialog still offers to bring the holds across';
+  if(!/stay with the original/.test(txt)) return 'the dialog does not say the workflow stays with the original';
+  return true;});
 await ta('backing out of the copy dialog creates nothing', async()=>{
+  await dropCopies();
   const before=(await E("draftAll()")).length;
   const pr=E("dashDuplicate('S9')");
   await new Promise(r=>setTimeout(r,120));
@@ -708,6 +747,8 @@ await ta('backing out of the copy dialog creates nothing', async()=>{
   return (await E("draftAll()")).length===before; });
 t('spawn and copy both route through one reset', ()=>
   E("String(dashSpawn)").includes('dashResetWorkflow(rec)') && E("String(dashDuplicate)").includes('dashResetWorkflow(rec)'));
+t('a copy reconciles its own compliance holds after the reset', ()=>
+  E("String(dashDuplicate)").includes('dashSyncCompliance(rec)'));
 
 H('15. Cleanup fixes');
 await ta('to-do invite uses the note date, not the review clock', async()=>{
@@ -1787,7 +1828,7 @@ await ta('a spawned child does not inherit the validation override', async()=>{
   return c.statusOverride===false;});
 t('the reset clears it explicitly', ()=> /rec\.statusOverride=false/.test(E("String(dashResetWorkflow)")));
 
-await ta('a copy drops the issue date but keeps the rest', async()=>{
+await ta('a copy of an issued DD-254 takes none of its workflow', async()=>{
   await wipe();
   await E("draftPut({id:'CP',title:'Copyme',stage:'orig',status:'Issued',issuedAt:'2026-02-02T00:00:00Z',\
     holds:[{t:'h',s:'Blocked',d:'2026-01-01',done:false}],dist:[{ts:'2026-02-02',to:'a@b.com',method:'e-mail'}],\
@@ -1796,12 +1837,19 @@ await ta('a copy drops the issue date but keeps the rest', async()=>{
   E("window.uiConfirm=async function(){return true;};");
   const pr=E("dashDuplicate('CP')");
   await new Promise(r=>setTimeout(r,120));
-  w.document.getElementById('dashCopyDlg').querySelector('#cpFull').click();
+  w.document.getElementById('dashCopyDlg').querySelector('#cpForm').click();
   await pr; await new Promise(r=>setTimeout(r,60));
   const c=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of')===0)[0];
   if(!c) return 'no copy';
-  return !('issuedAt' in c) && c.holds.length===1 && c.dist.length===1 && !!c.niss && !!c.countersign
-      && c.todos.length===0 && c.notes==='' && c.workspace.texts.i6a==='Acme';});
+  /* v2.7.2: the issue date was always dropped. The hold, the distribution
+     record and the countersignature used to come across, which said of the copy
+     things that had only happened to the issued original. */
+  const src=await E("draftGet('CP')");
+  return !('issuedAt' in c) && c.status==='Draft' && c.holds.length===0 && c.dist.length===0
+      && !c.countersign && !!c.niss
+      && c.todos.length===0 && c.notes==='' && c.workspace.texts.i6a==='Acme'
+      && src.status==='Issued' && src.holds.length===1 && src.dist.length===1 && !!src.countersign
+      ? true : ('copy holds='+c.holds.length+' dist='+c.dist.length+' status='+c.status);});
 
 await ta('the audit log travels in the backup and merges on restore', async()=>{
   await wipe();
@@ -2703,19 +2751,20 @@ await ta('a copy records where it came from', async()=>{
   await wipe(); await seedR('R8');
   const pr=E("dashDuplicate('R8')");
   await new Promise(r=>setTimeout(r,120));
-  w.document.getElementById('dashCopyDlg').querySelector('#cpFull').click();
+  w.document.getElementById('dashCopyDlg').querySelector('#cpKeep').click();
   await pr; await new Promise(r=>setTimeout(r,60));
   const c=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of')===0)[0];
   return c && c.copiedFrom==='R8' && !!c.copiedOn; });
-await ta('a full copy can then be reset from the card', async()=>{
+/* v2.7.2: there is nothing left for the card's reset to do, because the copy
+   never took the parent's workflow in the first place. The parent still has it. */
+await ta('a copy arrives with nothing to reset, and the original keeps its own', async()=>{
   const c=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of')===0)[0];
-  const before=(c.holds||[]).length;
-  await E("dashResetNow('"+c.id+"')");
-  const after=await E("draftGet('"+c.id+"')");
-  /* a FULL copy deliberately starts notes and to-dos clean; what reset must
-     preserve here is the form and the NISS verification */
-  return before>0 && (after.holds||[]).length===0
-      && after.workspace.texts.i6a==='Acme' && !!after.niss; });
+  if(!c) return 'no copy';
+  const nothing=E("dashResetAny("+JSON.stringify(c)+")")===false;
+  const src=await E("draftGet('R8')");
+  return nothing && c.workspace.texts.i6a==='Acme' && !!c.niss
+      && (src.holds||[]).length===1 && src.status==='Blocked'
+      ? true : ('nothingToReset='+nothing+' originalHolds='+(src.holds||[]).length);});
 
 
 H('48. The Block 17 library is named Certifier');

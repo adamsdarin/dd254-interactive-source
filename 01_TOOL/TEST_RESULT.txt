@@ -1,4 +1,4 @@
-BUILD_SHA256 144c5f6d82415ecb9918efe2aeef3bff0ca892ff50485ca1b4c1db973e4913a6
+BUILD_SHA256 587abc1552e179e6e19d42ec444de1e2110f6b99094a25bc527b8678de641f88
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -172,10 +172,16 @@ BUILD_SHA256 144c5f6d82415ecb9918efe2aeef3bff0ca892ff50485ca1b4c1db973e4913a6
   PASS  spawn carries the form content and sets stage/title/Item 3
   PASS  revision numbering works off the chain
   PASS  a hold on the child does not reach the parent
-  PASS  Full copy keeps its original behaviour
-  PASS  Copy and reset the workflow clears the events, keeps the face
+  PASS  a copy does not carry the parent EVENTS
+  PASS  a copy carries the working CONTEXT
+  PASS  copying leaves the blocked parent exactly as it was
+  PASS  a copy whose own form needs GCA approval raises its OWN hold
+  PASS  a blocked DD-254 with no approval boxes copies clean to Draft
+  PASS  Copy the form only leaves the notes and to-dos on the original
+  PASS  the dialog no longer offers to bring the holds across
   PASS  backing out of the copy dialog creates nothing
   PASS  spawn and copy both route through one reset
+  PASS  a copy reconciles its own compliance holds after the reset
 
 ### 15. Cleanup fixes
   PASS  to-do invite uses the note date, not the review clock
@@ -421,7 +427,7 @@ BUILD_SHA256 144c5f6d82415ecb9918efe2aeef3bff0ca892ff50485ca1b4c1db973e4913a6
   PASS  IndexedDB is the storage path under test
   PASS  a spawned child does not inherit the validation override
   PASS  the reset clears it explicitly
-  PASS  a copy drops the issue date but keeps the rest
+  PASS  a copy of an issued DD-254 takes none of its workflow
   PASS  the audit log travels in the backup and merges on restore
   PASS  restore de-duplicates the audit merge
   PASS  a version 3 backup with no audit key still verifies
@@ -623,7 +629,7 @@ BUILD_SHA256 144c5f6d82415ecb9918efe2aeef3bff0ca892ff50485ca1b4c1db973e4913a6
   PASS  the button is offered on a worked record and hidden on an issued one
   PASS  the reset is written to the audit log
   PASS  a copy records where it came from
-  PASS  a full copy can then be reset from the card
+  PASS  a copy arrives with nothing to reset, and the original keeps its own
 
 ### 48. The Block 17 library is named Certifier
   PASS  the menu and heading say Certifier, not Block 17
@@ -1535,5 +1541,5 @@ BUILD_SHA256 144c5f6d82415ecb9918efe2aeef3bff0ca892ff50485ca1b4c1db973e4913a6
   PASS  the picker searches orders by order number
 
 ================================
-  PASS 1292   FAIL 0
+  PASS 1298   FAIL 0
 ================================
