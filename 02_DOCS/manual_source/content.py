@@ -5,7 +5,7 @@ VER="DD254 Interactive v2.9.0 (tool version 2.154)"
 
 DOC = [
 ("h1","DD254 Interactive v2.9.0 changes"),
-("b","<b>The dashboard can start a DD-254 from something saved.</b> Above <b>New Solicitation</b> and <b>Original</b> there are now three pickers and a search: a <b>contract type</b>, a <b>task order</b>, and a <b>DD-254 template</b>. Choosing one creates the DD-254 and applies that language straight away, instead of starting an empty form and then going looking for it. The two buttons still work exactly as before. See 3.17."),
+("b","<b>The dashboard card gains a DD-254 template picker</b> beside its contract type one, and <b>both are now searchable</b> — type part of a contract or order number and the list narrows. The template picker lists task orders under their own number, and an order that follows its prime resolves to the prime’s template. Choosing applies that language to that DD-254. See 3.17."),
 ("b","<b>Fixed:</b> the template picker on the form now lists <b>every saved order</b> under its own number. An order that follows the prime used to be absent, so searching its order number found nothing and you had to remember which prime covered it. Choosing one inserts the prime's template, and the entry says which template that is. An order with no prime template saved yet is shown but cannot be chosen."),
 ("b","<b>Task orders can be deleted</b>, and an order's coverage can be <b>changed after creation</b> \u2014 from its own DD-254 to following the prime, or the other way. Deleting keeps the order-specific template and any DD-254 already created from the order. Moving an order to its own DD-254 starts an editable template from the prime's language; moving it to the prime keeps its own template in the library, unbound. Either way the order asks for its source to be reviewed before a new DD-254 is started from it."),
 ("b","<b>Standard language is now inserted for you</b> when it is mandatory. The programme comes from the language applied to the DD-254 and the level from Item 1a, so a CONFIDENTIAL DD-254 on a programme that has a CONFIDENTIAL entry gets that entry automatically. Two matching entries are never chosen for you: the blocking error names both and you insert the one that applies. The question asked at creation in v2.8.0 is gone. See 5.6."),
@@ -270,12 +270,12 @@ DOC = [
 ("p","Either way of opening is written to the audit log with a list of what the draft held. An empty log or an untouched records panel, which every draft from v1.11.0 to v1.13.0 carries, raises nothing. A read-only tab does not ask, because it never saves."),
 ("warn","The exported file carries everything the draft held, including attachments. Handle it the way you would handle the draft itself."),
 
-("h2","3.17 Starting a DD-254 from something saved"),
-("p","The dashboard’s two buttons start an empty form. When you already know what this DD-254 is for, the row above them starts it with that language already in place."),
-("tbl",[["Picker","What it starts"],["Contract type","A DD-254 on a contract vehicle that carries its own boilerplate. Items 10, 11, 12, 13, 14, 15, 16 and 18 are filled from the vehicle, and the DD-254 records which vehicle it is on."],["Task order","The DD-254 for a saved order. If one has already been started from that order this opens it rather than making a second. An order whose source still needs review asks for that first."],["DD-254 template","A DD-254 with that saved template applied. The list is the same one the form’s picker offers, so task orders appear under their own number — including orders that follow their prime, which resolve to the prime’s template."]]),
-("n","The <b>Search</b> box narrows the task-order and template pickers by contract or order number."),
-("n","A picker with nothing saved behind it is shown disabled rather than empty."),
-("note","Each picker uses the same path as applying that language from inside the form, so a DD-254 started this way is identical to one started empty and filled in afterwards. The title comes from the contract number, or the template name when there is none; rename it any time."),
+("h2","3.17 Choosing a contract type or a DD-254 template on a card"),
+("p","Each card carries two pickers. The first applies a <b>contract type</b>; the second applies a saved <b>DD-254 template</b>. Both are search boxes: type part of a contract number, an order number or a template name and the list narrows as you type, because a library of several hundred cannot be scrolled."),
+("n","The template picker lists <b>task orders under their own number</b>. An order that follows its prime resolves to the prime’s template, so you never have to remember which prime covers which order."),
+("n","Choosing fills Items 10, 11, 12, 13, 14, 15, 16 and 18 from what you picked. If Item 13 already has text you are asked before it is replaced."),
+("n","A name that matches nothing applies nothing and says so, rather than guessing at the nearest entry."),
+("warn","An <b>Issued</b>, <b>Cancelled</b> or <b>Skipped</b> DD-254 is not rewritten — it is the record of what went out. Copy it and apply the template to the copy."),
 ("h1","4. The form — preparing the DD-254"),
 ("p","The form is an eight-step wizard with a live validation panel down the right-hand side. Steps are not locked: use Next and Previous, or the step dots, to move freely."),
 ("tbl",[["Wizard step","Items covered"],

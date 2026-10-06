@@ -42,17 +42,22 @@ Added:
 - `slCandidates(program,level,arr)` takes an optional list so a caller can keep
   one array identity.
 
-- `ctPickerOptions(arr,filter)` is extracted from `buildCtSelect`, which now
-  calls it; `dashBuildStartPickers` calls it for the dashboard's template
-  picker. One statement of what a DD-254 template picker lists.
-- `dashNewDraft(stage,opts)` takes `opts.title` (skipping the prompt) and
-  `opts.after(rec)` (run once the form is on screen) and returns the record, so
-  the starters reuse the one creation path instead of assembling a second.
-- `dashStartFromType`, `dashStartFromOrder` and `dashStartFromTemplate` route to
-  `dashApplyB13`, `ctOrderStart` and the template apply respectively.
-  `dashStartTitleFor` titles the draft from the template's contract number, or
-  its label when it has none. `dashStartFilter`/`dashBuildStartPickers` populate
-  the row, which `showDashView` rebuilds.
+- `ctPickerEntries(arr,filter)` is extracted from `buildCtSelect` and returns
+  the picker's contents as data. `ctPickerOptions` renders them as grouped
+  `<option>`s for the form's select; `ctPickerTypeahead` renders them as
+  datalist values, making a name unique when it collides, and `ctPickerResolve`
+  maps typed text back through that same list.
+- `dashApplyTpl(id,ref)` applies a saved template to a card's DD-254 in the
+  shape `dashApplyB13` already had: confirm before overwriting Item 13, apply to
+  the open form when it is the record on screen and to the stored workspace
+  otherwise, refuse while `DASH_LOCKED[status]`, audit-log as
+  `template-applied`.
+- `dashCardTpl` and `dashCardType` read the typed text, resolve it, and say so
+  when nothing matches. `dashPickerLists()` emits one `#dashTypeList` and one
+  `#dashTplList` per render, written once by `dashRenderCards` rather than once
+  per card.
+- The card's contract-type `<select>` becomes an `<input type="search"
+  list="dashTypeList">`, and the card gains the matching template input.
 
 Removed:
 

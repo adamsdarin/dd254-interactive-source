@@ -497,13 +497,6 @@ body.ws-dragging{user-select:none;}
     <div style="font-size:20px;font-weight:bold;">DD-254 Workspace Dashboard</div>
     <div style="font-size:11.5px;color:#9ab8d8;margin-top:4px;">Drafts autosave to this browser as you work. Clearing browser site data erases them — take a backup regularly. UNCLASSIFIED / CUI only.</div>
   </div>
-  <div id="dashStartRow" style="display:flex;align-items:flex-end;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 14px;max-width:980px;background:#fff;border:1px solid #c0d0e0;border-radius:8px;padding:10px 14px;">
-    <div style="font-size:11.5px;color:#5a6a80;align-self:center;font-weight:bold;">Start from something saved</div>
-    <label style="font-size:10px;color:#5a6a80;">Contract type<br><select id="dashStartType" style="font-size:11px;min-width:170px;" onchange="dashStartFromType(this)" title="Start a DD-254 on a contract vehicle that carries its own boilerplate. The vehicle is applied to the new form."><option value="">— contract vehicle… —</option></select></label>
-    <label style="font-size:10px;color:#5a6a80;">Task order<br><select id="dashStartOrder" style="font-size:11px;min-width:230px;" onchange="dashStartFromOrder(this)" title="Start the DD-254 for a saved task order, or open the one already started from it."><option value="">— task order… —</option></select></label>
-    <label style="font-size:10px;color:#5a6a80;">DD-254 template<br><select id="dashStartTpl" style="font-size:11px;min-width:260px;" onchange="dashStartFromTemplate(this)" title="Start a DD-254 with this saved template applied. Orders are listed under their own number."><option value="">— DD-254 template… —</option></select></label>
-    <label style="font-size:10px;color:#5a6a80;">Search<br><input type="search" id="dashStartSearch" placeholder="contract or order number…" style="font-size:11px;width:180px;" oninput="dashStartFilter(this.value)"></label>
-  </div>
   <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
     <button class="pbtn dash-btn-primary" style="font-size:14px;padding:12px 26px;" onclick="dashNewDraft('sol')">＋ New Solicitation</button>
     <button class="pbtn pbtn-tertiary" style="font-size:13px;padding:12px 22px;" onclick="dashNewDraft('orig')">＋ Original (no solicitation)</button>
@@ -5601,7 +5594,7 @@ async function dashSaveNow(){
 }
 
 /* views */
-function showDashView(){ if(DASH.current){ dashSaveNow(); if(typeof tplHarvestPerf==='function') tplHarvestPerf(); } document.body.classList.add('dash-mode'); dashRenderCards(); if(typeof dashBuildStartPickers==='function') dashBuildStartPickers(); }
+function showDashView(){ if(DASH.current){ dashSaveNow(); if(typeof tplHarvestPerf==='function') tplHarvestPerf(); } document.body.classList.add('dash-mode'); dashRenderCards(); }
 function showFormView(){ document.body.classList.remove('dash-mode'); const b=document.getElementById('draftBar'); if(b) b.style.display='block'; }
 
 /* actions */
@@ -7420,17 +7413,11 @@ function ctPickContractType(list){
   });
 }
 
-/* opts.title skips the prompt and opts.after runs once the form is on screen,
-   so the dashboard's start-from pickers reuse this rather than assembling a
-   second idea of what a new draft is. */
-async function dashNewDraft(stage,opts){
-  stage=stage||'orig'; opts=opts||{};
-  let t=opts.title;
-  if(t==null){
-    t=await uiPrompt('Title this DD-254 '+(stage==='sol'?'solicitation ':'')+'(you can rename it any time):','');
-    if(t==null) return;
-  }
-  t=String(t).trim()||'Untitled DD-254';
+async function dashNewDraft(stage){
+  stage=stage||'orig';
+  let t=await uiPrompt('Title this DD-254 '+(stage==='sol'?'solicitation ':'')+'(you can rename it any time):','');
+  if(t==null) return;
+  t=t.trim()||'Untitled DD-254';
   if(stage==='sol'&&!/solicitation/i.test(t)) t+=' — Solicitation';
   /* Contract type offer. These templates used to carry Block 13 text alone;
      they now carry the same structure as a DD-254 Template Language entry, so
@@ -7465,95 +7452,9 @@ async function dashNewDraft(stage,opts){
     const e9=document.getElementById('i9');
     if(e9&&typeof solApply==='function') e9.value=solApply(e9.value);
   }
-  if(typeof opts.after==='function') await opts.after(rec);
   if(typeof run==='function') run();
   dashSaveNow();
   return rec;
-}
-/* ── STARTING A DD-254 FROM SOMETHING ALREADY SAVED ──────────────────
-   The dashboard's two buttons start an empty form, and the saved language was
-   reachable only from inside that form. A preparer who already knows which
-   contract vehicle, which task order or which template this DD-254 is for had
-   to create a blank one first and then go looking. These pickers close that
-   gap: choose the thing, and the workflow starts with it applied.
-
-   Each routes through the path that already applies that kind of thing -
-   dashApplyB13 for a contract type, ctOrderStart for an order, the template
-   apply for a template - so none of them is a second way of doing it. */
-function dashStartTitleFor(t){
-  const d=(t&&t.data)||{};
-  const prime=String(d.primeContract||'').trim();
-  const order=String(d.taskOrder||'').trim();
-  if(prime) return prime+(order?(' · '+(d.orderType||'Order')+' '+order):'');
-  return String((t&&t.label)||'').trim()||'Untitled DD-254';
-}
-async function dashStartFromType(sel){
-  if(!sel||sel.value==='') return;
-  const idx=sel.value; sel.value='';
-  const b13=(typeof tplLoad==='function')?(tplLoad(TPL_B13)||[]):[];
-  const t=b13[+idx];
-  if(!t||!t.data){ alert('That Contract Type template has no content saved.'); return; }
-  return dashNewDraft('orig',{title:t.label||'Untitled DD-254',after:async function(rec){
-    await dashApplyB13(rec.id,idx);
-  }});
-}
-async function dashStartFromTemplate(sel){
-  if(!sel||sel.value==='') return;
-  const ref=sel.value; sel.value='';
-  const t=(typeof ctFind==='function')?ctFind(ref):null;
-  if(!t||!t.data){ alert('That template has no content saved.'); return; }
-  return dashNewDraft('orig',{title:dashStartTitleFor(t),after:async function(rec){
-    window.DD254_CT_APPLIED='';
-    ctApplyWsToForm(ctApplyDataToWorkspace(t.data,null,t));
-    const sl=document.getElementById('ctTplSel'); if(sl) sl.value=t.ioId||'';
-    if(typeof buildCtPanel==='function') buildCtPanel();
-    audLog(rec.id,rec.title,'created-from-template',[t.label,(typeof ctSrcLabel==='function'?ctSrcLabel(t):''),t.srcDate].filter(Boolean).join(' · '));
-  }});
-}
-async function dashStartFromOrder(sel){
-  if(!sel||sel.value==='') return;
-  const id=sel.value; sel.value='';
-  return ctOrderStart(id);
-}
-function dashStartFilter(q){
-  window.DASH_START_FILTER=q;
-  dashBuildStartPickers();
-}
-/* Rebuilt whenever the dashboard is drawn, from the same stores the
-   repositories hold, so a template saved a moment ago is offered. */
-function dashBuildStartPickers(){
-  const ty=document.getElementById('dashStartType');
-  if(ty){
-    const b13=(typeof tplLoad==='function')?(tplLoad(TPL_B13)||[]):[];
-    ty.innerHTML='<option value="">— contract vehicle… —</option>'
-      +b13.map(function(t,i){ return '<option value="'+i+'">'+tplEsc(t.label||('Contract type '+(i+1)))+'</option>'; }).join('');
-    ty.disabled=!b13.length;
-  }
-  const od=document.getElementById('dashStartOrder');
-  if(od){
-    const records=(typeof ctOrderStore==='function')?ctOrderStore():[];
-    const rows=(typeof ctOrderRows==='function')?ctOrderRows(records):[];
-    const q=String(window.DASH_START_FILTER||'').trim().toLowerCase();
-    const opts=rows.filter(function(o){
-      const text=((o.primeContract||'')+' '+(o.number||'')+' '+(o.orderType||'')+' '+(o.label||'')).toLowerCase();
-      return !q||text.indexOf(q)>=0;
-    }).map(function(o){
-      const coverage=(typeof ctOrderCoverage==='function')?ctOrderCoverage(o,records):o.coverageMode;
-      return '<option value="'+tplEsc(o.ioId)+'">'
-        +tplEsc((o.primeContract||'')+' · '+(o.number||'')+' — '+(o.orderType||'Order')
-          +(coverage==='order'?' DD-254':' follows the prime')
-          +(o.draftId?' — opens the DD-254 started from it':''))+'</option>';
-    }).join('');
-    od.innerHTML='<option value="">— task order… —</option>'+opts;
-    od.disabled=!rows.length;
-  }
-  const tp=document.getElementById('dashStartTpl');
-  if(tp){
-    const arr=(typeof ctEnsureIds==='function')?ctEnsureIds():[];
-    tp.innerHTML='<option value="">— DD-254 template… —</option>'
-      +ctPickerOptions(arr,window.DASH_START_FILTER);
-    tp.disabled=!arr.length;
-  }
 }
 
 /* ── DISMISSING A VALIDATION FLAG ────────────────────────────────
@@ -7900,6 +7801,71 @@ async function dashApplyB13(id,idx){
   audLog(id,rec.title,'contract-type-applied',t.label||'unnamed');
   dashRenderCards();
 }
+/* Apply a saved DD-254 template to a card's DD-254. Deliberately the same shape
+   as dashApplyB13: ask before writing over Item 13, apply to the open form when
+   that is the record on screen so the preparer watches it happen, and to the
+   stored workspace otherwise. */
+async function dashApplyTpl(id,ref){
+  if(ref===''||ref==null) return;
+  if(window.DD254_READONLY){ alert('This tab is read-only \u2014 another tab holds the lock.'); return; }
+  const t=(typeof ctFind==='function')?ctFind(ref):null;
+  if(!t){ alert('That DD-254 template was not found. It may have been renamed or deleted.'); return; }
+  const d=t.data; if(!d) return alert('That DD-254 template has no content saved.');
+  const rec=await draftGet(id); if(!rec) return alert('Draft not found.');
+  if(typeof DASH_LOCKED!=='undefined' && DASH_LOCKED[rec.status]){
+    alert('\u26d4 This DD-254 is '+rec.status+'.\n\nIt is the record of what went out and is not rewritten. Copy it and apply the template to the copy.');
+    return;
+  }
+  const cur=(DASH.current===id)?(((document.getElementById('item13')||{}).value)||''):(((rec.workspace||{}).texts||{}).item13||'');
+  if(String(cur).trim() && !(await uiConfirm('This DD-254 already has Block 13 text.\n\nApply the template \u201c'+(t.label||'unnamed')+'\u201d over it?'))) return;
+  if(DASH.current===id){
+    ctApplyWsToForm(ctApplyDataToWorkspace(d,null,t));
+    const sl=document.getElementById('ctTplSel'); if(sl) sl.value=t.ioId||'';
+    if(typeof buildCtPanel==='function') buildCtPanel();
+    if(typeof run==='function') run();
+    await dashSaveNow();
+  } else {
+    rec.workspace=ctApplyDataToWorkspace(d,rec.workspace,t);
+    rec.updatedAt=new Date().toISOString();
+    await draftPut(rec);
+  }
+  audLog(id,rec.title,'template-applied',[t.label,(typeof ctSrcLabel==='function'?ctSrcLabel(t):''),t.srcDate].filter(Boolean).join(' · '));
+  dashRenderCards();
+}
+/* What a type-ahead hands back is text, so each resolves it through the list it
+   was rendered from, and says so when nothing matches rather than applying
+   something near-enough. */
+async function dashCardTpl(id,input){
+  const text=String((input&&input.value)||'').trim();
+  if(!text) return;
+  const ref=(typeof ctPickerResolve==='function')?ctPickerResolve(text):'';
+  if(!ref){ alert('No saved DD-254 template is named \u201c'+text+'\u201d.\n\nType part of a contract or order number and choose from the list.'); return; }
+  input.value='';
+  await dashApplyTpl(id,ref);
+}
+async function dashCardType(id,input){
+  const text=String((input&&input.value)||'').trim();
+  if(!text) return;
+  const b13=(typeof tplLoad==='function')?(tplLoad(TPL_B13)||[]):[];
+  let idx=-1;
+  b13.forEach(function(x,i){ if(String(x.label||('Template '+(i+1))).toLowerCase()===text.toLowerCase()) idx=i; });
+  if(idx<0){ alert('No saved contract type is named \u201c'+text+'\u201d.\n\nType part of its name and choose from the list.'); return; }
+  input.value='';
+  await dashApplyB13(id,String(idx));
+}
+/* One datalist per kind for the whole dashboard, not one per card: a thousand
+   templates repeated down a list of cards is a thousand times the DOM for no
+   added meaning. */
+function dashPickerLists(){
+  const b13=(typeof tplLoad==='function')?(tplLoad(TPL_B13)||[]):[];
+  const tpl=(typeof ctPickerTypeahead==='function')?ctPickerTypeahead((typeof ctEnsureIds==='function')?ctEnsureIds():[],''):[];
+  return '<datalist id="dashTypeList">'
+    +b13.map(function(x,i){ return '<option value="'+dashEsc(x.label||('Template '+(i+1)))+'"></option>'; }).join('')
+    +'</datalist><datalist id="dashTplList">'
+    +tpl.map(function(x){ return '<option value="'+dashEsc(x.text)+'"></option>'; }).join('')
+    +'</datalist>';
+}
+
 /* Required-reason prompt for a cancellation. Same shape as the hold prompt;
    resolves to the text, or null if the user backs out. */
 function dashCancelPrompt(title){
@@ -8621,10 +8587,15 @@ async function dashRenderCards(openId){
           +'</div></div>'; })()
       +'<select onchange="dashSetStatus(\''+r.id+'\',this.value)" style="font-size:12px;padding:5px 8px;border:1px solid #c4ccd4;border-radius:4px;background:#fff;">'
       +dashStatusOptions(r).map(function(s){return '<option'+(r.status===s?' selected':'')+'>'+s+'</option>';}).join('')+'</select>'
+      /* Both pickers are type-aheads rather than plain dropdowns: a library of a
+         thousand templates cannot be scrolled, and the number the preparer
+         knows -- the contract or the order -- is what they want to type. */
       +(function(){ const b13=(typeof tplLoad==='function')?tplLoad(TPL_B13):[]; if(!b13.length) return '';
-        return '<select onchange="dashApplyB13(\''+r.id+'\',this.value);this.selectedIndex=0;" title="Apply a contract type (Block 13 default guidance) to this DD-254" style="font-size:12px;padding:5px 8px;border:1px solid #c4ccd4;border-radius:4px;background:#fff;max-width:160px;">'
-          +'<option value="">\u2014 Contract type\u2026 \u2014</option>'
-          +b13.map(function(x,i){return '<option value="'+i+'">'+dashEsc(x.label||('Template '+(i+1)))+'</option>';}).join('')+'</select>'; })()
+        return '<input type="search" list="dashTypeList" placeholder="\u2014 Contract type\u2026 \u2014" title="Apply a contract type (Block 13 default guidance) to this DD-254. Type to search; the list narrows as you type." onchange="dashCardType(\''+r.id+'\',this)" style="font-size:12px;padding:5px 8px;border:1px solid #c4ccd4;border-radius:4px;background:#fff;width:160px;">'; })()
+      +(function(){ const n=(typeof ctEnsureIds==='function')?ctEnsureIds().length:0;
+        const orders=(typeof ctOrderRows==='function')?ctOrderRows().length:0;
+        if(!n&&!orders) return '';
+        return '<input type="search" list="dashTplList" placeholder="\u2014 DD-254 template\u2026 \u2014" title="Apply a saved DD-254 template to this DD-254. Task orders are listed under their own number; one that follows its prime resolves to the prime&#39;s template. Type to search." onchange="dashCardTpl(\''+r.id+'\',this)" style="font-size:12px;padding:5px 8px;border:1px solid #c4ccd4;border-radius:4px;background:#fff;width:200px;">'; })()
       +'<input type="email" value="'+dashEsc(r.requestedBy||'')+'" placeholder="Requestor e-mail\u2026" onchange="dashSetRequestedBy(\''+r.id+'\',this.value)" style="font-size:12px;padding:5px 8px;border:1px solid #c4ccd4;border-radius:4px;width:150px;" title="Requestor e-mail - also added to the CSO and Requestor send list">'
       +'<button class="dash-btn dash-btn-primary" onclick="dashOpen(\''+r.id+'\')">Open</button>'
         +'<button class="dash-btn" onclick="dashRenderCards(\''+(openId===r.id?'':r.id)+'\')">Notes ('+(r.todos||[]).length+')'+((r.dist||[]).length?' · Dist ('+r.dist.length+')':'')+'</button>'
@@ -8764,7 +8735,9 @@ async function dashRenderCards(openId){
     else if(sortMode==='status') flat.sort(function(a,b){var d=STORDER[a.status||'Draft']-STORDER[b.status||'Draft']; return d||latest(b).localeCompare(latest(a));});
     flat.forEach(function(r){ walk(r,0); html+='<div style="height:12px;"></div>'; });
   }
-  host.innerHTML=html;
+  /* The two datalists the card type-aheads read, written once per render
+     rather than once per card. */
+  host.innerHTML=(typeof dashPickerLists==='function'?dashPickerLists():'')+html;
   if(openId){ var _ni=document.getElementById('todoIn_'+openId); if(_ni&&_pnT) _ni.value=_pnT; var _nd=document.getElementById('todoTaken_'+openId); if(_nd&&_pnD) _nd.value=_pnD; }
   if(typeof apply508==='function') apply508();
   /* A selected draft that was deleted cannot stay selected. One narrowed by
@@ -11222,7 +11195,7 @@ function ctFind(ref){
    the number a preparer searches by, and the templates. The form's picker and
    the dashboard's start-from picker call this, because what the picker lists has
    been wrong twice and two copies of it would be two places to be wrong. */
-function ctPickerOptions(arr,filter){
+function ctPickerEntries(arr,filter){
   const q=String(filter||'').trim().toLowerCase();
   const hit=function(text){ return !q || String(text||'').toLowerCase().indexOf(q)>=0; };
 
@@ -11262,23 +11235,53 @@ function ctPickerOptions(arr,filter){
            listed on its own. A prime template covers the prime and every order
            that follows it, so it stays in the Templates list as itself. */
         if(own) bound[tid]=1;
-        orderOpts.push('<option value="'+tplEsc(tid)+'">'
-          +tplEsc(name+(via?' → '+via:''))+'</option>');
+        orderOpts.push({ref:tid,text:name+(via?' → '+via:'')});
       } else {
-        orderOpts.push('<option value="" disabled>'+tplEsc(name+' — '
-          +(own?'source needs review':'no prime template saved yet'))+'</option>');
+        orderOpts.push({ref:'',text:name,why:(own?'source needs review':'no prime template saved yet')});
       }
     });
   }catch(e){}
 
   const tplOpts=arr.map(function(t,i){
-    if(bound[t.ioId]) return '';
-    if(q&&(typeof dashTplSearchText==='function'?dashTplSearchText(t):String(t.label||'').toLowerCase()).indexOf(q)<0) return '';
-    return '<option value="'+tplEsc(t.ioId)+'">'+tplEsc((t.label||('Template '+(i+1)))+(t.srcDate?' — src '+t.srcDate:' — NO SOURCE DATE'))+'</option>';
-  }).join('');
+    if(bound[t.ioId]) return null;
+    if(q&&(typeof dashTplSearchText==='function'?dashTplSearchText(t):String(t.label||'').toLowerCase()).indexOf(q)<0) return null;
+    return {ref:t.ioId,text:(t.label||('Template '+(i+1)))+(t.srcDate?' — src '+t.srcDate:' — NO SOURCE DATE')};
+  }).filter(Boolean);
 
-  return (orderOpts.length?'<optgroup label="Task orders, BPAs and delivery orders">'+orderOpts.join('')+'</optgroup>':'')
-    +(tplOpts?'<optgroup label="Templates">'+tplOpts+'</optgroup>':'');
+  return {orders:orderOpts,templates:tplOpts};
+}
+/* The form's select renders the entries as grouped options. */
+function ctPickerOptions(arr,filter){
+  const e=ctPickerEntries(arr,filter);
+  const opt=function(x){
+    return x.ref
+      ? '<option value="'+tplEsc(x.ref)+'">'+tplEsc(x.text)+'</option>'
+      : '<option value="" disabled>'+tplEsc(x.text+' — '+x.why)+'</option>';
+  };
+  return (e.orders.length?'<optgroup label="Task orders, BPAs and delivery orders">'+e.orders.map(opt).join('')+'</optgroup>':'')
+    +(e.templates.length?'<optgroup label="Templates">'+e.templates.map(opt).join('')+'</optgroup>':'');
+}
+/* The card's type-ahead renders them as datalist options and resolves what was
+   typed back through the SAME list. A name is made unique when it has to be,
+   because resolving by text is only safe while the text is unique. */
+function ctPickerTypeahead(arr,filter){
+  const e=ctPickerEntries(arr,filter);
+  const seen={}, out=[];
+  e.orders.concat(e.templates).forEach(function(x){
+    if(!x.ref) return;
+    let text=x.text, n=2;
+    while(seen[text.toLowerCase()]){ text=x.text+' ('+(n++)+')'; }
+    seen[text.toLowerCase()]=x.ref;
+    out.push({ref:x.ref,text:text});
+  });
+  return out;
+}
+function ctPickerResolve(text){
+  const want=String(text||'').trim().toLowerCase();
+  if(!want) return '';
+  const list=ctPickerTypeahead(ctEnsureIds(),'');
+  const hit=list.filter(function(x){ return x.text.toLowerCase()===want; })[0];
+  return hit?hit.ref:'';
 }
 function buildCtSelect(){
   const sel=document.getElementById('ctTplSel'); if(!sel) return;

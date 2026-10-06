@@ -10,10 +10,12 @@ prime, orders could not be deleted, and an order's coverage could not be
 changed after creation. Standard language was reworked rather than extended -
 the owner's intent is that it is ALWAYS inserted, from the programme and the
 Item 1a level, so the v2.8.0 creation-time chooser is gone. A fourth request of
-the same day added three start-from pickers to the dashboard - contract type,
-task order, DD-254 template - each routing through the apply path that already
-existed for that kind of thing. 1345 assertions
-pass against build e7e4c23c; all five gates pass, the kit round-trips
+the same day put a DD-254 template picker on the dashboard card beside the
+contract-type one, both searchable type-aheads because the libraries run to
+hundreds or thousands of entries. The first cut of that was a row of pickers
+in the dashboard toolbar, which was the wrong thing and has been removed; the
+owner wanted it on the card, where contract type already was. 1347 assertions
+pass against build ceeb3931; all five gates pass, the kit round-trips
 byte-identically and the native-browser smoke test passes. Each change was
 driven against the published v2.8.0 first and reported absent there.
 

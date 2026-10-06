@@ -9,7 +9,7 @@
 | Every saved order is listed in the form's picker | An order that follows the prime is found by its own number instead of not being there | It says which template it resolved to, so nothing is inserted unseen |
 | Task orders can be deleted | An order entered by mistake can be removed | The template and any DD-254 made from the order are kept, and the confirmation says so |
 | Coverage can be changed after creation | A task order that turns out to need its own DD-254 is changed in place | The order drops to "source needs review"; no saved source is silently re-pointed |
-| The dashboard starts a DD-254 from a contract type, a task order or a template | No blank form, then a hunt for the language that was always going to be applied | Each picker routes through the existing apply path for that kind of thing |
+| The dashboard card picks a contract type or a DD-254 template, both searchable | The template for this contract is typed, not hunted for, and task orders are listed under their own number | Applying asks before replacing Item 13 and refuses on an issued record |
 | Standard language inserts itself | The organisation's wording lands on the DD-254 without anyone remembering it | Only when one entry matches; two matching entries leave the blocking error, which names both |
 
 ## Why
@@ -41,13 +41,21 @@ and may be the only copy, and it does not delete a DD-254 already created from
 the order: that document exists, carries its own immutable snapshot, and is not
 made not to exist by removing a row from a repository.
 
-**The dashboard knew less than the preparer did.** Its two buttons start an
-empty form, and every saved contract vehicle, order and template was reachable
-only from inside that form. Someone who already knew which of those this DD-254
-was for had to create a blank one and then go looking. Three pickers now sit
-above the buttons. The template picker shares one function with the form's
-picker, so the list cannot be right in one place and wrong in the other - which
-is exactly what happened to orders following their prime.
+**The card could choose a contract type but not a template.** The dashboard
+card has had a contract-type picker since v2.7.0; the DD-254 template a card
+needs was reachable only from inside the form. It now has a picker for that too,
+beside the first.
+
+Both are search boxes rather than dropdowns, because the library they read runs
+to hundreds or thousands of entries and a dropdown of a thousand is not a
+control anybody uses. Type part of a contract or order number and the list
+narrows. The template picker lists task orders under their own number and
+resolves a prime-following order to the prime's template, so the preparer never
+has to know which prime covers which order - the same list the form's picker
+offers, built by one function so neither can be right while the other is wrong.
+A typed name that matches nothing applies nothing and says so; applying asks
+before replacing Item 13 and refuses on an Issued, Cancelled or Skipped record,
+because those are the record of what went out.
 
 **Standard language was asking a question it already knew the answer to.** v2.8.0
 asked at creation which entry to insert. At creation Item 1a is empty and the

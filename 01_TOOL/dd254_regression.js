@@ -8486,10 +8486,11 @@ t('nothing inside run() rewrites Item 13 for this', ()=>
   !E("String(run)").includes('slAutoApply'));
 E("slRequiredModeSet('off');tplSave(TPL_SL,[]);tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);window.CT_FILTER='';showDashView();resetFormFields();");
 
-H('118. v2.9.0 the dashboard starts a DD-254 from something saved');
-/* Owner request, 6 October 2026: the dashboard's two buttons started an empty
-   form, and the saved language was reachable only from inside it. */
-const DASHSEED=async()=>{
+H('118. v2.9.0 the dashboard card picks a contract type or a DD-254 template');
+/* Owner, 6 October 2026: an additional picker beside the card's Contract type
+   one, for a DD-254 template including task orders, and both searchable
+   because a library runs to hundreds or thousands of entries. */
+const CARDSEED=async()=>{
   await wipe();
   E("(function(){var p=Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',i13:'Prime language.'});"
    +"var q=Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',taskOrder:'0042',orderType:'Task Order',i13:'Order language.'});"
@@ -8499,93 +8500,98 @@ const DASHSEED=async()=>{
    +"tplSave(TPL_B13,[{label:'E-Bos vehicle',data:v}]);})();");
   await E("tplSave(TPL_ORDERS,[])");
   await E("ctOrderCreate('N00178-24-D-1234','0077','Task Order','prime')");
-  E("window.DASH_START_FILTER='';window.uiConfirm=async function(){return true;};showDashView();");
+  await E("draftPut({id:'CARD1',title:'Card one',stage:'orig',status:'Draft',createdAt:'2026-10-06T00:00:00Z',updatedAt:'2026-10-06T00:00:00Z',todos:[],notes:'',meta:{contract:'',contractor:''},workspace:{texts:{},checks:{},radios:{spec:'3a'},selects:{},perf:[]}})");
+  E("window.uiConfirm=async function(){return true;};DASH.current=null;");
+  await E("dashRenderCards()");
   await new Promise(r=>setTimeout(r,60));
 };
-const startOpts=(id)=>Array.from((w.document.getElementById(id)||{querySelectorAll:()=>[]})
-  .querySelectorAll('option')).map(o=>({t:o.textContent,v:o.value,d:o.disabled}));
-t('the dashboard carries all three pickers and a search', ()=>
-  !!w.document.getElementById('dashStartType') && !!w.document.getElementById('dashStartOrder')
-  && !!w.document.getElementById('dashStartTpl') && !!w.document.getElementById('dashStartSearch'));
-await ta('each picker lists what it is for', async()=>{
-  await DASHSEED();
-  const ty=startOpts('dashStartType').map(o=>o.t).join('|');
-  const od=startOpts('dashStartOrder').map(o=>o.t).join('|');
-  const tp=startOpts('dashStartTpl').map(o=>o.t).join('|');
-  return /E-Bos vehicle/.test(ty) && /0077/.test(od) && /Prime template/.test(tp)
-      ? true : ('type='+ty+' order='+od+' tpl='+tp); });
-await ta('the template picker is the same list the form picker offers', async()=>{
-  await DASHSEED();
-  /* Both read ctPickerOptions, so an order that follows the prime is listed
-     here too -- the defect fixed in the form picker cannot come back on the
-     dashboard only. */
-  const tp=startOpts('dashStartTpl');
-  return tp.some(o=>/0077/.test(o.t)&&/follows the prime/.test(o.t))
-      && E("String(buildCtSelect)").includes('ctPickerOptions')
-      && E("String(dashBuildStartPickers)").includes('ctPickerOptions')
-      ? true : tp.map(o=>o.t).join('|'); });
-await ta('choosing a template starts a DD-254 with it applied', async()=>{
-  await DASHSEED();
-  const before=(await E("draftAll()")).length;
-  const made=await E("dashStartFromTemplate({value:'ct-own'})");
-  const all=await E("draftAll()");
-  const rec=(made&&made.id)?(await E("draftGet('"+made.id+"')")):null;
-  if(!rec) return 'no record returned';
-  return all.length===before+1
-      && rec.title==='N00178-24-D-1234 \u00b7 Task Order 0042'
-      && /Order language\./.test(((rec.workspace||{}).texts||{}).item13||'')
-      && rec.stage==='orig'
-      ? true : ('n='+all.length+' title='+(rec||{}).title+' i13='+(((rec||{}).workspace||{}).texts||{}).item13); });
-await ta('it is written to the audit log as created from that template', async()=>
-  E("audAll()").some(a=>a.action==='created-from-template'&&/Order 0042 language/.test(a.detail||'')));
-await ta('choosing a contract vehicle starts a DD-254 with the vehicle applied', async()=>{
-  await DASHSEED();
-  const made=await E("dashStartFromType({value:'0'})");
-  const rec=(made&&made.id)?(await E("draftGet('"+made.id+"')")):null;
-  if(!rec) return 'no record returned';
-  return rec.title==='E-Bos vehicle' && rec.ctType==='E-Bos vehicle'
-      && /Vehicle language\./.test(((rec.workspace||{}).texts||{}).item13||'')
-      ? true : ('title='+rec.title+' ctType='+rec.ctType+' i13='+(((rec||{}).workspace||{}).texts||{}).item13); });
-await ta('choosing a task order routes through the order start path', async()=>{
-  await DASHSEED();
-  const id=(await E("ctOrderRows()")).find(o=>o.number==='0077').ioId;
-  const before=(await E("draftAll()")).length;
-  const made=await E("dashStartFromOrder({value:'"+id+"'})");
-  const all=await E("draftAll()");
-  const rec=(made&&made.id)?(await E("draftGet('"+made.id+"')")):null;
-  if(!rec) return 'no record returned';
-  /* The order was created with a prime source bound, so it starts a draft
-     titled from the order and linked to it. */
-  return all.length===before+1 && /0077/.test(rec.title||'')
-      && !!((rec.workspace||{}).ctSource||{}).orderId
-      ? true : ('n='+all.length+' title='+(rec||{}).title); });
-await ta('the search narrows the order and template pickers', async()=>{
-  await DASHSEED();
-  E("dashStartFilter('0077');");
-  const od=startOpts('dashStartOrder').map(o=>o.t).join('|');
-  const tp=startOpts('dashStartTpl').map(o=>o.t).join('|');
-  E("dashStartFilter('');");
-  return /0077/.test(od) && /0077/.test(tp) && !/Order 0042 language/.test(tp)
-      ? true : ('order='+od+' tpl='+tp); });
-await ta('an empty library leaves its picker disabled rather than empty-looking', async()=>{
-  await wipe();
-  E("tplSave(TPL_B13,[]);tplSave(TPL_CT,[]);");
-  await E("tplSave(TPL_ORDERS,[])");
-  E("showDashView();");
+const cardInputs=()=>Array.from(w.document.querySelectorAll('input[list]'))
+  .map(i=>({list:i.getAttribute('list'),ph:i.getAttribute('placeholder')}));
+const listValues=(id)=>Array.from((w.document.getElementById(id)||{querySelectorAll:()=>[]})
+  .querySelectorAll('option')).map(o=>o.value);
+await ta('the card carries both pickers, each a typeable search box', async()=>{
+  await CARDSEED();
+  const ins=cardInputs();
+  return ins.some(i=>i.list==='dashTypeList'&&/Contract type/.test(i.ph))
+      && ins.some(i=>i.list==='dashTplList'&&/DD-254 template/.test(i.ph))
+      ? true : JSON.stringify(ins); });
+await ta('the template list includes task orders under their own number', async()=>{
+  await CARDSEED();
+  const v=listValues('dashTplList');
+  return v.some(x=>/0077/.test(x)&&/follows the prime/.test(x))
+      && v.some(x=>/Prime template/.test(x))
+      ? true : JSON.stringify(v); });
+await ta('the contract type list offers the saved vehicles', async()=>{
+  await CARDSEED();
+  return listValues('dashTypeList').join()==='E-Bos vehicle'
+      ? true : JSON.stringify(listValues('dashTypeList')); });
+await ta('one datalist serves every card, not one per card', async()=>{
+  await CARDSEED();
+  await E("draftPut({id:'CARD2',title:'Card two',stage:'orig',status:'Draft',createdAt:'2026-10-06T00:00:00Z',updatedAt:'2026-10-06T00:00:00Z',todos:[],notes:'',meta:{},workspace:{texts:{},checks:{},radios:{spec:'3a'},selects:{},perf:[]}})");
+  await E("dashRenderCards()");
   await new Promise(r=>setTimeout(r,40));
-  return w.document.getElementById('dashStartType').disabled===true
-      && w.document.getElementById('dashStartOrder').disabled===true
-      && w.document.getElementById('dashStartTpl').disabled===true; });
-await ta('the two new-DD-254 buttons still prompt for a title', async()=>{
-  await wipe();
-  E("window.uiPrompt=async function(){window.__ASKED=true;return 'Typed title';};window.__ASKED=false;");
-  const made=await E("dashNewDraft('orig')");
-  const asked=E("window.__ASKED");
-  return asked===true && !!made && made.title==='Typed title'; });
-t('the starters reuse one creation path', ()=>
-  ['dashStartFromType','dashStartFromTemplate'].every(f=>E("String("+f+")").includes('dashNewDraft('))
-  && E("String(dashStartFromOrder)").includes('ctOrderStart('));
-E("tplSave(TPL_B13,[]);tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);window.DASH_START_FILTER='';showDashView();resetFormFields();");
+  const lists=w.document.querySelectorAll('datalist#dashTplList,datalist#dashTypeList').length;
+  const inputs=cardInputs().filter(i=>i.list==='dashTplList').length;
+  return lists===2 && inputs>=2 ? true : ('datalists='+lists+' inputs='+inputs); });
+await ta('typing a template name applies it to that DD-254', async()=>{
+  await CARDSEED();
+  const text=listValues('dashTplList').find(x=>/Order 0042 language/.test(x));
+  await E("dashCardTpl('CARD1',{value:"+JSON.stringify(text)+"})");
+  const rec=await E("draftGet('CARD1')");
+  return /Order language\./.test(((rec.workspace||{}).texts||{}).item13||'')
+      ? true : ('text='+text+' i13='+JSON.stringify(((rec.workspace||{}).texts||{}).item13)); });
+await ta('an order that follows the prime applies the prime template', async()=>{
+  await CARDSEED();
+  const text=listValues('dashTplList').find(x=>/0077/.test(x));
+  await E("dashCardTpl('CARD1',{value:"+JSON.stringify(text)+"})");
+  const rec=await E("draftGet('CARD1')");
+  return /Prime language\./.test(((rec.workspace||{}).texts||{}).item13||'')
+      ? true : ('text='+text+' i13='+(((rec.workspace||{}).texts||{}).item13)); });
+await ta('typing a contract type applies it and records the vehicle', async()=>{
+  await CARDSEED();
+  await E("dashCardType('CARD1',{value:'E-Bos vehicle'})");
+  const rec=await E("draftGet('CARD1')");
+  return rec.ctType==='E-Bos vehicle'
+      && /Vehicle language\./.test(((rec.workspace||{}).texts||{}).item13||'')
+      ? true : ('ctType='+rec.ctType); });
+await ta('a name that matches nothing changes nothing and says so', async()=>{
+  await CARDSEED();
+  let said=''; const OA=w.alert; w.alert=function(m){said=String(m||'');};
+  await E("dashCardTpl('CARD1',{value:'no such template'})");
+  w.alert=OA;
+  const rec=await E("draftGet('CARD1')");
+  return /No saved DD-254 template is named/.test(said)
+      && !((rec.workspace||{}).texts||{}).item13
+      ? true : ('said='+said); });
+await ta('applying is written to the audit log', async()=>
+  E("audAll()").some(a=>a.action==='template-applied'));
+await ta('an issued DD-254 is not rewritten by the picker', async()=>{
+  await CARDSEED();
+  await E("draftPut({id:'CARD3',title:'Issued card',stage:'orig',status:'Issued',issuedAt:'2026-03-03T00:00:00Z',todos:[],notes:'',meta:{},workspace:{texts:{item13:'What went out.'},checks:{},radios:{spec:'3a'},selects:{},perf:[]}})");
+  let said=''; const OA=w.alert; w.alert=function(m){said=String(m||'');};
+  await E("dashApplyTpl('CARD3','ct-prime')");
+  w.alert=OA;
+  const rec=await E("draftGet('CARD3')");
+  return ((rec.workspace||{}).texts||{}).item13==='What went out.' && /Issued/.test(said)
+      ? true : ('i13='+((rec.workspace||{}).texts||{}).item13+' said='+said); });
+await ta('existing Item 13 text is not replaced without asking', async()=>{
+  await CARDSEED();
+  await E("(async function(){var r=await draftGet('CARD1');r.workspace.texts.item13='Mine.';await draftPut(r);})()");
+  E("window.uiConfirm=async function(){return false;};");
+  const text=listValues('dashTplList').find(x=>/Prime template/.test(x));
+  await E("dashCardTpl('CARD1',{value:"+JSON.stringify(text)+"})");
+  E("window.uiConfirm=async function(){return true;};");
+  const rec=await E("draftGet('CARD1')");
+  return ((rec.workspace||{}).texts||{}).item13==='Mine.'; });
+t('both card pickers and the form picker read one list', ()=>
+  E("String(ctPickerOptions)").includes('ctPickerEntries(')
+  && E("String(ctPickerTypeahead)").includes('ctPickerEntries(')
+  && E("String(ctPickerResolve)").includes('ctPickerTypeahead('));
+t('the toolbar row that was the wrong shape is gone', ()=>
+  E("typeof dashBuildStartPickers")==='undefined'
+  && E("typeof dashStartFromTemplate")==='undefined'
+  && !w.document.getElementById('dashStartRow'));
+E("tplSave(TPL_B13,[]);tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
