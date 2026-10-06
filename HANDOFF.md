@@ -1,10 +1,25 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-06T09:20-05:00 by Maintainer
+Last updated: 2026-10-06T14:30-05:00 by Maintainer
 
 ## Current State
 
-Built and gated, not yet tagged: **v2.8.0 (Tool 2.153)**, carrying v2.7.2 as well.
+Latest published release: **v2.8.0 (Tool 2.153)**, carrying v2.7.2 as well.
+Signed tag at 3c37f72 on `main`; assets, checksums, the provenance attestation,
+the kit rebuild and the pdf-lib check all verified from a fresh download
+(official 1deac142..., demo cea149bc..., ref refs/tags/v2.8.0, rebuild
+byte-identical, no bytecode in the kit); live demo published as
+dd254-interactive 6757fba. The SBOM, the rule catalog and the ISSM brief are
+attached as release assets for the first time, so the brief no longer promises
+evidence the download lacks.
+
+The first v2.8.0 attempt failed and its tag was moved. The release workflow
+stopped at "Re-run every check" because a new test slept 200ms before looking
+for a dialog that a hosted runner had not built yet; nothing was staged,
+attested or published. The tag was deleted (no release existed for it) and
+recreated at the fixed commit. Every dialog wait in the copy and
+standard-language tests now polls through the suite's own waitFor/waitDlg
+helpers, which had been there all along.
 Three owner reports of 6 October 2026: a copy carried the original's workflow
 (holds, distribution, countersignature, Blocked status), the Contract Type
 repository had a security-manager box with no picker behind it, and the
@@ -118,6 +133,13 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-06 Maintainer - Published v2.8.0 and the live demo; verified both from a
+fresh download rather than from the workflow result, including the first use of
+attest-build-provenance v4 after the workflow actions were bumped off the
+deprecated Node 20 runtime. Note for the next release: GitHub migrates the
+ubuntu-latest label to Ubuntu 26 from 19 October 2026, which both workflows
+will follow unless they are pinned.
 
 2026-10-06 Maintainer - Built v2.8.0 for three owner reports: copies no longer
 take the original's workflow events (they reconcile their own approval holds
