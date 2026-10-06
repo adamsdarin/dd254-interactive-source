@@ -1,6 +1,9 @@
-## v2.7.2 - 6 October 2026
+## v2.8.0 - 6 October 2026
 
-Tool version 2.152. One owner-reported defect. No storage format change.
+Tool version 2.153. Three owner reports of 6 October 2026: a copy that carried
+the original's workflow, a Contract Type picker with nothing behind it, and the
+standard-language work that had not been built. No storage format change;
+Standard Language entries gain two optional fields.
 
 - Fixed: copying a DD-254 carried its workflow across. A copy of a blocked
   DD-254 arrived holding the original's holds -- raised against the original and
@@ -52,6 +55,27 @@ change.
   path can be set with `DD254_BROWSER_PATH`, and `DD254_BROWSER_CI=1` drops the
   sandbox, which a hosted runner requires and a local run does not.
 
+- The Contract Type repository had a security-manager box with no picker behind
+  it. Both the manager list and the programme list were rendered only for the
+  DD-254 Template Language repository, so on Contract Type each was a plain text
+  field. Both repositories now offer both pickers.
+- Programme options are taken from the Security Manager templates rather than
+  from whatever has already been typed into the repository being edited. A
+  programme already recorded on a template stays in the list, so an entry made
+  before its manager existed does not drop out. Standard Language entries offer
+  the same list.
+- Settings: Standard language, Optional or Mandatory, Optional being the
+  previous behaviour. Mandatory offers a new DD-254 the library entry matching
+  its programme and Item 1a level, and blocks any DD-254 whose Item 13 carries
+  none of the library wording. Presence in Item 13 is what is checked, so
+  deleting the paragraph removes it; the rule is stated once and read by both
+  the status gate and the issue checklist. The offer can be declined, which
+  leaves the blocking error standing, and the finding can be set aside with a
+  written reason like any other.
+- Standard Language entries carry an optional programme and Item 1a level, which
+  is what makes the right entry findable. Blank means any.
+
+## v2.7.2 (not released separately; carried by v2.8.0)
 ## v2.7.0 - 5 October 2026
 
 Tool version 2.150. Contract types are chosen when they are wanted, not asked

@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.7.2 (tool version 2.152)"
+VER="DD254 Interactive v2.8.0 (tool version 2.153)"
 
 DOC = [
-("h1","DD254 Interactive v2.7.2 changes"),
+("h1","DD254 Interactive v2.8.0 changes"),
+("b","<b>Settings: Standard language</b> can now be <b>Mandatory</b> instead of Optional. Mandatory offers a new DD-254 the Standard Language entry that matches its programme and its Item 1a level, and a DD-254 whose Item 13 carries none of the library wording cannot leave Draft. What is checked is what is in Item 13, so deleting the paragraph removes it. The offer can be declined; the blocking error then stands until the wording is there, and like any other finding it can be set aside with a written reason. See 2.5 and 5.6."),
+("b","<b>Standard Language</b> entries carry an optional <b>programme</b> and <b>Item 1a level</b>, which is what lets the right entry be offered. Blank means the entry fits any programme or any level. See 5.6."),
+("b","<b>Fixed:</b> the Contract Type repository showed a security / program manager box with no picker behind it — the list was built only for DD-254 Template Language. Both repositories now offer it."),
+("b","<b>Programme</b> options in the Contract Type, DD-254 Template Language and Standard Language repositories are taken from the <b>Security Manager templates</b>, instead of from whatever had already been typed into the repository being edited. A programme already recorded on a template stays in the list. See 5.5."),
+("h2","DD254 Interactive v2.7.2 changes"),
 ("b","<b>Fixed:</b> copying a DD-254 no longer brings its workflow with it. A copy of a blocked DD-254 used to arrive carrying the original's holds \u2014 raised against the original, dated before the copy existed \u2014 along with its distribution record and countersignature, so the copy showed a queue it had never been in. Status, holds, distribution, countersignature and the issue and review dates now stay with the DD-254 they happened to. If the copy's own Item 10, 11 or 14 boxes call for GCA approval it raises its own hold, dated today. See 3.4."),
 ("h2","DD254 Interactive v2.7.1 changes"),
 ("b","<b>Fixed:</b> a task order with its own DD-254 now appears in the template picker on the form, listed by its prime contract and order number. Choosing it selects the template bound to that order. An order whose source still needs review is shown but cannot be chosen. See 5.3."),
@@ -503,13 +508,14 @@ DOC = [
 
 ("h2","5.6 Standard Language"),
 ("p","Some organisations put the same wording on every DD-254 they issue. This library keeps that text in one place so it goes on identically every time, instead of being retyped or pasted from the last form."),
-("n","Two fields only: a <b>Name</b> and the <b>text</b>. Nothing about the form is modelled here."),
-("n","<b>Nothing is applied automatically.</b> The form\u2019s side panel lists your saved entries; you pick one and click <b>Insert</b>. Organisations keep several and use different ones on different contracts."),
+("n","A <b>Name</b> and the <b>text</b>, plus an optional <b>programme</b> and <b>Item 1a level</b>. The two optional fields exist only so the right entry can be offered when standard language is mandatory; blank means the entry fits any programme or any level. The programme options come from your Security Manager templates."),
+("n","<b>While standard language is Optional, nothing is applied automatically.</b> The form’s side panel lists your saved entries; you pick one and click <b>Insert</b>. Organisations keep several and use different ones on different contracts."),
+("n","<b>Set to Mandatory in Settings</b> (2.5), a new DD-254 is offered the entries matching the programme and Item 1a level you choose, and the one you pick is inserted at the top of Item 13. Choosing the level also fills Item 1a if it is still empty. You can decline the offer."),
 ("n","Inserted text goes to the very top of Block 13 \u2014 above the Item 10 and 11 box language and above anything you have typed."),
 ("n","Insert more than one and they read in the order you added them."),
 ("n","The same entry cannot be inserted twice. The panel marks what is already in Block 13."),
 ("warn","Removing standard language is a <b>manual edit</b>: delete it from Block 13 yourself. Once deleted it stays deleted \u2014 nothing puts it back on the next validation pass. This is ordinary text once inserted, not a region the tool maintains."),
-("p","What a DD-254 is carrying shows on its card, under the attachment list. It is there so you can see it without opening the form; it never blocks a status."),
+("p","What a DD-254 is carrying shows on its card, under the attachment list. It is there so you can see it without opening the form. While standard language is Optional it never blocks a status; set to Mandatory, a DD-254 whose Item 13 carries none of the library wording cannot leave Draft, and the error names what to insert. An empty library says so rather than demanding the impossible. The finding can be set aside with a written reason like any other (4.17)."),
 ("note","<b>Capture from form strips it.</b> If you capture a form that has standard language showing, the captured template holds only what you wrote. Otherwise the text would be baked into that template untracked, and the same wording could later be inserted a second time and print twice on an issued form."),
 ("n","<b>Insert all</b> in the DD-254 Template Language panel does not touch this library."),
 ("n","In the full backup. Not in the spreadsheet round trip, and not in dashboard search."),

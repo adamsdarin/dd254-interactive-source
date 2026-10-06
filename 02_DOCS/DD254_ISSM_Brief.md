@@ -1,6 +1,6 @@
 # DD254 Interactive — brief for the ISSM
 
-DD254 Interactive v2.7.2 / Tool v2.152. Two pages, for the officer deciding
+DD254 Interactive v2.8.0 / Tool v2.153. Two pages, for the officer deciding
 whether this file may be opened on a managed workstation.
 
 The longer [security fact sheet](DD254_Tool_Security_Fact_Sheet.md) is written
@@ -83,7 +83,7 @@ document:
 | `DD254_Interactive_SBOM.cdx.json` | CycloneDX component inventory with licences and hashes |
 | `DD254_Rule_Catalog.md` | Every rule the tool enforces, in readable form |
 
-The SBOM and the rule catalog are attached to releases from v2.7.2 onward. For
+The SBOM and the rule catalog are attached to releases from v2.8.0 onward. For
 v2.7.1 and earlier, read them from `02_DOCS/` in the source repository at the
 tag being reviewed; both are generated from the build, so the copy at a tag is
 the one for that release.

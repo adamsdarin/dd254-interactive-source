@@ -1,4 +1,4 @@
-BUILD_SHA256 587abc1552e179e6e19d42ec444de1e2110f6b99094a25bc527b8678de641f88
+BUILD_SHA256 1deac1426248ab39b3b3bd2523847bb93e7342d1e9d9d545ef162283c7a9cacf
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1520,7 +1520,11 @@ BUILD_SHA256 587abc1552e179e6e19d42ec444de1e2110f6b99094a25bc527b8678de641f88
   PASS  a draft written before v2.6.0 keeps one copy of its addresses
   PASS  an issued DD-254 is not rewritten when it is opened
   PASS  the same DD-254 gains the line once it is no longer issued
-  PASS  Contract Type rows carry a Program field
+  PASS  Contract Type rows carry a Program field with a picker behind it
+  PASS  the Contract Type repository offers the security managers in its picker
+  PASS  both repositories take their programme options from the security managers
+  PASS  a programme already on a template is kept in the picker
+  PASS  the programme list is derived, never a second hand-kept copy
   PASS  assigning a security manager fills the program from that manager
   PASS  the linked manager reaches the distribution when the template is applied
   PASS  a template carrying a task order no longer claims to be order-specific
@@ -1540,6 +1544,20 @@ BUILD_SHA256 587abc1552e179e6e19d42ec444de1e2110f6b99094a25bc527b8678de641f88
   PASS  an order whose source still needs review is shown but cannot be chosen
   PASS  the picker searches orders by order number
 
+### 114. v2.7.2 standard language can be made mandatory
+  PASS  the setting is off by default and is a real Settings entry
+  PASS  turning it on and off is recorded in the audit log
+  PASS  an entry matches on programme and Item 1a level, blank meaning any
+  PASS  while optional, a DD-254 with no standard language raises nothing
+  PASS  made mandatory, a DD-254 with no standard language is blocked
+  PASS  inserting the entry clears the block, deleting it brings the block back
+  PASS  an empty library says so rather than demanding the impossible
+  PASS  creating a DD-254 offers the matching entries and inserts the chosen one
+  PASS  declining the offer leaves the blocking error standing
+  PASS  while optional, creating a DD-254 asks nothing
+  PASS  the gate and the issue checklist read one statement of the rule
+  PASS  the Standard Language rows carry programme and Item 1a level
+
 ================================
-  PASS 1298   FAIL 0
+  PASS 1314   FAIL 0
 ================================

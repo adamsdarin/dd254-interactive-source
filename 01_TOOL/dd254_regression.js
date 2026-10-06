@@ -8106,11 +8106,45 @@ await ta('the same DD-254 gains the line once it is no longer issued', async()=>
   await E("(async function(){var r=await draftGet('pdq3');r.status='Draft';await draftPut(r);})()");
   await E("dashOpen('pdq3')");
   return countPdq()===1 && /Issued guidance, exactly as it went out\./.test(g13()) ? true : g13(); });
-t('Contract Type rows carry a Program field', ()=>{
-  E("tplSave(TPL_B13,[{label:'CT prog',data:ctBlankData()}]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+/* This asserted only that the Program box pointed at a datalist, and passed
+   while that datalist was never rendered for this repository -- an empty picker
+   satisfied it. It now requires the list element to exist. */
+t('Contract Type rows carry a Program field with a picker behind it', ()=>{
+  E("tplSave(TPL_B13,[{label:'CT prog',data:ctBlankData()}]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';TPL_DIRTY=false;clearTimeout(TPL_TOUCH_T);TPL_TOUCH_T=0;");
   E("dashTplEdit('b13');");
   const h=w.document.getElementById('tplView').innerHTML;
-  return /TPL_EDIT\[0\]\.program=this\.value/.test(h) && /ctProgramList/.test(h); });
+  return /TPL_EDIT\[0\]\.program=this\.value/.test(h) && /ctProgramList/.test(h)
+      && !!w.document.getElementById('ctProgramList'); });
+/* v2.7.2 owner report: the Contract Type repository had a security-manager box
+   with nothing behind it. Both datalists were gated on the DD-254 Template
+   Language repository, so on Contract Type the box was a plain text field. */
+const repoOpen=(kind)=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';TPL_DIRTY=false;clearTimeout(TPL_TOUCH_T);TPL_TOUCH_T=0;");
+  E("dashTplEdit('"+kind+"');");
+  const opts=(id)=>Array.from((w.document.getElementById(id)||{querySelectorAll:()=>[]})
+    .querySelectorAll('option')).map(o=>o.value);
+  return {sm:opts('ctSmList'), prog:opts('ctProgramList')};
+};
+t('the Contract Type repository offers the security managers in its picker', ()=>{
+  E("tplSave(TPL_SM,[{label:'M1',name:'Reed, Ann',email:'areed@acme.com',program:'FALCON'},{label:'M2',name:'Osei, Kofi',email:'kosei@acme.com',program:'KESTREL'}]);");
+  E("tplSave(TPL_B13,[{label:'CT one',data:ctBlankData()}]);");
+  const r=repoOpen('b13');
+  return r.sm.indexOf('Reed, Ann')>=0 && r.sm.indexOf('Osei, Kofi')>=0
+      ? true : ('managers offered: '+JSON.stringify(r.sm)); });
+t('both repositories take their programme options from the security managers', ()=>{
+  const b=repoOpen('b13');
+  E("tplSave(TPL_CT,[{label:'CT lang',data:ctBlankData()}]);");
+  const c=repoOpen('ct');
+  const has=(a)=>a.indexOf('FALCON')>=0 && a.indexOf('KESTREL')>=0;
+  return has(b.prog) && has(c.prog)
+      ? true : ('b13='+JSON.stringify(b.prog)+' ct='+JSON.stringify(c.prog)); });
+t('a programme already on a template is kept in the picker', ()=>{
+  E("tplSave(TPL_B13,[{label:'CT two',program:'LEGACY ONE',data:ctBlankData()}]);");
+  const r=repoOpen('b13');
+  return r.prog.indexOf('LEGACY ONE')>=0 && r.prog.indexOf('FALCON')>=0
+      ? true : JSON.stringify(r.prog); });
+t('the programme list is derived, never a second hand-kept copy', ()=>
+  E("String(ctProgramOptions)").includes('tplLoad(TPL_SM)'));
 t('assigning a security manager fills the program from that manager', ()=>{
   E("tplSave(TPL_SM,[{label:'M',name:'Reed, Ann',email:'areed@acme.com',program:'FALCON'}]);");
   E("tplSave(TPL_B13,[{label:'CT prog',data:ctBlankData()}]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';dashTplEdit('b13');");
@@ -8207,6 +8241,105 @@ await ta('the picker searches orders by order number', async()=>{ await ORDSEED(
   E("ctFilterSel('');");
   return /0099/.test(t) && !/Prime template/.test(t) ? true : t; });
 E("tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);window.CT_FILTER='';showDashView();resetFormFields();");
+
+H('114. v2.7.2 standard language can be made mandatory');
+const SLSEED=()=>E("tplSave(TPL_SL,["
+  +"{label:'Acme corporate',program:'FALCON',level:'S',text:'Acme standard paragraph for SECRET work.'},"
+  +"{label:'Acme top secret',program:'FALCON',level:'TS',text:'Acme standard paragraph for TOP SECRET work.'},"
+  +"{label:'Any and all',text:'Wording that fits anything.'}]);");
+t('the setting is off by default and is a real Settings entry', ()=>{
+  E("try{localStorage.removeItem('dd254_sl_required');}catch(e){}");
+  return E("slRequired()")===false && E("slRequiredModeGet()")==='off'
+      && E("SETTINGS_DEFS.some(function(d){return d.key==='slRequired';})")===true; });
+t('turning it on and off is recorded in the audit log', ()=>{
+  E("slRequiredModeSet('on')");
+  const on=E("slRequired()")===true;
+  const logged=E("audAll()").some(a=>a.action==='setting-changed'&&/Standard language: mandatory/.test(a.detail||''));
+  E("slRequiredModeSet('off')");
+  return on && logged && E("slRequired()")===false; });
+t('an entry matches on programme and Item 1a level, blank meaning any', ()=>{
+  SLSEED();
+  const c=(p,l)=>E("slCandidates('"+p+"','"+l+"')").map(x=>x.label);
+  const s1=c('FALCON','S'), s2=c('FALCON','TS'), s3=c('','' ), s4=c('KESTREL','S');
+  return s1.join()==='Acme corporate,Any and all'
+      && s2.join()==='Acme top secret,Any and all'
+      && s3.length===3
+      && s4.join()==='Any and all'
+      ? true : JSON.stringify([s1,s2,s3,s4]); });
+t('while optional, a DD-254 with no standard language raises nothing', ()=>{
+  SLSEED(); E("slRequiredModeSet('off')");
+  E("showFormView();resetFormFields();document.getElementById('item13').value='Local guidance only.';run();");
+  return !hasE(/[Ss]tandard language/); });
+t('made mandatory, a DD-254 with no standard language is blocked', ()=>{
+  E("slRequiredModeSet('on')");
+  E("run();");
+  const hit=ERRS().filter(m=>/Standard language is mandatory/.test(m));
+  return hit.length===1 ? true : JSON.stringify(ERRS().slice(0,4)); });
+t('inserting the entry clears the block, deleting it brings the block back', ()=>{
+  E("slInsert(0);");
+  const applied=E("slApplied()");
+  const clean=!hasE(/Standard language is mandatory/);
+  E("showFormView();document.getElementById('item13').value='Local guidance only.';run();");
+  const back=hasE(/Standard language is mandatory/);
+  return applied.join()==='Acme corporate' && clean && back
+      ? true : ('applied='+applied.join()+' clean='+clean+' back='+back); });
+t('an empty library says so rather than demanding the impossible', ()=>{
+  E("tplSave(TPL_SL,[]);run();");
+  const m=ERRS().filter(x=>/Standard Language library is empty/.test(x));
+  return m.length===1 ? true : JSON.stringify(ERRS().slice(0,3)); });
+await ta('creating a DD-254 offers the matching entries and inserts the chosen one', async()=>{
+  SLSEED(); E("slRequiredModeSet('on')");
+  E("window.uiPrompt=async function(){return 'Mandatory SL draft';};");
+  const pr=E("dashNewDraft('orig')");
+  await new Promise(r=>setTimeout(r,200));
+  const d=w.document.getElementById('slPickDlg');
+  if(!d) return 'no standard-language dialog';
+  d.querySelector('#slPickLvl').value='TS';
+  d.querySelector('#slPickLvl').onchange();
+  const names=Array.from(d.querySelectorAll('.slPickOne b')).map(b=>b.textContent);
+  d.querySelectorAll('.slPickOne')[0].click();
+  await pr; await new Promise(r=>setTimeout(r,80));
+  const i13=w.document.getElementById('item13').value;
+  return names.join()==='Acme top secret,Any and all'
+      && /TOP SECRET work/.test(i13)
+      && w.document.getElementById('fcl1a').value==='TS'
+      ? true : ('offered='+names.join()+' level='+w.document.getElementById('fcl1a').value); });
+await ta('declining the offer leaves the blocking error standing', async()=>{
+  SLSEED(); E("slRequiredModeSet('on')");
+  E("window.uiPrompt=async function(){return 'Skipped SL draft';};");
+  const pr=E("dashNewDraft('orig')");
+  await new Promise(r=>setTimeout(r,200));
+  const d=w.document.getElementById('slPickDlg');
+  if(!d) return 'no standard-language dialog';
+  d.querySelector('#slPickSkip').click();
+  await pr; await new Promise(r=>setTimeout(r,80));
+  E("run();");
+  return E("slApplied()").length===0 && hasE(/Standard language is mandatory/); });
+await ta('while optional, creating a DD-254 asks nothing', async()=>{
+  E("slRequiredModeSet('off')");
+  E("window.uiPrompt=async function(){return 'Quiet draft';};");
+  const pr=E("dashNewDraft('orig')");
+  await new Promise(r=>setTimeout(r,200));
+  const asked=!!w.document.getElementById('slPickDlg');
+  await pr;
+  return asked===false; });
+/* Two sources of truth is the recurring defect in this tool, and a blocking
+   message written out twice is one of them. The gate and the issue checklist
+   both read slRequiredError(). */
+t('the gate and the issue checklist read one statement of the rule', ()=>{
+  const chk=E("String(exportPrep254)"), panel=E("String(buildPanel)");
+  /* neither reader may carry the wording itself */
+  const copies=[chk,panel].map(src=>(src.match(/Standard language is mandatory/g)||[]).length);
+  return /slRequiredError/.test(chk) && /slRequiredError/.test(panel)
+      && copies[0]===0 && copies[1]===0
+      ? true : ('chk='+/slRequiredError/.test(chk)+' panel='+/slRequiredError/.test(panel)+' copies='+copies.join(',')); });
+t('the Standard Language rows carry programme and Item 1a level', ()=>{
+  SLSEED();
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';TPL_DIRTY=false;clearTimeout(TPL_TOUCH_T);TPL_TOUCH_T=0;dashTplEdit('sl');");
+  const h=w.document.getElementById('tplView').innerHTML;
+  return /TPL_EDIT\[0\]\.program=this\.value/.test(h) && /TPL_EDIT\[0\]\.level=this\.value/.test(h)
+      && !!w.document.getElementById('ctProgramList'); });
+E("slRequiredModeSet('off');tplSave(TPL_SL,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

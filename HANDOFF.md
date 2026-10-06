@@ -1,8 +1,18 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-06T00:20-05:00 by Maintainer
+Last updated: 2026-10-06T09:20-05:00 by Maintainer
 
 ## Current State
+
+Built and gated, not yet tagged: **v2.8.0 (Tool 2.153)**, carrying v2.7.2 as well.
+Three owner reports of 6 October 2026: a copy carried the original's workflow
+(holds, distribution, countersignature, Blocked status), the Contract Type
+repository had a security-manager box with no picker behind it, and the
+standard-language work had not been built. All three are done: 1314 assertions
+pass against build 1deac142, all five gates pass, the kit round-trips
+byte-identically and the native-browser smoke test passes. v2.7.2 (the copy fix
+alone, build 587abc15) is committed at f4c31c3 and preserved, as v2.7.0 was.
+Tagging waits on the owner.
 
 Latest published release: **v2.7.1 (Tool 2.151)**, which carries v2.7.0 as well;
 v2.7.0 was built and verified but never tagged, so the two ship under one tag.
@@ -108,6 +118,18 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-06 Maintainer - Built v2.8.0 for three owner reports: copies no longer
+take the original's workflow events (they reconcile their own approval holds
+instead, so copying is not a way past a GCA gate); the Contract Type repository
+and Standard Language now render the security-manager and programme pickers,
+whose programme options are derived from the Security Manager templates rather
+than from whatever had been typed into the repository being edited; and
+Standard language can be set to Mandatory, which offers a matching entry at
+creation and blocks a DD-254 whose Item 13 carries none of the library wording.
+Two earlier half-truths were corrected in passing: the copy dialog claimed the
+opposite of what its code did, and the v2.6.0 test for the Contract Type
+Program field passed while the picker behind it was never rendered.
 
 2026-10-06 Maintainer — Published v2.7.1 and the live demo; verified both
 from a fresh download rather than from the workflow result. Closed the
