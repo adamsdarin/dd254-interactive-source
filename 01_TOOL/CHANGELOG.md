@@ -1,3 +1,25 @@
+## v2.9.1 - 7 October 2026
+
+Tool version 2.155. One owner request. No storage format change.
+
+- The Standard Language panel on the form listed the whole library on every
+  DD-254, so the entry this contract called for was read past everything
+  written for other programmes. It now lists what this DD-254 calls for: the
+  entries written for its programme and its Item 1a level, which are the same
+  two things the automatic insertion matches on, so the panel and the insertion
+  can no longer disagree about what fits.
+- Narrowing is not hiding. A "Show all" link opens the rest, and comes back,
+  because an entry carrying no programme or a different level is sometimes the
+  one needed and a panel that cannot reach it is one people work around.
+- Before the form says enough to narrow by -- no template applied, or Item 1a
+  still empty -- every entry is listed, with one line naming what would narrow
+  it. A programme with nothing written at that level says so rather than
+  showing an empty panel.
+- Each row shows the programme and level it is written for, so what the filter
+  is doing is visible rather than implied.
+- Inserting is unchanged, and so is the Settings entry: Optional is still a
+  library you insert from, Mandatory still inserts the single matching entry.
+
 ## v2.9.0 - 7 October 2026
 
 Tool version 2.154. Three owner reports of 6 October 2026. Standard Language

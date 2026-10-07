@@ -1,8 +1,13 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-07T07:40-05:00 by Maintainer
+Last updated: 2026-10-07T08:05-05:00 by Maintainer
 
 ## Current State
+
+Built and gated, not yet tagged: **v2.9.1 (Tool 2.155)**, build c5b337d6. One
+owner request of 7 October 2026: the Standard Language panel lists the entries
+written for this DD-254's programme and Item 1a level rather than the whole
+library, with the rest one link away. 1367 assertions pass; all five gates pass.
 
 Latest published release: **v2.9.0 (Tool 2.154)**, signed tag at 3ab69c0 on
 `main`; assets, checksums, the provenance attestation, the kit rebuild and the

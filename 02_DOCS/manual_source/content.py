@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.9.0 (tool version 2.154)"
+VER="DD254 Interactive v2.9.1 (tool version 2.155)"
 
 DOC = [
-("h1","DD254 Interactive v2.9.0 changes"),
+("h1","DD254 Interactive v2.9.1 changes"),
+("b","The <b>Standard Language</b> panel on the form now lists <b>what this DD-254 calls for</b> — the entries written for its programme and its Item 1a level — instead of the whole library. <b>Show all</b> opens the rest. Until the form has both a programme and a level, every entry is listed with a line saying what would narrow it. See 5.6."),
+("h2","DD254 Interactive v2.9.0 changes"),
 ("b","<b>Naming a new DD-254.</b> <b>New Solicitation</b> and <b>Original</b> now ask for the <b>person’s first and last name</b>, the <b>prime contract number</b>, an optional <b>subcontract number</b> and an <b>e-mail</b>, instead of a free-text title. The name is built as <i>Jane Doe — N00178-24-D-1234</i> and stays editable. The contract numbers go to Items 2a and 2b and the e-mail becomes the requestor, so none of them is typed twice. The <b>pencil</b> reopens the same fields. See 3.18."),
 ("b","<b>The dashboard card gains a DD-254 template picker</b> beside its contract type one, and <b>both are now searchable</b> — type part of a contract or order number and the list narrows. The template picker lists task orders under their own number, and an order that follows its prime resolves to the prime’s template. Choosing applies that language to that DD-254. See 3.17."),
 ("b","<b>Fixed:</b> the template picker on the form now lists <b>every saved order</b> under its own number. An order that follows the prime used to be absent, so searching its order number found nothing and you had to remember which prime covered it. Choosing one inserts the prime's template, and the entry says which template that is. An order with no prime template saved yet is shown but cannot be chosen."),
@@ -540,6 +542,7 @@ DOC = [
 ("n","<b>Insert all</b> in the DD-254 Template Language panel does not touch this library."),
 ("n","In the full backup. Not in the spreadsheet round trip, and not in dashboard search."),
 
+("n","<b>The panel shows what this DD-254 calls for.</b> Once the form has a programme — from the DD-254 template or contract type applied to it — and an <b>Item 1a</b> level, the panel lists only the entries written for those, with a line saying which. <b>Show all</b> opens the rest and comes back; each row shows the programme and level it is written for. Until the form has both, every entry is listed and the panel says what would narrow it."),
 ("h2","5.7 Spreadsheet round trip"),
 ("p","Every library except Standard Language exports to CSV and re-imports from CSV or XLSX."),
 ("n","Export first, even from an empty library — the header row is the layout the importer expects."),

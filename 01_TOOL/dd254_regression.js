@@ -8724,6 +8724,86 @@ t('one composer names every DD-254', ()=>
   && E("String(dashRename)").includes('dashPartyPrompt(')
   && E("String(dashRename)").includes('dashPartyApply('));
 
+H('120. v2.9.1 the Standard Language panel lists what this DD-254 calls for');
+/* Owner, 7 October 2026: the panel listed the whole library on every DD-254,
+   so the entry this contract calls for was read past everything else. */
+const SLPANEL=async()=>{
+  await wipe();
+  E("window.SL_PANEL_ALL=false;");
+  E("tplSave(TPL_SM,[{label:'M',name:'Reed, Ann',email:'a@x.com',program:'SHOES'}]);");
+  E("tplSave(TPL_SL,["
+   +"{label:'Shoes confidential',program:'SHOES',level:'C',text:'Shoes paragraph for CONFIDENTIAL.'},"
+   +"{label:'Shoes secret',program:'SHOES',level:'S',text:'Shoes paragraph for SECRET.'},"
+   +"{label:'Boots secret',program:'BOOTS',level:'S',text:'Boots paragraph for SECRET.'},"
+   +"{label:'Fits anything',text:'Wording that fits anything.'}]);");
+  E("(function(){var d=Object.assign(ctBlankData(),{primeContract:'W911-SHOES',i13:'Programme language.'});"
+   +"tplSave(TPL_CT,[{label:'Shoes prime',ioId:'ct-shoes',program:'SHOES',srcDate:'2026-01-05',data:d}]);})();");
+  E("showFormView();resetFormFields();buildTplSelects();");
+  await new Promise(r=>setTimeout(r,30));
+};
+const panelNames=()=>Array.from(w.document.querySelectorAll('#slPanel .sl-name')).map(b=>b.textContent);
+const panelText=()=>(w.document.getElementById('slPanel')||{textContent:''}).textContent;
+await ta('with no programme or level it lists everything and says why', async()=>{
+  await SLPANEL();
+  E("slRenderPanel();");
+  const n=panelNames();
+  return n.length===4 && /Enter the Item 1a level/.test(panelText())
+      ? true : (n.join(',')+' | '+panelText().slice(0,80)); });
+await ta('with a programme but no level it still lists everything', async()=>{
+  await SLPANEL();
+  E("document.getElementById('ctTplSel').value='ct-shoes';slRenderPanel();");
+  return panelNames().length===4 && /Enter the Item 1a level/.test(panelText()); });
+await ta('with both, it lists only what this DD-254 calls for', async()=>{
+  await SLPANEL();
+  E("document.getElementById('ctTplSel').value='ct-shoes';");
+  E("document.getElementById('fcl1a').value='S';slRenderPanel();");
+  const n=panelNames();
+  /* the SHOES entry at SECRET, and the one written for any programme */
+  return n.join(',')==='Shoes secret,Fits anything'
+      && /Written for/.test(panelText()) && /SHOES/.test(panelText()) && /Secret/.test(panelText())
+      ? true : (n.join(',')+' | '+panelText().slice(0,90)); });
+await ta('the others are one link away, and the link comes back', async()=>{
+  await SLPANEL();
+  E("document.getElementById('ctTplSel').value='ct-shoes';");
+  E("document.getElementById('fcl1a').value='S';slRenderPanel();");
+  const link=/Show all \u00b7 2 others/.test(panelText());
+  E("slPanelShowAll(true);");
+  const all=panelNames().length;
+  const back=/Show only what this DD-254 calls for/.test(panelText());
+  E("slPanelShowAll(false);");
+  const narrowed=panelNames().length;
+  return link && all===4 && back && narrowed===2
+      ? true : ('link='+link+' all='+all+' back='+back+' narrowed='+narrowed); });
+await ta('Insert still inserts the entry that was clicked', async()=>{
+  await SLPANEL();
+  E("document.getElementById('ctTplSel').value='ct-shoes';");
+  E("document.getElementById('fcl1a').value='S';slRenderPanel();");
+  /* The panel is filtered; the index on the button is the library index, so the
+     second row must insert 'Fits anything' and not the library's second entry. */
+  const btns=Array.from(w.document.querySelectorAll('#slPanel button'));
+  btns[1].click();
+  await new Promise(r=>setTimeout(r,20));
+  const i13=w.document.getElementById('item13').value;
+  return /Wording that fits anything/.test(i13) && !/Shoes paragraph for SECRET/.test(i13)
+      ? true : i13.slice(0,80); });
+await ta('an entry written for nothing in particular says so on its row', async()=>{
+  await SLPANEL();
+  E("slRenderPanel();");
+  return /any programme/.test(panelText()) && /any level/.test(panelText()); });
+await ta('a programme with nothing at that level says so rather than looking empty', async()=>{
+  await SLPANEL();
+  E("tplSave(TPL_SL,[{label:'Shoes confidential',program:'SHOES',level:'C',text:'Only CONFIDENTIAL.'}]);");
+  E("document.getElementById('ctTplSel').value='ct-shoes';");
+  E("document.getElementById('fcl1a').value='TS';slRenderPanel();");
+  return /No entry is written for this programme at this level/.test(panelText())
+      ? true : panelText().slice(0,120); });
+t('the panel and the automatic insertion match on the same two things', ()=>
+  E("String(slPanelState)").includes('slProgramForForm(')
+  && E("String(slPanelState)").includes('slLevelForForm(')
+  && E("String(slPanelState)").includes('slCandidates(')
+  && E("String(slAutoApply)").includes('slCandidates('));
+E("window.SL_PANEL_ALL=false;tplSave(TPL_SL,[]);tplSave(TPL_CT,[]);showDashView();resetFormFields();");
+
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
 if(failures.length) console.log('  failing: '+failures.join(' | '));
