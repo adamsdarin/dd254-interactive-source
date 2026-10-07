@@ -59,6 +59,18 @@ Added:
 - The card's contract-type `<select>` becomes an `<input type="search"
   list="dashTypeList">`, and the card gains the matching template input.
 
+- `dashPartyPrompt(o)` is the one dialog for naming a DD-254, used by
+  `dashNewDraft` and `dashRename`. `dashNameCompose({person,prime,sub})` builds
+  the name; the name field follows the inputs until it is typed in, then stops.
+  `dashEmailOk` checks the e-mail's shape. `dashPartyApply(rec,ans,opts)` writes
+  title, `requestedBy`, the new `requestedByName`, `meta.contract` and
+  `workspace.texts.i2a`/`i2b`, and the live form's Items 2a and 2b when that
+  record is the one on screen. `opts.lockedFields` leaves Items 2a and 2b alone
+  for `DASH_LOCKED` statuses.
+- `dashRename` reads the prime and subcontract from the live form when that
+  draft is open and from the stored workspace otherwise, so the dialog opens on
+  what the DD-254 actually says rather than on a copy kept beside it.
+
 Removed:
 
 - `slPickForNew()`, the v2.8.0 creation-time chooser, and its `dashNewDraft`

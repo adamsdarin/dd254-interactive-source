@@ -5,6 +5,7 @@ VER="DD254 Interactive v2.9.0 (tool version 2.154)"
 
 DOC = [
 ("h1","DD254 Interactive v2.9.0 changes"),
+("b","<b>Naming a new DD-254.</b> <b>New Solicitation</b> and <b>Original</b> now ask for the <b>person’s first and last name</b>, the <b>prime contract number</b>, an optional <b>subcontract number</b> and an <b>e-mail</b>, instead of a free-text title. The name is built as <i>Jane Doe — N00178-24-D-1234</i> and stays editable. The contract numbers go to Items 2a and 2b and the e-mail becomes the requestor, so none of them is typed twice. The <b>pencil</b> reopens the same fields. See 3.18."),
 ("b","<b>The dashboard card gains a DD-254 template picker</b> beside its contract type one, and <b>both are now searchable</b> — type part of a contract or order number and the list narrows. The template picker lists task orders under their own number, and an order that follows its prime resolves to the prime’s template. Choosing applies that language to that DD-254. See 3.17."),
 ("b","<b>Fixed:</b> the template picker on the form now lists <b>every saved order</b> under its own number. An order that follows the prime used to be absent, so searching its order number found nothing and you had to remember which prime covered it. Choosing one inserts the prime's template, and the entry says which template that is. An order with no prime template saved yet is shown but cannot be chosen."),
 ("b","<b>Task orders can be deleted</b>, and an order's coverage can be <b>changed after creation</b> \u2014 from its own DD-254 to following the prime, or the other way. Deleting keeps the order-specific template and any DD-254 already created from the order. Moving an order to its own DD-254 starts an editable template from the prime's language; moving it to the prime keeps its own template in the library, unbound. Either way the order asks for its source to be reviewed before a new DD-254 is started from it."),
@@ -276,6 +277,14 @@ DOC = [
 ("n","Choosing fills Items 10, 11, 12, 13, 14, 15, 16 and 18 from what you picked. If Item 13 already has text you are asked before it is replaced."),
 ("n","A name that matches nothing applies nothing and says so, rather than guessing at the nearest entry."),
 ("warn","An <b>Issued</b>, <b>Cancelled</b> or <b>Skipped</b> DD-254 is not rewritten — it is the record of what went out. Copy it and apply the template to the copy."),
+("h2","3.18 Naming a DD-254"),
+("p","A DD-254 is named for the person it is for and the contract it is on, so the same contract cannot arrive under three different names. <b>New Solicitation</b> and <b>Original</b> ask four questions."),
+("tbl",[["Asked","Where it goes"],["First and last name","Into the name, and kept on the record as the requestor’s name."],["Prime contract number","Into the name, and into <b>Item 2a</b>."],["Subcontract number (optional)","After the contract number in the name, and into <b>Item 2b</b>."],["E-mail","The <b>requestor e-mail</b>, which is copied when the DD-254 is distributed."]]),
+("n","The name builds itself as you type — <i>Jane Doe — N00178-24-D-1234 · SUB-0001</i> — and the box holding it is editable, so a DD-254 that does not fit the convention can still be called what it needs to be called."),
+("n","Name, prime contract number and e-mail are required; the e-mail is checked for shape. The subcontract number is optional."),
+("n","A solicitation still has <b>— Solicitation</b> added to the end."),
+("n","The <b>pencil</b>, on the card and beside the title on the form, reopens the same four fields and rebuilds the name from them."),
+("warn","An <b>Issued</b>, <b>Cancelled</b> or <b>Skipped</b> DD-254 can be renamed — a name is not a statement about what went out — but Items 2a and 2b are shown without being editable, because those are the record."),
 ("h1","4. The form — preparing the DD-254"),
 ("p","The form is an eight-step wizard with a live validation panel down the right-hand side. Steps are not locked: use Next and Previous, or the step dots, to move freely."),
 ("tbl",[["Wizard step","Items covered"],

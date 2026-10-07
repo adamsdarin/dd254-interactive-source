@@ -13,7 +13,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "ceeb3931be9f22d0ab7f8becfb70f302733194d29486d534602f91140c88d28a"
+          "content": "4b7abae7e7c9ae3e78f0b1f915b97e7ee0ebe5d0354db9653b303b3538875c82"
         }
       ],
       "externalReferences": [
@@ -133,7 +133,7 @@
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "1b9b1ebc165dc97204298f320f86da9ebda6ee40b017c16dc80f2cdd8afdb548"
+          "content": "6e393218d0e6e91202271ba8329812bff2fcff7185ffdf12107046f9f73b786f"
         }
       ]
     }

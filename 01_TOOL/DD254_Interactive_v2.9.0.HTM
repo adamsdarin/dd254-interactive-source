@@ -7415,9 +7415,13 @@ function ctPickContractType(list){
 
 async function dashNewDraft(stage){
   stage=stage||'orig';
-  let t=await uiPrompt('Title this DD-254 '+(stage==='sol'?'solicitation ':'')+'(you can rename it any time):','');
-  if(t==null) return;
-  t=t.trim()||'Untitled DD-254';
+  const ans=await dashPartyPrompt({
+    heading:'New DD-254 '+(stage==='sol'?'solicitation':'original'),
+    note:'Named for the person and the contract. Everything here can be changed later with the pencil.',
+    ok:'Create'
+  });
+  if(ans==null) return;
+  let t=ans.title;
   if(stage==='sol'&&!/solicitation/i.test(t)) t+=' — Solicitation';
   /* Contract type offer. These templates used to carry Block 13 text alone;
      they now carry the same structure as a DD-254 Template Language entry, so
@@ -7430,15 +7434,20 @@ async function dashNewDraft(stage){
      the form, beside the other template libraries, in the same search-and-apply
      motion the preparer already uses. */
   const tplPick=null;
-  const rec={id:dashId(),title:t,stage:stage,ctType:(tplPick&&tplPick.label)||'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),status:'Draft',todos:[],notes:'',workspace:null,meta:{contract:'',contractor:'',errors:0,warns:0}};
+  const rec={id:dashId(),title:t,stage:stage,ctType:(tplPick&&tplPick.label)||'',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),status:'Draft',todos:[],notes:'',workspace:null,
+    requestedBy:ans.email,requestedByName:ans.person,
+    meta:{contract:ans.prime,contractor:'',errors:0,warns:0}};
   await draftPut(rec);
   audLog(rec.id,rec.title,'created',stage+(tplPick?' (contract type: '+(tplPick.label||'unnamed')+')':''));
   resetFormFields();
-  window.CURRENT_REQUESTOR_EMAIL='';
+  window.CURRENT_REQUESTOR_EMAIL=ans.email;
   DASH.current=rec.id;
   showFormView();
   if(typeof initWizard==='function') initWizard();
   const r3=document.querySelector('input[name="spec"][value="3a"]'); if(r3) r3.checked=true;
+  /* Asked once, written where they belong: Item 2a, Item 2b and the requestor. */
+  const _i2a=document.getElementById('i2a'); if(_i2a) _i2a.value=ans.prime;
+  const _i2b=document.getElementById('i2b'); if(_i2b) _i2b.value=ans.sub;
   /* Standard language is not asked about at creation. At that moment Item 1a is
      empty and the programme is unknown, so the question could only be answered
      by the preparer telling the tool what the form is about to say. It is
@@ -7676,15 +7685,137 @@ async function dashDelete(id){
   if(DASH.current===id) DASH.current=null;
   dashRenderCards();
 }
+/* \u2500\u2500 HOW A DD-254 IS NAMED \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+   A free-text box asked for a title and got whatever was typed, so the same
+   contract could arrive under three different names depending on the day. The
+   owner's convention is the person and the contract, so that is what the box
+   asks for (owner, 7 October 2026).
+
+   The answers are not only a name. The prime contract number is Item 2a, the
+   subcontract number is Item 2b and the e-mail is the requestor, so asking for
+   them here means not typing them again on the form. The composed name is
+   editable before it is accepted and afterwards through the same pencil: a
+   convention that cannot be departed from is one people work around. */
+function dashNameCompose(p){
+  const person=String((p&&p.person)||'').trim();
+  const prime=String((p&&p.prime)||'').trim();
+  const sub=String((p&&p.sub)||'').trim();
+  const head=[person,prime].filter(Boolean).join(' \u2014 ');
+  return (head+(sub?(head?' · ':'')+sub:'')).trim();
+}
+function dashEmailOk(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
+/* locked: an Issued, Cancelled or Skipped DD-254 may be renamed - a name is not
+   a statement about what went out - but its Items 2a and 2b are the record and
+   are shown without being editable. */
+function dashPartyPrompt(o){
+  o=o||{};
+  return new Promise(function(resolve){
+    const locked=!!o.locked;
+    const ov=document.createElement('div'); ov.id='dashPartyDlg';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(20,26,34,.55);z-index:6000;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;';
+    const row=function(id,label,val,hint,dis){
+      return '<label style="display:block;font-size:10.5px;color:#5a6a80;margin-bottom:7px;">'+dashEsc(label)
+        +'<input id="'+id+'" type="text" value="'+dashEsc(val||'')+'"'+(dis?' disabled':'')
+        +' style="display:block;width:100%;font-size:12px;padding:5px 7px;border:1px solid #c4ccd4;border-radius:4px;margin-top:2px;'+(dis?'background:#eef1f4;color:#6a7888;':'')+'">'
+        +(hint?'<span style="font-size:9.5px;color:#8a94a0;">'+dashEsc(hint)+'</span>':'')+'</label>';
+    };
+    ov.innerHTML='<div style="background:#fff;border-radius:8px;max-width:520px;width:94%;padding:18px 20px;box-shadow:0 8px 30px rgba(0,0,0,.35);">'
+      +'<div style="font-size:13px;font-weight:bold;color:#2b3440;margin-bottom:3px;">'+dashEsc(o.heading||'Name this DD-254')+'</div>'
+      +'<div style="font-size:11.5px;color:#5a6a80;margin-bottom:11px;">'+dashEsc(o.note||'The name is built from the person and the contract. Everything here can be changed later with the pencil.')+'</div>'
+      +row('np_person','First and last name',o.person,'',false)
+      +row('np_prime','Prime contract number (Item 2a)',o.prime,locked?'This DD-254 is '+(o.status||'issued')+' \u2014 Items 2a and 2b are the record of what went out.':'',locked)
+      +row('np_sub','Subcontract number (Item 2b) \u2014 optional',o.sub,'',locked)
+      +row('np_email','E-mail',o.email,'Becomes the requestor e-mail, which is copied on distribution.',false)
+      +'<div style="border-top:1px solid #e3e8ee;margin:4px 0 9px;"></div>'
+      +row('np_title','Name of this DD-254',o.title||'','Filled in from the fields above. Type here to use something else.',false)
+      +'<div id="np_err" role="alert" style="font-size:10.5px;color:#a03028;min-height:14px;margin-bottom:6px;"></div>'
+      +'<div style="display:flex;gap:8px;justify-content:flex-end;">'
+      +'<button id="np_cancel" style="background:#8a94a0;color:#fff;border:none;padding:7px 14px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;">Cancel</button>'
+      +'<button id="np_ok" style="background:#17427d;color:#fff;border:none;padding:7px 16px;border-radius:4px;font-size:11.5px;font-weight:bold;cursor:pointer;">'+dashEsc(o.ok||'Create')+'</button>'
+      +'</div></div>';
+    document.body.appendChild(ov);
+    const g=function(id){ return ov.querySelector('#'+id); };
+    const done=function(v){ try{ov.remove();}catch(e){} resolve(v); };
+    /* The name follows the fields until it is typed in, and then stops: at that
+       point it is the operator's name for this DD-254, not a derived one. */
+    let manual=!!(o.title && o.title!==dashNameCompose(o));
+    const recompose=function(){
+      if(manual) return;
+      g('np_title').value=dashNameCompose({person:g('np_person').value,prime:g('np_prime').value,sub:g('np_sub').value});
+    };
+    ['np_person','np_prime','np_sub'].forEach(function(id){ g(id).oninput=recompose; });
+    g('np_title').oninput=function(){ manual=true; };
+    const submit=function(){
+      const person=g('np_person').value.trim(), prime=g('np_prime').value.trim();
+      const sub=g('np_sub').value.trim(), email=g('np_email').value.trim();
+      const miss=[];
+      if(!person) miss.push('a first and last name');
+      if(!prime) miss.push('the prime contract number');
+      if(!email) miss.push('an e-mail');
+      if(miss.length){ g('np_err').textContent='Still needed: '+miss.join(', ')+'.'; return; }
+      if(!dashEmailOk(email)){ g('np_err').textContent='That does not look like an e-mail address.'; return; }
+      const title=g('np_title').value.trim()||dashNameCompose({person:person,prime:prime,sub:sub});
+      done({person:person,prime:prime,sub:sub,email:email,title:title});
+    };
+    g('np_ok').onclick=submit;
+    g('np_cancel').onclick=function(){ done(null); };
+    ov.addEventListener('keydown',function(e){
+      if(e.key==='Escape') done(null);
+      if(e.key==='Enter'&&e.target&&e.target.tagName==='INPUT') submit();
+    });
+    if(g('np_person').focus) g('np_person').focus();
+    if(!o.title) recompose();
+  });
+}
+/* Write what the dialog collected onto the record and, when it is the DD-254 on
+   screen, onto the form. Items 2a and 2b are left alone on a record that states
+   something already happened. */
+async function dashPartyApply(rec,ans,opts){
+  opts=opts||{};
+  rec.title=ans.title;
+  rec.requestedBy=ans.email;
+  rec.requestedByName=ans.person;
+  rec.meta=rec.meta||{};
+  if(!opts.lockedFields){
+    rec.meta.contract=ans.prime;
+    rec.workspace=rec.workspace||{texts:{},checks:{},radios:{},selects:{},perf:[]};
+    rec.workspace.texts=rec.workspace.texts||{};
+    rec.workspace.texts.i2a=ans.prime;
+    rec.workspace.texts.i2b=ans.sub;
+  }
+  rec.updatedAt=new Date().toISOString();
+  if(DASH.current===rec.id){
+    window.CURRENT_REQUESTOR_EMAIL=rec.requestedBy;
+    if(!opts.lockedFields){
+      const a=document.getElementById('i2a'); if(a) a.value=ans.prime;
+      const b=document.getElementById('i2b'); if(b) b.value=ans.sub;
+    }
+    const tb=document.getElementById('draftBarTitle'); if(tb) tb.textContent=rec.title;
+    if(typeof run==='function') run();
+  }
+  return rec;
+}
 async function dashRename(id){
   const rec=await draftGet(id); if(!rec) return;
-  let t=await uiPrompt('New title:',rec.title||'');
-  if(t==null) return;
-  rec.title=t.trim()||'Untitled DD-254';
-  rec.updatedAt=new Date().toISOString();
+  if(window.DD254_READONLY){ alert('This tab is read-only \u2014 another tab holds the lock.'); return; }
+  const ws=rec.workspace||{}, tx=ws.texts||{};
+  const locked=(typeof DASH_LOCKED!=='undefined') && !!DASH_LOCKED[rec.status];
+  const live=(DASH.current===id);
+  const ans=await dashPartyPrompt({
+    heading:'Edit this DD-254',
+    note:'The name is built from the person and the contract. Change any of them.',
+    ok:'Save',
+    person:rec.requestedByName||'',
+    prime:(live?((document.getElementById('i2a')||{}).value||''):'')||tx.i2a||(rec.meta&&rec.meta.contract)||'',
+    sub:(live?((document.getElementById('i2b')||{}).value||''):'')||tx.i2b||'',
+    email:rec.requestedBy||'',
+    title:rec.title||'',
+    locked:locked, status:rec.status
+  });
+  if(!ans) return;
+  await dashPartyApply(rec,ans,{lockedFields:locked});
   await draftPut(rec);
-  const tb=document.getElementById('draftBarTitle');
-  if(tb&&DASH.current===id) tb.textContent=rec.title;
+  audLog(id,rec.title,'renamed',locked?('name only \u2014 record is '+rec.status):'name, contract and requestor');
   dashRenderCards();
 }
 /* Write a template's whole content into a draft workspace. Contract Type

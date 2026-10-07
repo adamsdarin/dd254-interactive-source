@@ -14,8 +14,13 @@ the same day put a DD-254 template picker on the dashboard card beside the
 contract-type one, both searchable type-aheads because the libraries run to
 hundreds or thousands of entries. The first cut of that was a row of pickers
 in the dashboard toolbar, which was the wrong thing and has been removed; the
-owner wanted it on the card, where contract type already was. 1347 assertions
-pass against build ceeb3931; all five gates pass, the kit round-trips
+owner wanted it on the card, where contract type already was. A fifth request,
+on 7 October 2026, replaced the free-text title box: a new Solicitation or
+Original now asks for the person, the prime contract number, an optional
+subcontract number and an e-mail, composes the name from them, and writes the
+numbers to Items 2a and 2b and the e-mail to the requestor. The pencil reopens
+the same fields. 1359 assertions
+pass against build 4b7abae7; all five gates pass, the kit round-trips
 byte-identically and the native-browser smoke test passes. Each change was
 driven against the published v2.8.0 first and reported absent there.
 

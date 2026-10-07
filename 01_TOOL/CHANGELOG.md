@@ -1,4 +1,4 @@
-## v2.9.0 - 6 October 2026
+## v2.9.0 - 7 October 2026
 
 Tool version 2.154. Three owner reports of 6 October 2026. Standard Language
 entries gain two optional fields; no other storage format change.
@@ -26,6 +26,19 @@ entries gain two optional fields; no other storage format change.
   template from the prime's language, carrying this order number; the prime
   template is not touched. Moving to the prime keeps the order-specific
   template in the library, unbound.
+- A new Solicitation or Original asks for the person, the prime contract
+  number, an optional subcontract number and an e-mail, instead of a free-text
+  title box that got whatever was typed -- so the same contract could arrive
+  under three different names depending on the day. The name is composed as
+  "Jane Doe - N00178-24-D-1234", with any subcontract number after it, and the
+  composed name is editable before it is accepted. The answers are not only a
+  name: the prime number is written to Item 2a, the subcontract number to Item
+  2b and the e-mail to the requestor, so none of them is typed twice. Name,
+  contract and e-mail are required and the e-mail is checked for shape.
+- The pencil opens the same fields rather than a free-text title, on the card
+  and in the form bar, and recomposes the name from them. An Issued, Cancelled
+  or Skipped DD-254 can still be renamed -- a name is not a statement about
+  what went out -- but its Items 2a and 2b are shown without being editable.
 - The dashboard card gains a DD-254 template picker beside its contract type
   one, and both are now searchable. A library runs to hundreds or thousands of
   entries, which a dropdown cannot be scrolled through, so each is a type-ahead:

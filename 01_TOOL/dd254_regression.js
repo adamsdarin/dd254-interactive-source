@@ -1216,6 +1216,22 @@ const waitDlg=async(sel,ms)=>{
   return null;
 };
 const grabWindow=()=>{ grabbed=''; w.openGeneratedReport=(h)=>{grabbed=h;}; };
+/* v2.9.0: a new DD-254 asks for the person, the contract and the e-mail rather
+   than a free-text title. Fill that dialog and submit it. */
+const fillParty=async(o)=>{
+  o=o||{};
+  const d=await waitDlg('#dashPartyDlg',10000);
+  if(!d) return null;
+  const put=(id,v)=>{ const el=d.querySelector('#'+id); if(el&&v!=null){ el.value=v; if(el.oninput) el.oninput(); } };
+  put('np_person',o.person===undefined?'Jane Doe':o.person);
+  put('np_prime',o.prime===undefined?'N00178-24-D-1234':o.prime);
+  put('np_sub',o.sub||'');
+  put('np_email',o.email===undefined?'jane.doe@example.com':o.email);
+  if(o.title!=null) put('np_title',o.title);
+  d.querySelector('#np_ok').click();
+  return d;
+};
+const newDraft=async(stage,o)=>{ const pr=E("dashNewDraft('"+(stage||'orig')+"')"); await fillParty(o); return pr; };
 
 H('22. Items 1 to 5 — levels, contract numbers, form type');
 t('1a and 1b are required', ()=>{ F(); RUN();
@@ -1564,8 +1580,9 @@ await ta('meta is recomputed on save', async()=>{
   const m=(await E("draftGet('M1')")).meta;
   return typeof m.errors==='number' && m.errors>0 && typeof m.warns==='number';});
 await ta('renaming and the requestor field persist', async()=>{
-  E("window.uiPrompt=async function(){return 'Renamed';};");
-  await E("dashRename('M1')");
+  const pr=E("dashRename('M1')");
+  await fillParty({person:'Ada Byron',prime:'N00178-24-D-0001',email:'ada@example.com',title:'Renamed'});
+  await pr;
   await E("dashSetRequestedBy('M1','po@navy.mil')");
   const r=await E("draftGet('M1')");
   return r.title==='Renamed' && r.requestedBy==='po@navy.mil';});
@@ -1600,10 +1617,13 @@ t('the backup dirty counter tracks changes', ()=>{
 await ta('the audit log records the material actions', async()=>{
   const before=E("audAll()").length;
   await E("draftPut({id:'A9',title:'Audited',status:'Draft',stage:'orig',todos:[],dist:[],holds:[],meta:{},workspace:{}})");
-  await E("dashNissToggle('A9')");
-  /* Recording a subcontractor signature now asks where it is held, because the
-     form provides no block for it. Answer the prompt rather than hang on it. */
+  /* Both toggles can ask where a record is held, because the form provides no
+     block for it. Answer the prompt rather than hang on it -- stubbed before
+     the first call, not between them: this test used to rely on a stub left
+     behind by an earlier test, and hung the moment that test stopped setting
+     one. */
   E("window.uiPrompt=async function(){return 'signed copy on file';};");
+  await E("dashNissToggle('A9')");
   await E("dashCsToggle('A9')");
   const a=E("audAll()");
   return a.length>before && a.some(x=>x.action==='niss-verified') && a.some(x=>x.action==='countersign-received');});
@@ -2872,8 +2892,7 @@ t('strip is safe on text that never had it', ()=>
 await ta('a new solicitation opens Item 9 with the marker', async()=>{
   /* v2.7.0: creating a DD-254 no longer stops on a contract-type picker. */
   E("tplSave(TPL_B13,[]);");
-  E("window.uiPrompt=async function(){return 'Widget solicitation';};");
-  await E("dashNewDraft('sol')");
+  await newDraft('sol',{title:'Widget solicitation'});
   return E("document.getElementById('i9').value")==='***FOR SOLICITATION PURPOSES ONLY***\n'; });
 await ta('the marker alone does not satisfy Item 9', async()=>{
   E("run()");
@@ -2890,8 +2909,7 @@ await ta('spawning an Original strips the marker and keeps the description', asy
   return !/SOLICITATION PURPOSES/.test(v) && /Widget development services/.test(v); });
 await ta('an ordinary Original never gets the marker', async()=>{
   E("tplSave(TPL_B13,[]);");
-  E("window.uiPrompt=async function(){return 'Plain original';};");
-  await E("dashNewDraft('orig')");
+  await newDraft('orig',{title:'Plain original'});
   return E("document.getElementById('i9').value")===''; });
 
 
@@ -8168,8 +8186,7 @@ const CTV=()=>{
 };
 await ta('creating a DD-254 asks nothing about contract type', async()=>{ CTV();
   E("window.__asked=false;window.__realPick=window.ctPickContractType;window.ctPickContractType=async function(){window.__asked=true;return null;};");
-  E("window.uiPrompt=async function(){return 'Traditional FAR contract';};");
-  await E("dashNewDraft('orig')");
+  await newDraft('orig',{title:'Traditional FAR contract'});
   const asked=E("window.__asked"), i13=E("document.getElementById('item13').value");
   E("window.ctPickContractType=window.__realPick;");
   /* The vast majority of contracts are ordinary FAR-based ones with no contract
@@ -8289,16 +8306,14 @@ t('an empty library says so rather than demanding the impossible', ()=>{
    fill in. Section 117 covers the automatic insertion that replaced it. */
 await ta('creating a DD-254 asks nothing about standard language', async()=>{
   SLSEED(); E("slRequiredModeSet('on')");
-  E("window.uiPrompt=async function(){return 'Mandatory SL draft';};");
-  const pr=E("dashNewDraft('orig')");
+  const pr=E("dashNewDraft('orig')"); await fillParty({title:'Mandatory SL draft'});
   const asked=await Promise.race([pr.then(()=>null), waitDlg('#slPickDlg',4000)]);
   if(asked){ try{ asked.querySelector('#slPickSkip').click(); }catch(e){} await pr; return 'it asked'; }
   return E("typeof slPickForNew")==='undefined'
       ? true : 'the creation-time chooser is still defined'; });
 await ta('while optional, creating a DD-254 asks nothing', async()=>{
   E("slRequiredModeSet('off')");
-  E("window.uiPrompt=async function(){return 'Quiet draft';};");
-  const pr=E("dashNewDraft('orig')");
+  const pr=E("dashNewDraft('orig')"); await fillParty({title:'Quiet draft'});
   /* Whichever happens first: the draft is created, or a dialog appears that
      should not have. Sleeping and then looking would only prove the dialog is
      slower than the sleep. */
@@ -8592,6 +8607,122 @@ t('the toolbar row that was the wrong shape is gone', ()=>
   && E("typeof dashStartFromTemplate")==='undefined'
   && !w.document.getElementById('dashStartRow'));
 E("tplSave(TPL_B13,[]);tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);showDashView();resetFormFields();");
+
+H('119. v2.9.0 a DD-254 is named for the person and the contract');
+/* Owner, 7 October 2026: the free-text title box let the same contract arrive
+   under three different names. */
+t('the name is the person, the contract, then any subcontract', ()=>
+  E("dashNameCompose({person:'Jane Doe',prime:'N00178-24-D-1234'})")==='Jane Doe \u2014 N00178-24-D-1234'
+  && E("dashNameCompose({person:'Jane Doe',prime:'N00178-24-D-1234',sub:'SUB-0001'})")==='Jane Doe \u2014 N00178-24-D-1234 \u00b7 SUB-0001');
+await ta('creating one asks for the person, contract and e-mail', async()=>{
+  await wipe();
+  const pr=E("dashNewDraft('orig')");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  if(!d) return 'no dialog';
+  const ids=['np_person','np_prime','np_sub','np_email','np_title'].filter(x=>!!d.querySelector('#'+x));
+  d.querySelector('#np_cancel').click(); await pr;
+  return ids.length===5 ? true : ids.join(','); });
+await ta('backing out creates nothing', async()=>{
+  await wipe();
+  const before=(await E("draftAll()")).length;
+  const pr=E("dashNewDraft('orig')");
+  (await waitDlg('#dashPartyDlg',10000)).querySelector('#np_cancel').click();
+  await pr;
+  return (await E("draftAll()")).length===before; });
+await ta('the name is composed as the fields are typed', async()=>{
+  await wipe();
+  const pr=E("dashNewDraft('orig')");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  const put=(id,v)=>{ const el=d.querySelector('#'+id); el.value=v; el.oninput&&el.oninput(); };
+  put('np_person','Jane Doe'); put('np_prime','N00178-24-D-1234');
+  const after2=d.querySelector('#np_title').value;
+  put('np_sub','SUB-0001');
+  const after3=d.querySelector('#np_title').value;
+  d.querySelector('#np_cancel').click(); await pr;
+  return after2==='Jane Doe \u2014 N00178-24-D-1234'
+      && after3==='Jane Doe \u2014 N00178-24-D-1234 \u00b7 SUB-0001'
+      ? true : (after2+' | '+after3); });
+await ta('all three are required, and the e-mail must look like one', async()=>{
+  await wipe();
+  const before=(await E("draftAll()")).length;
+  const pr=E("dashNewDraft('orig')");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  d.querySelector('#np_ok').click();
+  const empty=d.querySelector('#np_err').textContent;
+  const put=(id,v)=>{ const el=d.querySelector('#'+id); el.value=v; el.oninput&&el.oninput(); };
+  put('np_person','Jane Doe'); put('np_prime','N00178-24-D-1234'); put('np_email','not-an-email');
+  d.querySelector('#np_ok').click();
+  const bad=d.querySelector('#np_err').textContent;
+  const still=(await E("draftAll()")).length===before;
+  d.querySelector('#np_cancel').click(); await pr;
+  return /first and last name/.test(empty) && /prime contract/.test(empty) && /e-mail/.test(empty)
+      && /does not look like an e-mail/.test(bad) && still
+      ? true : ('empty='+empty+' bad='+bad+' still='+still); });
+await ta('the answers name the DD-254 and fill Items 2a, 2b and the requestor', async()=>{
+  await wipe();
+  await newDraft('orig',{person:'Jane Doe',prime:'N00178-24-D-1234',sub:'SUB-0001',email:'jane.doe@example.com'});
+  await E("dashSaveNow()");
+  const id=E("DASH.current");
+  const r=await E("draftGet('"+id+"')");
+  const tx=(r.workspace||{}).texts||{};
+  return r.title==='Jane Doe \u2014 N00178-24-D-1234 \u00b7 SUB-0001'
+      && tx.i2a==='N00178-24-D-1234' && tx.i2b==='SUB-0001'
+      && r.requestedBy==='jane.doe@example.com' && r.requestedByName==='Jane Doe'
+      && (r.meta||{}).contract==='N00178-24-D-1234'
+      ? true : JSON.stringify({t:r.title,a:tx.i2a,b:tx.i2b,e:r.requestedBy,n:r.requestedByName}); });
+await ta('a solicitation still says so in its name', async()=>{
+  await wipe();
+  await newDraft('sol',{person:'Jane Doe',prime:'N00178-24-D-9999',email:'jane.doe@example.com'});
+  await E("dashSaveNow()");
+  const r=await E("draftGet('"+E("DASH.current")+"')");
+  return /Solicitation$/.test(r.title) ? true : r.title; });
+await ta('a name typed by hand is kept as typed', async()=>{
+  await wipe();
+  await newDraft('orig',{person:'Jane Doe',prime:'N00178-24-D-1234',email:'jane.doe@example.com',title:'Something else entirely'});
+  await E("dashSaveNow()");
+  const r=await E("draftGet('"+E("DASH.current")+"')");
+  return r.title==='Something else entirely' ? true : r.title; });
+await ta('the pencil reopens the same fields and recomposes', async()=>{
+  await wipe();
+  await newDraft('orig',{person:'Jane Doe',prime:'N00178-24-D-1234',email:'jane.doe@example.com'});
+  await E("dashSaveNow()");
+  const id=E("DASH.current");
+  const pr=E("dashRename('"+id+"')");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  if(!d) return 'no dialog';
+  const pre=['np_person','np_prime','np_email'].map(x=>d.querySelector('#'+x).value).join('|');
+  const put=(k,v)=>{ const el=d.querySelector('#'+k); el.value=v; el.oninput&&el.oninput(); };
+  put('np_prime','N00178-26-C-0417');
+  const composed=d.querySelector('#np_title').value;
+  d.querySelector('#np_ok').click(); await pr;
+  const r=await E("draftGet('"+id+"')");
+  return pre==='Jane Doe|N00178-24-D-1234|jane.doe@example.com'
+      && composed==='Jane Doe \u2014 N00178-26-C-0417'
+      && r.title===composed
+      && ((r.workspace||{}).texts||{}).i2a==='N00178-26-C-0417'
+      ? true : ('pre='+pre+' composed='+composed+' title='+r.title+' i2a='+(((r.workspace||{}).texts||{}).i2a)); });
+await ta('an issued DD-254 can be renamed but its Items 2a and 2b are not touched', async()=>{
+  await wipe();
+  await E("draftPut({id:'ISS1',title:'Old name',status:'Issued',stage:'orig',issuedAt:'2026-03-03T00:00:00Z',requestedBy:'a@b.com',requestedByName:'Ann',todos:[],notes:'',meta:{contract:'N00178-24-D-1234'},workspace:{texts:{i2a:'N00178-24-D-1234',i2b:''},checks:{},radios:{},selects:{},perf:[]}})");
+  E("DASH.current=null;");
+  const pr=E("dashRename('ISS1')");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  if(!d) return 'no dialog';
+  const lockedPrime=d.querySelector('#np_prime').disabled, lockedSub=d.querySelector('#np_sub').disabled;
+  const put=(k,v)=>{ const el=d.querySelector('#'+k); el.value=v; el.oninput&&el.oninput(); };
+  put('np_title','A better name');
+  d.querySelector('#np_ok').click(); await pr;
+  const r=await E("draftGet('ISS1')");
+  return lockedPrime===true && lockedSub===true
+      && r.title==='A better name'
+      && ((r.workspace||{}).texts||{}).i2a==='N00178-24-D-1234'
+      ? true : ('locked='+lockedPrime+','+lockedSub+' title='+r.title); });
+await ta('the edit is written to the audit log', async()=>
+  E("audAll()").some(a=>a.action==='renamed'));
+t('one composer names every DD-254', ()=>
+  E("String(dashNewDraft)").includes('dashPartyPrompt(')
+  && E("String(dashRename)").includes('dashPartyPrompt(')
+  && E("String(dashRename)").includes('dashPartyApply('));
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);

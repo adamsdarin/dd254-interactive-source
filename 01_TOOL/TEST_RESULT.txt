@@ -1,4 +1,4 @@
-BUILD_SHA256 ceeb3931be9f22d0ab7f8becfb70f302733194d29486d534602f91140c88d28a
+BUILD_SHA256 4b7abae7e7c9ae3e78f0b1f915b97e7ee0ebe5d0354db9653b303b3538875c82
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1599,6 +1599,20 @@ BUILD_SHA256 ceeb3931be9f22d0ab7f8becfb70f302733194d29486d534602f91140c88d28a
   PASS  both card pickers and the form picker read one list
   PASS  the toolbar row that was the wrong shape is gone
 
+### 119. v2.9.0 a DD-254 is named for the person and the contract
+  PASS  the name is the person, the contract, then any subcontract
+  PASS  creating one asks for the person, contract and e-mail
+  PASS  backing out creates nothing
+  PASS  the name is composed as the fields are typed
+  PASS  all three are required, and the e-mail must look like one
+  PASS  the answers name the DD-254 and fill Items 2a, 2b and the requestor
+  PASS  a solicitation still says so in its name
+  PASS  a name typed by hand is kept as typed
+  PASS  the pencil reopens the same fields and recomposes
+  PASS  an issued DD-254 can be renamed but its Items 2a and 2b are not touched
+  PASS  the edit is written to the audit log
+  PASS  one composer names every DD-254
+
 ================================
-  PASS 1347   FAIL 0
+  PASS 1359   FAIL 0
 ================================

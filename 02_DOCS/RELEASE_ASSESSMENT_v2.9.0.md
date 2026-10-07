@@ -1,6 +1,6 @@
 # DD254 Interactive v2.9.0 - the picker finds every order, orders can be managed, standard language inserts itself
 
-6 October 2026. Internal Tool v2.154. Single HTML file; existing browser storage.
+7 October 2026. Internal Tool v2.154. Single HTML file; existing browser storage.
 
 ## Changes and user benefit
 
@@ -9,6 +9,7 @@
 | Every saved order is listed in the form's picker | An order that follows the prime is found by its own number instead of not being there | It says which template it resolved to, so nothing is inserted unseen |
 | Task orders can be deleted | An order entered by mistake can be removed | The template and any DD-254 made from the order are kept, and the confirmation says so |
 | Coverage can be changed after creation | A task order that turns out to need its own DD-254 is changed in place | The order drops to "source needs review"; no saved source is silently re-pointed |
+| A new DD-254 is named for the person and the contract | One box asks the four things, and the contract numbers and requestor are not typed again on the form | Name, contract and e-mail are required; the composed name stays editable |
 | The dashboard card picks a contract type or a DD-254 template, both searchable | The template for this contract is typed, not hunted for, and task orders are listed under their own number | Applying asks before replacing Item 13 and refuses on an issued record |
 | Standard language inserts itself | The organisation's wording lands on the DD-254 without anyone remembering it | Only when one entry matches; two matching entries leave the blocking error, which names both |
 
@@ -41,6 +42,21 @@ and may be the only copy, and it does not delete a DD-254 already created from
 the order: that document exists, carries its own immutable snapshot, and is not
 made not to exist by removing a row from a repository.
 
+**A free-text title box got whatever was typed.** The same contract could
+arrive as three different names depending on the day, which makes a list of
+DD-254s unsortable and unsearchable by the thing people actually look for. The
+box now asks the four things the owner's convention is made of - the person, the
+prime contract number, an optional subcontract number, and an e-mail - and
+composes the name from them.
+
+Asking also means not asking twice: the prime number is Item 2a, the subcontract
+number is Item 2b, and the e-mail is the requestor who gets copied on
+distribution. The composed name remains editable, before it is accepted and
+afterwards through the same pencil, because a convention that cannot be departed
+from is one people work around. An Issued, Cancelled or Skipped DD-254 can be
+renamed - a name is not a statement about what went out - but its Items 2a and 2b
+are shown without being editable.
+
 **The card could choose a contract type but not a template.** The dashboard
 card has had a contract-type picker since v2.7.0; the DD-254 template a card
 needs was reachable only from inside the form. It now has a picker for that too,
@@ -68,7 +84,7 @@ library has not expressed, and the blocking error names both rather than guessin
 
 ## Verification
 
-- 1334 assertions, 0 failures, against build `fb4b8025`.
+- 1359 assertions, 0 failures, against build `4b7abae7`.
 - All three changes were driven against the published v2.8.0 first and reported:
   order 0077 following its prime `NOT LISTED`, `ctOrderDelete` and
   `ctOrderSetCoverage` `ABSENT`, standard language `NOT inserted`. On this build:
