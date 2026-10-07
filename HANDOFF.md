@@ -1,10 +1,16 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-06T17:10-05:00 by Maintainer
+Last updated: 2026-10-07T07:40-05:00 by Maintainer
 
 ## Current State
 
-Built and gated, not yet tagged: **v2.9.0 (Tool 2.154)**. Three owner reports of
+Latest published release: **v2.9.0 (Tool 2.154)**, signed tag at 3ab69c0 on
+`main`; assets, checksums, the provenance attestation, the kit rebuild and the
+pdf-lib check all verified from a fresh download (official 4b7abae7..., demo
+beb7ab11..., ref refs/tags/v2.9.0, rebuild byte-identical, no bytecode in the
+kit); live demo published as dd254-interactive 2634483.
+
+What it carries: Three owner reports of
 6 October 2026: the form picker could not find a task order that follows the
 prime, orders could not be deleted, and an order's coverage could not be
 changed after creation. Standard language was reworked rather than extended -
@@ -153,6 +159,13 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-07 Maintainer - Published v2.9.0 and the live demo, verified from a
+fresh download. One cosmetic drift found afterwards and corrected on main: the
+security fact sheet shipped dated 6 October although the release went out on
+the 7th. check_documentation.py asserts the fact sheet names the right version
+but says nothing about its date, so the date can drift without failing a gate.
+Not worth re-releasing for; it corrects itself in the next release.
 
 2026-10-06 Maintainer - Built v2.9.0. Coverage switching returns after being
 removed in v2.4.1: the reason it was removed (a saved source silently
