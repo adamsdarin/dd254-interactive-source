@@ -252,7 +252,7 @@ class CDP {
       const pf=perfFields(document.querySelector('#perfBlocks > div[id^="perf-"]'));pf.email.value='location@example.test';run();
       const mail=emailDistSets();
       const managerDropdownOk=mail.to.includes('location@example.test')&&mail.to.includes('req@example.test')
-        &&!mail.to.includes('facility@example.test')&&mail.cc.includes('facility@example.test')&&mail.cc.includes('manager@example.test')
+        &&mail.to.includes('facility@example.test')&&!mail.cc.includes('facility@example.test')&&mail.cc.includes('manager@example.test')
         &&document.getElementById('distSmList').textContent.includes('Live program manager');
       document.getElementById('dist18f').checked=true;document.getElementById('dist18fOther').value='stale@example.test';
       document.getElementById('i14yes').checked=true;document.getElementById('i16a').value='STALE';

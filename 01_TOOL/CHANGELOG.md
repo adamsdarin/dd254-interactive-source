@@ -1,3 +1,50 @@
+## v2.10.0 - 9 October 2026
+
+Tool version 2.156. Owner specification of 9 October 2026: requester intake,
+solicitation intake, template matching at creation, work identifiers and the
+Security Manager. Full Backup schema moves to version 5; version 4 files still
+restore.
+
+- Creating a Solicitation or an Original opens one Create DD-254 Workspace
+  dialog: requester first name, last name and e-mail; prime contract or vehicle;
+  an optional task order, BPA, call or effort number; and a Security Manager.
+  An Original also requires Block 2b -- the subcontract number, or N/A. A
+  Solicitation also requires Block 2c and its due date, the unnumbered field
+  beside it. Nothing is created while a required field is empty, and the
+  message sits beside the field it is about.
+- A Requester Repository under Manage holds the people DD-254s are prepared
+  for, with a count of how many of theirs have been issued. That count is what
+  makes an automatic e-mail safe: a name typed once proves nothing, a name on
+  an issued DD-254 has been through the process with that address. Typing a
+  known name fills the e-mail, never over one already typed; two people of the
+  same name are shown and never chosen between. Requester details are
+  snapshotted onto the draft, so editing the repository changes what the next
+  DD-254 is offered and never rewrites one already made. The legacy
+  requestedBy e-mail is kept and still drives filters, issuance and old backups.
+- Identifiers typed at intake are matched against the Contract Type and DD-254
+  Template Language repositories. An exact task-order match beats a prime-only
+  one; a prime match counts only against a template carrying no task order.
+  One match is named before creation and applied whole, with its selections,
+  language, attachments and Security Manager. Two matches are never chosen
+  between, and a partial match is a suggestion that is never applied. What the
+  operator typed always wins over what a template carries.
+- A DD-254 records which numbers identify it, and is shown by the lowest that
+  applies: the task order, else the contract, else the solicitation. The prime
+  stays beside the order rather than being replaced. The dashboard search reads
+  the requester name and those identifiers as well as the title.
+- The Security Manager is snapshotted onto each draft and is what issuance
+  reads, so a later repository edit cannot alter an issued record. A draft made
+  before this existed is backfilled only from an unambiguous template. The
+  issuance screen lists the manager immediately below the requester and warns
+  prominently when none is assigned rather than omitting the row.
+- The issuance To line is the requester, then the Security Manager, then the
+  Item 6, 7 and 8 FSOs; CSOs, additional FSOs, Item 18 managers and checked
+  Item 18f addresses are CC. This moves the Item 6 facility FSO from CC to To.
+  Duplicates are removed across both lines and To wins. Individual and bulk
+  issuance behave identically, and bulk audiences stay isolated.
+- Full Backup is version 5 and carries the requester repository. A version-4
+  file restores unchanged; it simply carries no requesters.
+
 ## v2.9.1 - 7 October 2026
 
 Tool version 2.155. One owner request. No storage format change.

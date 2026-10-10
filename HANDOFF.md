@@ -1,10 +1,20 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-07T08:05-05:00 by Maintainer
+Last updated: 2026-10-09T12:00-05:00 by Maintainer
 
 ## Current State
 
-Built and gated, not yet tagged: **v2.9.1 (Tool 2.155)**, build c5b337d6. One
+Built and gated, not yet tagged: **v2.10.0 (Tool 2.156)**, build aecc5ce2.
+Owner specification of 9 October 2026, implemented on the current product
+rather than on the v1.12.0 copy it was written against (owner decision, same
+day): requester repository and intake, solicitation intake with Block 2c and
+its due date, Block 2b required on an Original, template matching at creation,
+work-identifier precedence, and the Security Manager snapshotted and placed on
+the issuance To line. Full Backup is version 5; version 4 still restores.
+1395 assertions pass; all five gates pass; both builds pass the native-browser
+smoke test. NOTE: the Item 6 facility FSO moved from CC to To.
+
+Also built and gated, not tagged: **v2.9.1 (Tool 2.155)**, build c5b337d6. One
 owner request of 7 October 2026: the Standard Language panel lists the entries
 written for this DD-254's programme and Item 1a level rather than the whole
 library, with the rest one link away. 1367 assertions pass; all five gates pass.
@@ -164,6 +174,13 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-09 Maintainer - Implemented the owner specification as v2.10.0. The
+spec named a v1.12.0 baseline in OneDrive whose hash matched; building there
+would have forked the product back thirty tool versions, so the owner chose to
+port the requirements onto the current line. Parts of the spec were already
+built and were left alone. Three assertions encoding the previous To/CC rule
+were restated rather than removed, and the browser smoke test with them.
 
 2026-10-07 Maintainer - Published v2.9.0 and the live demo, verified from a
 fresh download. One cosmetic drift found afterwards and corrected on main: the

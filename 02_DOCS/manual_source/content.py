@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.9.1 (tool version 2.155)"
+VER="DD254 Interactive v2.10.0 (tool version 2.156)"
 
 DOC = [
-("h1","DD254 Interactive v2.9.1 changes"),
+("h1","DD254 Interactive v2.10.0 changes"),
+("b","<b>Creating a DD-254 asks for the work, not just a title.</b> One dialog collects the requester\u2019s first name, last name and e-mail, the prime contract or vehicle, an optional task order, and a Security Manager. An <b>Original</b> also requires <b>Block 2b</b> \u2014 the subcontract number, or <b>N/A</b>. A <b>Solicitation</b> also requires <b>Block 2c</b> and its <b>due date</b>. See 3.18."),
+("b","<b>Requesters</b> are kept under <b>Manage \u2192 Requesters</b>, with a count of how many of their DD-254s have been issued. Typing a known name fills in their e-mail; it never overwrites one you typed, and two people of the same name are never chosen between."),
+("b","<b>The numbers you type are matched against your templates.</b> An exact task-order match wins over a prime-only one, a single match is named and applied whole, several matches are never chosen between, and a partial match is only a suggestion. What you typed always wins over what the template carries."),
+("b","<b>The Security Manager is kept on the DD-254 itself</b> and appears directly below the requester at issuance, on the <b>To</b> line. Editing the Security Manager repository afterwards does not change a DD-254 already made. <b>The Item 6 facility FSO moved from CC to To</b> with this change."),
+("h2","DD254 Interactive v2.9.1 changes"),
 ("b","The <b>Standard Language</b> panel on the form now lists <b>what this DD-254 calls for</b> — the entries written for its programme and its Item 1a level — instead of the whole library. <b>Show all</b> opens the rest. Until the form has both a programme and a level, every entry is listed with a line saying what would narrow it. See 5.6."),
 ("h2","DD254 Interactive v2.9.0 changes"),
 ("b","<b>Naming a new DD-254.</b> <b>New Solicitation</b> and <b>Original</b> now ask for the <b>person’s first and last name</b>, the <b>prime contract number</b>, an optional <b>subcontract number</b> and an <b>e-mail</b>, instead of a free-text title. The name is built as <i>Jane Doe — N00178-24-D-1234</i> and stays editable. The contract numbers go to Items 2a and 2b and the e-mail becomes the requestor, so none of them is typed twice. The <b>pencil</b> reopens the same fields. See 3.18."),
@@ -279,7 +284,7 @@ DOC = [
 ("n","Choosing fills Items 10, 11, 12, 13, 14, 15, 16 and 18 from what you picked. If Item 13 already has text you are asked before it is replaced."),
 ("n","A name that matches nothing applies nothing and says so, rather than guessing at the nearest entry."),
 ("warn","An <b>Issued</b>, <b>Cancelled</b> or <b>Skipped</b> DD-254 is not rewritten — it is the record of what went out. Copy it and apply the template to the copy."),
-("h2","3.18 Naming a DD-254"),
+("h2","3.18 Creating a DD-254"),
 ("p","A DD-254 is named for the person it is for and the contract it is on, so the same contract cannot arrive under three different names. <b>New Solicitation</b> and <b>Original</b> ask four questions."),
 ("tbl",[["Asked","Where it goes"],["First and last name","Into the name, and kept on the record as the requestor’s name."],["Prime contract number","Into the name, and into <b>Item 2a</b>."],["Subcontract number (optional)","After the contract number in the name, and into <b>Item 2b</b>."],["E-mail","The <b>requestor e-mail</b>, which is copied when the DD-254 is distributed."]]),
 ("n","The name builds itself as you type — <i>Jane Doe — N00178-24-D-1234 · SUB-0001</i> — and the box holding it is editable, so a DD-254 that does not fit the convention can still be called what it needs to be called."),
@@ -287,6 +292,11 @@ DOC = [
 ("n","A solicitation still has <b>— Solicitation</b> added to the end."),
 ("n","The <b>pencil</b>, on the card and beside the title on the form, reopens the same four fields and rebuilds the name from them."),
 ("warn","An <b>Issued</b>, <b>Cancelled</b> or <b>Skipped</b> DD-254 can be renamed — a name is not a statement about what went out — but Items 2a and 2b are shown without being editable, because those are the record."),
+("n","An <b>Original</b> also asks for <b>Block 2b</b>. It cannot be left blank: enter the subcontract number, or <b>N/A</b> when the DD-254 is not a subcontract. <b>N/A</b> goes in Item 2b but is not used in the name."),
+("n","A <b>Solicitation</b> also asks for <b>Block 2c</b> and the <b>due date</b> beside it. Both are required."),
+("n","An optional <b>task order, BPA, call or effort number</b> is carried into the task-order field and shown as the DD-254\u2019s primary identifier, with the prime contract beside it."),
+("n","If what you type matches exactly one saved template, it is named in the dialog and applied in full when the DD-254 is created. What you typed is not replaced by what the template carries."),
+("n","The <b>Security Manager</b> chosen here is kept on this DD-254. Changing the repository later does not change it."),
 ("h1","4. The form — preparing the DD-254"),
 ("p","The form is an eight-step wizard with a live validation panel down the right-hand side. Steps are not locked: use Next and Previous, or the step dots, to move freely."),
 ("tbl",[["Wizard step","Items covered"],

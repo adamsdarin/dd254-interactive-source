@@ -1,4 +1,4 @@
-BUILD_SHA256 c5b337d652acb6f1f57ed06acdf199e0af22807dc33bd6c2c0ce089cb2929685
+BUILD_SHA256 aecc5ce220a017323330e8432ef7b61648b706b2e7df6f21482d50bf0db39ec9
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -33,7 +33,7 @@ BUILD_SHA256 c5b337d652acb6f1f57ed06acdf199e0af22807dc33bd6c2c0ce089cb2929685
   PASS  a good payload verifies
   PASS  a tampered payload does not
   PASS  restore refuses on a count mismatch
-  PASS  backup stamps version 4, counts, hash and the audit log
+  PASS  backup stamps version 5, counts, hash and the audit log
   PASS  the audit log rides outside the checksummed body
 
 ### 4. Flow-down ceiling
@@ -100,7 +100,9 @@ BUILD_SHA256 c5b337d652acb6f1f57ed06acdf199e0af22807dc33bd6c2c0ce089cb2929685
 ### 9. Distribution capture and log
   PASS  parties derive from Item 18 on that draft
   PASS  no Item 18 boxes means no parties
-  PASS  issue e-mail maps requestor/performance/sub FSOs to To; facility/CSO/manager/additional contacts to CC
+  PASS  issue e-mail puts requester, security manager and the 6/7/8 FSOs on To; CSOs and 18f on CC
+  PASS  the security manager is second on To, after the requester
+  PASS  a security manager who is also a CSO appears once, on To
   PASS  issue e-mail mailto separates every To and CC address with semicolon-space and carries an identifying subject
   PASS  a CUI issuance prefixes the subject with the triple visual warning
   PASS  bulk issue e-mail separates differing audiences and keeps semicolon-space separators
@@ -359,7 +361,7 @@ BUILD_SHA256 c5b337d652acb6f1f57ed06acdf199e0af22807dc33bd6c2c0ce089cb2929685
   PASS  the classification banner follows the selector
 
 ### 29. Template libraries — all seven
-  PASS  all nine libraries are addressable
+  PASS  all ten libraries are addressable
   PASS  add, edit and delete a row in each library
   PASS  rows can be reordered
   PASS  a facility links a CSO and follows later corrections
@@ -1429,7 +1431,7 @@ BUILD_SHA256 c5b337d652acb6f1f57ed06acdf199e0af22807dc33bd6c2c0ce089cb2929685
   PASS  the form still warns that the contract involves CUI
 
 ### 110. v2.2.0 recipients, template replacement and repository organisation
-  PASS  performance-location FSO is To; facility FSO and assigned/program managers are CC
+  PASS  facility and performance FSOs are To; CSOs and Item 18 managers are CC
   PASS  To wins when a manager and a performance FSO share an address
   PASS  manager dropdown snapshots the repository entry and rejects repeat selection
   PASS  managers survive workspace save/open and deletion from the repository
@@ -1623,6 +1625,34 @@ BUILD_SHA256 c5b337d652acb6f1f57ed06acdf199e0af22807dc33bd6c2c0ce089cb2929685
   PASS  a programme with nothing at that level says so rather than looking empty
   PASS  the panel and the automatic insertion match on the same two things
 
+### 121. v2.10.0 requester repository, solicitation intake, template matching
+  PASS  a requester can be added, edited and removed
+  PASS  a name is matched exactly, ignoring case and extra spaces
+  PASS  only a requester with an issued DD-254 is offered automatically
+  PASS  two requesters of one name are never resolved by guessing
+  PASS  the dialog fills a known requester e-mail, and never overwrites a typed one
+  PASS  creating a DD-254 remembers the requester without claiming a completion
+  PASS  issuing records the completion against the requester
+  PASS  a legacy draft with only requestedBy still reads and still issues
+  PASS  an Original cannot be created with Block 2b blank
+  PASS  N/A is accepted as the Block 2b response
+  PASS  a Solicitation cannot be created without Block 2c or its due date
+  PASS  the solicitation due date lands in the field beside Block 2c
+  PASS  an exact task-order match beats a prime-only one
+  PASS  a prime match only counts against a template with no task order
+  PASS  normalisation ignores case and collapsed whitespace
+  PASS  two templates at the same priority are not chosen between
+  PASS  a partial match is never applied
+  PASS  a single match is applied whole, and what was typed still wins
+  PASS  applying a matched template is written to the audit log
+  PASS  a matched template carries its security manager onto the draft
+  PASS  the task order is the primary identifier, with the prime as its parent
+  PASS  without a task order the prime is primary, and without either the solicitation
+  PASS  the snapshot is what issuance reads, not the repository
+  PASS  a draft with no snapshot is backfilled only from an unambiguous template
+  PASS  the issuance screen lists the manager under the requester, and warns when there is none
+  PASS  a full backup carries the requester repository and the draft snapshots
+
 ================================
-  PASS 1367   FAIL 0
+  PASS 1395   FAIL 0
 ================================

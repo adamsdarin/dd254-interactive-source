@@ -164,8 +164,10 @@ t('canonical body key order', ()=> E("bkBody({a:1},[2]).indexOf('templates')<bkB
 await ta('a good payload verifies', async()=> true===await E("(async function(){var T={ct:[{label:'x'}]},D=[{id:'1'}];var sha=await bkSha256(bkBody(T,D));var r=JSON.parse(JSON.stringify({templates:T,drafts:D}));return (await bkSha256(bkBody(r.templates,r.drafts)))===sha;})()"));
 await ta('a tampered payload does not', async()=> true===await E("(async function(){var T={ct:[{label:'x'}]},D=[{id:'1'}];var sha=await bkSha256(bkBody(T,D));T.ct[0].label='EVIL';return (await bkSha256(bkBody(T,D)))!==sha;})()"));
 t('restore refuses on a count mismatch', ()=> /Restore refused/.test(E("String(fullRestore)+(typeof fullRestoreData==='function'?String(fullRestoreData):'')")) && /checksum mismatch/.test(E("String(fullRestore)+(typeof fullRestoreData==='function'?String(fullRestoreData):'')")));
-t('backup stamps version 4, counts, hash and the audit log', ()=>{const s=E("String(fullBackup)");
-  return /version:4/.test(s) && /payload\.counts=bkCounts/.test(s)
+/* v2.10.0: version 5 adds the requester repository. Restore never checked the
+   number, so a version-4 file still restores - it simply carries no requesters. */
+t('backup stamps version 5, counts, hash and the audit log', ()=>{const s=E("String(fullBackup)");
+  return /version:5/.test(s) && /payload\.counts=bkCounts/.test(s)
       && /payload\.sha256=await bkSha256/.test(s) && /payload\.audit=/.test(s);});
 t('the audit log rides outside the checksummed body', ()=>{
   /* so a v3 backup, which has no audit key, still verifies */
@@ -373,19 +375,37 @@ t('parties derive from Item 18 on that draft', ()=>{
   const p=E("dashDistParties({workspace:{checks:{dist18a:true,dist18c:true,dist18f:true},texts:{dist18fOther:'ACO Bldg 4'}},requestedBy:'po@x.mil'})");
   return p.length===4 && p[0].key==='18a' && p[2].key==='18f' && /ACO Bldg 4/.test(p[2].to) && p[3].key==='req' && p[3].to==='po@x.mil';});
 t('no Item 18 boxes means no parties', ()=> E("dashDistParties({workspace:{checks:{},texts:{}}})").length===0);
-t('issue e-mail maps requestor/performance/sub FSOs to To; facility/CSO/manager/additional contacts to CC', ()=>{
+/* v2.10.0 (owner spec): the To line is the requester, then the Security
+   Manager, then the Item 6, 7 and 8 FSOs. The Item 6 facility FSO moved from CC
+   to To with that change. CSOs and checked 18f recipients stay on CC. */
+t('issue e-mail puts requester, security manager and the 6/7/8 FSOs on To; CSOs and 18f on CC', ()=>{
   const r={title:'Alpha',requestedBy:'REQ@gov.mil',workspace:{checks:{dist18f:true},texts:{
     i6fsoEmail:'prime@acme.com; req@GOV.mil',i7fsoEmail:'sub@beta.com',fsoEmails:'manual@other.com',
     i6c:'cso1@dcsa.mil REQ@gov.mil',i7c:'cso2@dcsa.mil',item13:'item13@other.com',dist18fOther:'18f@other.com'
   },perf:[{email:'SUB@BETA.COM loc@plant.com',cso:'CSO2@dcsa.mil cso3@dcsa.mil'}]}};
   const m=E("dashIssueMail("+JSON.stringify(r)+")");
-  return m.to.join('|')==='REQ@gov.mil|sub@beta.com|loc@plant.com'
-      && m.cc.join('|')==='cso1@dcsa.mil|cso2@dcsa.mil|cso3@dcsa.mil|prime@acme.com|manual@other.com|18f@other.com'
+  return m.to.join('|')==='REQ@gov.mil|prime@acme.com|sub@beta.com|loc@plant.com'
+      && m.cc.join('|')==='cso1@dcsa.mil|cso2@dcsa.mil|cso3@dcsa.mil|manual@other.com|18f@other.com'
       && !/item13@other/i.test(m.to.concat(m.cc).join('|')); });
+t('the security manager is second on To, after the requester', ()=>{
+  const r={title:'Alpha',requestedBy:'req@gov.mil',
+    securityManager:{name:'Ann Reed',email:'sm@example.com',program:'SHOES'},
+    workspace:{checks:{},texts:{i6fsoEmail:'prime@acme.com',i7fsoEmail:'sub@beta.com'},perf:[]}};
+  const m=E("dashIssueMail("+JSON.stringify(r)+")");
+  return m.to.join('|')==='req@gov.mil|sm@example.com|prime@acme.com|sub@beta.com'
+      ? true : m.to.join('|'); });
+t('a security manager who is also a CSO appears once, on To', ()=>{
+  const r={title:'Alpha',requestedBy:'req@gov.mil',
+    securityManager:{name:'Ann Reed',email:'SHARED@example.com'},
+    workspace:{checks:{},texts:{i6c:'shared@example.com'},perf:[]}};
+  const m=E("dashIssueMail("+JSON.stringify(r)+")");
+  return m.to.join('|')==='req@gov.mil|SHARED@example.com' && m.cc.length===0
+      ? true : ('to='+m.to.join('|')+' cc='+m.cc.join('|')); });
 t('issue e-mail mailto separates every To and CC address with semicolon-space and carries an identifying subject', ()=>{
   const m=E("dashIssueMail({title:'Contract 47',requestedBy:'req@gov.mil',workspace:{checks:{dist18f:true},texts:{i6fsoEmail:'fso@acme.com',i7fsoEmail:'sub@beta.com',i6c:'cso@dcsa.mil',i7c:'cso2@dcsa.mil',dist18fOther:'other@example.mil'},perf:[]}})");
   const u=decodeURIComponent(m.href);
-  return u.indexOf('mailto:req@gov.mil; sub@beta.com?cc=cso@dcsa.mil; cso2@dcsa.mil; fso@acme.com; other@example.mil&subject=Issued DD Form 254 — Contract 47')===0; });
+  return u.indexOf('mailto:req@gov.mil; fso@acme.com; sub@beta.com?cc=cso@dcsa.mil; cso2@dcsa.mil; other@example.mil&subject=Issued DD Form 254 — Contract 47')===0
+      ? true : u; });
 t('a CUI issuance prefixes the subject with the triple visual warning', ()=>{
   const m=E("dashIssueMail({title:'CUI Contract',requestedBy:'req@gov.mil',workspace:{selects:{clsSel:'CUI'},texts:{},perf:[]}})");
   return m.cui===true && m.subject==='(CUI)(CUI)(CUI) Issued DD Form 254 — CUI Contract'
@@ -403,12 +423,12 @@ await ta('issue dialog uses the actual clicked anchor for the default-mail hando
   const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
   const b=d.querySelector('#ddEmail'), txt=d.textContent;
   const href=decodeURIComponent(b.getAttribute('href')||'');
-  const ok=!!b && b.tagName==='A' && /^mailto:req@gov\.mil\?cc=cso@dcsa\.mil; fso@acme\.com; other@example\.mil/.test(href)
+  const ok=!!b && b.tagName==='A' && /^mailto:req@gov\.mil; fso@acme\.com\?cc=cso@dcsa\.mil; other@example\.mil/.test(href)
       && b.getAttribute('target')===null && E("typeof dashOpenIssueMail")==='undefined'
-      && /Open e-mail/.test(b.textContent) && /requestor, subcontractor FSO and performance-location FSOs/.test(txt)
-      && /facility FSOs, security \/ program security managers, CSOs, additional FSOs and checked Item 18f addresses/.test(txt) && /Duplicate addresses are removed/.test(txt)
+      && /Open e-mail/.test(b.textContent) && /the requestor, the Security Manager and the Item 6, 7 and 8 FSOs/.test(txt)
+      && /CSOs, additional FSOs, Item 18 security \/ program security managers and checked Item 18f addresses/.test(txt) && /Duplicate addresses are removed/.test(txt)
       && /semicolon and space/.test(txt)
-      && /does not open a web window/.test(txt) && /To: 1 · CC: 3/.test(txt);
+      && /does not open a web window/.test(txt) && /To: 2 · CC: 2/.test(txt);
   d.querySelector('#ddSkip').click(); await E("window.__issueMailDlg"); return ok; });
 await ta('an empty issue audience leaves the e-mail link inert and explains why', async()=>{
   E("window.__A='';window.__emptyMailDlg=dashDistDialog({id:'MAIL0',title:'No mail',workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
@@ -533,7 +553,10 @@ t('MUST SEND TO FSOs aggregates 6, 7, 8 deduped', ()=>{
   PB().email.value='SUB@BETA.COM';
   E("document.getElementById('fsoEmails').value='extra@x.com';updateEmailDist();");
   const s=E("emailDistSets()"); const h=w.document.getElementById('fsoEmailList').innerHTML;
-  return s.fsoAuto.length===2 && s.fso.length===3 && /sub@beta.com/.test(h) && !/prime@acme.com|extra@x.com/.test(h);});
+  /* v2.10.0: the To list is what Open e-mail will use, and the Item 6 facility
+     FSO is now on To, so it is listed. The manual catch-all stays on CC. */
+  return s.fsoAuto.length===2 && s.fso.length===3
+      && /sub@beta.com/.test(h) && /prime@acme.com/.test(h) && !/extra@x.com/.test(h);});
 t('subcontractor e-mail required once a sub exists', ()=>{
   E("resetFormFields();document.getElementById('i7a').value='Beta Corp';document.getElementById('i7fsoEmail').value='';run();");
   return (w.DD254_ERRORS||[]).some(x=>/Subcontractor FSO e-mail is required/.test(x))
@@ -1223,10 +1246,20 @@ const fillParty=async(o)=>{
   const d=await waitDlg('#dashPartyDlg',10000);
   if(!d) return null;
   const put=(id,v)=>{ const el=d.querySelector('#'+id); if(el&&v!=null){ el.value=v; if(el.oninput) el.oninput(); } };
-  put('np_person',o.person===undefined?'Jane Doe':o.person);
+  /* A person is still accepted as one string, because most tests only care
+     that a requester was given. */
+  const person=String(o.person===undefined?'Jane Doe':o.person).trim().split(/\s+/);
+  put('np_first',o.first===undefined?(person[0]||''):o.first);
+  put('np_last',o.last===undefined?(person.slice(1).join(' ')||''):o.last);
   put('np_prime',o.prime===undefined?'N00178-24-D-1234':o.prime);
-  put('np_sub',o.sub||'');
+  put('np_order',o.order||'');
+  /* Block 2b is required on an Original and the field is absent on a
+     solicitation, so a default keeps every creating test working. */
+  if(d.querySelector('#np_sub')) put('np_sub',o.sub===undefined?'N/A':o.sub);
+  if(d.querySelector('#np_sol')) put('np_sol',o.solicitation===undefined?'N00178-26-R-0001':o.solicitation);
+  if(d.querySelector('#np_due')) put('np_due',o.due===undefined?'2026-11-30':o.due);
   put('np_email',o.email===undefined?'jane.doe@example.com':o.email);
+  if(o.sm!=null){ const sel=d.querySelector('#np_sm'); if(sel){ sel.value=o.sm; if(sel.onchange) sel.onchange(); } }
   if(o.title!=null) put('np_title',o.title);
   d.querySelector('#np_ok').click();
   return d;
@@ -1446,9 +1479,10 @@ t('the classification banner follows the selector', ()=>{
    by that flush, so drop the buffer first. */
 const SEED=()=>E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
 H('29. Template libraries — all seven');
-t('all nine libraries are addressable', ()=>{
-  /* v1.15.2 added the Security Classification Guides library (scg). */
-  const kinds=['fac','cso','perf','cert','b13','ct','sm','sl','scg','orders'];
+t('all ten libraries are addressable', ()=>{
+  /* v1.15.2 added the Security Classification Guides library (scg);
+     v2.10.0 added the requester repository (req). */
+  const kinds=['fac','cso','perf','cert','b13','ct','sm','sl','scg','orders','req'];
   return kinds.every(k=>{ const key=E("tplKeyOf('"+k+"')"); return typeof key==='string' && key.length>0; })
     && JSON.stringify(E("BK_KINDS"))===JSON.stringify(kinds); });
 await ta('add, edit and delete a row in each library', async()=>{
@@ -1597,7 +1631,7 @@ await ta('a full backup round-trips through restore', async()=>{
   let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p);};
   await E("fullBackup()"); w.Blob=OB;
   const payload=JSON.parse(cap);
-  const stamped=payload.version===4 && !!payload.sha256 && payload.counts.drafts===1
+  const stamped=payload.version===5 && !!payload.sha256 && payload.counts.drafts===1
              && payload.counts.templates>=2 && Array.isArray(payload.audit);
   /* wipe everything, then restore from the file */
   await wipe(); E("tplSave(TPL_CSO,[]);tplSave(TPL_FAC,[]);");
@@ -5488,7 +5522,7 @@ await ta('changing one selected status to Issued opens one bulk window and issue
     && /Prepared e-mails — 2 audience groups/.test(d.textContent) && /Never attach a record to a different audience group/.test(d.textContent)
     && /Bulk Issue One/.test(d.textContent) && /Bulk Issue Two/.test(d.textContent) && /checked Item 18f/.test(d.textContent)
     && links.length===2
-    && links.some(function(h){return h.indexOf('mailto:req@gov.mil?cc=cso1@gov.mil; fso1@a.com&subject=Issued DD Form 254 — Bulk Issue One')===0;})
+    && links.some(function(h){return h.indexOf('mailto:req@gov.mil; fso1@a.com?cc=cso1@gov.mil&subject=Issued DD Form 254 — Bulk Issue One')===0;})
     && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com\?cc=CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil&subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two$/i.test(h);})
     && !links.some(function(h){return /fso1@a\.com/.test(h)&&/fso2@b\.com/.test(h);});
   d.querySelector('#bddSave').click(); await pr; w.uiAlert=oldAlert;
@@ -7696,10 +7730,12 @@ t('the form still warns that the contract involves CUI', ()=>{
 E("tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 H('110. v2.2.0 recipients, template replacement and repository organisation');
-t('performance-location FSO is To; facility FSO and assigned/program managers are CC',()=>{
+t('facility and performance FSOs are To; CSOs and Item 18 managers are CC',()=>{
   const r={requestedBy:'req@example.com',workspace:{texts:{i6fsoEmail:'facility@example.com',distSmAssigned:JSON.stringify([{name:'Manager',email:'assigned@example.com'}]),distSmRecipients:JSON.stringify([{name:'PSM',email:'psm@example.com'}]),i6c:'cso@example.com'},checks:{},selects:{},perf:[{email:'location@example.com'}]}};
   const m=E('dashIssueMail('+JSON.stringify(r)+')');
-  return m.to.join('|')==='req@example.com|location@example.com'&&m.cc.join('|')==='cso@example.com|facility@example.com|assigned@example.com|psm@example.com';
+  return m.to.join('|')==='req@example.com|facility@example.com|location@example.com'
+      && m.cc.join('|')==='cso@example.com|assigned@example.com|psm@example.com'
+      ? true : ('to='+m.to.join('|')+' cc='+m.cc.join('|'));
 });
 t('To wins when a manager and a performance FSO share an address',()=>{
   const m=E("dashIssueMail({workspace:{texts:{distSmRecipients:JSON.stringify([{email:'SHARED@example.com'}])},perf:[{email:'shared@example.com'}]}})");
@@ -8619,9 +8655,10 @@ await ta('creating one asks for the person, contract and e-mail', async()=>{
   const pr=E("dashNewDraft('orig')");
   const d=await waitDlg('#dashPartyDlg',10000);
   if(!d) return 'no dialog';
-  const ids=['np_person','np_prime','np_sub','np_email','np_title'].filter(x=>!!d.querySelector('#'+x));
+  const ids=['np_first','np_last','np_prime','np_order','np_sub','np_email','np_sm','np_title']
+    .filter(x=>!!d.querySelector('#'+x));
   d.querySelector('#np_cancel').click(); await pr;
-  return ids.length===5 ? true : ids.join(','); });
+  return ids.length===8 ? true : ids.join(','); });
 await ta('backing out creates nothing', async()=>{
   await wipe();
   const before=(await E("draftAll()")).length;
@@ -8634,7 +8671,7 @@ await ta('the name is composed as the fields are typed', async()=>{
   const pr=E("dashNewDraft('orig')");
   const d=await waitDlg('#dashPartyDlg',10000);
   const put=(id,v)=>{ const el=d.querySelector('#'+id); el.value=v; el.oninput&&el.oninput(); };
-  put('np_person','Jane Doe'); put('np_prime','N00178-24-D-1234');
+  put('np_first','Jane'); put('np_last','Doe'); put('np_prime','N00178-24-D-1234');
   const after2=d.querySelector('#np_title').value;
   put('np_sub','SUB-0001');
   const after3=d.querySelector('#np_title').value;
@@ -8648,14 +8685,17 @@ await ta('all three are required, and the e-mail must look like one', async()=>{
   const pr=E("dashNewDraft('orig')");
   const d=await waitDlg('#dashPartyDlg',10000);
   d.querySelector('#np_ok').click();
-  const empty=d.querySelector('#np_err').textContent;
+  /* v2.10.0: validation is beside each field, not one line at the bottom. */
+  const errAt=(id)=>(d.querySelector('#'+id+'_err')||{textContent:''}).textContent;
+  const empty=[errAt('np_first'),errAt('np_last'),errAt('np_email'),errAt('np_prime'),errAt('np_sub')].join('|');
   const put=(id,v)=>{ const el=d.querySelector('#'+id); el.value=v; el.oninput&&el.oninput(); };
-  put('np_person','Jane Doe'); put('np_prime','N00178-24-D-1234'); put('np_email','not-an-email');
+  put('np_first','Jane'); put('np_last','Doe'); put('np_prime','N00178-24-D-1234');
+  put('np_sub','N/A'); put('np_email','not-an-email');
   d.querySelector('#np_ok').click();
-  const bad=d.querySelector('#np_err').textContent;
+  const bad=errAt('np_email');
   const still=(await E("draftAll()")).length===before;
   d.querySelector('#np_cancel').click(); await pr;
-  return /first and last name/.test(empty) && /prime contract/.test(empty) && /e-mail/.test(empty)
+  return /Required/.test(empty) && empty.split('|').filter(x=>/Required/.test(x)).length>=4
       && /does not look like an e-mail/.test(bad) && still
       ? true : ('empty='+empty+' bad='+bad+' still='+still); });
 await ta('the answers name the DD-254 and fill Items 2a, 2b and the requestor', async()=>{
@@ -8690,7 +8730,8 @@ await ta('the pencil reopens the same fields and recomposes', async()=>{
   const pr=E("dashRename('"+id+"')");
   const d=await waitDlg('#dashPartyDlg',10000);
   if(!d) return 'no dialog';
-  const pre=['np_person','np_prime','np_email'].map(x=>d.querySelector('#'+x).value).join('|');
+  const pre=[d.querySelector('#np_first').value+' '+d.querySelector('#np_last').value,
+             d.querySelector('#np_prime').value,d.querySelector('#np_email').value].join('|');
   const put=(k,v)=>{ const el=d.querySelector('#'+k); el.value=v; el.oninput&&el.oninput(); };
   put('np_prime','N00178-26-C-0417');
   const composed=d.querySelector('#np_title').value;
@@ -8803,6 +8844,232 @@ t('the panel and the automatic insertion match on the same two things', ()=>
   && E("String(slPanelState)").includes('slCandidates(')
   && E("String(slAutoApply)").includes('slCandidates('));
 E("window.SL_PANEL_ALL=false;tplSave(TPL_SL,[]);tplSave(TPL_CT,[]);showDashView();resetFormFields();");
+
+H('121. v2.10.0 requester repository, solicitation intake, template matching');
+/* Owner specification, 9 October 2026. */
+const REQSEED=async()=>{
+  await wipe();
+  await E("tplSave(TPL_REQ,[])");
+  await E("tplSave(TPL_SM,[{label:'M',name:'Ann Reed',email:'areed@example.com',program:'SHOES'}])");
+  await E("tplSave(TPL_B13,[])");
+  await E("tplSave(TPL_CT,[])");
+  /* Leave no draft open: autosave would write it back after the wipe and the
+     next count would be of a record this test never made. */
+  E("DASH.current=null;showDashView();");
+};
+await ta('a requester can be added, edited and removed', async()=>{
+  await REQSEED();
+  await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com',completedCount:0,createdAt:'2026-10-09T00:00:00.000Z',updatedAt:'2026-10-09T00:00:00.000Z'}])");
+  const one=E("reqAll()").length===1;
+  await E("(async function(){var a=reqAll();a[0].email='new@example.com';await reqSave(a);})()");
+  const edited=E("reqAll()")[0].email==='new@example.com';
+  await E("tplSave(TPL_REQ,[])");
+  return one && edited && E("reqAll()").length===0; });
+await ta('a name is matched exactly, ignoring case and extra spaces', async()=>{
+  await REQSEED();
+  await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com',completedCount:2}])");
+  const hit=E("reqLookup('  jANE ','doe  ')");
+  const miss=E("reqLookup('Jane','Doering')");
+  return hit.state==='one' && hit.record.email==='jane.doe@example.com' && miss.state==='none'
+      ? true : (hit.state+'/'+miss.state); });
+await ta('only a requester with an issued DD-254 is offered automatically', async()=>{
+  await REQSEED();
+  await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com',completedCount:0}])");
+  const known=E("reqLookup('Jane','Doe')");
+  await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com',completedCount:1}])");
+  const offered=E("reqLookup('Jane','Doe')");
+  return known.state==='known' && offered.state==='one'; });
+await ta('two requesters of one name are never resolved by guessing', async()=>{
+  await REQSEED();
+  await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com',completedCount:1},"
+   +"{id:'r2',firstName:'Jane',lastName:'Doe',email:'jane.d@elsewhere.example',completedCount:3}])");
+  const r=E("reqLookup('Jane','Doe')");
+  return r.state==='many' && r.records.length===2; });
+await ta('the dialog fills a known requester e-mail, and never overwrites a typed one', async()=>{
+  await REQSEED();
+  await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com',completedCount:1}])");
+  const pr=E("dashNewDraft('orig')");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  const put=(id,v)=>{ const el=d.querySelector('#'+id); el.value=v; el.oninput&&el.oninput(); };
+  put('np_first','Jane'); put('np_last','Doe');
+  const filled=d.querySelector('#np_email').value;
+  put('np_email','someone.else@example.com');
+  put('np_first','Jane');
+  const kept=d.querySelector('#np_email').value;
+  d.querySelector('#np_cancel').click(); await pr;
+  return filled==='jane.doe@example.com' && kept==='someone.else@example.com'
+      ? true : ('filled='+filled+' kept='+kept); });
+await ta('creating a DD-254 remembers the requester without claiming a completion', async()=>{
+  await REQSEED();
+  await newDraft('orig',{first:'Kit',last:'Marlowe',email:'kit@example.com'});
+  const r=E("reqAll()").filter(x=>x.lastName==='Marlowe')[0];
+  return !!r && (+r.completedCount||0)===0 ? true : JSON.stringify(r); });
+await ta('issuing records the completion against the requester', async()=>{
+  await REQSEED();
+  await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Kit',lastName:'Marlowe',email:'kit@example.com',completedCount:0}])");
+  await E("reqRecordCompletion({id:'x',title:'t',requester:{firstName:'Kit',lastName:'Marlowe',email:'kit@example.com'}})");
+  const r=E("reqAll()").filter(x=>x.lastName==='Marlowe')[0];
+  return (+r.completedCount||0)===1 && !!r.lastCompletedAt; });
+await ta('a legacy draft with only requestedBy still reads and still issues', async()=>{
+  await REQSEED();
+  await E("draftPut({id:'LEG1',title:'Legacy',status:'Draft',stage:'orig',requestedBy:'old@example.com',todos:[],notes:'',meta:{},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
+  const rec=await E("draftGet('LEG1')");
+  const who=E("reqOfDraft("+JSON.stringify(rec)+")");
+  const m=E("dashIssueMail("+JSON.stringify(rec)+")");
+  return who.email==='old@example.com' && who.name==='' && m.to.join('|')==='old@example.com'
+      ? true : (JSON.stringify(who)+' to='+m.to.join('|')); });
+await ta('an Original cannot be created with Block 2b blank', async()=>{
+  await REQSEED();
+  const before=(await E("draftAll()")).length;
+  const pr=E("dashNewDraft('orig')");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  const put=(id,v)=>{ const el=d.querySelector('#'+id); el.value=v; el.oninput&&el.oninput(); };
+  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane.doe@example.com');
+  put('np_prime','N00178-24-D-1234'); put('np_sub','');
+  d.querySelector('#np_ok').click();
+  const said=(d.querySelector('#np_sub_err')||{textContent:''}).textContent;
+  const none=(await E("draftAll()")).length===before;
+  d.querySelector('#np_cancel').click(); await pr;
+  return /Required on an Original/.test(said) && none ? true : ('said='+said+' none='+none); });
+await ta('N/A is accepted as the Block 2b response', async()=>{
+  await REQSEED();
+  await newDraft('orig',{sub:'N/A'});
+  await E("dashSaveNow()");
+  const r=await E("draftGet('"+E("DASH.current")+"')");
+  return ((r.workspace||{}).texts||{}).i2b==='N/A'
+      && !/N\/A/.test(r.title) ? true : ('i2b='+(((r.workspace||{}).texts||{}).i2b)+' title='+r.title); });
+await ta('a Solicitation cannot be created without Block 2c or its due date', async()=>{
+  await REQSEED();
+  const before=(await E("draftAll()")).length;
+  const pr=E("dashNewDraft('sol')");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  const put=(id,v)=>{ const el=d.querySelector('#'+id); el.value=v; el.oninput&&el.oninput(); };
+  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane.doe@example.com');
+  put('np_prime','N00178-24-D-1234'); put('np_sol',''); put('np_due','');
+  d.querySelector('#np_ok').click();
+  const solErr=(d.querySelector('#np_sol_err')||{textContent:''}).textContent;
+  const dueErr=(d.querySelector('#np_due_err')||{textContent:''}).textContent;
+  put('np_sol','N00178-26-R-0001');
+  d.querySelector('#np_ok').click();
+  const stillDue=(d.querySelector('#np_due_err')||{textContent:''}).textContent;
+  const none=(await E("draftAll()")).length===before;
+  d.querySelector('#np_cancel').click(); await pr;
+  return /Required/.test(solErr) && /Required/.test(dueErr) && /Required/.test(stillDue) && none
+      ? true : ('sol='+solErr+' due='+dueErr+' stillDue='+stillDue+' none='+none); });
+await ta('the solicitation due date lands in the field beside Block 2c', async()=>{
+  await REQSEED();
+  await newDraft('sol',{solicitation:'N00178-26-R-0001',due:'2026-11-30'});
+  await E("dashSaveNow()");
+  const tx=((await E("draftGet('"+E("DASH.current")+"')")).workspace||{}).texts||{};
+  return tx.i2c==='N00178-26-R-0001' && tx.i2c_due==='2026-11-30'
+      ? true : JSON.stringify({c:tx.i2c,d:tx.i2c_due}); });
+const MATCHSEED=async()=>{
+  await REQSEED();
+  E("(function(){"
+   +"var p=Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',i13:'Prime language.'});"
+   +"var o=Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',taskOrder:'0042',i13:'Order language.'});"
+   +"tplSave(TPL_CT,[{label:'Prime template',ioId:'ct-prime',smName:'Ann Reed',smEmail:'areed@example.com',smProgram:'SHOES',data:p},"
+   +"{label:'Order template',ioId:'ct-order',data:o}]);})();");
+};
+await ta('an exact task-order match beats a prime-only one', async()=>{
+  await MATCHSEED();
+  const m=E("dashIntakeMatch('N00178-24-D-1234','0042')");
+  return m.level==='order' && m.hits.length===1 && m.one.t.label==='Order template'
+      ? true : (m.level+'/'+m.hits.length); });
+await ta('a prime match only counts against a template with no task order', async()=>{
+  await MATCHSEED();
+  const m=E("dashIntakeMatch('N00178-24-D-1234','')");
+  return m.level==='prime' && m.hits.length===1 && m.one.t.label==='Prime template'
+      ? true : (m.level+'/'+m.hits.length); });
+await ta('normalisation ignores case and collapsed whitespace', async()=>{
+  await MATCHSEED();
+  const m=E("dashIntakeMatch('  n00178-24-d-1234  ','')");
+  return m.level==='prime' && m.hits.length===1; });
+await ta('two templates at the same priority are not chosen between', async()=>{
+  await MATCHSEED();
+  E("(function(){var a=ctEnsureIds();a.push({label:'Second prime',ioId:'ct-two',data:Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234'})});tplSave(TPL_CT,a);})();");
+  const m=E("dashIntakeMatch('N00178-24-D-1234','')");
+  return m.many===true && m.one===null && m.hits.length===2 ? true : JSON.stringify(m.hits.length); });
+await ta('a partial match is never applied', async()=>{
+  await MATCHSEED();
+  const m=E("dashIntakeMatch('N00178-24','')");
+  return m.one===null && m.hits.length===0 && m.partial.length>=1
+      ? true : ('one='+!!m.one+' hits='+m.hits.length+' partial='+m.partial.length); });
+await ta('a single match is applied whole, and what was typed still wins', async()=>{
+  await MATCHSEED();
+  await newDraft('orig',{prime:'N00178-24-D-1234',order:'0042',sub:'N/A'});
+  await E("dashSaveNow()");
+  const r=await E("draftGet('"+E("DASH.current")+"')");
+  const tx=(r.workspace||{}).texts||{};
+  return /Order language\./.test(tx.item13||'')
+      && tx.i2a==='N00178-24-D-1234' && tx.iEffort==='0042'
+      ? true : ('i13='+String(tx.item13).slice(0,40)+' 2a='+tx.i2a+' eff='+tx.iEffort); });
+await ta('applying a matched template is written to the audit log', async()=>
+  E("audAll()").some(a=>a.action==='template-matched'));
+await ta('a matched template carries its security manager onto the draft', async()=>{
+  await MATCHSEED();
+  await newDraft('orig',{prime:'N00178-24-D-1234',order:'',sub:'N/A'});
+  await E("dashSaveNow()");
+  const r=await E("draftGet('"+E("DASH.current")+"')");
+  return (r.securityManager||{}).email==='areed@example.com'
+      ? true : JSON.stringify(r.securityManager); });
+await ta('the task order is the primary identifier, with the prime as its parent', async()=>{
+  await REQSEED();
+  await newDraft('orig',{prime:'N00178-24-D-1234',order:'0042',sub:'N/A'});
+  await E("dashSaveNow()");
+  const r=await E("draftGet('"+E("DASH.current")+"')");
+  const id=E("dashPrimaryIdent("+JSON.stringify(r)+")");
+  return id.value==='0042' && id.kind==='order' && id.parent==='N00178-24-D-1234'
+      ? true : JSON.stringify(id); });
+await ta('without a task order the prime is primary, and without either the solicitation', async()=>{
+  const a=E("dashPrimaryIdent({meta:{identity:{prime:'N00178-24-D-1234'}}})");
+  const b=E("dashPrimaryIdent({meta:{identity:{solicitation:'N00178-26-R-0001'}}})");
+  const c=E("dashPrimaryIdent({title:'Just a name'})");
+  return a.kind==='prime' && b.kind==='solicitation' && b.value==='N00178-26-R-0001'
+      && c.kind==='title' && c.value==='Just a name'; });
+await ta('the snapshot is what issuance reads, not the repository', async()=>{
+  await REQSEED();
+  await E("draftPut({id:'SM1',title:'Snap',status:'Draft',stage:'orig',requestedBy:'req@example.com',securityManager:{name:'Ann Reed',email:'areed@example.com',program:'SHOES'},todos:[],notes:'',meta:{},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("tplSave(TPL_SM,[{label:'M',name:'Ann Reed',email:'CHANGED@example.com',program:'SHOES'}])");
+  const rec=await E("draftGet('SM1')");
+  const sm=E("dashSecurityManager("+JSON.stringify(rec)+")");
+  const m=E("dashIssueMail("+JSON.stringify(rec)+")");
+  return sm.email==='areed@example.com' && m.to.join('|')==='req@example.com|areed@example.com'
+      ? true : (JSON.stringify(sm)+' to='+m.to.join('|')); });
+await ta('a draft with no snapshot is backfilled only from an unambiguous template', async()=>{
+  await MATCHSEED();
+  const one={id:'SM2',title:'Backfill',meta:{identity:{prime:'N00178-24-D-1234'}},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}};
+  const got=E("dashSecurityManager("+JSON.stringify(one)+")");
+  E("(function(){var a=ctEnsureIds();a.push({label:'Second prime',ioId:'ct-two',smName:'Someone Else',smEmail:'else@example.com',data:Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234'})});tplSave(TPL_CT,a);})();");
+  const ambiguous=E("dashSecurityManager("+JSON.stringify(one)+")");
+  return got && got.email==='areed@example.com' && got.source==='template' && ambiguous===null
+      ? true : (JSON.stringify(got)+' ambiguous='+JSON.stringify(ambiguous)); });
+await ta('the issuance screen lists the manager under the requester, and warns when there is none', async()=>{
+  await REQSEED();
+  const withSm={id:'SM3',title:'With',requestedBy:'req@example.com',securityManager:{name:'Ann Reed',email:'areed@example.com'},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}};
+  const parties=E("dashDistParties("+JSON.stringify(withSm)+")");
+  const idx=parties.map(p=>p.key).join(',');
+  const pr=E("window.__smDlg=dashDistDialog({id:'SM4',title:'None',requestedBy:'req@example.com',workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
+  const d=await waitDlg('#dashDistDlg',10000);
+  const warned=!!d.querySelector('#ddSmWarn');
+  d.querySelector('#ddSkip').click(); await E("window.__smDlg");
+  return /req,sm$/.test(idx) && warned ? true : ('keys='+idx+' warned='+warned); });
+await ta('a full backup carries the requester repository and the draft snapshots', async()=>{
+  await REQSEED();
+  await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com',completedCount:4}])");
+  await E("draftPut({id:'BK1',title:'Backed',status:'Draft',stage:'orig',requestedBy:'jane.doe@example.com',requester:{firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com'},securityManager:{name:'Ann Reed',email:'areed@example.com'},todos:[],notes:'',meta:{identity:{prime:'N00178-24-D-1234'}},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
+  let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p);};
+  w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{};
+  await E("fullBackup()"); w.Blob=OB;
+  const body=JSON.parse(cap);
+  /* The payload is keyed by kind, not by store key. */
+  const hasReq=!!(body.templates&&body.templates.req&&body.templates.req.length===1)&&body.version===5;
+  const draft=(body.drafts||[]).filter(d=>d.id==='BK1')[0];
+  return hasReq && !!draft && draft.requester.lastName==='Doe'
+      && draft.securityManager.email==='areed@example.com'
+      && draft.meta.identity.prime==='N00178-24-D-1234'
+      ? true : ('req='+hasReq+' draft='+JSON.stringify(draft&&draft.requester)); });
+E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
 console.log('  PASS '+pass+'   FAIL '+fail);
