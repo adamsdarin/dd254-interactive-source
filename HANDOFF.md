@@ -1,10 +1,18 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-09T12:00-05:00 by Maintainer
+Last updated: 2026-10-10T09:00-05:00 by Maintainer
 
 ## Current State
 
-Built and gated, not yet tagged: **v2.10.0 (Tool 2.156)**, build aecc5ce2.
+Latest published release: **v2.10.0 (Tool 2.156)**, which carries v2.9.1 as
+well; v2.9.1 was built and gated but never tagged, so the two ship under one
+tag. Signed tag at db385ab on `main`; assets, checksums, the provenance
+attestation, the kit rebuild and the pdf-lib check all verified from a fresh
+download (official aecc5ce2..., demo e1d730a0..., ref refs/tags/v2.10.0,
+rebuild byte-identical, no bytecode in the kit); live demo published as
+dd254-interactive f3ceebc.
+
+What v2.10.0 contains, build aecc5ce2:
 Owner specification of 9 October 2026, implemented on the current product
 rather than on the v1.12.0 copy it was written against (owner decision, same
 day): requester repository and intake, solicitation intake with Block 2c and
@@ -14,7 +22,7 @@ the issuance To line. Full Backup is version 5; version 4 still restores.
 1395 assertions pass; all five gates pass; both builds pass the native-browser
 smoke test. NOTE: the Item 6 facility FSO moved from CC to To.
 
-Also built and gated, not tagged: **v2.9.1 (Tool 2.155)**, build c5b337d6. One
+Carried by v2.10.0: **v2.9.1 (Tool 2.155)**, build c5b337d6. One
 owner request of 7 October 2026: the Standard Language panel lists the entries
 written for this DD-254's programme and Item 1a level rather than the whole
 library, with the rest one link away. 1367 assertions pass; all five gates pass.
@@ -174,6 +182,12 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-10 Maintainer - Published v2.10.0, carrying v2.9.1, and the live demo.
+Verified from a fresh download rather than from the workflow result. The
+release moves the Item 6 facility FSO from CC to To on every issuance e-mail,
+which the owner was told twice before tagging: it is what the specification
+asked for and it reverses an earlier deliberate choice.
 
 2026-10-09 Maintainer - Implemented the owner specification as v2.10.0. The
 spec named a v1.12.0 baseline in OneDrive whose hash matched; building there
