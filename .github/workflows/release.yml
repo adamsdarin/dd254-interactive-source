@@ -28,7 +28,12 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    # Pinned rather than ubuntu-latest: that label migrates to Ubuntu 26 from
+    # 19 October 2026, and a release is not the moment to discover what moved
+    # underneath it. The verification this repository asks people to trust is
+    # only worth as much as the environment it ran in being a known one.
+    # Moving to a newer image is then a deliberate change with its own run.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     # The checks import rebuild_kit/split.py, and Python would leave a __pycache__
     # beside it that the kit tarball then shipped. The kit is meant to hold only
