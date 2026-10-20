@@ -1,3 +1,43 @@
+## v2.11.0 — 19 October 2026
+
+Tool version 2.157. Owner decision of 17 October 2026. The issuance e-mail now
+separates the people a DD-254 has to reach from the people an office chooses to
+copy. The first group is fixed. The second is a setting, and it starts empty.
+
+- The **To** line is everyone the DD-254 has to reach, and is not configurable:
+  the requestor, the Item 7 FSO of the receiving facility, every Item 8
+  performance-location FSO, the cognizant security office, and anyone written
+  into Block 18f. Duplicates are removed across both lines.
+- **Manage → Settings** gains *Who is copied on an issuance*: the **Security
+  Manager** and the **Item 6 FSO**, the two the tool works out for itself. Each
+  is a checkbox, the choice applies to every DD-254, and **both start switched
+  off**, so on upgrade those two recipients stop being e-mailed until somebody
+  turns them on.
+- FSOs you type into the FSO box by hand, and Item 18 managers you add with
+  **Add to CC**, are **not** settings and are always copied. You chose those on
+  the form itself, for that DD-254; a global preference able to discard them
+  quietly would make the button you just clicked do nothing.
+- **A DD-254 can no longer be issued while a required recipient has no address.**
+  The block names each one, and names a performance site by its location rather
+  than as "an Item 8 FSO". It is a stop rather than a prompt because there is
+  nothing to weigh: the other issuance questions ask you to judge something,
+  this one reports an address that has not been written down. A requirement only
+  applies where the form asks for it, so an Item 7 naming no subcontractor is
+  not a gap and a prime DD-254 is unaffected. Bulk issuance reads the same rule,
+  so no record is issuable one way and not the other.
+- Block 18f is required once the box is ticked. Somebody is written in that box
+  because they need the form.
+- The issuance window and the bulk issuance window each state the rule they
+  follow and name the roles your office copies, instead of describing a split
+  that is no longer the one in force.
+- Full Backup now carries your settings, beside the audit log and outside the
+  checksummed body, so the file version is unchanged and older backups still
+  verify exactly as they did. A restore offers them and applies them only if you
+  accept; declining restores templates, drafts and history and leaves your own
+  settings alone.
+- The Item 6 facility FSO moved from CC to To in v2.10.0. It now leaves the
+  issuance e-mail altogether unless you choose to copy it.
+
 ## v2.10.0 - 9 October 2026
 
 Tool version 2.156. Owner specification of 9 October 2026: requester intake,

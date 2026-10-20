@@ -1,4 +1,4 @@
-BUILD_SHA256 aecc5ce220a017323330e8432ef7b61648b706b2e7df6f21482d50bf0db39ec9
+BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -100,9 +100,9 @@ BUILD_SHA256 aecc5ce220a017323330e8432ef7b61648b706b2e7df6f21482d50bf0db39ec9
 ### 9. Distribution capture and log
   PASS  parties derive from Item 18 on that draft
   PASS  no Item 18 boxes means no parties
-  PASS  issue e-mail puts requester, security manager and the 6/7/8 FSOs on To; CSOs and 18f on CC
-  PASS  the security manager is second on To, after the requester
-  PASS  a security manager who is also a CSO appears once, on To
+  PASS  issue e-mail puts everyone the DD-254 must reach on To, and nothing on CC by default
+  PASS  the security manager is copied only when the office has chosen to copy them
+  PASS  a copied security manager who is also a CSO appears once, on To
   PASS  issue e-mail mailto separates every To and CC address with semicolon-space and carries an identifying subject
   PASS  a CUI issuance prefixes the subject with the triple visual warning
   PASS  bulk issue e-mail separates differing audiences and keeps semicolon-space separators
@@ -1126,7 +1126,7 @@ BUILD_SHA256 aecc5ce220a017323330e8432ef7b61648b706b2e7df6f21482d50bf0db39ec9
   PASS  unchecking 18f clears its hidden recipient text and hides the detail row
   PASS  unchecked legacy 18f text is excluded from stored e-mail audiences
   PASS  unchecked legacy 18f text is excluded from official export data
-  PASS  checked 18f text remains in the issue e-mail CC line
+  PASS  checked 18f text is required, so it is on the To line
   PASS  the form marking and the contract CUI indicators are answered separately
   PASS  contract CUI never becomes the form marking, the badge or the subject line
   PASS  a CUI contract with an unclassified marking is reported without prescribing a marking
@@ -1431,7 +1431,7 @@ BUILD_SHA256 aecc5ce220a017323330e8432ef7b61648b706b2e7df6f21482d50bf0db39ec9
   PASS  the form still warns that the contract involves CUI
 
 ### 110. v2.2.0 recipients, template replacement and repository organisation
-  PASS  facility and performance FSOs are To; CSOs and Item 18 managers are CC
+  PASS  performance FSOs and CSOs are To; the facility FSO is not copied, the Item 18 managers still are
   PASS  To wins when a manager and a performance FSO share an address
   PASS  manager dropdown snapshots the repository entry and rejects repeat selection
   PASS  managers survive workspace save/open and deletion from the repository
@@ -1653,6 +1653,21 @@ BUILD_SHA256 aecc5ce220a017323330e8432ef7b61648b706b2e7df6f21482d50bf0db39ec9
   PASS  the issuance screen lists the manager under the requester, and warns when there is none
   PASS  a full backup carries the requester repository and the draft snapshots
 
+### 122. v2.11.0 required recipients, and a CC line the office chooses
+  PASS  neither derived role is copied until the office chooses it, but what you typed still is
+  PASS  a role toggles on and off through one key, and only known keys survive
+  PASS  an enabled role appears on CC and changes nothing on To
+  PASS  an Item 7 with no subcontractor named is not a missing recipient
+  PASS  a named subcontractor with no FSO address is a missing recipient
+  PASS  each performance location is reported by its own name
+  PASS  Block 18f is required when it is ticked and absent when it is not
+  PASS  a performance location repeating another required address is addressed once
+  PASS  an address the operator added by hand is copied whatever the settings say
+  PASS  a DD-254 with no cognizant security office cannot be issued at all
+  PASS  a DD-254 that reaches everyone it must is issued as before
+  PASS  bulk issuance refuses the whole set when one record cannot reach somebody
+  PASS  a full backup carries the settings alongside the audit log, outside the checksum
+
 ================================
-  PASS 1395   FAIL 0
+  PASS 1408   FAIL 0
 ================================

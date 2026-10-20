@@ -304,7 +304,7 @@ t('review clock stays biennial', ()=> E("dd254ReviewDue({issuedAt:'2026-01-15T00
 H('8. Holds');
 await ta('Blocked demands a reason, refuses empty, records it', async()=>{
   await wipe();
-  await E("draftPut({id:'H1',title:'Hotel',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],workspace:{checks:{},texts:{},radios:{},selects:{}}})");
+  await E("draftPut({id:'H1',title:'Hotel',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],requestedBy:'req@gov.mil',workspace:{checks:{},texts:{i6c:'cso@dcsa.mil'},radios:{},selects:{}}})");
   await E("dashRenderCards()");
   const pr=E("dashSetStatus('H1','Blocked')");
   await waitFor(()=>w.document.getElementById('dashHoldDlg'),'hold dialog');
@@ -375,44 +375,71 @@ t('parties derive from Item 18 on that draft', ()=>{
   const p=E("dashDistParties({workspace:{checks:{dist18a:true,dist18c:true,dist18f:true},texts:{dist18fOther:'ACO Bldg 4'}},requestedBy:'po@x.mil'})");
   return p.length===4 && p[0].key==='18a' && p[2].key==='18f' && /ACO Bldg 4/.test(p[2].to) && p[3].key==='req' && p[3].to==='po@x.mil';});
 t('no Item 18 boxes means no parties', ()=> E("dashDistParties({workspace:{checks:{},texts:{}}})").length===0);
-/* v2.10.0 (owner spec): the To line is the requester, then the Security
-   Manager, then the Item 6, 7 and 8 FSOs. The Item 6 facility FSO moved from CC
-   to To with that change. CSOs and checked 18f recipients stay on CC. */
-t('issue e-mail puts requester, security manager and the 6/7/8 FSOs on To; CSOs and 18f on CC', ()=>{
+/* v2.11.0 (owner spec, 17 October 2026): To is everyone the DD-254 has to
+   reach and nothing else - the requestor, the Item 7 FSO of the receiving
+   facility, every Item 8 performance-location FSO, the cognizant security
+   office and any Block 18f address. CC carries only the roles the office has
+   switched on in Settings, and those default to off, so a tool out of the box
+   sends a To line and no CC. The Item 6 FSO and the Security Manager were on To
+   in v2.10.0 and are optional now: that is the change. */
+t('issue e-mail puts everyone the DD-254 must reach on To, and nothing on CC by default', ()=>{
   const r={title:'Alpha',requestedBy:'REQ@gov.mil',workspace:{checks:{dist18f:true},texts:{
     i6fsoEmail:'prime@acme.com; req@GOV.mil',i7fsoEmail:'sub@beta.com',fsoEmails:'manual@other.com',
     i6c:'cso1@dcsa.mil REQ@gov.mil',i7c:'cso2@dcsa.mil',item13:'item13@other.com',dist18fOther:'18f@other.com'
   },perf:[{email:'SUB@BETA.COM loc@plant.com',cso:'CSO2@dcsa.mil cso3@dcsa.mil'}]}};
   const m=E("dashIssueMail("+JSON.stringify(r)+")");
-  return m.to.join('|')==='REQ@gov.mil|prime@acme.com|sub@beta.com|loc@plant.com'
-      && m.cc.join('|')==='cso1@dcsa.mil|cso2@dcsa.mil|cso3@dcsa.mil|manual@other.com|18f@other.com'
+  /* prime@acme.com is the Item 6 FSO: derived, optional, off, so it is on
+     neither line. manual@other.com was typed into the form by hand and is the
+     operator's own choice, which no global setting overrides. The CSOs and the
+     18f address move up to To, where the rule puts them. */
+  return m.to.join('|')==='REQ@gov.mil|sub@beta.com|loc@plant.com|cso1@dcsa.mil|cso2@dcsa.mil|cso3@dcsa.mil|18f@other.com'
+      && m.cc.join('|')==='manual@other.com'
       && !/item13@other/i.test(m.to.concat(m.cc).join('|')); });
-t('the security manager is second on To, after the requester', ()=>{
+t('the security manager is copied only when the office has chosen to copy them', ()=>{
   const r={title:'Alpha',requestedBy:'req@gov.mil',
     securityManager:{name:'Ann Reed',email:'sm@example.com',program:'SHOES'},
     workspace:{checks:{},texts:{i6fsoEmail:'prime@acme.com',i7fsoEmail:'sub@beta.com'},perf:[]}};
-  const m=E("dashIssueMail("+JSON.stringify(r)+")");
-  return m.to.join('|')==='req@gov.mil|sm@example.com|prime@acme.com|sub@beta.com'
-      ? true : m.to.join('|'); });
-t('a security manager who is also a CSO appears once, on To', ()=>{
+  const off=E("dashIssueMail("+JSON.stringify(r)+")");
+  E("distRolesSet(['securityManager'])");
+  const on=E("dashIssueMail("+JSON.stringify(r)+")");
+  E("distRolesSet([])");
+  /* Off: the manager is nowhere. On: the manager is on CC, and the required
+     Item 7 FSO is still on To. The Item 6 FSO stays out either way. */
+  return off.to.join('|')==='req@gov.mil|sub@beta.com' && off.cc.length===0
+      && on.to.join('|')==='req@gov.mil|sub@beta.com' && on.cc.join('|')==='sm@example.com'
+      ? true : ('off='+off.to.join('|')+'/'+off.cc.join('|')+' on='+on.to.join('|')+'/'+on.cc.join('|')); });
+t('a copied security manager who is also a CSO appears once, on To', ()=>{
   const r={title:'Alpha',requestedBy:'req@gov.mil',
     securityManager:{name:'Ann Reed',email:'SHARED@example.com'},
     workspace:{checks:{},texts:{i6c:'shared@example.com'},perf:[]}};
+  E("distRolesSet(['securityManager'])");
   const m=E("dashIssueMail("+JSON.stringify(r)+")");
-  return m.to.join('|')==='req@gov.mil|SHARED@example.com' && m.cc.length===0
+  E("distRolesSet([])");
+  /* Claimed for To as the CSO, so the copied-manager pass skips it: one
+     address, on the line that matters more. */
+  /* Still exactly one address on exactly one line. The spelling is the
+     CSO field's rather than the manager's because To is claimed in rule order
+     and the CSO is required, which is the point: the required recipient is
+     what reserves the slot. */
+  return m.to.join('|')==='req@gov.mil|shared@example.com' && m.cc.length===0
       ? true : ('to='+m.to.join('|')+' cc='+m.cc.join('|')); });
 t('issue e-mail mailto separates every To and CC address with semicolon-space and carries an identifying subject', ()=>{
   const m=E("dashIssueMail({title:'Contract 47',requestedBy:'req@gov.mil',workspace:{checks:{dist18f:true},texts:{i6fsoEmail:'fso@acme.com',i7fsoEmail:'sub@beta.com',i6c:'cso@dcsa.mil',i7c:'cso2@dcsa.mil',dist18fOther:'other@example.mil'},perf:[]}})");
   const u=decodeURIComponent(m.href);
-  return u.indexOf('mailto:req@gov.mil; fso@acme.com; sub@beta.com?cc=cso@dcsa.mil; cso2@dcsa.mil; other@example.mil&subject=Issued DD Form 254 — Contract 47')===0
+  /* Every required address on To, separated by semicolon-space, and no cc=
+     parameter at all when nothing is copied. */
+  return u.indexOf('mailto:req@gov.mil; sub@beta.com; cso@dcsa.mil; cso2@dcsa.mil; other@example.mil?subject=Issued DD Form 254 — Contract 47')===0
       ? true : u; });
 t('a CUI issuance prefixes the subject with the triple visual warning', ()=>{
   const m=E("dashIssueMail({title:'CUI Contract',requestedBy:'req@gov.mil',workspace:{selects:{clsSel:'CUI'},texts:{},perf:[]}})");
   return m.cui===true && m.subject==='(CUI)(CUI)(CUI) Issued DD Form 254 — CUI Contract'
       && decodeURIComponent(m.href).includes('subject=(CUI)(CUI)(CUI) Issued DD Form 254 — CUI Contract'); });
 t('bulk issue e-mail separates differing audiences and keeps semicolon-space separators', ()=>{
-  const a={title:'A',requestedBy:'req@gov.mil',workspace:{selects:{},checks:{dist18f:true},texts:{i6fsoEmail:'fso1@a.com',i6c:'cso1@gov.mil',dist18fOther:'other@gov.mil; req@gov.mil'},perf:[]}};
-  const b={title:'B',requestedBy:'REQ@gov.mil',workspace:{selects:{clsSel:'CUI'},checks:{dist18f:true},texts:{i7fsoEmail:'fso2@b.com',i7c:'CSO1@gov.mil cso2@gov.mil',dist18fOther:'OTHER@gov.mil extra@gov.mil'},perf:[]}};
+  /* Both records carry their distinguishing FSO in Item 7, where it is a
+     required recipient. In Item 6 it would be optional, and two audiences that
+     differ only by an address nobody is copied on are not two audiences. */
+  const a={title:'A',requestedBy:'req@gov.mil',workspace:{selects:{},checks:{dist18f:true},texts:{i7a:'Alpha Sub',i7fsoEmail:'fso1@a.com',i6c:'cso1@gov.mil',dist18fOther:'other@gov.mil; req@gov.mil'},perf:[]}};
+  const b={title:'B',requestedBy:'REQ@gov.mil',workspace:{selects:{clsSel:'CUI'},checks:{dist18f:true},texts:{i7a:'Beta Sub',i7fsoEmail:'fso2@b.com',i7c:'CSO1@gov.mil cso2@gov.mil',dist18fOther:'OTHER@gov.mil extra@gov.mil'},perf:[]}};
   const g=E("dashIssueMailGroups("+JSON.stringify([a,b])+")"), urls=g.map(function(x){return decodeURIComponent(x.mail.href);});
   return g.length===2 && urls.every(function(u){return /; /.test(u);})
       && urls.some(function(u){return /fso1@a\.com/.test(u)&&!/fso2@b\.com/.test(u);})
@@ -423,36 +450,45 @@ await ta('issue dialog uses the actual clicked anchor for the default-mail hando
   const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
   const b=d.querySelector('#ddEmail'), txt=d.textContent;
   const href=decodeURIComponent(b.getAttribute('href')||'');
-  const ok=!!b && b.tagName==='A' && /^mailto:req@gov\.mil; fso@acme\.com\?cc=cso@dcsa\.mil; other@example\.mil/.test(href)
+  /* fso@acme.com is the Item 6 FSO and is no longer copied, so it is on
+     neither line; the CSO and the 18f address move up to To. Nothing is
+     copied, so the mailto carries no cc= parameter at all. */
+  const ok=!!b && b.tagName==='A' && /^mailto:req@gov\.mil; cso@dcsa\.mil; other@example\.mil\?subject=/.test(href)
+      && !/cc=/.test(href)
       && b.getAttribute('target')===null && E("typeof dashOpenIssueMail")==='undefined'
-      && /Open e-mail/.test(b.textContent) && /the requestor, the Security Manager and the Item 6, 7 and 8 FSOs/.test(txt)
-      && /CSOs, additional FSOs, Item 18 security \/ program security managers and checked Item 18f addresses/.test(txt) && /Duplicate addresses are removed/.test(txt)
+      && /Open e-mail/.test(b.textContent)
+      && /the requestor, the Item 7 FSO of the receiving facility, every Item 8 performance-location FSO, the cognizant security office, and any Block 18f address/.test(txt)
+      && /CC carries whoever your office has chosen to copy/.test(txt) && /nobody yet/.test(txt)
+      && /Duplicate addresses are removed/.test(txt)
       && /semicolon and space/.test(txt)
-      && /does not open a web window/.test(txt) && /To: 2 · CC: 2/.test(txt);
+      && /does not open a web window/.test(txt) && /To: 3 · CC: 0/.test(txt);
   d.querySelector('#ddSkip').click(); await E("window.__issueMailDlg"); return ok; });
 await ta('an empty issue audience leaves the e-mail link inert and explains why', async()=>{
   E("window.__A='';window.__emptyMailDlg=dashDistDialog({id:'MAIL0',title:'No mail',workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
   await new Promise(r=>setTimeout(r,80));
   const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
   const b=d.querySelector('#ddEmail'); b.click();
-  const ok=!b.hasAttribute('href') && b.getAttribute('aria-disabled')==='true' && /No requestor/.test(w.__A||'');
+  const ok=!b.hasAttribute('href') && b.getAttribute('aria-disabled')==='true' && /No e-mail address is recorded for anyone this DD-254 has to reach/.test(w.__A||'');
   d.querySelector('#ddSkip').click(); await E("window.__emptyMailDlg"); return ok; });
 await ta('Issued opens the dialog and records what is ticked', async()=>{
   await wipe();
-  await E("draftPut({id:'D1',title:'Delta',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],niss:{on:true,date:'2026-01-01',by:'DA'},\
-    workspace:{selects:{},checks:{dist18a:true,dist18c:true},texts:{i6fsoEmail:'p@a.com'},radios:{},perf:[]}})");
+  await E("draftPut({id:'D1',title:'Delta',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],niss:{on:true,date:'2026-01-01',by:'DA'},requestedBy:'req@gov.mil',\
+    workspace:{selects:{},checks:{dist18a:true,dist18c:true},texts:{i6fsoEmail:'p@a.com',i6c:'cso@dcsa.mil'},radios:{},perf:[]}})");
   await E("dashRenderCards()");
   const pr=E("dashSetStatus('D1','Issued')");
   await new Promise(r=>setTimeout(r,120));
   const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
   const pre=d.querySelector('#ddTo_0').value;
   d.querySelector('#ddSent_1').checked=false;
+  /* The requestor is a party row of its own now, so it is unticked too. What is
+     being proved is unchanged: only what is ticked is written down. */
+  if(d.querySelector('#ddSent_2')) d.querySelector('#ddSent_2').checked=false;
   d.querySelector('#ddSave').click(); await pr;
   const r=await E("draftGet('D1')");
   return pre==='p@a.com' && r.dist.length===1 && /18a/.test(r.dist[0].party) && !('ack' in r.dist[0]);});
 await ta('skip is allowed and audit-logged', async()=>{
   await wipe();
-  await E("draftPut({id:'D2',title:'Echo',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],niss:{on:true},workspace:{checks:{dist18a:true},texts:{},radios:{},perf:[]}})");
+  await E("draftPut({id:'D2',title:'Echo',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],niss:{on:true},requestedBy:'req@gov.mil',workspace:{checks:{dist18a:true},texts:{i6c:'cso@dcsa.mil'},radios:{},perf:[]}})");
   const pr=E("dashSetStatus('D2','Issued')"); await new Promise(r=>setTimeout(r,120));
   const d=w.document.getElementById('dashDistDlg'); if(!d) return 'no dialog';
   d.querySelector('#ddSkip').click(); await pr;
@@ -553,10 +589,12 @@ t('MUST SEND TO FSOs aggregates 6, 7, 8 deduped', ()=>{
   PB().email.value='SUB@BETA.COM';
   E("document.getElementById('fsoEmails').value='extra@x.com';updateEmailDist();");
   const s=E("emailDistSets()"); const h=w.document.getElementById('fsoEmailList').innerHTML;
-  /* v2.10.0: the To list is what Open e-mail will use, and the Item 6 facility
-     FSO is now on To, so it is listed. The manual catch-all stays on CC. */
+  /* v2.11.0: the form's own FSO grouping is unchanged - all three are still
+     FSOs. What changed is the To list beneath it, which is what Open e-mail
+     will use: the Item 7 FSO is required and listed, while the Item 6 facility
+     FSO and the manual catch-all are optional and not copied by default. */
   return s.fsoAuto.length===2 && s.fso.length===3
-      && /sub@beta.com/.test(h) && /prime@acme.com/.test(h) && !/extra@x.com/.test(h);});
+      && /sub@beta.com/.test(h) && !/prime@acme.com/.test(h) && !/extra@x.com/.test(h);});
 t('subcontractor e-mail required once a sub exists', ()=>{
   E("resetFormFields();document.getElementById('i7a').value='Beta Corp';document.getElementById('i7fsoEmail').value='';run();");
   return (w.DD254_ERRORS||[]).some(x=>/Subcontractor FSO e-mail is required/.test(x))
@@ -2485,8 +2523,8 @@ await ta('a draft with no contract type shows no phantom attachments', async()=>
 H('42. Dashboard marking, attachments, and cancelling an issuance');
 const _cards=()=>{ const el=w.document.getElementById('dashCards'); return el?el.innerHTML:''; };
 const _mk=async function(id,cls,notes,st){
-  await E(`draftPut({id:'`+id+`',title:'`+id+`',status:'`+(st||'Draft')+`',stage:'orig',todos:[],meta:{contract:'W911'},
-    workspace:{texts:{attachNotes:`+JSON.stringify(notes||'')+`},checks:{c10a:true},radios:{},selects:{clsSel:`+JSON.stringify(cls||'')+`},perf:[]}})`); };
+  await E(`draftPut({id:'`+id+`',title:'`+id+`',status:'`+(st||'Draft')+`',stage:'orig',todos:[],meta:{contract:'W911'},requestedBy:'req@gov.mil',
+    workspace:{texts:{attachNotes:`+JSON.stringify(notes||'')+`,i6c:'cso@dcsa.mil'},checks:{c10a:true},radios:{},selects:{clsSel:`+JSON.stringify(cls||'')+`},perf:[]}})`); };
 await ta('a CUI form is marked CUI on the card', async()=>{
   await wipe(); await _mk('M1','CUI','');
   await E("dashRenderCards()");
@@ -5520,11 +5558,14 @@ await ta('changing one selected status to Issued opens one bulk window and issue
   const links=Array.from(d.querySelectorAll('[id^="bddEmail_"]')).map(function(a){return decodeURIComponent(a.getAttribute('href')||'');});
   const screenOk=/Bulk issuance — 2 DD-254s/.test(d.textContent) && /CUI — SEND ENCRYPTED/.test(d.textContent)
     && /Prepared e-mails — 2 audience groups/.test(d.textContent) && /Never attach a record to a different audience group/.test(d.textContent)
-    && /Bulk Issue One/.test(d.textContent) && /Bulk Issue Two/.test(d.textContent) && /checked Item 18f/.test(d.textContent)
+    && /Bulk Issue One/.test(d.textContent) && /Bulk Issue Two/.test(d.textContent) && /any Block 18f address/.test(d.textContent)
     && links.length===2
-    && links.some(function(h){return h.indexOf('mailto:req@gov.mil; fso1@a.com?cc=cso1@gov.mil&subject=Issued DD Form 254 — Bulk Issue One')===0;})
-    && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com\?cc=CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil&subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two$/i.test(h);})
-    && !links.some(function(h){return /fso1@a\.com/.test(h)&&/fso2@b\.com/.test(h);});
+    /* One's Item 6 FSO is not copied and drops out; the other's Item 7 FSO is
+       required and stays. The audiences remain distinct, which is what keeps
+       them in separate e-mails. */
+    && links.some(function(h){return h.indexOf('mailto:req@gov.mil; cso1@gov.mil?subject=Issued DD Form 254 — Bulk Issue One')===0;})
+    && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com; CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil\?subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two$/i.test(h);})
+    && !links.some(function(h){return /fso1@a\.com/.test(h);});
   d.querySelector('#bddSave').click(); await pr; w.uiAlert=oldAlert;
   const a=await E("draftGet('bi1')"), b=await E("draftGet('bi2')");
   return screenOk && a.status==='Issued' && b.status==='Issued' && a.dist.length===2 && b.dist.length===3
@@ -5542,8 +5583,8 @@ await ta('one hard failure stops the entire selected issuance before the distrib
 });
 await ta('cancelling the bulk distribution window leaves every selected record unissued', async()=>{
   await wipe();
-  await E("draftPut({id:'bc1',title:'Cancel One',status:'Draft',meta:{},holds:[],niss:{on:true},workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
-  await E("draftPut({id:'bc2',title:'Cancel Two',status:'Ready to sign',meta:{},holds:[],niss:{on:true},workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
+  await E("draftPut({id:'bc1',title:'Cancel One',status:'Draft',meta:{},holds:[],niss:{on:true},requestedBy:'req@gov.mil',workspace:{selects:{},checks:{},radios:{},texts:{i6c:'cso@dcsa.mil'},perf:[]}})");
+  await E("draftPut({id:'bc2',title:'Cancel Two',status:'Ready to sign',meta:{},holds:[],niss:{on:true},requestedBy:'req@gov.mil',workspace:{selects:{},checks:{},radios:{},texts:{i6c:'cso@dcsa.mil'},perf:[]}})");
   const pr=E("dashBulkIssue(['bc1','bc2'])"); await new Promise(r=>setTimeout(r,120));
   const d=w.document.getElementById('dashBulkDistDlg'); if(!d) return 'no bulk dialog';
   d.querySelector('#bddCancel').click(); const result=await pr;
@@ -5748,9 +5789,10 @@ t('unchecked legacy 18f text is excluded from official export data', ()=>{
   E("resetFormFields();document.getElementById('dist18f').checked=false;document.getElementById('dist18fOther').value='hidden@example.mil';");
   const d=E('collect254Data(false)'); return d.v.dist18f_other==='';
 });
-t('checked 18f text remains in the issue e-mail CC line', ()=>{
+t('checked 18f text is required, so it is on the To line', ()=>{
   const m=E("dashIssueMail({requestedBy:'req@gov.mil',workspace:{checks:{dist18f:true},texts:{dist18fOther:'other@example.mil'}}})");
-  return m.cc.join('|')==='other@example.mil';
+  return m.to.join('|')==='req@gov.mil|other@example.mil' && m.cc.length===0
+      ? true : ('to='+m.to.join('|')+' cc='+m.cc.join('|'));
 });
 t('the form marking and the contract CUI indicators are answered separately', ()=>{
   E("tplSave(TPL_CT,[{label:'Derived CUI',ioId:'derived-cui',data:Object.assign(ctBlankData(),{c10:{'10j':true}})},{label:'Marked CUI',ioId:'marked-cui',data:Object.assign(ctBlankData(),{cls:'CUI'})}])");
@@ -5795,7 +5837,9 @@ t('a CUI contract with an unclassified marking is reported without prescribing a
       && !errors.some(function(x){return /contract involves CUI/i.test(x);});
 });
 t('bulk issuance groups identical recipients together and isolates different recipients', ()=>{
-  const base=function(id,fso){return {id:id,title:id,requestedBy:'req@gov.mil',workspace:{checks:{},selects:{},texts:{i6fsoEmail:fso,i6c:'cso@gov.mil'}}};};
+  /* Item 7, not Item 6: the grouping key is the audience, and an address
+     nobody is copied on cannot change it. */
+  const base=function(id,fso){return {id:id,title:id,requestedBy:'req@gov.mil',workspace:{checks:{},selects:{},texts:{i7a:'Sub',i7fsoEmail:fso,i6c:'cso@gov.mil'}}};};
   const same=E('dashIssueMailGroups('+JSON.stringify([base('a','fso@a.com'),base('b','fso@a.com')])+')');
   const split=E('dashIssueMailGroups('+JSON.stringify([base('a','fso@a.com'),base('c','fso@c.com')])+')');
   return same.length===1 && same[0].records.length===2 && split.length===2;
@@ -7730,11 +7774,11 @@ t('the form still warns that the contract involves CUI', ()=>{
 E("tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 H('110. v2.2.0 recipients, template replacement and repository organisation');
-t('facility and performance FSOs are To; CSOs and Item 18 managers are CC',()=>{
+t('performance FSOs and CSOs are To; the facility FSO is not copied, the Item 18 managers still are',()=>{
   const r={requestedBy:'req@example.com',workspace:{texts:{i6fsoEmail:'facility@example.com',distSmAssigned:JSON.stringify([{name:'Manager',email:'assigned@example.com'}]),distSmRecipients:JSON.stringify([{name:'PSM',email:'psm@example.com'}]),i6c:'cso@example.com'},checks:{},selects:{},perf:[{email:'location@example.com'}]}};
   const m=E('dashIssueMail('+JSON.stringify(r)+')');
-  return m.to.join('|')==='req@example.com|facility@example.com|location@example.com'
-      && m.cc.join('|')==='cso@example.com|assigned@example.com|psm@example.com'
+  return m.to.join('|')==='req@example.com|location@example.com|cso@example.com'
+      && m.cc.join('|')==='assigned@example.com|psm@example.com'
       ? true : ('to='+m.to.join('|')+' cc='+m.cc.join('|'));
 });
 t('To wins when a manager and a performance FSO share an address',()=>{
@@ -7746,6 +7790,8 @@ await ta('manager dropdown snapshots the repository entry and rejects repeat sel
   await E("tplSave(TPL_SM,[{name:'Synthetic Manager',email:'manager@example.com',program:'Test program'}]);");
   E("distSmRender();document.getElementById('distSmPick').selectedIndex=1;distSmAdd();document.getElementById('distSmPick').selectedIndex=1;distSmAdd();");
   const a=E("distSmRead(ctGv('distSmRecipients'))");
+  /* Add to CC is the operator's own decision for this DD-254, so nothing
+     global gates it: the manager is copied because they clicked the button. */
   return a.length===1&&a[0].email==='manager@example.com'&&a[0].program==='Test program'&&E('emailDistSets().cc').includes('manager@example.com');
 });
 t('managers survive workspace save/open and deletion from the repository',()=>{
@@ -9033,9 +9079,15 @@ await ta('the snapshot is what issuance reads, not the repository', async()=>{
   await E("tplSave(TPL_SM,[{label:'M',name:'Ann Reed',email:'CHANGED@example.com',program:'SHOES'}])");
   const rec=await E("draftGet('SM1')");
   const sm=E("dashSecurityManager("+JSON.stringify(rec)+")");
+  E("distRolesSet(['securityManager'])");
   const m=E("dashIssueMail("+JSON.stringify(rec)+")");
-  return sm.email==='areed@example.com' && m.to.join('|')==='req@example.com|areed@example.com'
-      ? true : (JSON.stringify(sm)+' to='+m.to.join('|')); });
+  E("distRolesSet([])");
+  /* The repository now says CHANGED@example.com. What goes out is still the
+     address snapshotted onto the draft - that is the whole point - and it goes
+     out on CC, because copying the manager is what this office chose. */
+  return sm.email==='areed@example.com' && m.cc.join('|')==='areed@example.com'
+      && m.to.join('|')==='req@example.com'
+      ? true : (JSON.stringify(sm)+' to='+m.to.join('|')+' cc='+m.cc.join('|')); });
 await ta('a draft with no snapshot is backfilled only from an unambiguous template', async()=>{
   await MATCHSEED();
   const one={id:'SM2',title:'Backfill',meta:{identity:{prime:'N00178-24-D-1234'}},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}};
@@ -9047,13 +9099,19 @@ await ta('a draft with no snapshot is backfilled only from an unambiguous templa
 await ta('the issuance screen lists the manager under the requester, and warns when there is none', async()=>{
   await REQSEED();
   const withSm={id:'SM3',title:'With',requestedBy:'req@example.com',securityManager:{name:'Ann Reed',email:'areed@example.com'},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}};
+  /* Both halves of the rule: with the manager not copied there is no row to
+     record and no warning to raise, because nothing is being omitted. */
+  const idxOff=E("dashDistParties("+JSON.stringify(withSm)+")").map(p=>p.key).join(',');
+  E("distRolesSet(['securityManager'])");
   const parties=E("dashDistParties("+JSON.stringify(withSm)+")");
   const idx=parties.map(p=>p.key).join(',');
   const pr=E("window.__smDlg=dashDistDialog({id:'SM4',title:'None',requestedBy:'req@example.com',workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
   const d=await waitDlg('#dashDistDlg',10000);
   const warned=!!d.querySelector('#ddSmWarn');
   d.querySelector('#ddSkip').click(); await E("window.__smDlg");
-  return /req,sm$/.test(idx) && warned ? true : ('keys='+idx+' warned='+warned); });
+  E("distRolesSet([])");
+  return /req,sm$/.test(idx) && idxOff==='req' && warned
+      ? true : ('keys='+idx+' off='+idxOff+' warned='+warned); });
 await ta('a full backup carries the requester repository and the draft snapshots', async()=>{
   await REQSEED();
   await E("tplSave(TPL_REQ,[{id:'r1',firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com',completedCount:4}])");
@@ -9069,6 +9127,159 @@ await ta('a full backup carries the requester repository and the draft snapshots
       && draft.securityManager.email==='areed@example.com'
       && draft.meta.identity.prime==='N00178-24-D-1234'
       ? true : ('req='+hasReq+' draft='+JSON.stringify(draft&&draft.requester)); });
+
+H('122. v2.11.0 required recipients, and a CC line the office chooses');
+/* Owner decision, 17 October 2026. To is everyone the DD-254 has to reach and
+   is not configurable; CC is a global choice that starts empty. */
+
+t('neither derived role is copied until the office chooses it, but what you typed still is', ()=>{
+  E("localStorage.removeItem('dd254_dist_cc')");
+  const m=E("dashIssueMail({requestedBy:'req@gov.mil',securityManager:{name:'A',email:'sm@x.com'},workspace:{checks:{},texts:{i6c:'cso@dcsa.mil',i6fsoEmail:'f6@x.com',fsoEmails:'manual@x.com'},perf:[]}})");
+  /* The Security Manager and the Item 6 FSO are worked out by the tool and
+     start off. manual@x.com was typed into the form by hand, so it is on CC
+     whatever the setting says. */
+  return E("distRolesGet()").length===0 && m.cc.join('|')==='manual@x.com'
+      && m.to.join('|')==='req@gov.mil|cso@dcsa.mil'
+      ? true : ('roles='+E("distRolesGet()").join(',')+' to='+m.to.join('|')+' cc='+m.cc.join('|'));
+});
+
+t('a role toggles on and off through one key, and only known keys survive', ()=>{
+  E("distRolesSet([])");
+  E("distRoleToggle('fsoPrime')");
+  const on=E("distRolesGet()").join(','), named=E("distCcNames()");
+  E("distRoleToggle('fsoPrime')");
+  const off=E("distRolesGet()").join(',');
+  /* A hand-edited or downgraded value cannot smuggle in a role this version
+     has no way to explain. */
+  /* managers is not a role any more, so it is dropped alongside the invented
+     one: the writer is the only thing that decides what a valid value is. */
+  E("localStorage.setItem('dd254_dist_cc','fsoPrime,notARole,managers')");
+  const cleaned=E("distRolesGet()").join(',');
+  E("distRolesSet([])");
+  return on==='fsoPrime' && /Item 6 FSO/.test(named) && off==='' && cleaned==='fsoPrime'
+      ? true : ('on='+on+' named='+named+' off='+off+' cleaned='+cleaned);
+});
+
+t('an enabled role appears on CC and changes nothing on To', ()=>{
+  const rec={requestedBy:'req@gov.mil',securityManager:{name:'A',email:'sm@x.com'},
+    workspace:{checks:{},texts:{i6c:'cso@dcsa.mil',i6fsoEmail:'f6@x.com',fsoEmails:'manual@x.com'},perf:[]}};
+  E("distRolesSet(['fsoPrime'])");
+  const m=E("dashIssueMail("+JSON.stringify(rec)+")");
+  E("distRolesSet([])");
+  /* Always-copied addresses first, then the roles that were switched on. */
+  return m.to.join('|')==='req@gov.mil|cso@dcsa.mil' && m.cc.join('|')==='manual@x.com|f6@x.com'
+      ? true : ('to='+m.to.join('|')+' cc='+m.cc.join('|'));
+});
+
+/* "Applies" is the whole safeguard. A requirement that fired on an item the
+   form never asked for would make a prime DD-254 impossible to issue. */
+t('an Item 7 with no subcontractor named is not a missing recipient', ()=>{
+  const rq=E("dashDistRequired({requestedBy:'req@gov.mil',workspace:{checks:{},texts:{i6c:'cso@dcsa.mil'},perf:[]}})");
+  const keys=rq.applies.map(function(r){return r.key;}).join(',');
+  return rq.missing.length===0 && keys==='requestor,cso'
+      ? true : ('applies='+keys+' missing='+rq.missing.map(function(r){return r.key;}).join(','));
+});
+
+t('a named subcontractor with no FSO address is a missing recipient', ()=>{
+  const rq=E("dashDistRequired({requestedBy:'req@gov.mil',workspace:{checks:{},texts:{i6c:'cso@dcsa.mil',i7a:'Beta Corp'},perf:[]}})");
+  return rq.missing.length===1 && rq.missing[0].key==='fsoSub'
+      ? true : JSON.stringify(rq.missing.map(function(r){return r.key;}));
+});
+
+/* Named one by one: "an Item 8 FSO is missing" is not actionable, "Building
+   400 Patuxent has no FSO address" is. */
+t('each performance location is reported by its own name', ()=>{
+  const rq=E("dashDistRequired({requestedBy:'req@gov.mil',workspace:{checks:{},texts:{i6c:'cso@dcsa.mil'},perf:[{loc:'Building 400 Patuxent',email:''},{loc:'Hangar 9',email:'h9@plant.com'}]}})");
+  return rq.missing.length===1 && /Building 400 Patuxent/.test(rq.missing[0].label)
+      && !/Hangar 9/.test(rq.missing[0].label)
+      ? true : JSON.stringify(rq.missing.map(function(r){return r.label;}));
+});
+
+t('Block 18f is required when it is ticked and absent when it is not', ()=>{
+  const off=E("dashDistRequired({requestedBy:'req@gov.mil',workspace:{checks:{},texts:{i6c:'cso@dcsa.mil'},perf:[]}})");
+  const on=E("dashDistRequired({requestedBy:'req@gov.mil',workspace:{checks:{dist18f:true},texts:{i6c:'cso@dcsa.mil'},perf:[]}})");
+  return off.missing.length===0 && on.missing.length===1 && on.missing[0].key==='other18f'
+      ? true : ('off='+off.missing.length+' on='+on.missing.map(function(r){return r.key;}).join(','));
+});
+
+t('a performance location repeating another required address is addressed once', ()=>{
+  const m=E("dashIssueMail({requestedBy:'req@gov.mil',workspace:{checks:{},texts:{i6c:'cso@dcsa.mil',i7a:'Beta',i7fsoEmail:'fso@beta.com'},perf:[{loc:'A',email:'fso@beta.com'},{loc:'B',email:'b@plant.com'}]}})");
+  return m.to.join('|')==='req@gov.mil|fso@beta.com|b@plant.com|cso@dcsa.mil' ? true : m.to.join('|');
+});
+
+t('an address the operator added by hand is copied whatever the settings say', ()=>{
+  /* The defect the live-browser smoke test caught. "Add to CC" and the
+     hand-entered FSO box are per-DD-254 decisions already made by the person
+     sending it; a global preference that could discard them would make an
+     explicit click do nothing at all. */
+  const rec={requestedBy:'req@gov.mil',
+    workspace:{checks:{},texts:{i6c:'cso@dcsa.mil',fsoEmails:'typed@x.com'},
+      perf:[],selects:{},radios:{}}};
+  E("distRolesSet([])");
+  const none=E("dashIssueMail("+JSON.stringify(rec)+")");
+  E("distRolesSet(['securityManager','fsoPrime'])");
+  const all=E("dashIssueMail("+JSON.stringify(rec)+")");
+  E("distRolesSet([])");
+  return none.cc.join('|')==='typed@x.com' && all.cc.join('|')==='typed@x.com'
+      ? true : ('none='+none.cc.join('|')+' all='+all.cc.join('|'));
+});
+
+await ta('a DD-254 with no cognizant security office cannot be issued at all', async()=>{
+  await wipe();
+  await E("draftPut({id:'DC9',title:'No CSO',status:'Draft',stage:'orig',meta:{},dist:[],holds:[],niss:{on:true},requestedBy:'req@gov.mil',workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
+  E("window.__A='';");
+  await E("dashSetStatus('DC9','Issued')");
+  const r=await E("draftGet('DC9')");
+  /* A stop, not a prompt: there is nothing to weigh, and no dialog opens. */
+  return r.status==='Draft' && !r.issuedAt
+      && !w.document.getElementById('dashDistDlg')
+      && /cannot be issued yet/.test(w.__A||'') && /Cognizant security office/.test(w.__A||'')
+      && E("audAll()").some(function(x){return x.action==='issue-blocked-no-recipient';})
+      ? true : ('status='+r.status+' alert='+(w.__A||'')); });
+
+await ta('a DD-254 that reaches everyone it must is issued as before', async()=>{
+  await wipe();
+  await E("draftPut({id:'DC8',title:'Reachable',status:'Draft',stage:'orig',meta:{},dist:[],holds:[],niss:{on:true},requestedBy:'req@gov.mil',workspace:{selects:{},checks:{},radios:{},texts:{i6c:'cso@dcsa.mil'},perf:[]}})");
+  const pr=E("dashSetStatus('DC8','Issued')");
+  const d=await waitDlg('#dashDistDlg',10000); if(!d) return 'no dialog';
+  d.querySelector('#ddSkip').click(); await pr;
+  const r=await E("draftGet('DC8')");
+  return r.status==='Issued' && !!r.issuedAt ? true : ('status='+r.status); });
+
+await ta('bulk issuance refuses the whole set when one record cannot reach somebody', async()=>{
+  await wipe();
+  await E("draftPut({id:'bq1',title:'Fine',status:'Draft',meta:{},holds:[],niss:{on:true},requestedBy:'req@gov.mil',workspace:{selects:{},checks:{},radios:{},texts:{i6c:'cso@dcsa.mil'},perf:[]}})");
+  await E("draftPut({id:'bq2',title:'No CSO',status:'Draft',meta:{},holds:[],niss:{on:true},requestedBy:'req@gov.mil',workspace:{selects:{},checks:{},radios:{},texts:{},perf:[]}})");
+  const oldAlert=w.uiAlert; w.__bq=''; w.uiAlert=async function(m){w.__bq=String(m);};
+  const out=await E("dashBulkIssue(['bq1','bq2'])");
+  w.uiAlert=oldAlert;
+  const a=await E("draftGet('bq1')"), b=await E("draftGet('bq2')");
+  /* Same rule, same function: a record cannot be issuable in bulk and not on
+     its own. Nothing is issued, including the record that was fine. */
+  return out===false && a.status==='Draft' && b.status==='Draft'
+      && /no address for Cognizant security office/.test(w.__bq||'')
+      ? true : ('out='+out+' a='+a.status+' b='+b.status+' msg='+(w.__bq||'')); });
+
+await ta('a full backup carries the settings alongside the audit log, outside the checksum', async()=>{
+  await wipe();
+  E("distRolesSet(['securityManager'])");
+  let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p);};
+  w.URL.createObjectURL=()=>'blob:x'; w.URL.revokeObjectURL=()=>{};
+  await E("fullBackup()"); w.Blob=OB;
+  const body=JSON.parse(cap);
+  const carried=!!(body.settings&&Array.isArray(body.settings.distCc)
+                 &&body.settings.distCc.join(',')==='securityManager');
+  /* No schema bump: they ride outside the checksummed body, so a file written
+     before settings existed still verifies exactly as it did. */
+  const sameVersion=body.version===5;
+  E("distRolesSet([])");
+  const applied=E("settingsImport("+JSON.stringify({distCc:['fsoPrime']})+")")>0
+             && E("distRolesGet()").join(',')==='fsoPrime';
+  E("distRolesSet([])");
+  return carried && sameVersion && applied
+      ? true : ('carried='+carried+' version='+body.version+' applied='+applied); });
+
+E("distRolesSet([]);");
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');

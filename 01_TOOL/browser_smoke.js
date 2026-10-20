@@ -250,9 +250,18 @@ class CDP {
       byText(document.getElementById('step7'),/^Add to CC$/).click();
       document.getElementById('i6fsoEmail').value='facility@example.test';addPerf();
       const pf=perfFields(document.querySelector('#perfBlocks > div[id^="perf-"]'));pf.email.value='location@example.test';run();
+      /* v2.11.0: the Item 6 facility FSO is derived by the tool, so copying it
+         is a setting and it starts off - on neither line until the office asks
+         for it, on CC once it does. The Item 18 manager is not a setting at
+         all: "Add to CC" is this operator's decision about this DD-254, and a
+         global preference that could discard it would make the button they
+         just clicked do nothing. */
       const mail=emailDistSets();
+      distRolesSet(['fsoPrime']); const mailOn=emailDistSets(); distRolesSet([]);
       const managerDropdownOk=mail.to.includes('location@example.test')&&mail.to.includes('req@example.test')
-        &&mail.to.includes('facility@example.test')&&!mail.cc.includes('facility@example.test')&&mail.cc.includes('manager@example.test')
+        &&!mail.to.includes('facility@example.test')&&!mail.cc.includes('facility@example.test')
+        &&mailOn.cc.includes('facility@example.test')&&!mailOn.to.includes('facility@example.test')
+        &&mail.cc.includes('manager@example.test')&&mailOn.cc.includes('manager@example.test')
         &&document.getElementById('distSmList').textContent.includes('Live program manager');
       document.getElementById('dist18f').checked=true;document.getElementById('dist18fOther').value='stale@example.test';
       document.getElementById('i14yes').checked=true;document.getElementById('i16a').value='STALE';

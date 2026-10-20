@@ -1,6 +1,6 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-10T09:00-05:00 by Maintainer
+Last updated: 2026-10-18T10:00-05:00 by Maintainer
 
 ## Current State
 
@@ -11,6 +11,32 @@ attestation, the kit rebuild and the pdf-lib check all verified from a fresh
 download (official aecc5ce2..., demo e1d730a0..., ref refs/tags/v2.10.0,
 rebuild byte-identical, no bytecode in the kit); live demo published as
 dd254-interactive f3ceebc.
+
+BUILT AND GATED: **v2.11.0 (Tool 2.157)**, build e595b104. The configurable
+distribution rule, from the owner decision of 17 October 2026. The issuance To
+line is now everyone the DD-254 has to reach, and is not configurable: the
+requestor, the Item 7 FSO of the receiving facility, every Item 8
+performance-location FSO, the cognizant security office, and any Block 18f
+address. CC carries whatever the operator entered on the form themselves -- the
+hand-typed FSO list and managers added with Add to CC -- plus the Security
+Manager and the Item 6 FSO when the office ticks them under Manage -> Settings,
+and those two DEFAULT TO OFF. Issuance is blocked rather than merely warned when
+a required recipient applies to a DD-254 and has no address; "applies" is why a
+prime DD-254 with no Item 7 is still issuable. 1408 assertions pass; all five
+gates pass; both builds pass the native-browser smoke test; the kit round-trips
+byte-identically.
+
+NOTE for whoever ships this: it is a behaviour change on upgrade. The Security
+Manager and the Item 6 FSO stop being e-mailed until someone turns them on. The
+Item 6 FSO moved CC -> To in v2.10.0 and now leaves the e-mail entirely unless
+copied: two moves in two releases for the same recipient, which is called out in
+the changelog and the release assessment.
+
+Open question worth deciding before the next release: the cognizant security
+office is required unconditionally, not "where it applies" like Item 7 and
+Item 8. A DD-254 with no address in 6c, 7c or a performance location therefore
+cannot be issued at all. That is what was specified, but it may prove awkward
+at the solicitation phase, where the contractor is not yet known.
 
 What v2.10.0 contains, build aecc5ce2:
 Owner specification of 9 October 2026, implemented on the current product
@@ -182,6 +208,36 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-19 Maintainer - Cut v2.11.0 and narrowed the setting after the live
+browser caught a defect the jsdom suite could not. The first cut made four
+things optional, including the hand-typed FSO box and the Item 18 managers
+added with "Add to CC". browser_smoke.js failed on managerDropdownOk, and it was
+right to: those are decisions the operator has already made, on that DD-254, and
+a global preference able to discard them makes a button they just clicked do
+nothing. DIST_CC_ALWAYS now carries both unconditionally and DIST_ROLES holds
+only the two the tool derives for itself - the Security Manager and the Item 6
+FSO, which are the two the owner actually named. The smoke assertion was
+restated to prove both halves: the facility FSO on neither line by default and
+on CC once ticked, the manager copied either way. Worth remembering that the
+regression suite passed 1407 green over this defect; only the real browser,
+exercising the real button, found it.
+
+2026-10-18 Maintainer - Built the configurable distribution rule on the working
+build; not versioned, not tagged, not published. The owner answered four
+questions on 17 October: the receiving FSO is Item 7 plus every Item 8
+performance location deduped, optional roles default off, one global setting
+rather than a per-DD-254 override, and a missing required recipient blocks
+issuance rather than warning. One function, dashDistRequired, is the single
+source of truth for the single-issuance gate, the bulk gate and the mail
+builder, so a record cannot be issuable one way and not the other. Seventeen
+existing assertions encoding the v2.10.0 To/CC rule were restated rather than
+removed, and fixtures that could no longer be issued were given the addresses a
+DD-254 now needs rather than having the gate relaxed to suit them. Twelve new
+assertions cover the defaults, the toggles, applicability, both gates and the
+backup. Settings now ride in a Full Backup beside the audit log, outside the
+checksummed body, so there is no schema bump and older files still verify; they
+are applied on restore only if the operator agrees.
 
 2026-10-10 Maintainer - Published v2.10.0, carrying v2.9.1, and the live demo.
 Verified from a fresh download rather than from the workflow result. The
