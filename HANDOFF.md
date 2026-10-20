@@ -12,7 +12,13 @@ download (official aecc5ce2..., demo e1d730a0..., ref refs/tags/v2.10.0,
 rebuild byte-identical, no bytecode in the kit); live demo published as
 dd254-interactive f3ceebc.
 
-BUILT AND GATED: **v2.11.0 (Tool 2.157)**, build e595b104. The configurable
+Latest published release: **v2.11.0 (Tool 2.157)**, build e595b104. Tag at
+ec9c08a on `main`; assets, checksums, the provenance attestation, the kit
+rebuild and the pdf-lib check all verified from a fresh download (official
+e595b104..., demo 15ed0d7a..., ref refs/tags/v2.11.0, attested commit ec9c08a,
+rebuild byte-identical, no bytecode in the kit); the downloaded build passes the
+native-browser smoke test; live demo published as dd254-interactive fec0899 and
+served byte-identical. The configurable
 distribution rule, from the owner decision of 17 October 2026. The issuance To
 line is now everyone the DD-254 has to reach, and is not configurable: the
 requestor, the Item 7 FSO of the receiving facility, every Item 8
@@ -208,6 +214,15 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-19 Maintainer - Published v2.11.0 and the live demo. Verified from a
+fresh download rather than from the workflow result: every published checksum,
+the official build against the local one, the attestation subject/digest/ref/
+commit, the kit round-trip from the published tarball, pdf-lib against upstream
+1.17.1, and the native-browser smoke test run against the downloaded file. The
+release changes who receives an issuance e-mail - the Security Manager and the
+Item 6 FSO are now off unless ticked - which is stated in the changelog, the
+release assessment and the manual.
 
 2026-10-19 Maintainer - Cut v2.11.0 and narrowed the setting after the live
 browser caught a defect the jsdom suite could not. The first cut made four
