@@ -1724,51 +1724,6 @@ await ta('the user-facing dynamic XFA PDF actually builds', async()=>{
   try{ await E("exportOfficialXFA(true)"); } finally { w.Blob=OB; }
   return bytes>10000;
 });
-await ta('the internal legacy static PDF actually builds', async()=>{
-  let bytes=0; const OB=w.Blob; w.Blob=function(p){ try{bytes=(p[0]&&p[0].length)||0;}catch(e){} return new OB(p); };
-  await E("exportOfficial254(true)"); w.Blob=OB;
-  return bytes>10000;});
-await ta('the flattened PDF contains representative form values', async()=>{
-  F(); V('i2a','PDF-CONTENT-171'); V('i6a','PDF Verification Contractor 171');
-  V('item13','Reference 10a:\n\nPDF content extraction sentinel 171.'); C('c10a'); R('spec','3a');
-  let bytes=null; const OB=w.Blob;
-  w.Blob=function(p,o){
-    try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){}
-    return new OB(p,o);
-  };
-  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
-  if(!bytes) return 'PDF bytes were not captured';
-  const keep=process.env.DD254_PDF_OUT||'';
-  const out=keep||path.join(os.tmpdir(),'dd254-content-'+process.pid+'.pdf');
-  fs.writeFileSync(out,bytes);
-  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
-  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,
-    'PDF-CONTENT-171','PDF Verification Contractor 171','PDF content extraction sentinel 171'],
-    {encoding:'utf8'});
-  if(!keep){ try{fs.unlinkSync(out);}catch(e){} }
-  return chk.status===0 ? true : {status:chk.status,error:chk.error&&chk.error.message,stdout:chk.stdout,stderr:chk.stderr};
-});
-await ta('the printed Block 2a carries the task order when standalone is ticked', async()=>{
-  /* The strongest check available: the value is read back out of the actual
-     flattened PDF, not inferred from the data object that produced it. */
-  F(); V('i2a','N00178-24-D-9911'); V('iEffort','0042');
-  E("document.getElementById('iStandalone').checked=true; supSync(); run();");
-  let bytes=null; const OB=w.Blob;
-  w.Blob=function(p,o){
-    try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){}
-    return new OB(p,o);
-  };
-  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
-  if(!bytes) return 'PDF bytes were not captured';
-  const out=path.join(os.tmpdir(),'dd254-standalone-'+process.pid+'.pdf');
-  fs.writeFileSync(out,bytes);
-  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
-  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,
-    'N00178-24-D-9911 | Task Order 0042'],{encoding:'utf8'});
-  try{fs.unlinkSync(out);}catch(e){}
-  E("document.getElementById('iStandalone').checked=false; run();");
-  return chk.status===0 ? true : {status:chk.status,stdout:chk.stdout,stderr:chk.stderr};
-});
 t("the preparer's worksheet reports the outstanding items", ()=>{ F(); grabWindow(); RUN(); E("exportPrep254();");
   return /Preparer/i.test(grabbed) && /Item 1a/.test(grabbed); });
 t('the CO package lists what the officer must verify', ()=>{ F(); grabWindow(); E("exportCOPrep();");
@@ -1841,8 +1796,6 @@ await ta('the notes report covers holds, to-dos and notes', async()=>{
   return /Chase SCG/.test(grabbed) && /General note here/.test(grabbed) && /SCG missing/.test(grabbed) && /open hold/i.test(grabbed)
     && grabbed.indexOf('<img src=x')<0 && grabbed.indexOf('&lt;img src=x onerror=alert(1)&gt;')>=0
     && /default-src 'none'/.test(grabbed);});
-t('a draft export is named and watermarked DRAFT while errors remain', ()=>{ F(); RUN();
-  return ERRS().length>0 && /DRAFT/.test(E("String(exportOfficial254)")); });
 
 H('32. CSO block layout in the exports');
 const CSO={label:'Dayton',name:'DCSA Dayton Field Office',address:'1 Base Road, Dayton OH 45433',phone:'(937) 555-0100',email:'dayton@dcsa.mil'};
@@ -1884,10 +1837,6 @@ t('the stacked text reaches the official PDF packet', ()=>{
 t('the stacked text reaches the dynamic XFA packet', ()=>{
   const x=E("DD254XFA.buildXfaDatasets(collect254Data())");
   return /six_CSO/.test(x) && /E-mail: dayton@dcsa\.mil/.test(x) && /seven_CSO/.test(x) && /eight_CSO/.test(x);});
-await ta('the flattened PDF still builds with a stacked CSO', async()=>{
-  let bytes=0; const OB=w.Blob; w.Blob=function(p){ try{bytes=(p[0]&&p[0].length)||0;}catch(e){} return new OB(p); };
-  await E("exportOfficial254(true)"); w.Blob=OB;
-  return bytes>10000;});
 t('a stacked CSO survives a workspace round trip', ()=>{
   const ws=E("collectWorkspace()");
   E("window.__WS2="+JSON.stringify(ws)+";resetFormFields();applyWorkspace(window.__WS2);");
@@ -2151,8 +2100,6 @@ t('the XFA level helper defers to the shared one', ()=>
   /function lvl\(code\)\{\s*return dd254Level\(code\);\s*\}/.test(SRC36));
 t('dateFmt is now an alias', ()=>
   /function dateFmt\(x\)\{\s*return dd254Date\(x\);\s*\}/.test(SRC36));
-t('the flattened writer is reachable for inspection', ()=>
-  E("typeof DD254Export")==='object' && E("typeof DD254Export.buildOfficialPdf")==='function');
 
 await ta('the two exports agree on every formatted value', async()=>{
   E("showFormView();resetFormFields();addPerf();");
@@ -2175,16 +2122,6 @@ await ta('the two exports agree on every formatted value', async()=>{
     if(m[1]!==want[k]) return k+': XFA has "'+m[1]+'", expected "'+want[k]+'"';
   }
   return true;});
-t('the flattened writer uses the same formatters', ()=>{
-  const src=E("String(DD254Export.buildOfficialPdf)");
-  return /dd254Level\(v\('fcl1a'\)\)/.test(src) && /dd254Level\(v\('sfg1b'\)\)/.test(src)
-      && /dd254Date\(v\('i3a_date'\)\)/.test(src) && !/\bi17i\b/.test(src)
-      && /dd254PhoneOut\(v\('i16e'\)\)/.test(src) && /dd254PhoneOut\(v\('i17f'\)\)/.test(src)
-      && /dd254Cage\(v\('i6b'\)\)/.test(src) && /dd254Cage\(v\('i17e'\)\)/.test(src);});
-t('the internal PDF still preserves the Item 17h signing field', ()=>
-  /Item17h_CertifyingOfficial/.test(E("String(DD254Export.buildOfficialPdf)")));
-t('no private level map survives in the flattened writer', ()=>
-  !/TOP SECRET|NOT APPLICABLE/.test(E("String(DD254Export.buildOfficialPdf)")));
 t('there is exactly one sanitizePdfText implementation in the whole file', ()=>{
   /* This used to be two: a looser top-level one, and a WinAnsi-safe one
      declared inside the flattened-PDF module that shadowed it for that
@@ -2209,21 +2146,10 @@ await ta('curly quotes normalise and em-dash/ellipsis/ligatures print identicall
   const preserved=/\u2014/.test(xfaTxt) && /\u2026/.test(xfaTxt) && /\u0152uvre/.test(xfaTxt);
   const matchesSharedSanitizer=xfaTxt.indexOf(direct)>=0;
   return (noCurly && preserved && matchesSharedSanitizer) ? true : {noCurly,preserved,matchesSharedSanitizer,xfaTxt,direct};});
-await ta('reviewer overflow behaves the same in both', async()=>{
-  E("resetFormFields();");
-  for(let i=1;i<=7;i++) E("addReviewer("+i+")");
-  const rows=w.document.querySelectorAll('.reviewer-row').length;
-  const flat=E("String(DD254Export.buildOfficialPdf)");
-  return flat.includes('data.reviewers.length>6') && flat.includes('Additional reviewing officials')
-      && !flat.includes('Internal reviewing officials');});
 t('CAGE fields display uppercase on the form', ()=>{
   const css=Array.from(w.document.querySelectorAll('style')).map(x=>x.textContent).join('');
   const ids=['i6b','i7b','i17e'].every(id=>(w.document.getElementById(id).className||'').includes('cage-up'));
   return /\.cage-up\{text-transform:uppercase;\}/.test(css) && ids;});
-await ta('the flattened PDF still builds after the change', async()=>{
-  let bytes=0; const OB=w.Blob; w.Blob=function(p){ try{bytes=(p[0]&&p[0].length)||0;}catch(e){} return new OB(p); };
-  await E("exportOfficial254(true)"); w.Blob=OB;
-  return bytes>10000;});
 
 H('37. Required fields are actually enforced');
 t('a hollow form is no longer clean', ()=>{ F();
@@ -4792,13 +4718,6 @@ t('the Item 13 reference line still appears', ()=>{
   return /This is in support of effort 0007\./.test(w.document.getElementById('item13').value)
     ? true : JSON.stringify(w.document.getElementById('item13').value.slice(0,60));
 });
-t('both exports read Block 2a from the same upstream', ()=>{
-  const src=fs.readFileSync('dd254.htm','utf8');
-  const flat=/const data=collect254Data\(draft\);[\s\S]{0,200}?DD254Export\./.test(src);
-  const xfa=/const data=collect254Data\(draft\);[\s\S]{0,200}?DD254XFA\.buildXfaDatasets/.test(src);
-  const composedOnce=(src.match(/v\.i2a = v\.i2a \+ ' \| ' \+ ctOrderType/g)||[]).length;
-  return (flat && xfa && composedOnce===1) ? true : {flat,xfa,composedOnce};
-});
 t('the combined value survives a draft round-trip', ()=>{
   seed2a(); setSA(true);
   const ws=E("collectWorkspace()");
@@ -6092,35 +6011,6 @@ t('the disposition badge escalates from scheduled to due to overdue', ()=>{
   return /disposition /.test(far) && !/OVERDUE/.test(far) && !/disposition due/.test(far)
       && /disposition due/.test(soon) && /OVERDUE/.test(late)
       && E('dashRetentionBadge({})')==='';
-});
-await ta('the flattened PDF prints a shared Item 7/8 classified mailing address once', async()=>{
-  /* The unit test above proves cmaEntries() and the Item 13 textarea are right.
-     This proves it survives into the artifact the subcontractor actually
-     receives - AGENTS.md is explicit that an in-memory data packet is not
-     evidence about an export. The sentinel is a single unbroken token so that
-     Item 13 word-wrapping cannot split it and make a count meaningless. */
-  F();
-  V('i7a','Beta Corp'); V('i7b','2XY99'); V('i7cma','PDFDEDUPE90210');
-  E('addPerf()');
-  const blk=w.document.querySelector('#perfBlocks > div[id^="perf-"]');
-  blk.querySelector('.loc-8a').value='Beta Corp';
-  blk.querySelector('.cage-8b').value='2XY99';       /* same company as Item 7 */
-  blk.querySelector('.cma-loc').value='PDFDEDUPE90210';
-  E('cmaSync(); run();');
-  let bytes=null; const OB=w.Blob;
-  w.Blob=function(p,o){
-    try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){}
-    return new OB(p,o);
-  };
-  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
-  if(!bytes) return 'PDF bytes were not captured';
-  const out=path.join(os.tmpdir(),'dd254-cmadedupe-'+process.pid+'.pdf');
-  fs.writeFileSync(out,bytes);
-  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
-  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,
-    '1x:PDFDEDUPE90210'],{encoding:'utf8'});
-  try{fs.unlinkSync(out);}catch(e){}
-  return chk.status===0 ? true : {status:chk.status,stdout:chk.stdout,stderr:chk.stderr};
 });
 t('the SAP flag raises the countersignature requirement on a 2b subcontract', ()=>{
   E("resetFormFields();document.getElementById('i2b').value='SUB-0001';document.getElementById('sapFlag').checked=true;run();");
@@ -7480,18 +7370,6 @@ t('the dynamic XFA data carries 3a on a Revision and a Final as well as 3b', ()=
   const h=k=>{ const m=y.match(new RegExp('<'+k+'>([^<]*)</'+k+'>')); return m?m[1]:null; };
   const fin=h('three_C')==='1' && h('three_dateA')==='2025-01-05' && h('three_dateC')==='2027-01-01' && h('three_RevisionNum')==='';
   return rev && fin ? true : {rev:[g('three_A'),g('three_dateA'),g('three_RevisionNum'),g('three_dateB')],fin:[h('three_dateA'),h('three_dateC'),h('three_RevisionNum')]}; });
-await ta('the flattened PDF of a Revision prints the original date and the revision date', async()=>{
-  F(); V('i2a','ITEM3-PDF-2601'); V('i3a_date','20250105'); V('i3b_rev','7'); V('i3b_date','20260315'); R('spec','3b'); RUN();
-  let bytes=null; const OB=w.Blob;
-  w.Blob=function(p,o){ try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){} return new OB(p,o); };
-  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
-  if(!bytes) return 'PDF bytes were not captured';
-  const out=path.join(os.tmpdir(),'dd254-item3-'+process.pid+'.pdf');
-  fs.writeFileSync(out,bytes);
-  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
-  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,'ITEM3-PDF-2601','1x:2025-01-05','1x:2026-03-15'],{encoding:'utf8'});
-  try{fs.unlinkSync(out);}catch(e){}
-  return chk.status===0 ? true : {status:chk.status,stdout:chk.stdout,stderr:chk.stderr}; });
 t("the preparer's worksheet shows the original date with the revision", ()=>{
   F(); V('i3a_date','20250105'); V('i3b_rev','x'); V('i3b_date','20260315'); R('spec','3b'); RUN(); grabWindow(); E("exportPrep254();");
   const a=/3b — Revised \(Rev x, Date 20260315; original date 20250105\)/.test(grabbed) && /Item 3b: Revision number must be a whole number/.test(grabbed);
@@ -9280,6 +9158,47 @@ await ta('a full backup carries the settings alongside the audit log, outside th
       ? true : ('carried='+carried+' version='+body.version+' applied='+applied); });
 
 E("distRolesSet([]);");
+
+H('123. v2.12.0 the flat PDF writer is retired');
+/* Owner decision, 23 October 2026: the dynamic XFA form is the only official
+   export. Fourteen assertions describing the flat writer were deleted rather
+   than weakened, because the thing they tested no longer exists. These take
+   their place, so the removal is itself held in place by the suite. */
+
+t('the flat writer, its module and its payload are all gone', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return E("typeof exportOfficial254")==='undefined'
+      && E("typeof DD254Export")==='undefined'
+      && src.indexOf('DD254_BASE_B64')<0
+      && src.indexOf('buildOfficialPdf')<0
+      ? true : ('exportOfficial254='+E("typeof exportOfficial254")
+               +' DD254Export='+E("typeof DD254Export")
+               +' base64='+(src.indexOf('DD254_BASE_B64')>=0)
+               +' builder='+(src.indexOf('buildOfficialPdf')>=0));
+});
+
+t('the dynamic XFA export survives it, and still reads collect254Data', ()=>{
+  return E("typeof DD254XFA")==='object'
+      && E("typeof DD254XFA.buildXfaDatasets")==='function'
+      && E("typeof DD254XFA.injectXfaDatasets")==='function'
+      && E("typeof collect254Data")==='function'
+      && E("typeof DD254_XFA_B64")==='string'
+      && E("DD254_XFA_B64.length")>1000
+      ? true : ('xfa='+E("typeof DD254XFA")+' collect='+E("typeof collect254Data"));
+});
+
+t('the Item 13 rich-text toolbar is gone and pasting is plain text', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  /* execCommand('copy') is the clipboard helper elsewhere and must survive;
+     only the formatting command is retired. */
+  return src.indexOf('fmt13')<0
+      && src.indexOf("execCommand('copy')")>0
+      && src.indexOf('execCommand(cmd')<0
+      && E("typeof i13PastePlain")==='function'
+      ? true : ('fmt13='+(src.indexOf('fmt13')>=0)
+               +' paste='+E("typeof i13PastePlain"));
+});
+
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
