@@ -2,8 +2,14 @@
 
 Last updated: 2026-10-24T12:40-05:00 by Maintainer
 
-Built and verified locally: **v2.14.1 (Tool 2.161)**, build c7c30816. Not yet
-tagged or published at the time of writing.
+Latest published release: **v2.14.1 (Tool 2.161)**, build c7c30816. Signed tag
+at 783a4f2 on `main`; assets, checksums, the provenance attestation and the kit
+rebuild all verified from a fresh download (official c7c30816..., demo
+9e1b28f5..., ref refs/tags/v2.14.1, attested commit 783a4f2, rebuild
+byte-identical, no bytecode in the kit); the downloaded build passes the
+native-browser smoke test; the attached documents are this version's. Live demo
+published as dd254-interactive 4072f59, staged blob byte-identical to the
+attested demo asset.
 
 What v2.14.1 contains, build c7c30816.
 The demonstration portfolio gains the people who requested its DD-254s. Every
