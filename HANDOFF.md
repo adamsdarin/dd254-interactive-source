@@ -2,7 +2,20 @@
 
 Last updated: 2026-10-23T18:00-05:00 by Maintainer
 
-## BUILT AND GATED — branch `argon-port`, v2.12.0 not yet merged or tagged
+Latest published release: **v2.12.0 (Tool 2.158)**, build 2fae3050. Signed tag
+at 276a4c3 on `main`; assets, checksums, the provenance attestation, the kit
+rebuild and the pdf-lib check all verified from a fresh download (official
+2fae3050..., demo 3008ba49..., ref refs/tags/v2.12.0, attested commit 276a4c3,
+rebuild byte-identical, no bytecode in the kit); both downloaded builds pass the
+native-browser smoke test; live demo published as dd254-interactive 4cb662e and
+served byte-identical.
+
+The published rebuild kit now has three parts rather than four — no
+`02_dd254_flat.b64` — and still round-trips byte-identically, which is the
+retired payload proven end to end from a published artifact rather than
+locally.
+
+## How v2.12.0 was built — branch `argon-port`, now merged
 
 Eight feature commits on `argon-port` off d9d6bab. **1460 assertions pass; both
 builds pass the native-browser smoke test; every commit was smoke-tested before
@@ -29,9 +42,15 @@ optional and describe only what a build actually carries. The XFA payload
 stays mandatory: it is the official export. The ISSM brief's stated file size
 moved from 2.3 MB to 1.7 MB.
 
-Still to do: merge `argon-port` to main, tag v2.12.0, publish, refresh the live
-demo, and verify the published assets from a fresh download the way v2.11.0
-was verified.
+Done: merged, tagged, published, demo refreshed, all verified from a fresh
+download.
+
+Open for whoever picks this up: Argon's own prototype files were mirrored into
+`01_TOOL/`, the repository root and `dd254-interactive/` on 23 October. They
+are untracked, so none of them is in the release, but they are clutter in the
+canonical source tree and `DD254_Interactive_Argon.HTM` sitting in `01_TOOL/`
+is the kind of thing a future `newest_build()` change could trip over. Ask the
+owner before removing them.
 
 Both gaps are now closed: REQ-11's always-insert flag has a control beside each
 Item 10/11 language box in the template editor as well as the CSV column, and
@@ -257,6 +276,20 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-24 Maintainer - Published v2.12.0, the Argon prototype rebuilt on
+v2.11.0. Verified from a fresh download rather than from the workflow result:
+every published checksum, the official build against the local one, the
+attestation subject/digest/ref/commit, the kit round-trip from the published
+tarball, pdf-lib against upstream 1.17.1, and the smoke test run against both
+downloaded files. The kit now ships three parts rather than four and still
+rebuilds byte-identically, which proves the retired flat payload end to end.
+
+The release changes two things people will notice: the official export is the
+dynamic XFA form and nothing else, so signing needs Acrobat rather than the
+free Reader; and Item 13 has no formatting buttons. Both were owner decisions,
+raised and confirmed twice, and both are stated in the changelog and the
+manual rather than left to be discovered.
 
 2026-10-19 Maintainer - Published v2.11.0 and the live demo. Verified from a
 fresh download rather than from the workflow result: every published checksum,
