@@ -1,3 +1,30 @@
+## v2.14.1 — 24 October 2026
+
+Tool version 2.161. The demonstration portfolio gains the people who requested
+its DD-254s, and the requester search shipped in v2.14.0 gains a correction
+that came straight out of being able to see it work.
+
+- **The demonstration portfolio now has requesters.** Every example DD-254 in
+  the demo arrived from nobody — no draft carried a requester and the
+  repository was empty — so **Manage → Requesters** opened blank and the
+  requester search added in v2.14.0 had nothing to search. Each example is now
+  requested by the programme contact for its contractor, and the repository is
+  built from those examples, so each person's issued count is the number of
+  their DD-254s that actually went out.
+- **One demonstration address is shared by two people**, because programme
+  desks are shared in practice. Picking it names both and fills in neither,
+  which is what the tool does rather than choosing between them.
+
+- **Fixed: a name filled in from one address no longer survives a change to
+  another.** Pick an address the tool knows and the name fills in; change to an
+  address two people share and it said "the name is not filled in" while the
+  previous person's name was still in the field. A DD-254 created from there
+  would have gone out recording the wrong requester. A name the tool filled in
+  is now withdrawn when the address stops identifying one person; a name you
+  typed yourself is still never touched.
+
+1488 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.14.0 — 24 October 2026
 
 Tool version 2.160. The language your templates hold is beside the form,

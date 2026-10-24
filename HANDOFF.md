@@ -1,6 +1,40 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-24T11:40-05:00 by Maintainer
+Last updated: 2026-10-24T12:40-05:00 by Maintainer
+
+Built and verified locally: **v2.14.1 (Tool 2.161)**, build c7c30816. Not yet
+tagged or published at the time of writing.
+
+What v2.14.1 contains, build c7c30816.
+The demonstration portfolio gains the people who requested its DD-254s. Every
+example now carries a requester, chosen by the contractor's CAGE on Item 6, and
+the requester repository is derived from those examples rather than written
+beside them: completedCount counts that person's Issued examples. Two of the
+four share one programme-desk address, so the demo shows the case the create
+dialog refuses to guess at. Until now the demo seeded no requester at all, so
+`Manage → Requesters` opened blank and the v2.14.0 requester search had
+nothing to search.
+
+One defect fixed, found by driving the demo once it had data: a requester name
+filled in from one address stayed in the field when the address changed. Pick a
+known address, the name fills in; switch to a shared address and the dialog
+said "the name is not filled in" with the previous person still showing. A
+DD-254 created there would have recorded the wrong requester. A name the dialog
+wrote is now withdrawn when the address stops identifying one person; a name
+the operator typed is still never touched. The first of the two new assertions
+fails against v2.14.0.
+
+Why a version bump for what began as demonstration data: the demo build is an
+attested release asset, and an attested asset is never replaced under its own
+tag. Changing the seed means a new version.
+
+1490 assertions pass, all five gates pass, both builds pass the native-browser
+smoke test.
+
+Note for the next release: run `make_build_facts.py` BEFORE `make_sbom.py` and
+`make_rule_catalog.py`. Build facts rewrites `rebuild_kit/manifest.json`, and an
+SBOM generated first no longer matches it — check_documentation catches it,
+but only after the fact.
 
 Latest published release: **v2.14.0 (Tool 2.160)**, build b45d553c. Signed tag
 at fc84ef0 on `main`; assets, checksums, the provenance attestation and the kit

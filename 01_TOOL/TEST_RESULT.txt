@@ -1,4 +1,4 @@
-BUILD_SHA256 b45d553c0af8763f08dfe5ed355faca498d4e95847efdfd7dcd97cd6198d1ae0
+BUILD_SHA256 c7c30816361301c024cd2f34cbd9260af77de3fbd9eff05ceb2d22a7072a7948
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1329,6 +1329,7 @@ BUILD_SHA256 b45d553c0af8763f08dfe5ed355faca498d4e95847efdfd7dcd97cd6198d1ae0
   PASS  the portfolio export carries the Performance End column
   PASS  a dashboard render never overwrites a note saved after it read the drafts
   PASS  the demo seed fills an empty dashboard with labelled examples and every status
+  PASS  the demo seeds the requesters who asked for its DD-254s
   PASS  the demo portfolio shows the Final-due prompt at its escalation levels
   PASS  seeding never touches the form, and the counts it writes are what validation says
   PASS  the seeded Revision 1 summary is the tool's own text, and a second run seeds nothing
@@ -1766,6 +1767,8 @@ BUILD_SHA256 b45d553c0af8763f08dfe5ed355faca498d4e95847efdfd7dcd97cd6198d1ae0
   PASS  case and surrounding space do not make a second address
   PASS  the field offers what is on file, and picking one fills the name
   PASS  a name the operator typed is never written over
+  PASS  v2.14.1 a name filled in from one address does not survive another
+  PASS  v2.14.1 a typed name survives every address, including a shared one
   PASS  a shared address names them both rather than choosing
   PASS  an address nobody has used says so, and then exists
 
@@ -1782,5 +1785,5 @@ BUILD_SHA256 b45d553c0af8763f08dfe5ed355faca498d4e95847efdfd7dcd97cd6198d1ae0
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1487   FAIL 0
+  PASS 1490   FAIL 0
 ================================

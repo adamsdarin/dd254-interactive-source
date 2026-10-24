@@ -7055,6 +7055,34 @@ await ta('the demo seed fills an empty dashboard with labelled examples and ever
       && sap.holds.some(h=>h.k==='10f'&&!h.done) && sap.holds.some(h=>/Program Security Officer to approve/.test(h.t)&&!h.done)
       && !!pair[0].issuedAt && pair[0].issuedAt===pair[1].issuedAt && !!by['demo-mer-rev1'].reviewDate && !!by['demo-sub-final'].retentionDue
       && by['demo-aur-sol'].status==='Skipped' && by['demo-aur-orig'].parentId==='demo-aur-sol' ? true : {seeded,n:all.length,statuses:[...statuses],clean,chips}; }, 90000);
+await ta('the demo seeds the requesters who asked for its DD-254s', async()=>{
+  /* v2.14.1. The portfolio used to arrive from nobody: no draft carried a
+     requester and the repository was empty, so the repository screen opened
+     blank and the create dialog searched a list of nothing. */
+  const all=await E("draftAll()");
+  /* What the seed derived, not what is in the store: seed() leaves a
+     repository that already holds something alone, and by this point in the
+     run an earlier test has put a requester there. */
+  const rows=E("window.DD254_DEMO_REQUESTERS||[]");
+  const everyDraftHasOne=all.every(r=>r.requestedBy&&r.requester&&r.requester.firstName&&r.requester.lastName);
+  /* Derived, not written beside: completedCount must be the number of that
+     person's Issued DD-254s, counted from the drafts themselves. */
+  const want={};
+  all.forEach(r=>{ const q=r.requester||{};
+    const k=String(q.email||'').toLowerCase()+'|'+String(q.firstName||'')+' '+String(q.lastName||'');
+    want[k]=(want[k]||0)+(r.status==='Issued'?1:0); });
+  const got={};
+  rows.forEach(r=>{ got[String(r.email||'').toLowerCase()+'|'+r.firstName+' '+r.lastName]=+r.completedCount||0; });
+  const sameSet=JSON.stringify(Object.keys(want).sort())===JSON.stringify(Object.keys(got).sort());
+  const sameCounts=sameSet&&Object.keys(want).every(k=>want[k]===got[k]);
+  /* And the address the dialog refuses to guess at is present, so the demo
+     shows that case rather than only the easy one. */
+  const shared=rows.filter(r=>E("reqByEmail("+JSON.stringify(r.email)+","
+      +JSON.stringify(rows)+")").length>1);
+  const lookupWorks=E("reqEmailList("+JSON.stringify(rows)+").length")
+      ===new Set(rows.map(r=>String(r.email||'').toLowerCase())).size;
+  return (everyDraftHasOne&&sameSet&&sameCounts&&shared.length===2&&lookupWorks)
+      ? true : JSON.stringify({everyDraftHasOne,sameSet,sameCounts,shared:shared.length,lookupWorks,want,got}); });
 await ta('the demo portfolio shows the Final-due prompt at its escalation levels', async()=>{
   const b=popBadges(), get=id=>(b.find(x=>x.id===id)||{b:[]}).b.join();
   return /performance ends in 100 days/.test(get('demo-aur-orig')) && /performance ends in 25 days/.test(get('demo-nwd-to7'))
@@ -10155,6 +10183,36 @@ await ta('a name the operator typed is never written over', async()=>{
   const kept=dlg.q('np_first').value;
   await dlg.close();
   return kept==='Zed' ? true : ('first became '+kept); });
+
+await ta('v2.14.1 a name filled in from one address does not survive another', async()=>{
+  /* Found by driving the demo. The note said the name was not filled in while
+     the previous person's name sat in the field, so the DD-254 would have gone
+     out recording the wrong requester against that address. */
+  const dlg=await reqDlg();
+  dlg.set('np_email','ann.reed@example.com');
+  const filled=dlg.q('np_first').value+' '+dlg.q('np_last').value;
+  dlg.set('np_email','desk@example.com');
+  const afterShared=dlg.q('np_first').value+dlg.q('np_last').value;
+  dlg.set('np_email','nobody@example.com');
+  const afterUnknown=dlg.q('np_first').value+dlg.q('np_last').value;
+  await dlg.close();
+  return (filled==='Ann Reed'&&afterShared===''&&afterUnknown==='')
+      ? true : ('filled='+filled+' shared='+afterShared+' unknown='+afterUnknown); });
+
+await ta('v2.14.1 a typed name survives every address, including a shared one', async()=>{
+  /* The other half of the rule, and the one that matters more: this dialog may
+     take back only what it wrote itself. */
+  const dlg=await reqDlg();
+  dlg.set('np_first','Zed'); dlg.set('np_last','Quill');
+  dlg.set('np_email','ann.reed@example.com');
+  const afterKnown=dlg.q('np_first').value+' '+dlg.q('np_last').value;
+  dlg.set('np_email','desk@example.com');
+  const afterShared=dlg.q('np_first').value+' '+dlg.q('np_last').value;
+  dlg.set('np_email','nobody@example.com');
+  const afterUnknown=dlg.q('np_first').value+' '+dlg.q('np_last').value;
+  await dlg.close();
+  return (afterKnown==='Zed Quill'&&afterShared==='Zed Quill'&&afterUnknown==='Zed Quill')
+      ? true : ('known='+afterKnown+' shared='+afterShared+' unknown='+afterUnknown); });
 
 await ta('a shared address names them both rather than choosing', async()=>{
   const dlg=await reqDlg();

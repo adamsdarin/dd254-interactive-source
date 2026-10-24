@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.14.0 (tool version 2.160)"
+VER="DD254 Interactive v2.14.1 (tool version 2.161)"
 
 DOC = [
-("h1","DD254 Interactive v2.14.0 changes"),
+("h1","DD254 Interactive v2.14.1 changes"),
+("n","The demonstration build's example portfolio now includes the people who requested its DD-254s, so the requester repository and the requester search below can be seen working."),
+("b","<b>Fixed:</b> a requester name filled in from one e-mail address no longer stays behind when you change the address. Picking an address two people share now clears it and names them both, rather than leaving the previous person in the field while telling you the name was not filled in. A name you typed yourself is still never touched."),
+("h2","DD254 Interactive v2.14.0 changes"),
 ("b","<b>The language rail is always beside the form.</b> It used to be a tab you could close, and closing it was remembered \u2014 so you could go on issuing DD-254s without ever seeing the wording your own templates hold. There is no tab and nothing to reopen. On a narrow screen it gets narrower; it never disappears, and it is still never printed."),
 ("b","<b>Standard Language and Contract Templates That Fit have left the right-hand panel.</b> Both were listed in two places and only the rail could insert from them. The rail now carries the whole of what that panel did \u2014 what the list was narrowed to and why, the entries written for something else one link away, and the opening words of each \u2014 so you insert where you are already reading. See 5.6."),
 ("b","<b>Contract language can be applied from the rail</b>, by the same route the template picker above the form uses. It asks before it replaces anything."),

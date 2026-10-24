@@ -39,6 +39,24 @@
     ['M. Lindqvist','Contracting Officer Representative','202-555-0176','m.lindqvist@example.com'],
     ['J. Serrano','Security Manager','202-555-0187','j.serrano@example.com']
   ];
+  /* Who asks for a DD-254: contracts and programme staff, not the receiving
+     facility's FSO. One per contractor, by CAGE, so every DD-254 written for
+     a contractor came from the same person and the portfolio reads like a
+     real desk's work rather than a list of unrelated requests.
+
+     9CAL2 and 4NWD8 share programme-desk@example.com. Two people at one
+     address is ordinary, and it is the case the create dialog refuses to
+     guess at: it names both and fills in neither. */
+  const REQUESTERS=[
+    ['7AUR1','Priya','Raman','p.raman@example.com'],
+    ['3MER5','Daniel','Boateng','d.boateng@example.com'],
+    ['9CAL2','Helen','Mbeki','programme-desk@example.com'],
+    ['4NWD8','Arthur','Nilsen','programme-desk@example.com']
+  ];
+  function exRequester(cage){
+    const r=REQUESTERS.filter(function(x){ return x[0]===String(cage||''); })[0]||REQUESTERS[0];
+    return {firstName:r[1], lastName:r[2], email:r[3]};
+  }
   function uid(){ try{ return crypto.randomUUID(); }catch(e){ return 'demo-'+Math.random().toString(36).slice(2,10); } }
   function seed(key,rows){
     try{
@@ -151,8 +169,14 @@
   }
   function exRec(id,title,stage,status,ws,o){
     const t=ws.texts;
+    /* The requester is read from the Item 6 CAGE already on the workspace, so
+       a draft cannot be given to one contractor and requested by another
+       contractor's programme office. */
+    const q=exRequester(t.i6b);
     return Object.assign({id:id,title:title,stage:stage,status:status,workspace:ws,todos:[],notes:EXNOTE,holds:[],dist:[],
       createdAt:stamp(-30),updatedAt:stamp(-30),
+      requestedBy:q.email,requestedByName:q.firstName+' '+q.lastName,
+      requester:{firstName:q.firstName,lastName:q.lastName,email:q.email},
       meta:{contract:t.i2a||t.i2b||t.i2c||'',cage7:t.i7b||'',contractor:String(t.i6a||'').split('\n')[0]}},o||{});
   }
   function exDist(n,i,more){
@@ -244,6 +268,7 @@
       'demo-cal-sap':[1,1],'demo-nwd-to7':[0,0],'demo-nwd-to8':[0,0],'demo-sub-orig':[0,0],'demo-sub-final':[0,1],'demo-cal-rts':[0,0],'demo-mer-cxl':[1,0]};
     recs.forEach(function(r){ const c=COUNTS[r.id]||[0,0]; r.meta.errors=c[0]; r.meta.warns=c[1]; r.meta.rulesVersion=(typeof TOOL_VERSION!=='undefined')?TOOL_VERSION:''; });
     for(const r of recs) await draftPut(r);
+    seedRequesters(recs);
     if(typeof audLog==='function') logs.forEach(function(l){ audLog(l[0].id,l[0].title,l[1],l[2]); });
     if(typeof dashRenderCards==='function'&&!DASH.current) await dashRenderCards();
     return true;
@@ -256,6 +281,33 @@
   })();
   /* Says what this file is, on every screen, so a demonstration build cannot be
      mistaken for the tool that prepares real forms. */
+  /* Built from the portfolio, never beside it. completedCount is "DD-254s that
+     went out for this person", which is what every reader of the field takes
+     it to mean, so counting the Issued records is the only way it stays true
+     when the portfolio changes. */
+  function seedRequesters(recs){
+    const by={};
+    (recs||[]).forEach(function(r){
+      const q=r.requester||{}, e=String(q.email||'').trim();
+      if(!e) return;
+      const k=e.toLowerCase()+'\u0000'+String(q.firstName||'').toLowerCase()+'\u0000'+String(q.lastName||'').toLowerCase();
+      const row=by[k]||(by[k]={firstName:q.firstName||'',lastName:q.lastName||'',email:e,
+                               completedCount:0,lastCompletedAt:'',createdAt:stamp(-240),updatedAt:stamp(-30)});
+      if(r.status==='Issued'){
+        row.completedCount++;
+        const at=String(r.issuedAt||r.updatedAt||'');
+        if(at>row.lastCompletedAt) row.lastCompletedAt=at;
+      }
+    });
+    const rows=Object.keys(by).map(function(k){ return by[k]; })
+      .sort(function(a,b){ return (a.lastName+a.firstName)<(b.lastName+b.firstName)?-1:1; });
+    rows.forEach(function(r){ r.id=uid(); });
+    /* Published whether or not they are stored. seed() leaves an existing
+       repository alone, which is right, so what was derived is the only thing
+       that can be checked from outside. */
+    window.DD254_DEMO_REQUESTERS=rows;
+    if(rows.length&&typeof TPL_REQ!=='undefined') seed(TPL_REQ,rows);
+  }
   function banner(){
     if(document.getElementById('demoBanner')) return;
     const d=document.createElement('div');
