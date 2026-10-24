@@ -9599,6 +9599,114 @@ t('the inventory exists and names all five', ()=>{
       && /cuiBuild/.test(doc) && /SOL_MARK/.test(doc) ? true : 'incomplete';
 });
 
+
+H('130. v2.12.0 purchase language and bids language are different sets (REQ-03, REQ-05)');
+/* A solicitation asks bidders what they would need; an award tells a
+   contractor what they must do. The wording differs, so the library is split
+   by which one an entry is written for. */
+
+t('one controlled list of keys, each with a label', ()=>{
+  /* DEF-10: the Argon build showed raw keys in the banner and prose in the
+     editor, for the same field. */
+  const keys=E("DD254_SCENARIOS.map(function(p){return p[0];})");
+  return keys.join(',')==='both,purchase,bids'
+      && E("dd254ScenarioLabel('bids')").indexOf('Bids')===0
+      && E("dd254ScenarioLabel('nonsense')")==='Either'
+      ? true : keys.join(',');
+});
+
+t('an entry written before this existed is offered on both', ()=>{
+  /* DEF-09: classifying it as purchase would make it vanish from every
+     solicitation without anyone being told. */
+  return E("slScenarioOf({label:'Legacy'})")==='both'
+      && E("dd254ScenarioFits('both','bids')")===true
+      && E("dd254ScenarioFits('both','purchase')")===true ? true : 'narrowed';
+});
+
+t('a bids entry is kept off an award, and the reverse', ()=>{
+  return E("dd254ScenarioFits('bids','purchase')")===false
+      && E("dd254ScenarioFits('purchase','bids')")===false
+      && E("dd254ScenarioFits('bids','bids')")===true
+      ? true : 'filter wrong';
+});
+
+t('only a solicitation draws on bids wording', ()=>{
+  return E("dd254StageScenario('sol')")==='bids'
+      && E("dd254StageScenario('orig')")==='purchase'
+      && E("dd254StageScenario('rev')")==='purchase'
+      && E("dd254StageScenario('final')")==='purchase'
+      ? true : 'stage map wrong';
+});
+
+t('the candidate filter honours the scenario alongside programme and level', ()=>{
+  const lib=[{label:'Award only',scenario:'purchase',text:'AWARD TEXT'},
+             {label:'Bid only',scenario:'bids',text:'BID TEXT'},
+             {label:'Either way',text:'SHARED TEXT'}];
+  const award=E("slCandidates('','',"+JSON.stringify(lib)+",'purchase').map(function(t){return t.label;})");
+  const bids=E("slCandidates('','',"+JSON.stringify(lib)+",'bids').map(function(t){return t.label;})");
+  return award.join('|')==='Award only|Either way' && bids.join('|')==='Bid only|Either way'
+      ? true : ('award='+award.join('|')+' bids='+bids.join('|'));
+});
+
+t('the editor renders the selector from the same list', ()=>{
+  /* The row builder is private to the editor, so this reads the source: what
+     matters is that the editor is driven by DD254_SCENARIOS rather than a
+     second hand-written list, which is how the two vocabularies diverged. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const i=src.indexOf("if(kind==='sl'){");
+  const body=src.slice(i,i+2600);
+  return i>0 && body.indexOf('DD254_SCENARIOS.map')>0 && body.indexOf('slScenarioOf(t)')>0
+      ? true : 'editor not wired to the controlled list';
+});
+
+
+H('131. v2.12.0 the left language banner (REQ-04)');
+/* The language this DD-254 may use, beside the form instead of two clicks away
+   in a repository screen, carrying only what fits the stage. */
+
+t('it starts closed and the choice is remembered', ()=>{
+  E("localStorage.removeItem('dd254_left_banner')");
+  const closed=E("lbOpenGet()")===false;
+  E("lbOpenSet(true)"); const open=E("lbOpenGet()")===true;
+  E("lbOpenSet(false)");
+  return closed && open ? true : ('closed='+closed+' open='+open);
+});
+
+t('closed it takes no width from the form', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  /* The facsimile has a fixed shape. The rail borrows page width when open,
+     never column width from the form. */
+  return /\.left-col\{width:0/.test(src)
+      && /body\.lb-open \.layout\{max-width:1640px\}/.test(src)
+      ? true : 'rail takes column width';
+});
+
+t('it is not printed', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return /@media print\{ \.left-col,\.lb-tab\{display:none!important\} \}/.test(src)
+      ? true : 'banner would print';
+});
+
+await ta('opening it lists the entries that fit, and says what it is showing', async()=>{
+  E("showFormView();resetFormFields();");
+  E("tplSave(TPL_SL,"+JSON.stringify([
+      {label:'Award wording',scenario:'purchase',text:'AWARD BODY'},
+      {label:'Bid wording',scenario:'bids',text:'BID BODY'},
+      {label:'Either wording',text:'SHARED BODY'}])+")");
+  E("lbOpenSet(true);lbApply();");
+  const host=w.document.getElementById('workflowLeftBanner');
+  const txt=host?host.textContent:'';
+  E("lbOpenSet(false);lbApply();tplSave(TPL_SL,[]);");
+  /* A fresh form is not a solicitation, so bids wording is withheld. */
+  return /Award wording/.test(txt) && /Either wording/.test(txt)
+      && !/Bid wording/.test(txt) && /Purchase/.test(txt)
+      ? true : txt.slice(0,200); });
+
+await ta('closed, it renders nothing at all', async()=>{
+  E("lbOpenSet(false);lbApply();");
+  const host=w.document.getElementById('workflowLeftBanner');
+  return (host && host.innerHTML==='') ? true : 'rendered while closed'; });
+
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
