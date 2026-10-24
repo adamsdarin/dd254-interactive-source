@@ -1,4 +1,4 @@
-BUILD_SHA256 ce0bee7ebc66e4aac4f72140dfcea71ae35f9fad361ee489a3ea123d6616f274
+BUILD_SHA256 b45d553c0af8763f08dfe5ed355faca498d4e95847efdfd7dcd97cd6198d1ae0
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1601,7 +1601,7 @@ BUILD_SHA256 ce0bee7ebc66e4aac4f72140dfcea71ae35f9fad361ee489a3ea123d6616f274
   PASS  the edit is written to the audit log
   PASS  one composer names every DD-254
 
-### 120. v2.9.1 the Standard Language panel lists what this DD-254 calls for
+### 120. v2.9.1 the standard-language list shows what this DD-254 calls for
   PASS  with no programme or level it lists everything and says why
   PASS  with a programme but no level it still lists everything
   PASS  with both, it lists only what this DD-254 calls for
@@ -1713,18 +1713,16 @@ BUILD_SHA256 ce0bee7ebc66e4aac4f72140dfcea71ae35f9fad361ee489a3ea123d6616f274
   PASS  the editor renders the selector from the same list
 
 ### 131. v2.12.0 the left language banner (REQ-04)
-  PASS  it starts closed and the choice is remembered
-  PASS  closed it takes no width from the form
+  PASS  v2.14.0 there is no way to hide it, and no state pretending otherwise
+  PASS  it takes width from the page, never from the form
   PASS  it is not printed
-  PASS  opening it lists the entries that fit, and says what it is showing
-  PASS  closed, it renders nothing at all
+  PASS  it lists the entries that fit, and says what it is showing
+  PASS  an empty library still leaves a rail that says so
 
 ### 132. v2.12.0 template caveats are chosen, inserted and withdrawn (REQ-10, REQ-11)
   PASS  a template offers exactly the keys it has wording for
   PASS  the always-insert flag is read per key
-  PASS  an unrecorded choice still means everything the template offers
   PASS  ticking the box writes the caveat, unticking takes it back out
-  PASS  a caveat declined at intake is not written however the box is ticked
   PASS  an edited caveat is left alone and said out loud, not half-deleted
   PASS  the always flag survives a CSV round trip
 
@@ -1743,8 +1741,6 @@ BUILD_SHA256 ce0bee7ebc66e4aac4f72140dfcea71ae35f9fad361ee489a3ea123d6616f274
   PASS  nothing is changed until it is applied
 
 ### 134. v2.12.0 the intake dialog actually renders what it collects
-  PASS  a matched template lists its caveats, pre-ticking the always ones
-  PASS  what is ticked reaches the record, and what is not stays declined
   PASS  the engine questionnaire appears only when the engine is on
   PASS  answering the engine at intake writes the boxes and the wording
 
@@ -1759,6 +1755,32 @@ BUILD_SHA256 ce0bee7ebc66e4aac4f72140dfcea71ae35f9fad361ee489a3ea123d6616f274
   PASS  capturing a form records the Item 1a level on the template
   PASS  the repository machinery is untouched
 
+### 138. v2.14.0 a contract template says what it is for on its own row
+  PASS  the collapsed row carries name, programme, scenario and level
+  PASS  changing them on the row changes the template
+  PASS  one control per fact, so the two cannot disagree
+
+### 139. v2.14.0 the requester e-mail is searchable and fills the name
+  PASS  the repository answers by address, and reports a shared one
+  PASS  an address on file is offered once, however many answer it
+  PASS  case and surrounding space do not make a second address
+  PASS  the field offers what is on file, and picking one fills the name
+  PASS  a name the operator typed is never written over
+  PASS  a shared address names them both rather than choosing
+  PASS  an address nobody has used says so, and then exists
+
+### 136. v2.14.0 per-box template language fires after a template is matched
+  PASS  a template matched at intake leaves the form knowing which template it is
+  PASS  ticking 11d then writes the clause the template holds for it
+
+### 137. v2.14.0 template language either always applies, or waits for its box
+  PASS  a clause is read as always, or as waiting for its box
+  PASS  unmarked language waits for its box, which is the safe default
+  PASS  always-language goes in without its box being ticked
+  PASS  always-language is not withdrawn by unticking the box
+  PASS  sometimes-language stays out until its box is ticked, and leaves again
+  PASS  nothing else gates the language any more
+
 ================================
-  PASS 1473   FAIL 0
+  PASS 1487   FAIL 0
 ================================

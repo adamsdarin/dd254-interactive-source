@@ -98,7 +98,7 @@
     ]);
     /* Prime/order example: one prime source shared by twenty orders. */
     if(typeof TPL_ORDERS!=='undefined'&&!tplLoad(TPL_ORDERS).length){
-      const templates=ctEnsureIds();templates.forEach(t=>{if(t.program==null)t.program=/Meridian/i.test(t.label)?'Meridian':(/ALDER/i.test(t.label)?'ALDER':(/Northwind/i.test(t.label)?'Northwind':'Other programs'));});const prime=templates.find(t=>(t.data||{}).primeContract==='HQ0034-25-D-0101'&&!(t.data||{}).taskOrder);
+      const templates=ctEnsureIds();templates.forEach(t=>{if(t.program==null)t.program=/\bMeridian\b/i.test(t.label)?'Meridian':(/\bNorthwind\b/i.test(t.label)?'Northwind':((t.smProgram||'').replace(/^Programme\s+/i,'').replace(/\s*\(demo\)$/i,'')||'Other programs'));});const prime=templates.find(t=>(t.data||{}).primeContract==='HQ0034-25-D-0101'&&!(t.data||{}).taskOrder);
       if(prime){
         const records=[],base=ctSourceSaveVersion(prime,records),now=new Date().toISOString();
         for(let n=1;n<=23;n++){

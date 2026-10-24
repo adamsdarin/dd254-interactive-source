@@ -4242,7 +4242,10 @@ t('validation output lives in the validation panel', ()=>{
 });
 t('the things you act on live in the checklist panel', ()=>{
   const c=w.document.getElementById('rpanelChecklist');
-  const want=['slPanel','ctTypeSel','ctTplSel','emailDistSection','attachReminderSection'];
+  /* slPanel was here until v2.14.0: standard language is on the left rail
+     now, and a census that still demanded it on the right would be asserting
+     the duplication we removed. */
+  const want=['ctTypeSel','ctTplSel','emailDistSection','attachReminderSection'];
   const missing=want.filter(id=>!c.querySelector('#'+id));
   return missing.length===0 ? true : missing;
 });
@@ -4252,10 +4255,10 @@ t('nothing was dropped in the split', ()=>{
   const n=v.querySelectorAll('.rp-section').length+c.querySelectorAll('.rp-section').length;
   /* v1.15.2 added the Security Classification Guides section to the checklist
      panel; v2.7.0 added Contract Type, which used to be a chooser at
-     origination; v2.12.0 added Contract Templates That Fit, which lists the
-     templates matching this DD-254's programme, Item 1a level and scenario the
-     way Standard Language already did. */
-  return n===14 ? true : n+' sections, expected 14';
+     origination; v2.14.0 removed Standard Language and Contract Templates
+     That Fit, which the permanent left rail now owns outright - two lists of
+     one library, only one of which could insert from it. */
+  return n===12 ? true : n+' sections, expected 12';
 });
 t('no panel content ended up outside either panel', ()=>{
   const stray=Array.from(w.document.querySelectorAll('.panel-col .rp-section'))
@@ -7931,16 +7934,17 @@ await ta('a task-order-specific DD254 creates its own editable template beneath 
 t('prime and task-order templates use the same complete block editor',()=>{
   const i=E("TPL_EDIT.findIndex(t=>t.data.taskOrder==='0042')");E('ctMgrToggle('+i+')');
   const editor=w.document.getElementById('ctEd_'+i);
-  /* v2.12.0 (REQ-11): each Item 10/11 key gained an "always insert" box beside
-     its language, so a bare total no longer says what it used to. Counted
-     apart, which pins down more than the total did: every selection box is
-     present, and every 10/11 key has its always-insert control. */
-  const allBoxes=editor.querySelectorAll('input[type="checkbox"]').length;
-  const alwaysBoxes=editor.querySelectorAll('label[id^="ctAlw_"] input[type="checkbox"]').length;
-  const selBoxes=allBoxes-alwaysBoxes;
+  /* Each Item 10/11 key carries a mode control beside its language - v2.14.0
+     made it a two-option list where v2.12.0 had a checkbox called "always
+     insert". Counted on its own, which pins down more than a bare total did:
+     every selection box is present, and every 10/11 key can say whether its
+     language always applies or waits for its box. */
+  const selBoxes=editor.querySelectorAll('input[type="checkbox"]').length;
+  const modes=editor.querySelectorAll('label[id^="ctAlw_"] select');
+  const bothOptions=Array.from(modes).every(m=>Array.from(m.options).map(o=>o.value).join(',')==='box,always');
   return editor.style.display==='block'
       &&selBoxes===E('CT_10.length+CT_11.length+CT_18.length')
-      &&alwaysBoxes===E('CT_10.length+CT_11.length')&&/Required attachments/.test(editor.textContent)&&!!editor.querySelector('textarea[placeholder="Block 13 language…"]');
+      &&modes.length===E('CT_10.length+CT_11.length')&&bothOptions&&/Required attachments/.test(editor.textContent)&&!!editor.querySelector('textarea[placeholder="Block 13 language…"]');
 });
 await ta('editing a child autosaves the child without overwriting prime language',async()=>{
   const tx=w.document.querySelector('.ct-order-card textarea[placeholder="Block 13 language…"]');tx.value='Unique order guidance';tx.dispatchEvent(new w.Event('input',{bubbles:true}));await E('dashTplFlush()');
@@ -8722,7 +8726,7 @@ t('one composer names every DD-254', ()=>
   && E("String(dashRename)").includes('dashPartyPrompt(')
   && E("String(dashRename)").includes('dashPartyApply('));
 
-H('120. v2.9.1 the Standard Language panel lists what this DD-254 calls for');
+H('120. v2.9.1 the standard-language list shows what this DD-254 calls for');
 /* Owner, 7 October 2026: the panel listed the whole library on every DD-254,
    so the entry this contract calls for was read past everything else. */
 const SLPANEL=async()=>{
@@ -8739,22 +8743,24 @@ const SLPANEL=async()=>{
   E("showFormView();resetFormFields();buildTplSelects();");
   await new Promise(r=>setTimeout(r,30));
 };
-const panelNames=()=>Array.from(w.document.querySelectorAll('#slPanel .sl-name')).map(b=>b.textContent);
-const panelText=()=>(w.document.getElementById('slPanel')||{textContent:''}).textContent;
+/* v2.14.0: the list moved to the permanent left rail and the right-hand copy
+   was removed. Same assertions, read from where the list now is. */
+const panelNames=()=>Array.from(w.document.querySelectorAll('#lbStandard .sl-name')).map(b=>b.textContent);
+const panelText=()=>(w.document.getElementById('lbStandard')||{textContent:''}).textContent;
 await ta('with no programme or level it lists everything and says why', async()=>{
   await SLPANEL();
-  E("slRenderPanel();");
+  E("lbRender();");
   const n=panelNames();
   return n.length===4 && /Enter the Item 1a level/.test(panelText())
       ? true : (n.join(',')+' | '+panelText().slice(0,80)); });
 await ta('with a programme but no level it still lists everything', async()=>{
   await SLPANEL();
-  E("document.getElementById('ctTplSel').value='ct-shoes';slRenderPanel();");
+  E("document.getElementById('ctTplSel').value='ct-shoes';lbRender();");
   return panelNames().length===4 && /Enter the Item 1a level/.test(panelText()); });
 await ta('with both, it lists only what this DD-254 calls for', async()=>{
   await SLPANEL();
   E("document.getElementById('ctTplSel').value='ct-shoes';");
-  E("document.getElementById('fcl1a').value='S';slRenderPanel();");
+  E("document.getElementById('fcl1a').value='S';lbRender();");
   const n=panelNames();
   /* the SHOES entry at SECRET, and the one written for any programme */
   return n.join(',')==='Shoes secret,Fits anything'
@@ -8763,7 +8769,7 @@ await ta('with both, it lists only what this DD-254 calls for', async()=>{
 await ta('the others are one link away, and the link comes back', async()=>{
   await SLPANEL();
   E("document.getElementById('ctTplSel').value='ct-shoes';");
-  E("document.getElementById('fcl1a').value='S';slRenderPanel();");
+  E("document.getElementById('fcl1a').value='S';lbRender();");
   const link=/Show all \u00b7 2 others/.test(panelText());
   E("slPanelShowAll(true);");
   const all=panelNames().length;
@@ -8775,10 +8781,10 @@ await ta('the others are one link away, and the link comes back', async()=>{
 await ta('Insert still inserts the entry that was clicked', async()=>{
   await SLPANEL();
   E("document.getElementById('ctTplSel').value='ct-shoes';");
-  E("document.getElementById('fcl1a').value='S';slRenderPanel();");
+  E("document.getElementById('fcl1a').value='S';lbRender();");
   /* The panel is filtered; the index on the button is the library index, so the
      second row must insert 'Fits anything' and not the library's second entry. */
-  const btns=Array.from(w.document.querySelectorAll('#slPanel button'));
+  const btns=Array.from(w.document.querySelectorAll('#lbStandard button'));
   btns[1].click();
   await new Promise(r=>setTimeout(r,20));
   const i13=w.document.getElementById('item13').value;
@@ -8786,13 +8792,13 @@ await ta('Insert still inserts the entry that was clicked', async()=>{
       ? true : i13.slice(0,80); });
 await ta('an entry written for nothing in particular says so on its row', async()=>{
   await SLPANEL();
-  E("slRenderPanel();");
+  E("lbRender();");
   return /any programme/.test(panelText()) && /any level/.test(panelText()); });
 await ta('a programme with nothing at that level says so rather than looking empty', async()=>{
   await SLPANEL();
   E("tplSave(TPL_SL,[{label:'Shoes confidential',program:'SHOES',level:'C',text:'Only CONFIDENTIAL.'}]);");
   E("document.getElementById('ctTplSel').value='ct-shoes';");
-  E("document.getElementById('fcl1a').value='TS';slRenderPanel();");
+  E("document.getElementById('fcl1a').value='TS';lbRender();");
   return /No entry is written for this programme at this level/.test(panelText())
       ? true : panelText().slice(0,120); });
 t('the panel and the automatic insertion match on the same two things', ()=>
@@ -9676,48 +9682,57 @@ H('131. v2.12.0 the left language banner (REQ-04)');
 /* The language this DD-254 may use, beside the form instead of two clicks away
    in a repository screen, carrying only what fits the stage. */
 
-t('it starts closed and the choice is remembered', ()=>{
-  E("localStorage.removeItem('dd254_left_banner')");
-  const closed=E("lbOpenGet()")===false;
-  E("lbOpenSet(true)"); const open=E("lbOpenGet()")===true;
-  E("lbOpenSet(false)");
-  return closed && open ? true : ('closed='+closed+' open='+open);
+t('v2.14.0 there is no way to hide it, and no state pretending otherwise', ()=>{
+  /* The point of item 1. A tab, a stored choice and a toggle were machinery
+     whose only use was hiding the language an operator most needs to see. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return E("typeof lbToggle")==='undefined'
+      && E("typeof lbOpenGet")==='undefined'
+      && E("typeof lbOpenSet")==='undefined'
+      && src.indexOf('dd254_left_banner')<0
+      && src.indexOf('lb-tab')<0
+      && src.indexOf('lb-open')<0
+      ? true : 'the rail can still be hidden';
 });
 
-t('closed it takes no width from the form', ()=>{
+t('it takes width from the page, never from the form', ()=>{
   const src=fs.readFileSync('dd254.htm','utf8');
-  /* The facsimile has a fixed shape. The rail borrows page width when open,
-     never column width from the form. */
-  return /\.left-col\{width:0/.test(src)
-      && /body\.lb-open \.layout\{max-width:1640px\}/.test(src)
+  /* The facsimile has a fixed shape. The rail widens the page instead of
+     narrowing the form, and at 1240px it narrows rather than disappears. */
+  return /\.left-col\{width:300px/.test(src)
+      && /\.layout\{max-width:1640px\}/.test(src)
+      && /@media \(max-width:1240px\)\{ \.left-col\{width:220px\} \}/.test(src)
       ? true : 'rail takes column width';
 });
 
 t('it is not printed', ()=>{
   const src=fs.readFileSync('dd254.htm','utf8');
-  return /@media print\{ \.left-col,\.lb-tab\{display:none!important\} \}/.test(src)
+  return /@media print\{ \.left-col\{display:none!important\} \}/.test(src)
       ? true : 'banner would print';
 });
 
-await ta('opening it lists the entries that fit, and says what it is showing', async()=>{
+await ta('it lists the entries that fit, and says what it is showing', async()=>{
   E("showFormView();resetFormFields();");
   E("tplSave(TPL_SL,"+JSON.stringify([
       {label:'Award wording',scenario:'purchase',text:'AWARD BODY'},
       {label:'Bid wording',scenario:'bids',text:'BID BODY'},
       {label:'Either wording',text:'SHARED BODY'}])+")");
-  E("lbOpenSet(true);lbApply();");
+  E("lbApply();");
   const host=w.document.getElementById('workflowLeftBanner');
   const txt=host?host.textContent:'';
-  E("lbOpenSet(false);lbApply();tplSave(TPL_SL,[]);");
+  E("tplSave(TPL_SL,[]);lbApply();");
   /* A fresh form is not a solicitation, so bids wording is withheld. */
   return /Award wording/.test(txt) && /Either wording/.test(txt)
       && !/Bid wording/.test(txt) && /Purchase/.test(txt)
       ? true : txt.slice(0,200); });
 
-await ta('closed, it renders nothing at all', async()=>{
-  E("lbOpenSet(false);lbApply();");
+await ta('an empty library still leaves a rail that says so', async()=>{
+  /* It cannot be hidden, so it has to read sensibly with nothing in it. */
+  E("tplSave(TPL_SL,[]);tplSave(TPL_CT,[]);lbApply();");
   const host=w.document.getElementById('workflowLeftBanner');
-  return (host && host.innerHTML==='') ? true : 'rendered while closed'; });
+  const txt=host?host.textContent:'';
+  return (host && host.innerHTML!=='' && txt.trim().length>0)
+      ? true : 'the rail went blank'; });
 
 
 H('132. v2.12.0 template caveats are chosen, inserted and withdrawn (REQ-10, REQ-11)');
@@ -9747,12 +9762,6 @@ t('the always-insert flag is read per key', ()=>{
   return a===true && b===false ? true : ('11c='+a+' 11d='+b);
 });
 
-t('an unrecorded choice still means everything the template offers', ()=>{
-  /* Nothing written before today changes behaviour. */
-  E("showFormView();resetFormFields();");
-  return E("cavChosenGet({texts:{}})")===null && E("cavWanted('11c',{texts:{}})")===true
-      ? true : 'default changed';
-});
 
 await ta('ticking the box writes the caveat, unticking takes it back out', async()=>{
   CAVTPL(false);
@@ -9764,16 +9773,6 @@ await ta('ticking the box writes the caveat, unticking takes it back out', async
   E("tplSave(TPL_CT,[])");
   return inserted && removed ? true : ('inserted='+inserted+' removed='+removed); });
 
-await ta('a caveat declined at intake is not written however the box is ticked', async()=>{
-  CAVTPL(false);
-  E("resetFormFields();document.getElementById('ctTplSel').value='cav-tpl';");
-  E("cavChosenSet(['11d']);");
-  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
-  const c=E("ctGv('item13')").indexOf('CAVEAT 11C WORDING.')<0;
-  E("document.getElementById('c11d').checked=true;ctAutoLangKey('11d');");
-  const d=E("ctGv('item13')").indexOf('CAVEAT 11D WORDING.')>=0;
-  E("cavChosenSet([]);tplSave(TPL_CT,[])");
-  return c && d ? true : ('declined-absent='+c+' chosen-present='+d); });
 
 await ta('an edited caveat is left alone and said out loud, not half-deleted', async()=>{
   /* DEF-08. Removing an approximate match would delete somebody's writing. */
@@ -9881,12 +9880,12 @@ t('with no archetype it advises nothing at all', ()=>{
 });
 
 await ta('the banner shows the questionnaire only when the engine is on', async()=>{
-  E("showFormView();resetFormFields();lbOpenSet(true);");
+  E("showFormView();resetFormFields();");
   E("cavEngineSet('off');lbApply();");
   const offTxt=(w.document.getElementById('workflowLeftBanner')||{}).textContent||'';
   E("cavEngineSet('on');lbApply();");
   const onTxt=(w.document.getElementById('workflowLeftBanner')||{}).textContent||'';
-  E("cavEngineSet('off');lbOpenSet(false);lbApply();");
+  E("cavEngineSet('off');lbApply();");
   return !/Acquisition caveats/.test(offTxt) && /Acquisition caveats/.test(onTxt)
       && /Components \/ parts/.test(onTxt)
       ? true : ('off='+/Acquisition caveats/.test(offTxt)+' on='+/Acquisition caveats/.test(onTxt)); });
@@ -9917,34 +9916,7 @@ const INTAKE_TPL=function(always){
   E("tplSave(TPL_CT,"+JSON.stringify([{label:'Intake caveats',ioId:'intake-cav',data:d}])+")");
 };
 
-await ta('a matched template lists its caveats, pre-ticking the always ones', async()=>{
-  INTAKE_TPL(true);
-  const pr=E("dashPartyPrompt({stage:'orig'})");
-  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
-  const pe=d.querySelector('#np_prime'); pe.value='N00178-24-D-9000';
-  if(pe.oninput) pe.oninput();
-  await new Promise(r=>setTimeout(r,60));
-  const boxes=Array.prototype.slice.call(d.querySelectorAll('.np-cav'));
-  const ticked=boxes.filter(function(b){ return b.checked; }).map(function(b){ return b.value; });
-  const all=boxes.map(function(b){ return b.value; });
-  d.querySelector('#np_cancel').click(); await pr;
-  E("tplSave(TPL_CT,[])");
-  return all.join(',')==='11c,11d' && ticked.join(',')==='11c'
-      ? true : ('all='+all.join(',')+' ticked='+ticked.join(',')); });
 
-await ta('what is ticked reaches the record, and what is not stays declined', async()=>{
-  await wipe(); INTAKE_TPL(true);
-  const pr=E("dashPartyPrompt({stage:'orig'})");
-  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
-  const put=function(id,v){ const e=d.querySelector('#'+id); if(e){ e.value=v; if(e.oninput) e.oninput(); } };
-  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane@example.com');
-  put('np_prime','N00178-24-D-9000'); put('np_sub','N/A');
-  await new Promise(r=>setTimeout(r,60));
-  const ans=await (async()=>{ d.querySelector('#np_ok').click(); return await pr; })();
-  E("tplSave(TPL_CT,[])");
-  if(!ans) return 'dialog refused';
-  return ans.caveatsOffered===true && (ans.caveats||[]).join(',')==='11c'
-      ? true : ('offered='+ans.caveatsOffered+' caveats='+JSON.stringify(ans.caveats)); });
 
 await ta('the engine questionnaire appears only when the engine is on', async()=>{
   E("cavEngineSet('off')");
@@ -10042,11 +10014,13 @@ await ta('the panel lists what fits and offers the rest one link away', async()=
   E("showFormView();resetFormFields();");
   CTFIT(CTLIB);
   E("document.getElementById('fcl1a').value='S';");
-  E("window.CT_PANEL_ALL=false;ctRenderFitPanel();");
-  const host=w.document.getElementById('ctFitPanel');
-  const fit=host?host.textContent:'';
+  /* Re-read after each render: lbRender replaces the rail's innerHTML, so a
+     node captured beforehand is detached and keeps the old text. */
+  const ctText=()=>(w.document.getElementById('lbContract')||{textContent:''}).textContent;
+  E("window.CT_PANEL_ALL=false;lbRender();");
+  const fit=ctText();
   E("ctPanelShowAll(true)");
-  const all=host?host.textContent:'';
+  const all=ctText();
   E("ctPanelShowAll(false);tplSave(TPL_CT,[]);resetFormFields();");
   /* No programme on a blank form, so level and scenario do the narrowing. */
   return /Shoes award S/.test(fit) && !/Shoes bids S/.test(fit) && !/Shoes award TS/.test(fit)
@@ -10055,8 +10029,8 @@ await ta('the panel lists what fits and offers the rest one link away', async()=
 
 await ta('an empty library says so rather than rendering an empty list', async()=>{
   CTFIT([]);
-  E("ctRenderFitPanel()");
-  const host=w.document.getElementById('ctFitPanel');
+  E("lbRender()");
+  const host=w.document.getElementById('lbContract');
   return /No contract templates saved/.test(host.textContent) ? true : host.textContent.slice(0,80); });
 
 t('capturing a form records the Item 1a level on the template', ()=>{
@@ -10071,6 +10045,251 @@ t('the repository machinery is untouched', ()=>{
      provenance and duplicate detection all still exist. */
   return ['ctOrderRows','ctOrderCoverage','ctOrderSource','ctDuplicatePairs','ctSourceSnapshot']
     .every(function(f){ return E("typeof "+f)==='function'; }) ? true : 'machinery lost';
+});
+
+
+H('138. v2.14.0 a contract template says what it is for on its own row');
+/* Item 4. The row carried a name and a programme; the level and the scenario
+   were behind "Edit blocks", so operators put the level in the name instead -
+   "CPFF Research - SECRET (demo)" - and nothing could match on it. */
+
+await ta('the collapsed row carries name, programme, scenario and level', async()=>{
+  await wipe();
+  E("(function(){var d=ctBlankData();d.primeContract='N00178-24-D-7900';"
+   +"tplSave(TPL_CT,[{label:'Row controls',ioId:'row-ct',program:'SHOES',level:'S',scenario:'purchase',data:d}]);})();");
+  await E("dashTplEdit('ct')");
+  const prog=w.document.querySelector('.ct-program'), scen=w.document.querySelector('.ct-scenario'), lvl=w.document.querySelector('.ct-level');
+  /* Read from outside the editor: the controls have to be on the row itself,
+     not in the panel that only appears once somebody opens it. */
+  const ed=w.document.getElementById('ctEd_0');
+  const inEditor=ed?(ed.querySelectorAll('.ct-scenario,.ct-level').length):0;
+  return (prog&&scen&&lvl&&prog.value==='SHOES'&&scen.value==='purchase'&&lvl.value==='S'&&inEditor===0)
+      ? true : ('prog='+(prog&&prog.value)+' scen='+(scen&&scen.value)+' lvl='+(lvl&&lvl.value)+' inEditor='+inEditor); });
+
+await ta('changing them on the row changes the template', async()=>{
+  const scen=w.document.querySelector('.ct-scenario'), lvl=w.document.querySelector('.ct-level');
+  scen.value='bids'; scen.dispatchEvent(new w.Event('change',{bubbles:true}));
+  lvl.value='TS'; lvl.dispatchEvent(new w.Event('change',{bubbles:true}));
+  const t=E("window.TPL_EDIT[0]");
+  return (t.scenario==='bids'&&t.level==='TS'&&(t.data||{}).level==='TS')
+      ? true : JSON.stringify({scenario:t.scenario,level:t.level,dataLevel:(t.data||{}).level}); });
+
+t('one control per fact, so the two cannot disagree', ()=>{
+  /* The selects moved out of the editor rather than being copied onto the row.
+     Two selects over t.level would make the template claim whichever was
+     touched last. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const lvl=(src.match(/ctLevelSet\('\+i\+',this\.value\)/g)||[]).length;
+  const scn=(src.match(/ctScenarioSet\('\+i\+',this\.value\)/g)||[]).length;
+  return (lvl===1&&scn===1) ? true : ('ctLevelSet x'+lvl+' ctScenarioSet x'+scn);
+});
+
+/* Flush and drop the manager's working copy before clearing. An armed autosave
+   writes TPL_EDIT back over whatever the next section saves, which is how this
+   section used to empty section 136's fixture from under it. */
+await E('dashTplFlush()');
+E("window.TPL_EDIT=[];tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
+
+H('139. v2.14.0 the requester e-mail is searchable and fills the name');
+/* Item 5. The dialog went name -> address; an operator holds the address the
+   request arrived from, so it now goes both ways. */
+
+const REQLIB=[
+  {id:'r1',firstName:'Ann',lastName:'Reed',email:'ann.reed@example.com',completedCount:3},
+  {id:'r2',firstName:'Bo',lastName:'Vance',email:'bo.vance@example.com',completedCount:0},
+  {id:'r3',firstName:'Cy',lastName:'Udall',email:'desk@example.com',completedCount:1},
+  {id:'r4',firstName:'Di',lastName:'Oakes',email:'desk@example.com',completedCount:2}
+];
+
+t('the repository answers by address, and reports a shared one', ()=>{
+  const one=E("reqLookupEmail('ann.reed@example.com',"+JSON.stringify(REQLIB)+")");
+  const many=E("reqLookupEmail('desk@example.com',"+JSON.stringify(REQLIB)+")");
+  const none=E("reqLookupEmail('nobody@example.com',"+JSON.stringify(REQLIB)+")");
+  return (one.state==='one'&&one.record.lastName==='Reed'
+       && many.state==='many'&&many.records.length===2
+       && none.state==='none')
+      ? true : JSON.stringify({one:one.state,many:many.state,none:none.state});
+});
+
+t('an address on file is offered once, however many answer it', ()=>{
+  const list=E("reqEmailList("+JSON.stringify(REQLIB)+")");
+  /* A shared mailbox is one address, and the order is stable so the same
+     request twice offers the same list. */
+  return list.join('|')==='ann.reed@example.com|bo.vance@example.com|desk@example.com'
+      ? true : list.join('|');
+});
+
+t('case and surrounding space do not make a second address', ()=>{
+  const r=E("reqLookupEmail('  ANN.REED@Example.com ',"+JSON.stringify(REQLIB)+")");
+  return r.state==='one'&&r.record.firstName==='Ann' ? true : JSON.stringify(r.state);
+});
+
+/* Open the create dialog and drive it the way fillParty does: set the value,
+   then call the handler the field itself has, rather than constructing events
+   and hoping jsdom routes them the same way. */
+const reqDlg=async()=>{
+  const p=E("dashPartyPrompt({stage:'orig',heading:'H',ok:'Create'})");
+  const d=await waitDlg('#dashPartyDlg',10000);
+  const q=(id)=>d.querySelector('#'+id);
+  const set=(id,v)=>{ const el=q(id); el.value=v; if(el.oninput) el.oninput(); };
+  const note=()=>(q('np_reqnote')||{}).textContent||'';
+  const close=()=>{ q('np_cancel').click(); return p; };
+  return {d,q,set,note,close};
+};
+
+await ta('the field offers what is on file, and picking one fills the name', async()=>{
+  await wipe();
+  E("tplSave(TPL_REQ,"+JSON.stringify(REQLIB)+");");
+  const dlg=await reqDlg();
+  const opts=Array.from(dlg.d.querySelectorAll('#npEmailList option')).map(o=>o.value);
+  dlg.set('np_email','ann.reed@example.com');
+  const first=dlg.q('np_first').value, last=dlg.q('np_last').value, note=dlg.note();
+  await dlg.close();
+  return (opts.length===3&&first==='Ann'&&last==='Reed'&&/3 issued/.test(note))
+      ? true : ('opts='+opts.join(',')+' name='+first+' '+last+' note='+note); });
+
+await ta('a name the operator typed is never written over', async()=>{
+  const dlg=await reqDlg();
+  dlg.set('np_first','Zed');
+  dlg.set('np_email','ann.reed@example.com');
+  const kept=dlg.q('np_first').value;
+  await dlg.close();
+  return kept==='Zed' ? true : ('first became '+kept); });
+
+await ta('a shared address names them both rather than choosing', async()=>{
+  const dlg=await reqDlg();
+  dlg.set('np_email','desk@example.com');
+  const first=dlg.q('np_first').value, note=dlg.note();
+  await dlg.close();
+  return (first===''&&/share that address/.test(note)&&/Cy Udall/.test(note)&&/Di Oakes/.test(note))
+      ? true : ('first='+first+' note='+note); });
+
+await ta('an address nobody has used says so, and then exists', async()=>{
+  const dlg=await reqDlg();
+  dlg.set('np_email','new.person@example.com');
+  const note=dlg.note();
+  await dlg.close();
+  const said=/New address/.test(note);
+  /* And the listing really is created, by the same call that has always done
+     it - the note is not a promise the tool then fails to keep. */
+  await E("reqRemember('New','Person','new.person@example.com')");
+  const r=E("reqLookupEmail('new.person@example.com')");
+  return (said&&r.state==='one'&&r.record.lastName==='Person')
+      ? true : ('said='+said+' state='+r.state); });
+
+E("tplSave(TPL_REQ,[]);showDashView();resetFormFields();");
+
+H('136. v2.14.0 per-box template language fires after a template is matched');
+/* The owner's question was whether 11d language could live in the template and
+   stay out until 11d is ticked. It can, and always could - but only while a
+   template was selected in the picker ON THE FORM. A DD-254 created from a
+   template matched at intake had no selection, so ctActiveTpl returned null
+   and ticking 11d silently inserted nothing. The feature looked missing. */
+
+const BOXTPL=function(){
+  const d=E("ctBlankData()");
+  d.primeContract='N00178-24-D-7700';
+  d.l11={'11d':'ELEVEN-D FABRICATION CLAUSE.'};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Hardware prime',ioId:'box-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+};
+
+await ta('a template matched at intake leaves the form knowing which template it is', async()=>{
+  await wipe(); BOXTPL();
+  const pr=E("dashNewDraft('orig')");
+  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const put=function(id,v){ const e=d.querySelector('#'+id); if(e){ e.value=v; if(e.oninput) e.oninput(); } };
+  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane@example.com');
+  put('np_prime','N00178-24-D-7700'); put('np_sub','N/A');
+  await new Promise(r=>setTimeout(r,80));
+  d.querySelector('#np_ok').click(); await pr;
+  const active=E("(function(){var t=ctActiveTpl();return t?(t.ioId||t.label):null;})()");
+  E("tplSave(TPL_CT,[])");
+  return active==='box-tpl' ? true : ('active='+JSON.stringify(active)); });
+
+await ta('ticking 11d then writes the clause the template holds for it', async()=>{
+  await wipe(); BOXTPL();
+  const pr=E("dashNewDraft('orig')");
+  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const put=function(id,v){ const e=d.querySelector('#'+id); if(e){ e.value=v; if(e.oninput) e.oninput(); } };
+  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane@example.com');
+  put('np_prime','N00178-24-D-7700'); put('np_sub','N/A');
+  await new Promise(r=>setTimeout(r,80));
+  d.querySelector('#np_ok').click(); await pr;
+  const before=E("ctGv('item13')").indexOf('ELEVEN-D FABRICATION CLAUSE.')<0;
+  E("document.getElementById('c11d').checked=true;ctAutoLangKey('11d');");
+  const after=E("ctGv('item13')").indexOf('ELEVEN-D FABRICATION CLAUSE.')>=0;
+  E("document.getElementById('c11d').checked=false;ctAutoLangKey('11d');");
+  const gone=E("ctGv('item13')").indexOf('ELEVEN-D FABRICATION CLAUSE.')<0;
+  E("tplSave(TPL_CT,[])");
+  /* Out until its box is ticked, in when it is, out again when it is not. */
+  return before && after && gone
+      ? true : ('before='+before+' after='+after+' gone='+gone); });
+
+H('137. v2.14.0 template language either always applies, or waits for its box');
+/* The owner's model, and it replaces the intake caveat checklist outright: a
+   clause is marked "always applies" or it is not, and if it is not, its own
+   Item 10/11 box is what puts it in. One trigger, in one place. */
+
+const MODETPL=function(always){
+  const d=E("ctBlankData()");
+  d.primeContract='N00178-24-D-7800';
+  d.l11={'11c':'ALWAYS CLAUSE 11C.','11d':'SOMETIMES CLAUSE 11D.'};
+  if(always) d.always={'11c':true};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Mode',ioId:'mode-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();document.getElementById('ctTplSel').value='mode-tpl';");
+};
+
+t('a clause is read as always, or as waiting for its box', ()=>{
+  MODETPL(true);
+  const a=E("ctLangMode(ctActiveTpl(),'11c')"), b=E("ctLangMode(ctActiveTpl(),'11d')");
+  E("tplSave(TPL_CT,[]);resetFormFields();");
+  return (a==='always'&&b==='box')?true:('11c='+a+' 11d='+b);
+});
+
+t('unmarked language waits for its box, which is the safe default', ()=>{
+  /* Every template written before this field existed is unmarked. Reading
+     those as "always" would start writing clauses into documents that never
+     asked for them. */
+  MODETPL(false);
+  const a=E("ctLangMode(ctActiveTpl(),'11c')");
+  E("tplSave(TPL_CT,[]);resetFormFields();");
+  return a==='box'?true:a;
+});
+
+await ta('always-language goes in without its box being ticked', async()=>{
+  MODETPL(true);
+  E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');");
+  const inWithoutBox=E("ctGv('item13')").indexOf('ALWAYS CLAUSE 11C.')>=0;
+  E("tplSave(TPL_CT,[]);resetFormFields();");
+  return inWithoutBox?true:'always-language did not insert'; });
+
+await ta('always-language is not withdrawn by unticking the box', async()=>{
+  /* The box was never what put it there, so the box cannot take it away. */
+  MODETPL(true);
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');");
+  const stillThere=E("ctGv('item13')").indexOf('ALWAYS CLAUSE 11C.')>=0;
+  E("tplSave(TPL_CT,[]);resetFormFields();");
+  return stillThere?true:'always-language was withdrawn'; });
+
+await ta('sometimes-language stays out until its box is ticked, and leaves again', async()=>{
+  MODETPL(true);
+  const out=E("ctGv('item13')").indexOf('SOMETIMES CLAUSE 11D.')<0;
+  E("document.getElementById('c11d').checked=true;ctAutoLangKey('11d');");
+  const inNow=E("ctGv('item13')").indexOf('SOMETIMES CLAUSE 11D.')>=0;
+  E("document.getElementById('c11d').checked=false;ctAutoLangKey('11d');");
+  const outAgain=E("ctGv('item13')").indexOf('SOMETIMES CLAUSE 11D.')<0;
+  E("tplSave(TPL_CT,[]);resetFormFields();");
+  return (out&&inNow&&outAgain)?true:('out='+out+' in='+inNow+' outAgain='+outAgain); });
+
+t('nothing else gates the language any more', ()=>{
+  /* The intake checklist was a second gate on the same clause, and a clause
+     that can be suppressed from two places is a clause that silently fails to
+     appear. This fails if any of it comes back. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return (E("typeof cavWanted")==='undefined'
+       && E("typeof cavChosenGet")==='undefined'
+       && src.indexOf('np_cav')<0)?true:'a second gate survived';
 });
 
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");

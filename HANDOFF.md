@@ -1,6 +1,46 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-23T18:00-05:00 by Maintainer
+Last updated: 2026-10-24T11:40-05:00 by Maintainer
+
+Built and verified locally: **v2.14.0 (Tool 2.160)**, build b45d553c, demo
+89eb2330. Not yet tagged or published at the time of writing — see the
+publication checklist in SETUP.md for what remains.
+
+What v2.14.0 contains, build b45d553c.
+The language a DD-254 may use now lives in one place, beside the form, and
+cannot be hidden. The left rail lost its tab, its stored open/closed state and
+the `dd254_left_banner` key; the right-hand panel lost its Standard Language
+and Contract Templates That Fit sections, which were duplicate lists that could
+only look at a library the rail can insert from. The rail took over everything
+those sections did, and gained Apply for contract templates.
+
+Template language now carries one of two modes, chosen beside the wording:
+always applies, or waits for its own Item 10/11 box. The intake caveat
+checklist is gone with it — it was a second gate on the same clause, and
+three ways to suppress one clause is why clauses were silently not appearing.
+
+A contract-template row states its name, programme, scenario and Item 1a level
+as four controls, the way a standard-language row has since v2.12.0; the level
+and scenario moved out of Edit blocks rather than being copied onto the row.
+The requester e-mail field searches the requesters on file and fills the name
+from the match.
+
+Three defects fixed, each of which predates this work:
+- per-box template language never fired on a template matched at intake, because
+  the draft did not record which template it came from (`ctActiveTpl()` was
+  null). Shipped broken in v2.12.0; section 136 fails without the fix.
+- the removed contract panel's Apply called `ctPickContractType` with an id
+  where it expects an array, so it would have thrown.
+- the demo seed guessed a template's programme from its label with `/ALDER/i`,
+  and "Calder Aerospace" matches, so the CEDAR template was tagged ALDER.
+
+1487 assertions pass, all five gates pass, both builds pass the native-browser
+smoke test, and all six previously tagged build files still match their tags
+(checked per the note below before any rebuild).
+
+Known gap, deliberate: the demo cannot show the requester search, because its
+seed creates no requester records and its drafts carry no requester details.
+Extending the demo portfolio with requester personas was out of scope here.
 
 Latest published release: **v2.13.0 (Tool 2.159)**, build ce0bee7e. Signed tag
 at 2ea07bf on `main`; assets, checksums, the provenance attestation and the

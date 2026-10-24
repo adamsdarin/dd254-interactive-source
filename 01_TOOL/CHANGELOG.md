@@ -1,3 +1,49 @@
+## v2.14.0 — 24 October 2026
+
+Tool version 2.160. The language your templates hold is beside the form,
+permanently, and it is in one place rather than two.
+
+- **The language rail cannot be hidden.** It was a tab you could close, and the
+  choice was remembered, so an operator who closed it once went on issuing
+  DD-254s without ever seeing the wording their own templates held. There is no
+  tab, no stored state and nothing to reopen. On a narrow screen it narrows; it
+  never disappears.
+- **Standard Language and Contract Templates That Fit have left the right-hand
+  panel.** Both libraries were listed twice, and the right-hand copies were the
+  ones that could only look. The rail now carries the whole of what that panel
+  did — what the list was narrowed to and why, the entries written for
+  something else one link away, each entry's opening words — and insertion
+  happens where you are reading.
+- **Contract language can be applied from the rail.** The removed panel's Apply
+  button called the contract-type chooser with a single identifier where it
+  expected a list, so it would have failed outright. The rail uses the same path
+  the form's own template picker uses, which asks before it replaces anything.
+- **A piece of template language either always applies, or waits for its box.**
+  Chosen in words beside the wording it governs, where v2.12.0 had a checkbox
+  called "always insert". Always-language is written into every DD-254 built
+  from that template and unticking the box does not withdraw it, because the box
+  was never what put it there. Everything else stays out until its own Item 10
+  or 11 box is ticked on the form.
+- **The intake caveat checklist is gone.** It was a second gate on the same
+  clause, and a clause that can be suppressed from two places is a clause that
+  silently fails to appear. The box on the form is the trigger, and it is the
+  only one.
+- **Per-box template language now fires on a template matched at intake.** This
+  was a real defect: a draft created from a matched template never recorded
+  which template it came from, so ticking 11d afterwards inserted nothing and
+  the feature looked as though it did not exist.
+- **A contract template says what it is for on its own row** — name,
+  programme, scenario and Item 1a level, as four controls, the way a standard
+  language row has had them. The level and scenario moved out of Edit blocks
+  rather than being copied onto the row, so one fact still has one control.
+- **The requester e-mail searches the requesters on file.** It offers every
+  address on record and fills the first and last name from the one you pick. An
+  address nobody has used says so, and its listing is created with the DD-254. A
+  name you typed yourself is never written over, and an address two people share
+  names them both instead of choosing one.
+
+1487 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.13.0 — 24 October 2026
 
 Tool version 2.159. Contract templates are offered the way standard language

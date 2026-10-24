@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.13.0 (tool version 2.159)"
+VER="DD254 Interactive v2.14.0 (tool version 2.160)"
 
 DOC = [
-("h1","DD254 Interactive v2.13.0 changes"),
+("h1","DD254 Interactive v2.14.0 changes"),
+("b","<b>The language rail is always beside the form.</b> It used to be a tab you could close, and closing it was remembered \u2014 so you could go on issuing DD-254s without ever seeing the wording your own templates hold. There is no tab and nothing to reopen. On a narrow screen it gets narrower; it never disappears, and it is still never printed."),
+("b","<b>Standard Language and Contract Templates That Fit have left the right-hand panel.</b> Both were listed in two places and only the rail could insert from them. The rail now carries the whole of what that panel did \u2014 what the list was narrowed to and why, the entries written for something else one link away, and the opening words of each \u2014 so you insert where you are already reading. See 5.6."),
+("b","<b>Contract language can be applied from the rail</b>, by the same route the template picker above the form uses. It asks before it replaces anything."),
+("b","<b>Each piece of template language either always applies, or waits for its box.</b> You choose which beside the wording itself, where there used to be a tick-box called \u201calways insert\u201d. Always-language is written into every DD-254 built from that template, and unticking the box does not take it back out, because the box was never what put it there. Everything else stays out until its own Item 10 or 11 box is ticked on the form."),
+("n","The checklist that asked which caveats applied when a DD-254 was created is gone. It was a second place the same clause could be switched off, and a clause that can be suppressed from two places is one that quietly fails to appear. The box on the form is the trigger."),
+("b","<b>Fixed:</b> per-box template language now works on a DD-254 created from a matched template. The draft never recorded which template it came from, so ticking 11d afterwards inserted nothing and the feature looked as though it did not exist."),
+("b","<b>A contract template says what it is for on its own row</b> \u2014 its name, programme, scenario and Item 1a level, as four controls, the way a standard language row has had them. The level and scenario moved out of Edit blocks rather than being duplicated onto the row, so each still has exactly one control."),
+("b","<b>The requester e-mail searches the requesters you have on file</b> and fills in the first and last name from the one you pick. An address nobody has used says so, and its listing is created along with the DD-254. A name you typed yourself is never written over, and an address two people share names them both rather than choosing. See 3.18."),
+("h2","DD254 Interactive v2.13.0 changes"),
 ("b","<b>The tool now works out which contract templates fit the DD-254 in front of you.</b> A template records a programme, an <b>Item 1a level</b> and whether it is written for a <b>purchase</b> or for <b>bids</b>. All three can be left as Any or Either, and a template you saved before this version reads as Any on every one of them — nothing vanishes from your library."),
 ("b","<b>A new Contract Templates That Fit panel</b> sits beside the form listing only the ones that match, each with an Apply button, and a link to the rest saying how many are written for something else. It is the same panel Standard Language has always had."),
 ("b","<b>Capturing a form into a template records its Item 1a level</b>, so a captured template knows what it was written for without being told."),
@@ -19,8 +28,8 @@ DOC = [
 ("b","<b>The standalone task-order box follows the order.</b> It is ticked when that order has a DD-254 of its own and never when the order runs under the prime’s."),
 ("b","<b>Standard language goes to the top or the bottom of Item 13</b>, your choice in Settings, and top-placed language stays above the Item 10 and 11 sections. The classified mailing address stays last either way. See 2.5."),
 ("b","<b>Purchase and bids wording are separate sets.</b> A solicitation is offered bids language and an award purchase language. Anything written before this counts as either, so nothing disappears."),
-("b","<b>A language banner</b> opens beside the form carrying what this DD-254 may actually use. It starts closed and is never printed."),
-("b","<b>Template caveats are chosen when the DD-254 is created</b> and taken back out when their box is unticked. An edited caveat is left alone and flagged rather than half-deleted."),
+("b","<b>A language banner</b> beside the form carries what this DD-254 may actually use. It started closed in this release; since v2.14.0 it is always open and cannot be hidden. It is never printed."),
+("b","<b>Template caveats are taken back out when their box is unticked</b>, and an edited caveat is left alone and flagged rather than half-deleted. This release also asked which caveats applied when the DD-254 was created; v2.14.0 removed that question, because the box on the form was already the answer."),
 ("b","<b>An optional acquisition caveat engine</b>, off unless you turn it on, asks what is being bought and works out 11c against 11d, the COMSEC and OPSEC consequences, and whether a classified mailing address is required. It advises; nothing changes until you apply it. See 2.5."),
 ("h2","DD254 Interactive v2.11.0 changes"),
 ("b","<b>The issuance e-mail now tells two groups apart.</b> The <b>To</b> line is everyone the DD-254 has to reach and you cannot switch any of them off: the requestor, the <b>Item 7</b> FSO of the receiving facility, every <b>Item 8</b> performance-location FSO, the cognizant security office, and anyone written into <b>Block 18f</b>. See 3.13."),
@@ -33,7 +42,7 @@ DOC = [
 ("b","<b>The numbers you type are matched against your templates.</b> An exact task-order match wins over a prime-only one, a single match is named and applied whole, several matches are never chosen between, and a partial match is only a suggestion. What you typed always wins over what the template carries."),
 ("b","<b>The Security Manager is kept on the DD-254 itself</b> and appears directly below the requester at issuance, on the <b>To</b> line. Editing the Security Manager repository afterwards does not change a DD-254 already made. <b>The Item 6 facility FSO moved from CC to To</b> with this change."),
 ("h2","DD254 Interactive v2.9.1 changes"),
-("b","The <b>Standard Language</b> panel on the form now lists <b>what this DD-254 calls for</b> — the entries written for its programme and its Item 1a level — instead of the whole library. <b>Show all</b> opens the rest. Until the form has both a programme and a level, every entry is listed with a line saying what would narrow it. See 5.6."),
+("b","The <b>Standard Language</b> list now shows <b>what this DD-254 calls for</b> — the entries written for its programme and its Item 1a level — instead of the whole library. <b>Show all</b> opens the rest. Until the form has both a programme and a level, every entry is listed with a line saying what would narrow it. See 5.6."),
 ("h2","DD254 Interactive v2.9.0 changes"),
 ("b","<b>Naming a new DD-254.</b> <b>New Solicitation</b> and <b>Original</b> now ask for the <b>person’s first and last name</b>, the <b>prime contract number</b>, an optional <b>subcontract number</b> and an <b>e-mail</b>, instead of a free-text title. The name is built as <i>Jane Doe — N00178-24-D-1234</i> and stays editable. The contract numbers go to Items 2a and 2b and the e-mail becomes the requestor, so none of them is typed twice. The <b>pencil</b> reopens the same fields. See 3.18."),
 ("b","<b>The dashboard card gains a DD-254 template picker</b> beside its contract type one, and <b>both are now searchable</b> — type part of a contract or order number and the list narrows. The template picker lists task orders under their own number, and an order that follows its prime resolves to the prime’s template. Choosing applies that language to that DD-254. See 3.17."),
