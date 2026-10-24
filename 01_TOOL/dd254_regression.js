@@ -9502,6 +9502,103 @@ t('the flag is no longer captured into a template, nor exported to CSV', ()=>{
       ? true : ('captured='+('standalone' in d)+' csv='+(src.indexOf('Outgoing Order-specific')>=0));
 });
 
+
+H('128. v2.12.0 standard language sits where you put it (REQ-07, REQ-08)');
+/* Top is the default and reproduces what the tool always did. Bottom puts the
+   language after the Item 10/11 sections and above the classified mailing
+   address, which stays last whatever this setting says. */
+
+const SLSET=function(entries){ E("tplSave(TPL_SL,"+JSON.stringify(entries)+")"); };
+const SLBODY=function(){ E("showFormView();resetFormFields();"); };
+
+t('the default is top, which is what the tool did before the setting existed', ()=>{
+  E("localStorage.removeItem('dd254_sl_position')");
+  return E("slPositionGet()")==='top' ? true : E("slPositionGet()");
+});
+
+t('the writer is the only thing that decides a valid value', ()=>{
+  E("slPositionSet('sideways')");
+  const bad=E("slPositionGet()");
+  E("slPositionSet('bottom')"); const b=E("slPositionGet()");
+  E("slPositionSet('top')"); const t2=E("slPositionGet()");
+  return bad==='top' && b==='bottom' && t2==='top' ? true : (bad+'/'+b+'/'+t2);
+});
+
+await ta('an Item 10 section never lands above top-placed language', async()=>{
+  /* DEF-07. The section used to be inserted at the head offset, which is above
+     language the operator asked to lead with. */
+  SLBODY();
+  SLSET([{label:'Lead',programme:'',level:'',text:'SL-TOP-BOILERPLATE'}]);
+  E("slPositionSet('top');slInsert(0);");
+  E("b13SectionSet('10a','Reference 10a language.',true);");
+  const v=E("b13Text()");
+  const sl=v.indexOf('SL-TOP-BOILERPLATE'), sec=v.indexOf('Reference 10a');
+  SLSET([]); SLBODY();
+  return sl>=0 && sec>sl ? true : ('sl='+sl+' sec='+sec);
+});
+
+await ta('bottom places it after the sections and above the mailing address', async()=>{
+  SLBODY();
+  SLSET([{label:'Tail',programme:'',level:'',text:'SL-BOTTOM-BOILERPLATE'}]);
+  E("b13SectionSet('10a','Reference 10a language.',true);");
+  E("slPositionSet('bottom');slInsert(0);");
+  const v=E("b13Text()");
+  const sec=v.indexOf('Reference 10a'), sl=v.indexOf('SL-BOTTOM-BOILERPLATE');
+  const pdq=v.indexOf(E("PDQ_TEXT"));
+  E("slPositionSet('top')"); SLSET([]); SLBODY();
+  /* REQ-08: the mailing address block stays below it when present. */
+  return sl>sec && (pdq<0||pdq>sl) ? true : ('sec='+sec+' sl='+sl+' pdq='+pdq);
+});
+
+t('the duplicate-entry warning no longer blocks the page', ()=>{
+  /* DEF-18: the rest of the tool uses uiAlert. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const i=src.indexOf('function slInsert(');
+  const body=src.slice(i,i+900);
+  return body.indexOf('uiAlert')>0 ? true : body.slice(0,120);
+});
+
+
+H('129. v2.12.0 the standing sentence is the only editable boilerplate (REQ-09)');
+/* Four of the five fixed-text writers are derived from the form. Making those
+   editable would let a DD-254 contradict its own boxes, so only the sentence
+   an office chose to say is under Settings. */
+
+t('the default is the shipped sentence, not blank', ()=>{
+  E("localStorage.removeItem('dd254_pdq_text')");
+  return E("pdqTextGet()")===E("PDQ_TEXT") ? true : E("pdqTextGet()");
+});
+
+t('changing it changes what Item 13 is given', ()=>{
+  E("pdqTextSet('Direct all questions to the contracting officer.')");
+  const built=E("cmaBuild()");
+  E("localStorage.removeItem('dd254_pdq_text')");
+  return built==='Direct all questions to the contracting officer.' ? true : built.slice(0,80);
+});
+
+t('clearing it stops writing it rather than writing an empty line', ()=>{
+  E("pdqTextSet('')");
+  const built=E("cmaBuild()");
+  E("localStorage.removeItem('dd254_pdq_text')");
+  return built==='' || built.indexOf(E("PDQ_TEXT"))<0 ? true : built.slice(0,80);
+});
+
+t('the derived writers are not offered as settings', ()=>{
+  /* supBuild, the revision summary, the CUI block and the solicitation marking
+     all read the form. The inventory records why each one stays fixed. */
+  const keys=E("SETTINGS_DEFS.map(function(d){return d.key;})");
+  return keys.indexOf('pdqText')>=0
+      && keys.indexOf('solMark')<0 && keys.indexOf('supText')<0
+      && keys.indexOf('cuiText')<0 && keys.indexOf('rsumText')<0
+      ? true : keys.join(',');
+});
+
+t('the inventory exists and names all five', ()=>{
+  const doc=fs.readFileSync('../02_DOCS/DD254_Item13_Fixed_Text_Inventory.md','utf8');
+  return /PDQ_TEXT/.test(doc) && /supBuild/.test(doc) && /RSUM_LAST/.test(doc)
+      && /cuiBuild/.test(doc) && /SOL_MARK/.test(doc) ? true : 'incomplete';
+});
+
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
