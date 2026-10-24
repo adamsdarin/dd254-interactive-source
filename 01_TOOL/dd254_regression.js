@@ -9788,6 +9788,108 @@ t('the always flag survives a CSV round trip', ()=>{
       ? true : ('stored='+JSON.stringify(back)+' column='+/\+' Always'/.test(src));
 });
 
+
+H('133. v2.12.0 the acquisition caveat engine, off unless asked for (REQ-13)');
+/* The matrix is a pure function, so it is tested rather than clicked. 11c is
+   about generating classified information; 11d is about holding or making
+   classified hardware. They are independent, which is the whole confusion. */
+
+const CAV=function(a){ return E("cavEvaluate("+JSON.stringify(a)+")"); };
+
+t('it is off by default and the writer validates the value', ()=>{
+  E("localStorage.removeItem('dd254_caveat_engine')");
+  const off=E("cavEngineGet()")==='off' && E("cavEngineOn()")===false;
+  E("cavEngineSet('maybe')"); const bad=E("cavEngineGet()");
+  E("cavEngineSet('on')"); const on=E("cavEngineOn()");
+  E("cavEngineSet('off')");
+  return off && bad==='off' && on===true ? true : ('off='+off+' bad='+bad+' on='+on);
+});
+
+t('an unclassified part with classified testing is 11c and NOT 11d', ()=>{
+  /* The case the architecture calls out as most often got wrong. */
+  const r=CAV({archetype:'parts',hwClassified:false,testClassified:true});
+  return r.checks.c11c===true && r.checks.c11d===false
+      && /UNCLASSIFIED in its physical configuration/.test(r.text.join(' '))
+      && /Item 11d is not applicable/.test(r.text.join(' '))
+      ? true : JSON.stringify(r.checks);
+});
+
+t('a classified part with unclassified testing is 11d and NOT 11c', ()=>{
+  const r=CAV({archetype:'parts',hwClassified:true,testClassified:false});
+  return r.checks.c11d===true && r.checks.c11c===false
+      && /Item 11c is not applicable/.test(r.text.join(' ')) ? true : JSON.stringify(r.checks);
+});
+
+t('both classified sets both, and neither sets neither', ()=>{
+  const both=CAV({archetype:'parts',hwClassified:true,testClassified:true});
+  const none=CAV({archetype:'parts',hwClassified:false,testClassified:false});
+  return both.checks.c11c===true && both.checks.c11d===true
+      && none.checks.c11c===false && none.checks.c11d===false
+      && /neither 11c nor 11d/.test(none.notes.join(' '))
+      ? true : (JSON.stringify(both.checks)+JSON.stringify(none.checks));
+});
+
+t('services at a government site need visits, not storage', ()=>{
+  const r=CAV({archetype:'services',site:'government'});
+  return r.checks.c11a===true && r.checks.c11e===true && r.checks.c11d===false
+      && r.safeguard===false && /no classified mailing address is required/.test(r.notes.join(' '))
+      ? true : JSON.stringify(r.checks);
+});
+
+t('services at the contractor facility store documents', ()=>{
+  const r=CAV({archetype:'services',site:'contractor'});
+  return r.checks.c11b===true && r.checks.c11e===true && r.checks.c11d===false
+      && r.safeguard===true ? true : JSON.stringify(r.checks);
+});
+
+t('COMSEC custody is a different answer from COMSEC access', ()=>{
+  const held=CAV({archetype:'services',site:'government',comsec:true,comsecCustody:true});
+  const seen=CAV({archetype:'services',site:'government',comsec:true,comsecCustody:false});
+  return held.checks.c10a===true && held.checks.c11h===true && held.safeguard===true
+      && seen.checks.c10a===true && !seen.checks.c11h && seen.checks.c11a===true
+      && /does not establish a COMSEC account/.test(seen.text.join(' '))
+      ? true : (JSON.stringify(held.checks)+' / '+JSON.stringify(seen.checks));
+});
+
+t('OPSEC sets 11j and names the CIL', ()=>{
+  const r=CAV({archetype:'parts',hwClassified:false,testClassified:false,opsec:true});
+  return r.checks.c11j===true && /Critical Information List/.test(r.text.join(' '))
+      ? true : JSON.stringify(r.checks);
+});
+
+t('carte blanche derives nothing and says so', ()=>{
+  const r=CAV({archetype:'blanket'});
+  return Object.keys(r.checks).length===0 && /Review Items 10 and 11/.test(r.notes.join(' '))
+      ? true : JSON.stringify(r);
+});
+
+t('with no archetype it advises nothing at all', ()=>{
+  const r=CAV({});
+  return r.text.length===0 && Object.keys(r.checks).length===0 ? true : JSON.stringify(r);
+});
+
+await ta('the banner shows the questionnaire only when the engine is on', async()=>{
+  E("showFormView();resetFormFields();lbOpenSet(true);");
+  E("cavEngineSet('off');lbApply();");
+  const offTxt=(w.document.getElementById('workflowLeftBanner')||{}).textContent||'';
+  E("cavEngineSet('on');lbApply();");
+  const onTxt=(w.document.getElementById('workflowLeftBanner')||{}).textContent||'';
+  E("cavEngineSet('off');lbOpenSet(false);lbApply();");
+  return !/Acquisition caveats/.test(offTxt) && /Acquisition caveats/.test(onTxt)
+      && /Components \/ parts/.test(onTxt)
+      ? true : ('off='+/Acquisition caveats/.test(offTxt)+' on='+/Acquisition caveats/.test(onTxt)); });
+
+await ta('nothing is changed until it is applied', async()=>{
+  E("showFormView();resetFormFields();cavEngineSet('on');");
+  E("cavEngineAnswerSet({archetype:'parts',hwClassified:false,testClassified:true});");
+  const before=E("document.getElementById('c11c').checked");
+  const n=E("cavEngineApply()");
+  const after=E("document.getElementById('c11c').checked");
+  const wrote=E("ctGv('item13')").indexOf('UNCLASSIFIED in its physical configuration')>=0;
+  E("cavEngineSet('off');resetFormFields();");
+  return before===false && after===true && wrote && n>0
+      ? true : ('before='+before+' after='+after+' wrote='+wrote+' n='+n); });
+
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
