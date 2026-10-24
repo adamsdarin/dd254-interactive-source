@@ -4811,7 +4811,10 @@ t('order identity survives capture independently of the outgoing standalone sele
   E("document.getElementById('iEffort').value='0099';document.getElementById('iStandalone').checked=false;document.getElementById('iOrderType').value='BPA';");
   const d=E('ctCaptureData()'),ws=E('ctApplyDataToWorkspace('+JSON.stringify(d)+',{texts:{},checks:{},radios:{},selects:{},perf:[]})');
   E("document.getElementById('iOrderType').value='Task Order';");
-  return d.taskOrder==='0099'&&d.standalone===false&&d.orderType==='BPA'&&ws.checks.iStandalone===false&&ws.selects.iOrderType==='BPA';
+  /* The flag is no longer captured: it is not a property of a template, it
+     is a property of the order the template is applied to. 0099 is not a known
+     order, so nothing claims it has its own DD-254. */
+  return d.taskOrder==='0099'&&!('standalone' in d)&&d.orderType==='BPA'&&ws.checks.iStandalone===false&&ws.selects.iOrderType==='BPA';
 });
 await ta('applying to the live form produces the combined Block 2a', async()=>{
   mkCt({primeContract:'N00178-24-D-1234',taskOrder:'0042'});
@@ -7803,10 +7806,13 @@ await ta('an order-specific received DD254 uses its own saved language',async()=
   const own=await E("ctOrderCreate('TEST-PRIME','0021','Delivery Order','order')");w.__ORDER_ID=own.order.ioId;
   return E("ctOrderSource(ctOrderRows().find(o=>o.ioId===window.__ORDER_ID)).snapshot.data.i13==='ORDER WORDING'");
 });
-await ta('new workflow preserves order type and prime identity without deriving the outgoing standalone flag',async()=>{
+/* v2.12.0 (REQ-06): 0021 carries its own order template, so the outgoing form
+   IS specific to that order and the box belongs ticked. It used to be forced
+   false by the order-template creators, which is DEF-06. */
+await ta('new workflow preserves order identity and ticks standalone for an order with its own DD-254',async()=>{
   const rec=await E('ctOrderStart(window.__ORDER_ID)');w.__OWN_DRAFT=rec.id;
   const ws=E('collectWorkspace()');
-  return ws.texts.i2a==='TEST-PRIME'&&ws.texts.iEffort==='0021'&&ws.selects.iOrderType==='Delivery Order'&&!ws.checks.iStandalone&&ws.texts.item13.includes('ORDER WORDING')&&ws.ctSource.sourceMode==='order'&&ws.ctSource.snapshot.label==='Order language';
+  return ws.texts.i2a==='TEST-PRIME'&&ws.texts.iEffort==='0021'&&ws.selects.iOrderType==='Delivery Order'&&ws.checks.iStandalone===true&&ws.texts.item13.includes('ORDER WORDING')&&ws.ctSource.sourceMode==='order'&&ws.ctSource.snapshot.label==='Order language';
 });
 await ta('open-existing order does not create another outgoing DD254',async()=>{
   const before=(await E('draftAll()')).length;const rec=await E('ctOrderStart(window.__ORDER_ID)');
@@ -7817,7 +7823,7 @@ await ta('automatic checkbox language, attachments and marking use the workflow 
   E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
   const rec=await E('draftGet(window.__OWN_DRAFT)');w.__SNAP_REC=rec;
   await E("ctInsertAll('own-src')");
-  return E("ctGv('item13').includes('SAVED CHECKBOX LANGUAGE')&&!ctGv('item13').includes('NEW REPOSITORY LANGUAGE')&&ctGv('iEffort')==='0021'&&!ctCk('iStandalone')&&ctTplAttachments().att.includes('Saved attachment.pdf')&&!ctTplAttachments().att.includes('New attachment.pdf')&&dashDistAttachments(window.__SNAP_REC).tpl.includes('Saved attachment.pdf')&&!dd254WorkspaceCuiMarking(window.__SNAP_REC.workspace)");
+  return E("ctGv('item13').includes('SAVED CHECKBOX LANGUAGE')&&!ctGv('item13').includes('NEW REPOSITORY LANGUAGE')&&ctGv('iEffort')==='0021'&&ctCk('iStandalone')&&ctTplAttachments().att.includes('Saved attachment.pdf')&&!ctTplAttachments().att.includes('New attachment.pdf')&&dashDistAttachments(window.__SNAP_REC).tpl.includes('Saved attachment.pdf')&&!dd254WorkspaceCuiMarking(window.__SNAP_REC.workspace)");
 });
 await ta('template edits flag review and keep saved source wording and existing drafts intact',async()=>{
   await E("var a=tplLoad(TPL_CT);a[0].data.i13='NEW PRIME WORDING';tplSave(TPL_CT,a);");
@@ -8145,9 +8151,13 @@ t('a template carrying a task order no longer claims to be order-specific', ()=>
   const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{taskOrder:'0007'}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
   /* Block 2a carries the order only when the form says it is specific to it */
   return ws.checks.iStandalone===false && ws.texts.iEffort==='0007' ? true : ws.checks; });
-t('a template that records the choice still honours it', ()=>{
+/* v2.12.0 (REQ-06): this previously asserted the defect. A template carrying
+   standalone:true ticked the box on any order it was applied to, including one
+   that follows the prime - which is the exact complaint REQ-06 records. The
+   flag is derived from the order's coverage now, so a stored one is ignored. */
+t('a template that records the choice no longer imposes it', ()=>{
   const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{taskOrder:'0007',standalone:true}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
-  return ws.checks.iStandalone===true; });
+  return ws.checks.iStandalone===false ? true : ('got '+ws.checks.iStandalone); });
 E("tplSave(TPL_B13,[]);tplSave(TPL_SM,[]);showDashView();resetFormFields();");
 
 H('112. v2.7.0 contract type is chosen from its own picker, not at origination');
@@ -9434,6 +9444,63 @@ await ta('choosing Solicitation writes Block 2c and leaves 2b alone', async()=>{
   return made.stage==='sol' && tx.i2c==='N00178-26-R-0001' && tx.i2c_due==='2026-11-30'
       && tx.item13==='MARKER-KEEP-THIS-LANGUAGE'
       ? true : ('stage='+made.stage+' i2c='+tx.i2c+' due='+tx.i2c_due); });
+
+
+H('127. v2.12.0 the standalone task-order box follows the order (REQ-06)');
+/* "This outgoing DD Form 254 is specific to the order above" is true when that
+   order has a DD-254 of its own and false when it runs under the prime's. It
+   is asked of the order every time rather than remembered anywhere. */
+
+const SAORDERS=function(rows){ E("tplSave(TPL_ORDERS,"+JSON.stringify(rows)+")"); };
+const SAORDER=function(prime,number,mode){
+  return {recordType:'order',primeContract:prime,number:number,
+          ioId:'sa-'+number,coverageMode:mode};
+};
+
+t('an order that follows the prime is never ticked, whatever a template says', ()=>{
+  /* DEF-05 from the template end. */
+  SAORDERS([SAORDER('P-1','TO-1','prime')]);
+  const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{primeContract:'P-1',taskOrder:'TO-1',standalone:true}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
+  const direct=E("dd254OrderStandalone('P-1','TO-1')");
+  SAORDERS([]);
+  return ws.checks.iStandalone===false && direct===false
+      ? true : ('ws='+ws.checks.iStandalone+' direct='+direct);
+});
+
+t('an order with its own DD-254 is ticked, whatever a template says', ()=>{
+  /* DEF-06 from the other end: the creators used to force it false. */
+  SAORDERS([SAORDER('P-2','TO-2','order')]);
+  const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{primeContract:'P-2',taskOrder:'TO-2',standalone:false}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
+  const direct=E("dd254OrderStandalone('P-2','TO-2')");
+  SAORDERS([]);
+  return ws.checks.iStandalone===true && direct===true
+      ? true : ('ws='+ws.checks.iStandalone+' direct='+direct);
+});
+
+t('an order nobody has recorded is not claimed to have its own DD-254', ()=>{
+  SAORDERS([]);
+  return E("dd254OrderStandalone('P-3','TO-UNKNOWN')")===false
+      && E("dd254OrderStandalone('P-3','')")===false ? true : 'claimed';
+});
+
+t('changing the order coverage changes the answer, with nothing to migrate', ()=>{
+  /* The whole point of deriving it: the answer follows the order, so there is
+     no stored copy anywhere that can disagree with it. */
+  SAORDERS([SAORDER('P-4','TO-4','prime')]);
+  const before=E("dd254OrderStandalone('P-4','TO-4')");
+  E("(function(){var a=tplLoad(TPL_ORDERS);a[0].coverageMode='order';tplSave(TPL_ORDERS,a);})()");
+  const after=E("dd254OrderStandalone('P-4','TO-4')");
+  SAORDERS([]);
+  return before===false && after===true ? true : ('before='+before+' after='+after);
+});
+
+t('the flag is no longer captured into a template, nor exported to CSV', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const d=E("ctCaptureData()");
+  return !('standalone' in d)
+      && src.indexOf('Outgoing Order-specific')<0
+      ? true : ('captured='+('standalone' in d)+' csv='+(src.indexOf('Outgoing Order-specific')>=0));
+});
 
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
