@@ -2,7 +2,14 @@
 
 Last updated: 2026-10-23T18:00-05:00 by Maintainer
 
-BUILT AND GATED, NOT YET TAGGED: **v2.13.0 (Tool 2.159)**, build ce0bee7e.
+Latest published release: **v2.13.0 (Tool 2.159)**, build ce0bee7e. Signed tag
+at 2ea07bf on `main`; assets, checksums, the provenance attestation and the
+kit rebuild all verified from a fresh download (official ce0bee7e..., demo
+b73dd458..., ref refs/tags/v2.13.0, attested commit 2ea07bf, rebuild
+byte-identical); the downloaded build passes the native-browser smoke test;
+live demo published as dd254-interactive 1fd4bfc and served byte-identical.
+
+What v2.13.0 contains, build ce0bee7e.
 Contract templates now offer what fits the open DD-254 the way standard
 language already did: a template records a programme, an Item 1a level and a
 purchase/bids scenario, and a new "Contract Templates That Fit" panel lists the
@@ -296,6 +303,22 @@ a stopped agent hangs on a hidden passphrase prompt. Never type a passphrase.
   number (template field `primeContract`)? Left empty under "solely template language".
 
 ## Log
+
+2026-10-24 Maintainer - Published v2.13.0: contract templates offer what fits
+the open DD-254, the way standard language already did. Same three keys -
+programme, Item 1a level, purchase/bids scenario - in the same order, and the
+same panel beside the form. Layered on the repository rather than replacing
+it: orders and coverage, source provenance and duplicate detection are
+untouched, and section 135 asserts they still exist, because the risk in
+"rebuild it like the other one" is losing the parts the other one never had.
+
+The Item 1a level is its own field and deliberately not data.cls, which is the
+form’s CUI marking - a different question from the clearance the work needs.
+
+Also removed the Argon prototype files the owner approved clearing: sixteen
+untracked paths across 01_TOOL, the repository root and dd254-interactive,
+plus an empty vitest cache in the demo repo. The demo repo is now index.html
+alone. Nothing tracked was touched and the gates stayed green afterwards.
 
 2026-10-24 Maintainer - Published v2.12.0, the Argon prototype rebuilt on
 v2.11.0. Verified from a fresh download rather than from the workflow result:
