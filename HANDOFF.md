@@ -33,10 +33,17 @@ Still to do: merge `argon-port` to main, tag v2.12.0, publish, refresh the live
 demo, and verify the published assets from a fresh download the way v2.11.0
 was verified.
 
-Deliberately left short, and said rather than hidden: REQ-11's always-insert
-flag is settable through a CSV column on each Item 10/11 key rather than a
-dedicated editor control, and the caveat engine surfaces in the language banner
-but not yet in the intake dialog.
+Both gaps are now closed: REQ-11's always-insert flag has a control beside each
+Item 10/11 language box in the template editor as well as the CSV column, and
+the caveat engine surfaces in the intake dialog as well as the banner, which is
+the architecture's hybrid option.
+
+Closing them found one worth recording. The intake caveat checklist had been
+reported as built when it was not: an edit lost its anchor and was never
+written, so the dialog collected checkboxes nothing rendered and the choice was
+never recorded. Every caveat assertion still passed, because they all called
+the data layer directly. Section 134 drives the dialog itself, which is the
+only thing that would have caught it.
 
 ## Current State
 

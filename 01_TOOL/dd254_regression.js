@@ -7928,7 +7928,16 @@ await ta('a task-order-specific DD254 creates its own editable template beneath 
 t('prime and task-order templates use the same complete block editor',()=>{
   const i=E("TPL_EDIT.findIndex(t=>t.data.taskOrder==='0042')");E('ctMgrToggle('+i+')');
   const editor=w.document.getElementById('ctEd_'+i);
-  return editor.style.display==='block'&&editor.querySelectorAll('input[type="checkbox"]').length===E('CT_10.length+CT_11.length+CT_18.length')&&/Required attachments/.test(editor.textContent)&&!!editor.querySelector('textarea[placeholder="Block 13 language…"]');
+  /* v2.12.0 (REQ-11): each Item 10/11 key gained an "always insert" box beside
+     its language, so a bare total no longer says what it used to. Counted
+     apart, which pins down more than the total did: every selection box is
+     present, and every 10/11 key has its always-insert control. */
+  const allBoxes=editor.querySelectorAll('input[type="checkbox"]').length;
+  const alwaysBoxes=editor.querySelectorAll('label[id^="ctAlw_"] input[type="checkbox"]').length;
+  const selBoxes=allBoxes-alwaysBoxes;
+  return editor.style.display==='block'
+      &&selBoxes===E('CT_10.length+CT_11.length+CT_18.length')
+      &&alwaysBoxes===E('CT_10.length+CT_11.length')&&/Required attachments/.test(editor.textContent)&&!!editor.querySelector('textarea[placeholder="Block 13 language…"]');
 });
 await ta('editing a child autosaves the child without overwriting prime language',async()=>{
   const tx=w.document.querySelector('.ct-order-card textarea[placeholder="Block 13 language…"]');tx.value='Unique order guidance';tx.dispatchEvent(new w.Event('input',{bubbles:true}));await E('dashTplFlush()');
@@ -9889,6 +9898,90 @@ await ta('nothing is changed until it is applied', async()=>{
   E("cavEngineSet('off');resetFormFields();");
   return before===false && after===true && wrote && n>0
       ? true : ('before='+before+' after='+after+' wrote='+wrote+' n='+n); });
+
+
+H('134. v2.12.0 the intake dialog actually renders what it collects');
+/* Written because it did not. The submit collected .np-cav boxes and nothing
+   rendered them, so caveatsOffered was always false and the choice was never
+   recorded - and every other test passed, because they called the data layer
+   directly. A dialog test is the only thing that catches that. */
+
+const INTAKE_TPL=function(always){
+  const d=E("ctBlankData()");
+  d.primeContract='N00178-24-D-9000';
+  d.l11={'11c':'INTAKE CAVEAT 11C.','11d':'INTAKE CAVEAT 11D.'};
+  if(always) d.always={'11c':true};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Intake caveats',ioId:'intake-cav',data:d}])+")");
+};
+
+await ta('a matched template lists its caveats, pre-ticking the always ones', async()=>{
+  INTAKE_TPL(true);
+  const pr=E("dashPartyPrompt({stage:'orig'})");
+  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const pe=d.querySelector('#np_prime'); pe.value='N00178-24-D-9000';
+  if(pe.oninput) pe.oninput();
+  await new Promise(r=>setTimeout(r,60));
+  const boxes=Array.prototype.slice.call(d.querySelectorAll('.np-cav'));
+  const ticked=boxes.filter(function(b){ return b.checked; }).map(function(b){ return b.value; });
+  const all=boxes.map(function(b){ return b.value; });
+  d.querySelector('#np_cancel').click(); await pr;
+  E("tplSave(TPL_CT,[])");
+  return all.join(',')==='11c,11d' && ticked.join(',')==='11c'
+      ? true : ('all='+all.join(',')+' ticked='+ticked.join(',')); });
+
+await ta('what is ticked reaches the record, and what is not stays declined', async()=>{
+  await wipe(); INTAKE_TPL(true);
+  const pr=E("dashPartyPrompt({stage:'orig'})");
+  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const put=function(id,v){ const e=d.querySelector('#'+id); if(e){ e.value=v; if(e.oninput) e.oninput(); } };
+  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane@example.com');
+  put('np_prime','N00178-24-D-9000'); put('np_sub','N/A');
+  await new Promise(r=>setTimeout(r,60));
+  const ans=await (async()=>{ d.querySelector('#np_ok').click(); return await pr; })();
+  E("tplSave(TPL_CT,[])");
+  if(!ans) return 'dialog refused';
+  return ans.caveatsOffered===true && (ans.caveats||[]).join(',')==='11c'
+      ? true : ('offered='+ans.caveatsOffered+' caveats='+JSON.stringify(ans.caveats)); });
+
+await ta('the engine questionnaire appears only when the engine is on', async()=>{
+  E("cavEngineSet('off')");
+  let pr=E("dashPartyPrompt({stage:'orig'})");
+  let d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const offShown=d.querySelector('#np_eng').style.display!=='none';
+  d.querySelector('#np_cancel').click(); await pr;
+  E("cavEngineSet('on')");
+  pr=E("dashPartyPrompt({stage:'orig'})");
+  d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog 2';
+  const onShown=d.querySelector('#np_eng').style.display!=='none';
+  const hasPills=!!d.querySelector('[data-eng-arch="parts"]');
+  d.querySelector('#np_cancel').click(); await pr;
+  E("cavEngineSet('off')");
+  return offShown===false && onShown===true && hasPills
+      ? true : ('off='+offShown+' on='+onShown+' pills='+hasPills); });
+
+await ta('answering the engine at intake writes the boxes and the wording', async()=>{
+  await wipe();
+  E("cavEngineSet('on')");
+  const pr=E("dashPartyPrompt({stage:'orig'})");
+  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const put=function(id,v){ const e=d.querySelector('#'+id); if(e){ e.value=v; if(e.oninput) e.oninput(); } };
+  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane@example.com');
+  put('np_prime','N00178-24-D-9100'); put('np_sub','N/A');
+  d.querySelector('[data-eng-arch="parts"]').click();
+  await new Promise(r=>setTimeout(r,40));
+  const tc=d.querySelector('[data-eng-ask="testClassified"]');
+  tc.checked=true; tc.onchange();
+  await new Promise(r=>setTimeout(r,40));
+  d.querySelector('#np_ok').click();
+  const ans=await pr;
+  E("cavEngineSet('off')");
+  if(!ans||!ans.engine) return 'no engine answers carried';
+  /* The unclassified-part, classified-testing case: 11c and not 11d. */
+  const rec={id:'ENG1',workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]},meta:{}};
+  const out=await E("dashPartyApply("+JSON.stringify(rec)+","+JSON.stringify(ans)+",{})");
+  return out.workspace.checks.c11c===true && out.workspace.checks.c11d===false
+      && /UNCLASSIFIED in its physical configuration/.test(out.workspace.texts.item13||'')
+      ? true : JSON.stringify(out.workspace.checks); });
 
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 

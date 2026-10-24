@@ -7678,6 +7678,8 @@ function dashPartyPrompt(o){
         +'<select id="np_sm" style="display:block;width:100%;font-size:12px;padding:5px 7px;border:1px solid #c4ccd4;border-radius:4px;margin-top:2px;">'+smOpts+'</select>'
         +'<span style="font-size:9.5px;color:#8a94a0;">Filled from a matched template when there is one. Kept on this DD-254 as it is now.</span></label>'
       +'<div id="np_match" style="font-size:10.5px;margin-bottom:7px;"></div>'
+      +'<div id="np_cav" style="display:none;border:1px solid #c8d4e4;background:#f7fbff;border-radius:5px;padding:7px 9px;margin-bottom:8px;"></div>'
+      +'<div id="np_eng" style="display:none;border:1px solid #c8d4e4;background:#f7fbff;border-radius:5px;padding:7px 9px;margin-bottom:8px;"></div>'
       +'<div style="border-top:1px solid #e3e8ee;margin:4px 0 9px;"></div>'
       +row('np_title','Name of this DD-254',o.title||'','Filled in from the fields above. Type here to use something else.',false)
       +'<div id="np_err" role="alert" style="font-size:10.5px;color:#a03028;min-height:14px;margin-bottom:6px;"></div>'
@@ -7730,6 +7732,7 @@ function dashPartyPrompt(o){
         host.textContent='\u2713 Template \u201c'+((m.one.t.label)||'unnamed')+'\u201d matches this '+(m.level==='order'?'task order':'contract')+' and will be applied.';
         const sm=g('np_sm'); const who=m.one.t.smName;
         if(sm&&who){ Array.prototype.forEach.call(sm.options,function(op){ if(op.textContent.indexOf(who)===0) sm.value=op.value; }); }
+        cavList(m.one.t);
       } else if(m.many){
         host.style.color='#8a6a00';
         host.textContent=m.hits.length+' templates match. None is applied \u2014 apply the one you want from the form.';
@@ -7737,7 +7740,81 @@ function dashPartyPrompt(o){
         host.style.color='#8a94a0';
         host.textContent=m.partial.length+' template'+(m.partial.length===1?'':'s')+' look similar. None is applied automatically.';
       } else { host.textContent=''; }
+      if(!m.one) cavList(null);
     };
+    /* REQ-10: which of a matched template's caveats this DD-254 takes. Shown
+       only when creating or copying - on a rename the answer has nowhere to go,
+       which is what made Argon's checklist dead UI there. */
+    function cavList(t){
+      const box=g('np_cav'); if(!box) return;
+      const keys=(t&&typeof ctCaveatKeys==='function')?ctCaveatKeys(t):[];
+      if(!stage||!keys.length){ box.style.display='none'; box.innerHTML=''; return; }
+      box.style.display='block';
+      box.innerHTML='<div style="font-size:10.5px;font-weight:bold;color:#2b3440;margin-bottom:3px;">Caveats this template can add to Item 13</div>'
+        +'<div style="font-size:9.5px;color:#5a6a80;margin-bottom:5px;line-height:1.4;">Each is written into Item 13 when its box is ticked on the form. Untick any that do not apply to this contract.</div>'
+        +keys.map(function(k){
+          const on=(typeof ctCaveatAlways==='function')?ctCaveatAlways(t,k):false;
+          return '<label style="display:flex;gap:6px;align-items:center;font-size:10.5px;color:#2b3440;padding:2px 0;">'
+            +'<input type="checkbox" class="np-cav" value="'+dashEsc(k)+'"'+(on?' checked':'')+'>'
+            +'<span>Item '+dashEsc(k)+(on?' \u00b7 always inserted':'')+'</span></label>';
+        }).join('');
+    }
+    /* REQ-13 at intake: the architecture's hybrid. Asked here so a DD-254 is
+       born consistent, and still adjustable afterwards in the banner. Absent
+       when the engine is off, which is the default. */
+    let engAns={};
+    function engDraw(){
+      const box=g('np_eng'); if(!box) return;
+      if(!stage||typeof cavEngineOn!=='function'||!cavEngineOn()){
+        box.style.display='none'; box.innerHTML=''; return;
+      }
+      const out=cavEvaluate(engAns);
+      const sets=Object.keys(out.checks).filter(function(k){ return out.checks[k]; })
+        .map(function(k){ return k.replace(/^c/,''); });
+      const pill=function(k,lab){
+        const on=(engAns.archetype===k);
+        return '<button type="button" data-eng-arch="'+dashEsc(k)+'" aria-pressed="'+(on?'true':'false')+'"'
+          +' style="font-size:10px;padding:4px 8px;margin:0 4px 4px 0;border-radius:4px;cursor:pointer;border:1px solid '
+          +(on?'#17427d':'#c4ccd4')+';background:'+(on?'#eef3fa':'#fff')+';color:#2b3440;">'+dashEsc(lab)+'</button>';
+      };
+      const q=function(key,lab){
+        return '<label style="display:flex;gap:6px;align-items:center;font-size:10.5px;color:#2b3440;padding:2px 0;">'
+          +'<input type="checkbox" data-eng-ask="'+dashEsc(key)+'"'+(engAns[key]?' checked':'')+'>'
+          +'<span>'+dashEsc(lab)+'</span></label>';
+      };
+      let qs='';
+      if(engAns.archetype==='parts'){
+        qs=q('hwClassified','The hardware itself is classified')
+          +q('testClassified','The testing, or the data it produces, is classified');
+      } else if(engAns.archetype==='services'){
+        qs='<label style="display:flex;gap:6px;align-items:center;font-size:10.5px;padding:2px 0;">'
+          +'<input type="radio" name="npEngSite" data-eng-site="government"'+((engAns.site!=='contractor')?' checked':'')+'>'
+          +'<span>At Government or customer sites</span></label>'
+          +'<label style="display:flex;gap:6px;align-items:center;font-size:10.5px;padding:2px 0;">'
+          +'<input type="radio" name="npEngSite" data-eng-site="contractor"'+((engAns.site==='contractor')?' checked':'')+'>'
+          +'<span>At the contractor facility</span></label>';
+      }
+      box.style.display='block';
+      box.innerHTML='<div style="font-size:10.5px;font-weight:bold;color:#2b3440;margin-bottom:3px;">What is being bought?</div>'
+        +'<div style="font-size:9.5px;color:#5a6a80;margin-bottom:5px;line-height:1.4;">Optional. It works out Items 10 and 11 for you, and you can change anything afterwards.</div>'
+        +CAV_ARCHETYPES.map(function(pr){ return pill(pr[0],pr[1]); }).join('')
+        +(qs?'<div style="margin:4px 0;">'+qs+'</div>':'')
+        +(engAns.archetype?q('comsec','COMSEC access is required'):'')
+        +((engAns.archetype&&engAns.comsec)?q('comsecCustody','Keying material or CCI is held at the contractor facility'):'')
+        +(engAns.archetype?q('opsec','A programme OPSEC plan or CIL applies'):'')
+        +(engAns.archetype
+          ?'<div style="font-size:9.5px;color:#176b31;margin-top:4px;">Would set: '+(sets.length?dashEsc(sets.join(', ')):'nothing yet')+'</div>'
+          :'');
+      Array.prototype.forEach.call(box.querySelectorAll('[data-eng-arch]'),function(b){
+        b.onclick=function(){ engAns.archetype=b.getAttribute('data-eng-arch'); engDraw(); };
+      });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-eng-ask]'),function(c){
+        c.onchange=function(){ engAns[c.getAttribute('data-eng-ask')]=c.checked; engDraw(); };
+      });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-eng-site]'),function(r){
+        r.onchange=function(){ engAns.site=r.getAttribute('data-eng-site'); engDraw(); };
+      });
+    }
     ['np_first','np_last'].forEach(function(id){ g(id).oninput=function(){ recompose(); lookup(); }; });
     ['np_prime','np_order','np_sub','np_sol'].forEach(function(id){ const e=g(id); if(e) e.oninput=function(){ recompose(); matchNow(); }; });
     g('np_title').oninput=function(){ manual=true; };
@@ -7769,6 +7846,7 @@ function dashPartyPrompt(o){
       /* REQ-10: the caveats this DD-254 takes. An empty list where the template
          offered some means every one was declined, which is different from a
          template that offers none - so the flag travels beside the list. */
+      const engine=(typeof cavEngineOn==='function'&&cavEngineOn()&&stage&&engAns.archetype)?engAns:null;
       const cavBoxes=Array.prototype.slice.call(ov.querySelectorAll('.np-cav'));
       const caveats=cavBoxes.filter(function(c){ return c.checked; }).map(function(c){ return c.value; });
       const title=val('np_title')||dashNameCompose({person:person,prime:prime,order:val('np_order'),sub:val('np_sub'),solicitation:val('np_sol')});
@@ -7778,7 +7856,7 @@ function dashPartyPrompt(o){
             order:val('np_order'),sub:val('np_sub'),solicitation:val('np_sol'),due:val('np_due'),
             title:title,stage:stage,
             securityManager:sm?{name:sm.name||'',email:sm.email||'',program:sm.program||'',sourceTemplateId:sm.ioId||sm.label||''}:null,
-            caveats:caveats, caveatsOffered:cavBoxes.length>0,
+            caveats:caveats, caveatsOffered:cavBoxes.length>0, engine:engine,
             template:matched.hit||null});
     };
     g('np_ok').onclick=submit;
@@ -7787,6 +7865,7 @@ function dashPartyPrompt(o){
       if(e.key==='Escape') done(null);
       if(e.key==='Enter'&&e.target&&e.target.tagName==='INPUT') submit();
     });
+    engDraw();
     if(g('np_first').focus) g('np_first').focus();
     if(!o.title) recompose();
     lookup(); matchNow();
@@ -7824,6 +7903,22 @@ async function dashPartyApply(rec,ans,opts){
   /* Recorded only when a choice was actually put to the operator. A DD-254
      that was never offered caveats keeps the old meaning of "whatever the
      template carries", so nothing written before today changes behaviour. */
+  /* The engine's answers are recorded so reopening the DD-254 shows what it
+     was asked, and the banner continues from there rather than blank. */
+  if(ans.engine){
+    rec.workspace=rec.workspace||{texts:{},checks:{},radios:{},selects:{},perf:[]};
+    rec.workspace.texts=rec.workspace.texts||{};
+    rec.workspace.texts.cavEngine=JSON.stringify(ans.engine);
+    const out=cavEvaluate(ans.engine);
+    rec.workspace.checks=rec.workspace.checks||{};
+    Object.keys(out.checks).forEach(function(id){ rec.workspace.checks[id]=!!out.checks[id]; });
+    const tx=rec.workspace.texts;
+    (out.text||[]).forEach(function(t){
+      const cur=String(tx.item13||'').replace(/\s+$/,'');
+      if(cur.indexOf(t)>=0) return;
+      tx.item13=(cur?cur+'\n\n':'')+t;
+    });
+  }
   if(ans.caveatsOffered){
     rec.workspace=rec.workspace||{texts:{},checks:{},radios:{},selects:{},perf:[]};
     rec.workspace.texts=rec.workspace.texts||{};
@@ -11309,8 +11404,14 @@ function ctEditorHtml(t,i){
        differently from the DD-254 it will be applied to. */
     const nm=(typeof dd254BoxName==='function')?dd254BoxName(key):'';
     return '<div style="display:inline-block;vertical-align:top;width:225px;margin:1px 8px 6px 0;">'
-      +'<label title="'+tplEsc(key+(nm?' '+nm:''))+'" style="display:flex;align-items:flex-start;gap:4px;font-size:10px;line-height:1.35;"><input type="checkbox" '+(on?'checked':'')+' style="margin-top:1px;flex:none;" onchange="ctEd('+i+').'+grp+'[\''+key+'\']=this.checked;ctMgrSum('+i+');var tb=document.getElementById(\'ctL_'+i+'_'+key+'\');if(tb)tb.style.display=this.checked?\'block\':\'none\'"><span><b>'+key+'</b>'+(nm?' '+tplEsc(nm):'')+'</span></label>'
+      +'<label title="'+tplEsc(key+(nm?' '+nm:''))+'" style="display:flex;align-items:flex-start;gap:4px;font-size:10px;line-height:1.35;"><input type="checkbox" '+(on?'checked':'')+' style="margin-top:1px;flex:none;" onchange="ctEd('+i+').'+grp+'[\''+key+'\']=this.checked;ctMgrSum('+i+');var tb=document.getElementById(\'ctL_'+i+'_'+key+'\');if(tb)tb.style.display=this.checked?\'block\':\'none\';var al=document.getElementById(\'ctAlw_'+i+'_'+key+'\');if(al)al.style.display=this.checked?\'flex\':\'none\'"><span><b>'+key+'</b>'+(nm?' '+tplEsc(nm):'')+'</span></label>'
       +'<textarea id="ctL_'+i+'_'+key+'" placeholder="'+key+' language \u2192 auto-inserts into Block 13\u2026" style="display:'+(on?'block':'none')+';width:225px;min-height:38px;font-size:10px;margin-top:2px;" oninput="ctEd('+i+').'+lgrp+'[\''+key+'\']=this.value;ctMgrSum('+i+')">'+tplEsc(lval)+'</textarea>'
+      /* REQ-11. Beside the wording it applies to, because that is the only
+         place the question makes sense: should this caveat arrive already
+         ticked when somebody creates a DD-254 from this template. */
+      +'<label id="ctAlw_'+i+'_'+key+'" title="Arrive pre-ticked at intake. The operator can still decline it." style="display:'+((on&&lval)?'flex':'none')+';align-items:center;gap:4px;font-size:9.5px;color:#176b31;margin-top:2px;">'
+        +'<input type="checkbox" '+((d.always&&d.always[key])?'checked':'')+' style="flex:none;" onchange="ctAlwaysSet('+i+','+JSON.stringify(key).split('"').join("'")+',this.checked)">'
+        +'always insert</label>'
       +'</div>'; };
   const txa=function(field,ph,h,extra){ return '<textarea placeholder="'+ph+'" style="width:100%;min-height:'+(h||44)+'px;font-size:10.5px;margin:2px 0 6px;" oninput="ctEd('+i+').'+field+'=this.value;ctMgrSum('+i+')'+(extra||'')+'">'+tplEsc(d[field]||'')+'</textarea>'; };
   const inp=function(field,ph){ return '<input type="text" value="'+tplEsc(d[field]||'')+'" placeholder="'+ph+'" style="width:100%;font-size:10.5px;margin:2px 0 6px;" oninput="ctEd('+i+').'+field+'=this.value;ctMgrSum('+i+')">'; };
@@ -11768,6 +11869,14 @@ function ctLangOf(t,key){ const grp=key.indexOf('10')===0?'l10':'l11';
   const v=t.data[grp]&&t.data[grp][key]?String(t.data[grp][key]).trim():''; return v; }
 /* REQ-10. The Item 10 and 11 keys this template carries wording for: the
    caveats it can contribute. */
+/* One writer for the always-insert flag, so the editor and the CSV column
+   cannot disagree about where it lives. */
+function ctAlwaysSet(i,key,on){
+  const d=ctEd(i);
+  if(!d.always) d.always={};
+  if(on) d.always[key]=true; else delete d.always[key];
+  if(typeof ctMgrSum==='function') ctMgrSum(i);
+}
 function ctCaveatKeys(t){
   const d=(t&&t.data)||{}, out=[];
   (typeof CT_10!=='undefined'?CT_10:[]).forEach(function(k){

@@ -73,12 +73,21 @@ standalone flag is ignored rather than obeyed.
 - `check_scripts.py` caught a generated-markup syntax error before the suite
   did.
 
+
+## A gap the tests closed late
+
+The intake caveat checklist was reported as built when it was not. An edit lost
+its anchor and was never written, so the dialog collected checkboxes nothing
+rendered: `caveatsOffered` was always false and the choice was never recorded.
+Every caveat assertion still passed, because they all called the data layer
+directly. Section 134 drives the dialog itself, which is the only thing that
+would have caught it, and now does.
+
 ## Limits
 
-- REQ-11's always-insert flag is set through a CSV column on each Item 10/11
-  key rather than a dedicated editor control.
-- The caveat engine surfaces in the language banner, not yet in the intake
-  dialog. The architecture's hybrid option is therefore half built.
 - The language banner collapses below 1240px rather than reflowing.
+- The engine's questionnaire covers the archetypes, the hardware-versus-testing
+  matrix, COMSEC and OPSEC. It does not yet ask the Item 11l CUI question that
+  Case 4 of the matrix points at.
 - Argon's own prototype files remain untracked in the working tree as
   reference; they are not part of this release.

@@ -31,7 +31,10 @@ Added:
 - `ctCaveatKeys`, `ctCaveatAlways`, `cavChosenGet/Set`, `cavWanted`,
   `cavNotice`; `ctAutoLangKey` withdraws on untick.
 - `CAV_ARCHETYPES`, `cavEvaluate` (pure), `cavEngineGet/Set/On`,
-  `cavEngineAnswers`, `cavEngineApply`.
+  `cavEngineAnswers`, `cavEngineApply`. Surfaced in both the intake dialog
+  (`np_eng`) and the language banner, which is the architecture's hybrid.
+- `ctAlwaysSet`, and the always-insert control beside each Item 10/11
+  language box in the template editor, alongside the CSV column.
 
 Settings gained: `caveatEngineEnabled` (off), `pdqText`, `slPosition` (top).
 Storage keys: `dd254_caveat_engine`, `dd254_pdq_text`, `dd254_sl_position`,

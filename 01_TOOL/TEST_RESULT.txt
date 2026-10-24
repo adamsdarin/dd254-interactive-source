@@ -1,4 +1,4 @@
-BUILD_SHA256 fbbbf4e28b13cb1b383a3259971589360eadbf5100d766f10259c61d86882d65
+BUILD_SHA256 2fae3050fbef6523336ad8338798649accfaae5d2abc00370547b47146fd1f03
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1742,6 +1742,12 @@ BUILD_SHA256 fbbbf4e28b13cb1b383a3259971589360eadbf5100d766f10259c61d86882d65
   PASS  the banner shows the questionnaire only when the engine is on
   PASS  nothing is changed until it is applied
 
+### 134. v2.12.0 the intake dialog actually renders what it collects
+  PASS  a matched template lists its caveats, pre-ticking the always ones
+  PASS  what is ticked reaches the record, and what is not stays declined
+  PASS  the engine questionnaire appears only when the engine is on
+  PASS  answering the engine at intake writes the boxes and the wording
+
 ================================
-  PASS 1460   FAIL 0
+  PASS 1464   FAIL 0
 ================================
