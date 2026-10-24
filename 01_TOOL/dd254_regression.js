@@ -9334,6 +9334,107 @@ await ta('each bulk group panel lists what that e-mail must carry', async()=>{
   await E("window.__bulkAtt");
   return ok ? true : ('panels='+(txt.match(/Copy Attachments/g)||[]).length); });
 
+
+H('126. v2.12.0 copying asks the stage and the intake, once (REQ-02)');
+/* The copy dialog carries the source's requester and identifiers already
+   filled in, asks whether the copy is an Original or a Solicitation, and lets
+   the operator correct anything that differs. There is exactly one dialog. */
+
+const CPSRC=async function(id,extra){
+  await E("draftPut("+JSON.stringify(Object.assign({
+    id:id,title:id,status:'Draft',stage:'orig',meta:{contract:'N00178-24-D-1234',
+      identity:{prime:'N00178-24-D-1234',order:'TO-0007',sub:'SUB-1'}},
+    requestedBy:'jane.doe@example.com',requestedByName:'Jane Doe',
+    requester:{firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com'},
+    todos:[],notes:'',dist:[],holds:[],
+    workspace:{selects:{},checks:{c10a:true,c11c:true},radios:{},perf:[],
+      texts:{i2a:'N00178-24-D-1234',i2b:'SUB-1',iEffort:'TO-0007',
+             item13:'MARKER-KEEP-THIS-LANGUAGE',i3a_date:'20260101'}}
+  },extra||{}))+")");
+};
+
+await ta('the copy dialog arrives pre-filled and asks the stage', async()=>{
+  await CPSRC('CP1');
+  const pr=E("dashDuplicate('CP1')");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000);
+  if(!d) return 'no dialog';
+  const v=function(id){ const e=d.querySelector('#'+id); return e?e.value:null; };
+  const ok=v('cp_first')==='Jane' && v('cp_last')==='Doe'
+        && v('cp_email')==='jane.doe@example.com'
+        && v('cp_prime')==='N00178-24-D-1234' && v('cp_order')==='TO-0007'
+        && !!d.querySelector('#cpStageOrig') && !!d.querySelector('#cpStageSol')
+        && d.querySelector('#cpStageOrig').getAttribute('aria-checked')==='true';
+  d.querySelector('#cpCancel').click(); await pr;
+  return ok ? true : ('first='+v('cp_first')+' prime='+v('cp_prime')); });
+
+await ta('only one dialog opens, so nothing is left waiting on a second', async()=>{
+  await CPSRC('CP2');
+  const pr=E("dashDuplicate('CP2')");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000);
+  if(!d) return 'no dialog';
+  d.querySelector('#cpKeep').click(); await pr;
+  await new Promise(r=>setTimeout(r,80));
+  /* This is DEF-01 held down: a second modal here is what stalled the suite
+     for 800 assertions. */
+  const second=w.document.getElementById('dashPartyDlg');
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of CP2')===0);
+  await dropCopies();
+  return !second && made.length===1 ? true : ('second='+!!second+' made='+made.length); });
+
+await ta('a matching template never overwrites the copied language', async()=>{
+  /* DEF-02. The copy exists for the language it carries; applying a template
+     over Items 10 to 18 because the contract number matches one would throw
+     away the thing being copied. */
+  await E("tplSave(TPL_CT,[{label:'Matching',ioId:'ct-match',data:Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',i13:'TEMPLATE LANGUAGE',c10:{'10a':false},c11:{'11c':false}})}])");
+  await CPSRC('CP3');
+  const r=await copyAs('CP3','keep');
+  if(r.err) return r.err;
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of CP3')===0)[0];
+  await dropCopies(); E("tplSave(TPL_CT,[])");
+  if(!made) return 'no copy';
+  const tx=made.workspace.texts||{}, ck=made.workspace.checks||{};
+  return tx.item13==='MARKER-KEEP-THIS-LANGUAGE' && ck.c10a===true && ck.c11c===true
+      ? true : ('item13='+tx.item13+' c10a='+ck.c10a+' c11c='+ck.c11c); });
+
+await ta('a copy does not inherit the original issue date', async()=>{
+  /* DEF-04. Item 3 records what happened to THIS DD-254, and none of it has
+     happened to the copy yet. */
+  await CPSRC('CP4');
+  const r=await copyAs('CP4','keep');
+  if(r.err) return r.err;
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of CP4')===0)[0];
+  await dropCopies();
+  if(!made) return 'no copy';
+  const tx=made.workspace.texts||{};
+  return tx.i3a_date==='' && tx.item13==='MARKER-KEEP-THIS-LANGUAGE'
+      ? true : ('i3a='+JSON.stringify(tx.i3a_date)); });
+
+await ta('a draft that never recorded a requester can still be copied', async()=>{
+  /* DEF-03. Refusing would block the one action that lets the operator fix it. */
+  await E("draftPut({id:'CP5',title:'Legacy',status:'Draft',stage:'orig',meta:{},todos:[],notes:'',dist:[],holds:[],workspace:{selects:{},checks:{},radios:{},perf:[],texts:{item13:'OLD'}}})");
+  const r=await copyAs('CP5','keep');
+  if(r.err) return r.err;
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of Legacy')===0);
+  await dropCopies();
+  return made.length===1 ? true : ('made='+made.length); });
+
+await ta('choosing Solicitation writes Block 2c and leaves 2b alone', async()=>{
+  await CPSRC('CP6');
+  const pr=E("dashDuplicate('CP6')");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000);
+  if(!d) return 'no dialog';
+  d.querySelector('#cpStageSol').click();
+  const sol=d.querySelector('#cp_sol'); sol.value='N00178-26-R-0001';
+  const due=d.querySelector('#cp_due'); due.value='2026-11-30';
+  d.querySelector('#cpKeep').click(); await pr;
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of CP6')===0)[0];
+  await dropCopies();
+  if(!made) return 'no copy';
+  const tx=made.workspace.texts||{};
+  return made.stage==='sol' && tx.i2c==='N00178-26-R-0001' && tx.i2c_due==='2026-11-30'
+      && tx.item13==='MARKER-KEEP-THIS-LANGUAGE'
+      ? true : ('stage='+made.stage+' i2c='+tx.i2c+' due='+tx.i2c_due); });
+
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
