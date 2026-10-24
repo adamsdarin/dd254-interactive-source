@@ -9707,6 +9707,87 @@ await ta('closed, it renders nothing at all', async()=>{
   const host=w.document.getElementById('workflowLeftBanner');
   return (host && host.innerHTML==='') ? true : 'rendered while closed'; });
 
+
+H('132. v2.12.0 template caveats are chosen, inserted and withdrawn (REQ-10, REQ-11)');
+/* Built on the per-key template language the tool already had, not beside it.
+   Argon added a parallel insert/remove machine with its own offsets and its
+   own text search, which is where DEF-08 and DEF-11 came from. */
+
+const CAVTPL=function(always){
+  const d=E("ctBlankData()");
+  d.l11={'11c':'CAVEAT 11C WORDING.','11d':'CAVEAT 11D WORDING.'};
+  if(always) d.always={'11c':true};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Caveats',ioId:'cav-tpl',data:d}])+");buildCtSelect();");
+  E("showFormView();document.getElementById('ctTplSel').value='cav-tpl';");
+};
+
+t('a template offers exactly the keys it has wording for', ()=>{
+  CAVTPL(false);
+  const keys=E("ctCaveatKeys(ctActiveTpl())");
+  E("tplSave(TPL_CT,[])");
+  return keys.join(',')==='11c,11d' ? true : keys.join(',');
+});
+
+t('the always-insert flag is read per key', ()=>{
+  CAVTPL(true);
+  const a=E("ctCaveatAlways(ctActiveTpl(),'11c')"), b=E("ctCaveatAlways(ctActiveTpl(),'11d')");
+  E("tplSave(TPL_CT,[])");
+  return a===true && b===false ? true : ('11c='+a+' 11d='+b);
+});
+
+t('an unrecorded choice still means everything the template offers', ()=>{
+  /* Nothing written before today changes behaviour. */
+  E("showFormView();resetFormFields();");
+  return E("cavChosenGet({texts:{}})")===null && E("cavWanted('11c',{texts:{}})")===true
+      ? true : 'default changed';
+});
+
+await ta('ticking the box writes the caveat, unticking takes it back out', async()=>{
+  CAVTPL(false);
+  E("resetFormFields();document.getElementById('ctTplSel').value='cav-tpl';");
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  const inserted=E("ctGv('item13')").indexOf('CAVEAT 11C WORDING.')>=0;
+  E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');");
+  const removed=E("ctGv('item13')").indexOf('CAVEAT 11C WORDING.')<0;
+  E("tplSave(TPL_CT,[])");
+  return inserted && removed ? true : ('inserted='+inserted+' removed='+removed); });
+
+await ta('a caveat declined at intake is not written however the box is ticked', async()=>{
+  CAVTPL(false);
+  E("resetFormFields();document.getElementById('ctTplSel').value='cav-tpl';");
+  E("cavChosenSet(['11d']);");
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  const c=E("ctGv('item13')").indexOf('CAVEAT 11C WORDING.')<0;
+  E("document.getElementById('c11d').checked=true;ctAutoLangKey('11d');");
+  const d=E("ctGv('item13')").indexOf('CAVEAT 11D WORDING.')>=0;
+  E("cavChosenSet([]);tplSave(TPL_CT,[])");
+  return c && d ? true : ('declined-absent='+c+' chosen-present='+d); });
+
+await ta('an edited caveat is left alone and said out loud, not half-deleted', async()=>{
+  /* DEF-08. Removing an approximate match would delete somebody's writing. */
+  CAVTPL(false);
+  E("resetFormFields();document.getElementById('ctTplSel').value='cav-tpl';");
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  E("(function(){var el=document.getElementById('item13');el.value=el.value.replace('CAVEAT 11C WORDING.','CAVEAT 11C WORDING, as amended for this contract.');})();");
+  E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');");
+  const kept=E("ctGv('item13')").indexOf('as amended for this contract')>=0;
+  const told=(w.document.getElementById('cavNotice')||{}).textContent||'';
+  E("tplSave(TPL_CT,[])");
+  return kept && /left it in Item 13|left in Item 13/.test(told) ? true : ('kept='+kept+' told='+told.slice(0,90)); });
+
+t('the always flag survives a CSV round trip', ()=>{
+  const d=E("ctBlankData()");
+  d.l11={'11c':'W'}; d.always={'11c':true};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'RT',ioId:'rt',data:d}])+")");
+  const back=E("ioDD(tplLoad(TPL_CT)[0]).always");
+  E("tplSave(TPL_CT,[])");
+  /* The column exists so the flag is settable where templates are actually
+     bulk-edited, and it survives being read back off a stored template. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return back && back['11c']===true && /\+' Always'/.test(src)
+      ? true : ('stored='+JSON.stringify(back)+' column='+/\+' Always'/.test(src));
+});
+
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');
