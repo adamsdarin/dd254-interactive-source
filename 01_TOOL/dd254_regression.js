@@ -88,11 +88,19 @@ t('legacy template backfills on touch', ()=>{
 t('legacy {title,notes} rows migrate to text', ()=>{
   E("window.TPL_EDIT=[{data:{att:[{title:'A',notes:'n1'},{title:'B',notes:''}]}}];window.TPL_EDIT_KIND='ct';");
   const d=E('ctEd(0)'); return d.attText==='A — n1\nB' && !('att' in d);});
-t('editor renders block 18 and the attachment box', ()=>{
-  E("window.TPL_EDIT=[{label:'T',data:ctBlankData()}];window.TPL_EDIT_KIND='ct';");
+/* v2.12.0 (REQ-15): attachments are one name per box. The editor used to bind a
+   single textarea straight to attText, so a line wrap, a pasted description or
+   a note on its own line became a phantom attachment. attText is still what is
+   stored, exported to CSV and searched, so nothing downstream moved. */
+t('editor renders block 18 and one box per attachment', ()=>{
+  const two=['SCG-1234 Security Classification Guide','DD Form 254 of the prime'].join(String.fromCharCode(10));
+  E("window.TPL_EDIT=[{label:'T',data:Object.assign(ctBlankData(),{attText:"+JSON.stringify(two)+"})}];window.TPL_EDIT_KIND='ct';");
   const h=E("ctEditorHtml(window.TPL_EDIT[0],0)");
+  const boxes=(h.match(/ctAttSet\(0,\d+,this\.value\)/g)||[]).length;
   return h.includes('18 — Distribution') && h.includes('Required attachments')
-      && h.includes("attText=this.value") && !h.includes('Add attachment');});
+      && boxes===2 && h.includes('+ Add attachment')
+      && !h.includes("attText=this.value")
+      ? true : ('boxes='+boxes+' add='+h.includes('+ Add attachment'));});
 t('capture reads Block 18 off the form', ()=>{
   E("showFormView();resetFormFields();['18a','18b','18c','18d','18e','18f'].forEach(k=>{document.getElementById('dist'+k).checked=false;});");
   E("['18a','18b','18d'].forEach(k=>{document.getElementById('dist'+k).checked=true;});document.getElementById('dist18fOther').value='ACO Bldg 4';");
@@ -5483,7 +5491,10 @@ await ta('changing one selected status to Issued opens one bulk window and issue
        required and stays. The audiences remain distinct, which is what keeps
        them in separate e-mails. */
     && links.some(function(h){return h.indexOf('mailto:req@gov.mil; cso1@gov.mil?subject=Issued DD Form 254 — Bulk Issue One')===0;})
-    && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com; CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil\?subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two$/i.test(h);})
+    /* v2.12.0 (REQ-15): the prepared e-mail now carries a body naming the
+       documents that must travel with the form, so the subject is no longer
+       the end of the URL. */
+    && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com; CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil\?subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two&body=/i.test(h);})
     && !links.some(function(h){return /fso1@a\.com/.test(h);});
   d.querySelector('#bddSave').click(); await pr; w.uiAlert=oldAlert;
   const a=await E("draftGet('bi1')"), b=await E("draftGet('bi2')");
@@ -9198,6 +9209,130 @@ t('the Item 13 rich-text toolbar is gone and pasting is plain text', ()=>{
       ? true : ('fmt13='+(src.indexOf('fmt13')>=0)
                +' paste='+E("typeof i13PastePlain"));
 });
+
+
+H('124. v2.12.0 one attachment name per box (REQ-15)');
+/* attText remains the stored field. attList is the editor's working copy and
+   writes straight back to it, so there is one source of truth and no migration
+   step for a template written by an older build. */
+
+const ATTED=function(text){
+  E("window.TPL_EDIT=[{label:'T',data:Object.assign(ctBlankData(),{attText:"+JSON.stringify(text||'')+"})}];window.TPL_EDIT_KIND='ct';");
+};
+
+t('a template written before this existed edits as boxes', ()=>{
+  ATTED(['SCG-1234','DD Form 254 of the prime'].join(String.fromCharCode(10)));
+  const rows=E("ctAttRowsHtml(0)");
+  const n=(rows.match(/ctAttSet\(0,\d+,this\.value\)/g)||[]).length;
+  return n===2 && rows.indexOf('SCG-1234')>0 ? true : ('boxes='+n);
+});
+
+t('adding a box appends it and keeps attText in step', ()=>{
+  ATTED('SCG-1234');
+  E("ctAttAdd(0);ctAttSet(0,1,'Programme OPSEC Plan');");
+  const d=E("window.TPL_EDIT[0].data");
+  return d.attList.length===2 && d.attText===['SCG-1234','Programme OPSEC Plan'].join(String.fromCharCode(10))
+      ? true : JSON.stringify(d.attText);
+});
+
+t('removing a box removes exactly that one', ()=>{
+  ATTED(['A','B','C'].join(String.fromCharCode(10)));
+  E("ctAttDel(0,1);");
+  const d=E("window.TPL_EDIT[0].data");
+  return d.attText===['A','C'].join(String.fromCharCode(10)) ? true : JSON.stringify(d.attText);
+});
+
+t('an empty box is not an attachment', ()=>{
+  ATTED('A');
+  E("ctAttAdd(0);ctAttAdd(0);ctAttSet(0,2,'   ');");
+  const d=E("window.TPL_EDIT[0].data");
+  return d.attText==='A' && E('ctAttLines('+JSON.stringify(d)+').length')===1 ? true : (JSON.stringify(d.attText)+' n='+E('ctAttLines('+JSON.stringify(d)+').length'));
+});
+
+t('what the rest of the tool reads is unchanged', ()=>{
+  /* ctAttLines is what the reminder panel, the copy list and the issuance
+     e-mail all go through. It still reads attText, so none of them had to
+     learn about the editor. */
+  ATTED(['One','Two'].join(String.fromCharCode(10)));
+  E("ctAttSet(0,0,'One edited');");
+  const lines=E("ctAttLines(window.TPL_EDIT[0].data)");
+  return lines.join('|')==='One edited|Two' ? true : lines.join('|');
+});
+
+
+H('125. v2.12.0 the issuance e-mail names its attachments (REQ-15)');
+/* The operator used to be told who to send to and not what to send. A DD-254
+   without its SCG is a DD-254 nobody can act on. */
+
+const ATTREC=function(id,notes){
+  return {id:id,title:id,requestedBy:'req@gov.mil',
+    workspace:{checks:{},selects:{},radios:{},perf:[],
+      texts:{i6c:'cso@dcsa.mil',attachNotes:notes}}};
+};
+
+t('a document required by two records is named once', ()=>{
+  const a=ATTREC('A',['SCG-1234','Prime DD Form 254'].join(String.fromCharCode(10)));
+  const b=ATTREC('B',['Prime DD Form 254','OPSEC Plan'].join(String.fromCharCode(10)));
+  const atts=E("dashMailAttachments("+JSON.stringify([a,b])+")");
+  return atts.join('|')==='SCG-1234|Prime DD Form 254|OPSEC Plan'
+      ? true : atts.join('|');
+});
+
+t('the body names every attachment and nothing else', ()=>{
+  const a=ATTREC('A',['SCG-1234','OPSEC Plan'].join(String.fromCharCode(10)));
+  const body=E("dashMailBody("+JSON.stringify([a])+")");
+  return /must travel with it/.test(body)
+      && body.indexOf('SCG-1234')>0 && body.indexOf('OPSEC Plan')>0
+      && body.indexOf('req@gov.mil')<0 && body.indexOf('cso@dcsa.mil')<0
+      ? true : body;
+});
+
+t('with no attachments the body says so rather than going quiet', ()=>{
+  const body=E("dashMailBody("+JSON.stringify([ATTREC('A','')])+")");
+  return /No further attachments are required/.test(body) ? true : body;
+});
+
+t('the manifest rides in the mailto when it fits', ()=>{
+  const m=E("dashIssueMail("+JSON.stringify(ATTREC('A','SCG-1234'))+")");
+  const href=decodeURIComponent(m.href);
+  return m.bodyInHref===true && href.indexOf('&body=')>0
+      && href.indexOf('SCG-1234')>0 && m.atts.join('|')==='SCG-1234'
+      ? true : ('fits='+m.bodyInHref+' href='+href.slice(0,120));
+});
+
+t('an over-long manifest is dropped whole, never truncated', ()=>{
+  /* Half a list looks exactly like a whole one. The operator is told instead,
+     and Copy Attachments still carries all of it. */
+  const many=[]; for(let i=0;i<120;i++) many.push('Attachment number '+i+' with a long descriptive name');
+  const m=E("dashIssueMail("+JSON.stringify(ATTREC('A',many.join(String.fromCharCode(10))))+")");
+  return m.bodyInHref===false
+      && m.href.indexOf('&body=')<0
+      && m.href.length<=E("DASH_MAILTO_MAX")
+      && m.atts.length===120
+      ? true : ('fits='+m.bodyInHref+' len='+m.href.length+' atts='+m.atts.length);
+});
+
+await ta('the single issuance window offers Copy Attachments and Copy e-mail body', async()=>{
+  E("window.__attDlg=dashDistDialog("+JSON.stringify(ATTREC('ATT1','SCG-1234'))+")");
+  const d=await waitDlg('#dashDistDlg',10000); if(!d) return 'no dialog';
+  const txt=d.textContent;
+  const ok=/Copy Attachments/.test(txt) && /Copy e-mail body/.test(txt);
+  d.querySelector('#ddSkip').click(); await E("window.__attDlg");
+  return ok ? true : txt.slice(0,160); });
+
+await ta('each bulk group panel lists what that e-mail must carry', async()=>{
+  const a=ATTREC('BA','SCG-1234'), b=ATTREC('BB','OPSEC Plan');
+  b.workspace.texts.i7a='Beta'; b.workspace.texts.i7fsoEmail='fso@beta.com';
+  E("window.__bulkAtt=dashBulkDistDialog("+JSON.stringify([a,b])+")");
+  const d=await waitDlg('#dashBulkDistDlg',10000); if(!d) return 'no dialog';
+  const txt=d.textContent;
+  /* Two audiences, so two panels, and each names only its own documents. */
+  const ok=/Attach to this e-mail/.test(txt)
+        && txt.indexOf('SCG-1234')>0 && txt.indexOf('OPSEC Plan')>0
+        && (txt.match(/Copy Attachments/g)||[]).length===2;
+  const c=d.querySelector('#bddCancel'); if(c) c.click();
+  await E("window.__bulkAtt");
+  return ok ? true : ('panels='+(txt.match(/Copy Attachments/g)||[]).length); });
 
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
