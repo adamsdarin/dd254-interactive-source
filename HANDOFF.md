@@ -1,6 +1,49 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-18T10:00-05:00 by Maintainer
+Last updated: 2026-10-23T18:00-05:00 by Maintainer
+
+## BUILT AND GATED — branch `argon-port`, v2.12.0 not yet merged or tagged
+
+Eight feature commits on `argon-port` off d9d6bab. **1460 assertions pass; both
+builds pass the native-browser smoke test; every commit was smoke-tested before
+it landed.** The Argon prototype (untracked, in `dd254-interactive/`) was
+rebuilt on v2.11.0 rather than adopted: it measurably descends from the shipped
+v2.11.0 (it carries DIST_CC_ALWAYS, which exists in no earlier build) but had
+deleted the flat PDF writer and the Item 13 toolbar and drifted elsewhere.
+
+Owner decision, 23 October 2026: ACCEPT both deletions. The dynamic XFA form is
+the only export and Item 13 is plain text. Raised twice, decided twice.
+Consequence recorded beside the removal and in the changelog: an XFA form cannot
+be digitally signed in the free Adobe Reader without Reader Extensions usage
+rights, so signing needs Acrobat.
+
+**v2.12.0 is cut and gated**, build fbbbf4e2. 1460 assertions pass, all five
+gates pass, and both builds pass the native-browser smoke test.
+
+Retiring the flat payload rippled through four release scripts, all of which
+assumed it was always present: `make_build_facts.py` threw,
+`rebuild_kit/split.py` would have written an empty part, `rebuild_kit/
+rebuild.py` read a file that was no longer cut, and `make_sbom.py` indexed a
+component that no longer exists. All four now treat the flat payload as
+optional and describe only what a build actually carries. The XFA payload
+stays mandatory: it is the official export. The ISSM brief's stated file size
+moved from 2.3 MB to 1.7 MB.
+
+Still to do: merge `argon-port` to main, tag v2.12.0, publish, refresh the live
+demo, and verify the published assets from a fresh download the way v2.11.0
+was verified.
+
+Both gaps are now closed: REQ-11's always-insert flag has a control beside each
+Item 10/11 language box in the template editor as well as the CSV column, and
+the caveat engine surfaces in the intake dialog as well as the banner, which is
+the architecture's hybrid option.
+
+Closing them found one worth recording. The intake caveat checklist had been
+reported as built when it was not: an edit lost its anchor and was never
+written, so the dialog collected checkboxes nothing rendered and the choice was
+never recorded. Every caveat assertion still passed, because they all called
+the data layer directly. Section 134 drives the dialog itself, which is the
+only thing that would have caught it.
 
 ## Current State
 

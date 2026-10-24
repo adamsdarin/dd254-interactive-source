@@ -80,7 +80,9 @@ def build_doc():
                 {'type': 'distribution', 'url': 'https://www.esd.whs.mil/Directives/forms/'},
             ],
         },
-        {
+        # The flat derivative was retired on 23 October 2026. An SBOM lists what
+        # is in the artefact, so it is named only when the build carries it.
+        *([{
             'type': 'data',
             'bom-ref': 'dd254-flat',
             'name': 'DD Form 254 flat derivative',
@@ -89,7 +91,7 @@ def build_doc():
             'licenses': [{'license': {'name': 'U.S. Government work, not subject to copyright'}}],
             'hashes': [{'alg': 'SHA-256',
                         'content': parts['02_dd254_flat.b64']['decoded_sha256']}],
-        },
+        }] if '02_dd254_flat.b64' in parts else []),
         {
             'type': 'application',
             'bom-ref': 'dd254-application',

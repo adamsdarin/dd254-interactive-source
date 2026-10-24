@@ -1,11 +1,11 @@
-BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
+BUILD_SHA256 2fae3050fbef6523336ad8338798649accfaae5d2abc00370547b47146fd1f03
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
   PASS  blank data carries c18 / t18f / attText
   PASS  legacy template backfills on touch
   PASS  legacy {title,notes} rows migrate to text
-  PASS  editor renders block 18 and the attachment box
+  PASS  editor renders block 18 and one box per attachment
   PASS  capture reads Block 18 off the form
   PASS  summary counts 18 and attachments
   PASS  blank lines ignored in the attachment count
@@ -394,9 +394,6 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  the official PDF data packet is complete
   PASS  the XFA dataset emits every block
   PASS  the user-facing dynamic XFA PDF actually builds
-  PASS  the internal legacy static PDF actually builds
-  PASS  the flattened PDF contains representative form values
-  PASS  the printed Block 2a carries the task order when standalone is ticked
   PASS  the preparer's worksheet reports the outstanding items
   PASS  the CO package lists what the officer must verify
   PASS  the CO package labels clauses as applicability review and uses current authority sections
@@ -407,7 +404,6 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  generated HTML reports encode operator text and declare a locked-down CSP
   PASS  the generated-report opener cannot retain access to the tool window
   PASS  the notes report covers holds, to-dos and notes
-  PASS  a draft export is named and watermarked DRAFT while errors remain
 
 ### 32. CSO block layout in the exports
   PASS  csoText produces the stacked layout with no labels on name or address
@@ -419,7 +415,6 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  applying a CSO template stacks 6c, 7c and 8c alike
   PASS  the stacked text reaches the official PDF packet
   PASS  the stacked text reaches the dynamic XFA packet
-  PASS  the flattened PDF still builds with a stacked CSO
   PASS  a stacked CSO survives a workspace round trip
   PASS  CSO e-mails are still harvested from the stacked text
   PASS  saving a location still links the CSO by matching the stacked text
@@ -471,16 +466,10 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  CAGE is uppercased
   PASS  the XFA level helper defers to the shared one
   PASS  dateFmt is now an alias
-  PASS  the flattened writer is reachable for inspection
   PASS  the two exports agree on every formatted value
-  PASS  the flattened writer uses the same formatters
-  PASS  the internal PDF still preserves the Item 17h signing field
-  PASS  no private level map survives in the flattened writer
   PASS  there is exactly one sanitizePdfText implementation in the whole file
   PASS  curly quotes normalise and em-dash/ellipsis/ligatures print identically in the XFA and flattened writers
-  PASS  reviewer overflow behaves the same in both
   PASS  CAGE fields display uppercase on the form
-  PASS  the flattened PDF still builds after the change
 
 ### 37. Required fields are actually enforced
   PASS  a hollow form is no longer clean
@@ -966,7 +955,6 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  the 17-character check still reads the bare contract number
   PASS  the export filename still uses the bare contract number
   PASS  the Item 13 reference line still appears
-  PASS  both exports read Block 2a from the same upstream
   PASS  the combined value survives a draft round-trip
 
 ### 75. Safe validation rendering and the sole official export
@@ -1179,7 +1167,6 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  the Final badge shows the return-or-destroy deadline and a revision badge does not
   PASS  the subcontractor disposition clock runs from the Item 3c final date, then issuance
   PASS  the disposition badge escalates from scheduled to due to overdue
-  PASS  the flattened PDF prints a shared Item 7/8 classified mailing address once
   PASS  the SAP flag raises the countersignature requirement on a 2b subcontract
   PASS  the SAP flag reaches a form that names its subcontractor only in Item 7a
   PASS  no SAP flag and no subcontractor means no countersignature requirement
@@ -1380,7 +1367,6 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  a Final with no 3a date is blocked, and a recount counts a changed date
   PASS  a stand-alone Revision with no chain is not compared, and an Original is unaffected
   PASS  the dynamic XFA data carries 3a on a Revision and a Final as well as 3b
-  PASS  the flattened PDF of a Revision prints the original date and the revision date
   PASS  the preparer's worksheet shows the original date with the revision
 
 ### 105. v2.0.2 SCGs linked to contracts; reasons optional in Settings
@@ -1459,7 +1445,7 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  twenty orders share one saved prime-source version without duplicating templates
   PASS  prime plus order is the unique identity, case-insensitively; other primes may reuse order numbers
   PASS  an order-specific received DD254 uses its own saved language
-  PASS  new workflow preserves order type and prime identity without deriving the outgoing standalone flag
+  PASS  new workflow preserves order identity and ticks standalone for an order with its own DD-254
   PASS  open-existing order does not create another outgoing DD254
   PASS  automatic checkbox language, attachments and marking use the workflow snapshot after repository edits
   PASS  template edits flag review and keep saved source wording and existing drafts intact
@@ -1530,7 +1516,7 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  assigning a security manager fills the program from that manager
   PASS  the linked manager reaches the distribution when the template is applied
   PASS  a template carrying a task order no longer claims to be order-specific
-  PASS  a template that records the choice still honours it
+  PASS  a template that records the choice no longer imposes it
 
 ### 112. v2.7.0 contract type is chosen from its own picker, not at origination
   PASS  creating a DD-254 asks nothing about contract type
@@ -1668,6 +1654,100 @@ BUILD_SHA256 e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2
   PASS  bulk issuance refuses the whole set when one record cannot reach somebody
   PASS  a full backup carries the settings alongside the audit log, outside the checksum
 
+### 123. v2.12.0 the flat PDF writer is retired
+  PASS  the flat writer, its module and its payload are all gone
+  PASS  the dynamic XFA export survives it, and still reads collect254Data
+  PASS  the Item 13 rich-text toolbar is gone and pasting is plain text
+
+### 124. v2.12.0 one attachment name per box (REQ-15)
+  PASS  a template written before this existed edits as boxes
+  PASS  adding a box appends it and keeps attText in step
+  PASS  removing a box removes exactly that one
+  PASS  an empty box is not an attachment
+  PASS  what the rest of the tool reads is unchanged
+
+### 125. v2.12.0 the issuance e-mail names its attachments (REQ-15)
+  PASS  a document required by two records is named once
+  PASS  the body names every attachment and nothing else
+  PASS  with no attachments the body says so rather than going quiet
+  PASS  the manifest rides in the mailto when it fits
+  PASS  an over-long manifest is dropped whole, never truncated
+  PASS  the single issuance window offers Copy Attachments and Copy e-mail body
+  PASS  each bulk group panel lists what that e-mail must carry
+
+### 126. v2.12.0 copying asks the stage and the intake, once (REQ-02)
+  PASS  the copy dialog arrives pre-filled and asks the stage
+  PASS  only one dialog opens, so nothing is left waiting on a second
+  PASS  a matching template never overwrites the copied language
+  PASS  a copy does not inherit the original issue date
+  PASS  a draft that never recorded a requester can still be copied
+  PASS  choosing Solicitation writes Block 2c and leaves 2b alone
+
+### 127. v2.12.0 the standalone task-order box follows the order (REQ-06)
+  PASS  an order that follows the prime is never ticked, whatever a template says
+  PASS  an order with its own DD-254 is ticked, whatever a template says
+  PASS  an order nobody has recorded is not claimed to have its own DD-254
+  PASS  changing the order coverage changes the answer, with nothing to migrate
+  PASS  the flag is no longer captured into a template, nor exported to CSV
+
+### 128. v2.12.0 standard language sits where you put it (REQ-07, REQ-08)
+  PASS  the default is top, which is what the tool did before the setting existed
+  PASS  the writer is the only thing that decides a valid value
+  PASS  an Item 10 section never lands above top-placed language
+  PASS  bottom places it after the sections and above the mailing address
+  PASS  the duplicate-entry warning no longer blocks the page
+
+### 129. v2.12.0 the standing sentence is the only editable boilerplate (REQ-09)
+  PASS  the default is the shipped sentence, not blank
+  PASS  changing it changes what Item 13 is given
+  PASS  clearing it stops writing it rather than writing an empty line
+  PASS  the derived writers are not offered as settings
+  PASS  the inventory exists and names all five
+
+### 130. v2.12.0 purchase language and bids language are different sets (REQ-03, REQ-05)
+  PASS  one controlled list of keys, each with a label
+  PASS  an entry written before this existed is offered on both
+  PASS  a bids entry is kept off an award, and the reverse
+  PASS  only a solicitation draws on bids wording
+  PASS  the candidate filter honours the scenario alongside programme and level
+  PASS  the editor renders the selector from the same list
+
+### 131. v2.12.0 the left language banner (REQ-04)
+  PASS  it starts closed and the choice is remembered
+  PASS  closed it takes no width from the form
+  PASS  it is not printed
+  PASS  opening it lists the entries that fit, and says what it is showing
+  PASS  closed, it renders nothing at all
+
+### 132. v2.12.0 template caveats are chosen, inserted and withdrawn (REQ-10, REQ-11)
+  PASS  a template offers exactly the keys it has wording for
+  PASS  the always-insert flag is read per key
+  PASS  an unrecorded choice still means everything the template offers
+  PASS  ticking the box writes the caveat, unticking takes it back out
+  PASS  a caveat declined at intake is not written however the box is ticked
+  PASS  an edited caveat is left alone and said out loud, not half-deleted
+  PASS  the always flag survives a CSV round trip
+
+### 133. v2.12.0 the acquisition caveat engine, off unless asked for (REQ-13)
+  PASS  it is off by default and the writer validates the value
+  PASS  an unclassified part with classified testing is 11c and NOT 11d
+  PASS  a classified part with unclassified testing is 11d and NOT 11c
+  PASS  both classified sets both, and neither sets neither
+  PASS  services at a government site need visits, not storage
+  PASS  services at the contractor facility store documents
+  PASS  COMSEC custody is a different answer from COMSEC access
+  PASS  OPSEC sets 11j and names the CIL
+  PASS  carte blanche derives nothing and says so
+  PASS  with no archetype it advises nothing at all
+  PASS  the banner shows the questionnaire only when the engine is on
+  PASS  nothing is changed until it is applied
+
+### 134. v2.12.0 the intake dialog actually renders what it collects
+  PASS  a matched template lists its caveats, pre-ticking the always ones
+  PASS  what is ticked reaches the record, and what is not stays declined
+  PASS  the engine questionnaire appears only when the engine is on
+  PASS  answering the engine at intake writes the boxes and the wording
+
 ================================
-  PASS 1408   FAIL 0
+  PASS 1464   FAIL 0
 ================================

@@ -54,11 +54,18 @@ pdflib_bytes=len(pdflib.encode('utf-8'))
 # byte-identical, and the kit's whole claim fails. Nothing depends on the
 # trimmed value except this line, so this is the side that moves.
 def b64(c):
-    m=re.search(c+r'\s*=\s*"([A-Za-z0-9+/=]+)"',s); return m.group(1)
+    # Optional since the flat writer was retired (23 October 2026). A build
+    # that no longer embeds a payload is not a broken build, and a facts
+    # document refusing to describe it would be the only thing wrong.
+    m=re.search(c+r'\s*=\s*"([A-Za-z0-9+/=]+)"',s); return m.group(1) if m else ''
 flat,xfa=b64('DD254_BASE_B64'),b64('DD254_XFA_B64')
+assert xfa, 'DD254_XFA_B64 is required: it is the official export.'
 app=sum(len(b.encode('utf-8')) for b in blocks if 'pdf-lib.min.js.map' not in b
         and 'DD254_BASE_B64' not in b and 'DD254_XFA_B64' not in b)
 tot=len(raw)
+# Named only when present, so the document never publishes a hash for a
+# payload that is not in the file.
+flat_line=('DD254_BASE_B64  (decoded)   %s\n'%sha(base64.b64decode(flat))) if flat else ''
 mk=lambda n: '%.1f%%'%(100*n/tot)
 
 # Assertion count comes from an ACTUAL RUN, never from counting declarations in
@@ -111,8 +118,7 @@ Not the author's code: **{mk(pdflib_bytes+len(flat)+len(xfa))}** of the file.
 
 ```
 pdf-lib block (as embedded) {sha(pdflib)}
-DD254_BASE_B64  (decoded)   {sha(base64.b64decode(flat))}
-DD254_XFA_B64   (decoded)   {sha(base64.b64decode(xfa))}
+{flat_line}DD254_XFA_B64   (decoded)   {sha(base64.b64decode(xfa))}
 ```
 
 ## If the assertion count says NOT RUN

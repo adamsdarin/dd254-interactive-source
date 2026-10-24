@@ -88,11 +88,19 @@ t('legacy template backfills on touch', ()=>{
 t('legacy {title,notes} rows migrate to text', ()=>{
   E("window.TPL_EDIT=[{data:{att:[{title:'A',notes:'n1'},{title:'B',notes:''}]}}];window.TPL_EDIT_KIND='ct';");
   const d=E('ctEd(0)'); return d.attText==='A — n1\nB' && !('att' in d);});
-t('editor renders block 18 and the attachment box', ()=>{
-  E("window.TPL_EDIT=[{label:'T',data:ctBlankData()}];window.TPL_EDIT_KIND='ct';");
+/* v2.12.0 (REQ-15): attachments are one name per box. The editor used to bind a
+   single textarea straight to attText, so a line wrap, a pasted description or
+   a note on its own line became a phantom attachment. attText is still what is
+   stored, exported to CSV and searched, so nothing downstream moved. */
+t('editor renders block 18 and one box per attachment', ()=>{
+  const two=['SCG-1234 Security Classification Guide','DD Form 254 of the prime'].join(String.fromCharCode(10));
+  E("window.TPL_EDIT=[{label:'T',data:Object.assign(ctBlankData(),{attText:"+JSON.stringify(two)+"})}];window.TPL_EDIT_KIND='ct';");
   const h=E("ctEditorHtml(window.TPL_EDIT[0],0)");
+  const boxes=(h.match(/ctAttSet\(0,\d+,this\.value\)/g)||[]).length;
   return h.includes('18 — Distribution') && h.includes('Required attachments')
-      && h.includes("attText=this.value") && !h.includes('Add attachment');});
+      && boxes===2 && h.includes('+ Add attachment')
+      && !h.includes("attText=this.value")
+      ? true : ('boxes='+boxes+' add='+h.includes('+ Add attachment'));});
 t('capture reads Block 18 off the form', ()=>{
   E("showFormView();resetFormFields();['18a','18b','18c','18d','18e','18f'].forEach(k=>{document.getElementById('dist'+k).checked=false;});");
   E("['18a','18b','18d'].forEach(k=>{document.getElementById('dist'+k).checked=true;});document.getElementById('dist18fOther').value='ACO Bldg 4';");
@@ -1724,51 +1732,6 @@ await ta('the user-facing dynamic XFA PDF actually builds', async()=>{
   try{ await E("exportOfficialXFA(true)"); } finally { w.Blob=OB; }
   return bytes>10000;
 });
-await ta('the internal legacy static PDF actually builds', async()=>{
-  let bytes=0; const OB=w.Blob; w.Blob=function(p){ try{bytes=(p[0]&&p[0].length)||0;}catch(e){} return new OB(p); };
-  await E("exportOfficial254(true)"); w.Blob=OB;
-  return bytes>10000;});
-await ta('the flattened PDF contains representative form values', async()=>{
-  F(); V('i2a','PDF-CONTENT-171'); V('i6a','PDF Verification Contractor 171');
-  V('item13','Reference 10a:\n\nPDF content extraction sentinel 171.'); C('c10a'); R('spec','3a');
-  let bytes=null; const OB=w.Blob;
-  w.Blob=function(p,o){
-    try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){}
-    return new OB(p,o);
-  };
-  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
-  if(!bytes) return 'PDF bytes were not captured';
-  const keep=process.env.DD254_PDF_OUT||'';
-  const out=keep||path.join(os.tmpdir(),'dd254-content-'+process.pid+'.pdf');
-  fs.writeFileSync(out,bytes);
-  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
-  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,
-    'PDF-CONTENT-171','PDF Verification Contractor 171','PDF content extraction sentinel 171'],
-    {encoding:'utf8'});
-  if(!keep){ try{fs.unlinkSync(out);}catch(e){} }
-  return chk.status===0 ? true : {status:chk.status,error:chk.error&&chk.error.message,stdout:chk.stdout,stderr:chk.stderr};
-});
-await ta('the printed Block 2a carries the task order when standalone is ticked', async()=>{
-  /* The strongest check available: the value is read back out of the actual
-     flattened PDF, not inferred from the data object that produced it. */
-  F(); V('i2a','N00178-24-D-9911'); V('iEffort','0042');
-  E("document.getElementById('iStandalone').checked=true; supSync(); run();");
-  let bytes=null; const OB=w.Blob;
-  w.Blob=function(p,o){
-    try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){}
-    return new OB(p,o);
-  };
-  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
-  if(!bytes) return 'PDF bytes were not captured';
-  const out=path.join(os.tmpdir(),'dd254-standalone-'+process.pid+'.pdf');
-  fs.writeFileSync(out,bytes);
-  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
-  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,
-    'N00178-24-D-9911 | Task Order 0042'],{encoding:'utf8'});
-  try{fs.unlinkSync(out);}catch(e){}
-  E("document.getElementById('iStandalone').checked=false; run();");
-  return chk.status===0 ? true : {status:chk.status,stdout:chk.stdout,stderr:chk.stderr};
-});
 t("the preparer's worksheet reports the outstanding items", ()=>{ F(); grabWindow(); RUN(); E("exportPrep254();");
   return /Preparer/i.test(grabbed) && /Item 1a/.test(grabbed); });
 t('the CO package lists what the officer must verify', ()=>{ F(); grabWindow(); E("exportCOPrep();");
@@ -1841,8 +1804,6 @@ await ta('the notes report covers holds, to-dos and notes', async()=>{
   return /Chase SCG/.test(grabbed) && /General note here/.test(grabbed) && /SCG missing/.test(grabbed) && /open hold/i.test(grabbed)
     && grabbed.indexOf('<img src=x')<0 && grabbed.indexOf('&lt;img src=x onerror=alert(1)&gt;')>=0
     && /default-src 'none'/.test(grabbed);});
-t('a draft export is named and watermarked DRAFT while errors remain', ()=>{ F(); RUN();
-  return ERRS().length>0 && /DRAFT/.test(E("String(exportOfficial254)")); });
 
 H('32. CSO block layout in the exports');
 const CSO={label:'Dayton',name:'DCSA Dayton Field Office',address:'1 Base Road, Dayton OH 45433',phone:'(937) 555-0100',email:'dayton@dcsa.mil'};
@@ -1884,10 +1845,6 @@ t('the stacked text reaches the official PDF packet', ()=>{
 t('the stacked text reaches the dynamic XFA packet', ()=>{
   const x=E("DD254XFA.buildXfaDatasets(collect254Data())");
   return /six_CSO/.test(x) && /E-mail: dayton@dcsa\.mil/.test(x) && /seven_CSO/.test(x) && /eight_CSO/.test(x);});
-await ta('the flattened PDF still builds with a stacked CSO', async()=>{
-  let bytes=0; const OB=w.Blob; w.Blob=function(p){ try{bytes=(p[0]&&p[0].length)||0;}catch(e){} return new OB(p); };
-  await E("exportOfficial254(true)"); w.Blob=OB;
-  return bytes>10000;});
 t('a stacked CSO survives a workspace round trip', ()=>{
   const ws=E("collectWorkspace()");
   E("window.__WS2="+JSON.stringify(ws)+";resetFormFields();applyWorkspace(window.__WS2);");
@@ -2151,8 +2108,6 @@ t('the XFA level helper defers to the shared one', ()=>
   /function lvl\(code\)\{\s*return dd254Level\(code\);\s*\}/.test(SRC36));
 t('dateFmt is now an alias', ()=>
   /function dateFmt\(x\)\{\s*return dd254Date\(x\);\s*\}/.test(SRC36));
-t('the flattened writer is reachable for inspection', ()=>
-  E("typeof DD254Export")==='object' && E("typeof DD254Export.buildOfficialPdf")==='function');
 
 await ta('the two exports agree on every formatted value', async()=>{
   E("showFormView();resetFormFields();addPerf();");
@@ -2175,16 +2130,6 @@ await ta('the two exports agree on every formatted value', async()=>{
     if(m[1]!==want[k]) return k+': XFA has "'+m[1]+'", expected "'+want[k]+'"';
   }
   return true;});
-t('the flattened writer uses the same formatters', ()=>{
-  const src=E("String(DD254Export.buildOfficialPdf)");
-  return /dd254Level\(v\('fcl1a'\)\)/.test(src) && /dd254Level\(v\('sfg1b'\)\)/.test(src)
-      && /dd254Date\(v\('i3a_date'\)\)/.test(src) && !/\bi17i\b/.test(src)
-      && /dd254PhoneOut\(v\('i16e'\)\)/.test(src) && /dd254PhoneOut\(v\('i17f'\)\)/.test(src)
-      && /dd254Cage\(v\('i6b'\)\)/.test(src) && /dd254Cage\(v\('i17e'\)\)/.test(src);});
-t('the internal PDF still preserves the Item 17h signing field', ()=>
-  /Item17h_CertifyingOfficial/.test(E("String(DD254Export.buildOfficialPdf)")));
-t('no private level map survives in the flattened writer', ()=>
-  !/TOP SECRET|NOT APPLICABLE/.test(E("String(DD254Export.buildOfficialPdf)")));
 t('there is exactly one sanitizePdfText implementation in the whole file', ()=>{
   /* This used to be two: a looser top-level one, and a WinAnsi-safe one
      declared inside the flattened-PDF module that shadowed it for that
@@ -2209,21 +2154,10 @@ await ta('curly quotes normalise and em-dash/ellipsis/ligatures print identicall
   const preserved=/\u2014/.test(xfaTxt) && /\u2026/.test(xfaTxt) && /\u0152uvre/.test(xfaTxt);
   const matchesSharedSanitizer=xfaTxt.indexOf(direct)>=0;
   return (noCurly && preserved && matchesSharedSanitizer) ? true : {noCurly,preserved,matchesSharedSanitizer,xfaTxt,direct};});
-await ta('reviewer overflow behaves the same in both', async()=>{
-  E("resetFormFields();");
-  for(let i=1;i<=7;i++) E("addReviewer("+i+")");
-  const rows=w.document.querySelectorAll('.reviewer-row').length;
-  const flat=E("String(DD254Export.buildOfficialPdf)");
-  return flat.includes('data.reviewers.length>6') && flat.includes('Additional reviewing officials')
-      && !flat.includes('Internal reviewing officials');});
 t('CAGE fields display uppercase on the form', ()=>{
   const css=Array.from(w.document.querySelectorAll('style')).map(x=>x.textContent).join('');
   const ids=['i6b','i7b','i17e'].every(id=>(w.document.getElementById(id).className||'').includes('cage-up'));
   return /\.cage-up\{text-transform:uppercase;\}/.test(css) && ids;});
-await ta('the flattened PDF still builds after the change', async()=>{
-  let bytes=0; const OB=w.Blob; w.Blob=function(p){ try{bytes=(p[0]&&p[0].length)||0;}catch(e){} return new OB(p); };
-  await E("exportOfficial254(true)"); w.Blob=OB;
-  return bytes>10000;});
 
 H('37. Required fields are actually enforced');
 t('a hollow form is no longer clean', ()=>{ F();
@@ -4792,13 +4726,6 @@ t('the Item 13 reference line still appears', ()=>{
   return /This is in support of effort 0007\./.test(w.document.getElementById('item13').value)
     ? true : JSON.stringify(w.document.getElementById('item13').value.slice(0,60));
 });
-t('both exports read Block 2a from the same upstream', ()=>{
-  const src=fs.readFileSync('dd254.htm','utf8');
-  const flat=/const data=collect254Data\(draft\);[\s\S]{0,200}?DD254Export\./.test(src);
-  const xfa=/const data=collect254Data\(draft\);[\s\S]{0,200}?DD254XFA\.buildXfaDatasets/.test(src);
-  const composedOnce=(src.match(/v\.i2a = v\.i2a \+ ' \| ' \+ ctOrderType/g)||[]).length;
-  return (flat && xfa && composedOnce===1) ? true : {flat,xfa,composedOnce};
-});
 t('the combined value survives a draft round-trip', ()=>{
   seed2a(); setSA(true);
   const ws=E("collectWorkspace()");
@@ -4884,7 +4811,10 @@ t('order identity survives capture independently of the outgoing standalone sele
   E("document.getElementById('iEffort').value='0099';document.getElementById('iStandalone').checked=false;document.getElementById('iOrderType').value='BPA';");
   const d=E('ctCaptureData()'),ws=E('ctApplyDataToWorkspace('+JSON.stringify(d)+',{texts:{},checks:{},radios:{},selects:{},perf:[]})');
   E("document.getElementById('iOrderType').value='Task Order';");
-  return d.taskOrder==='0099'&&d.standalone===false&&d.orderType==='BPA'&&ws.checks.iStandalone===false&&ws.selects.iOrderType==='BPA';
+  /* The flag is no longer captured: it is not a property of a template, it
+     is a property of the order the template is applied to. 0099 is not a known
+     order, so nothing claims it has its own DD-254. */
+  return d.taskOrder==='0099'&&!('standalone' in d)&&d.orderType==='BPA'&&ws.checks.iStandalone===false&&ws.selects.iOrderType==='BPA';
 });
 await ta('applying to the live form produces the combined Block 2a', async()=>{
   mkCt({primeContract:'N00178-24-D-1234',taskOrder:'0042'});
@@ -5564,7 +5494,10 @@ await ta('changing one selected status to Issued opens one bulk window and issue
        required and stays. The audiences remain distinct, which is what keeps
        them in separate e-mails. */
     && links.some(function(h){return h.indexOf('mailto:req@gov.mil; cso1@gov.mil?subject=Issued DD Form 254 — Bulk Issue One')===0;})
-    && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com; CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil\?subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two$/i.test(h);})
+    /* v2.12.0 (REQ-15): the prepared e-mail now carries a body naming the
+       documents that must travel with the form, so the subject is no longer
+       the end of the URL. */
+    && links.some(function(h){return /^mailto:REQ@gov\.mil; fso2@b\.com; CSO1@gov\.mil; cso2@gov\.mil; other@gov\.mil\?subject=\(CUI\)\(CUI\)\(CUI\) Issued DD Form 254 — Bulk Issue Two&body=/i.test(h);})
     && !links.some(function(h){return /fso1@a\.com/.test(h);});
   d.querySelector('#bddSave').click(); await pr; w.uiAlert=oldAlert;
   const a=await E("draftGet('bi1')"), b=await E("draftGet('bi2')");
@@ -6092,35 +6025,6 @@ t('the disposition badge escalates from scheduled to due to overdue', ()=>{
   return /disposition /.test(far) && !/OVERDUE/.test(far) && !/disposition due/.test(far)
       && /disposition due/.test(soon) && /OVERDUE/.test(late)
       && E('dashRetentionBadge({})')==='';
-});
-await ta('the flattened PDF prints a shared Item 7/8 classified mailing address once', async()=>{
-  /* The unit test above proves cmaEntries() and the Item 13 textarea are right.
-     This proves it survives into the artifact the subcontractor actually
-     receives - AGENTS.md is explicit that an in-memory data packet is not
-     evidence about an export. The sentinel is a single unbroken token so that
-     Item 13 word-wrapping cannot split it and make a count meaningless. */
-  F();
-  V('i7a','Beta Corp'); V('i7b','2XY99'); V('i7cma','PDFDEDUPE90210');
-  E('addPerf()');
-  const blk=w.document.querySelector('#perfBlocks > div[id^="perf-"]');
-  blk.querySelector('.loc-8a').value='Beta Corp';
-  blk.querySelector('.cage-8b').value='2XY99';       /* same company as Item 7 */
-  blk.querySelector('.cma-loc').value='PDFDEDUPE90210';
-  E('cmaSync(); run();');
-  let bytes=null; const OB=w.Blob;
-  w.Blob=function(p,o){
-    try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){}
-    return new OB(p,o);
-  };
-  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
-  if(!bytes) return 'PDF bytes were not captured';
-  const out=path.join(os.tmpdir(),'dd254-cmadedupe-'+process.pid+'.pdf');
-  fs.writeFileSync(out,bytes);
-  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
-  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,
-    '1x:PDFDEDUPE90210'],{encoding:'utf8'});
-  try{fs.unlinkSync(out);}catch(e){}
-  return chk.status===0 ? true : {status:chk.status,stdout:chk.stdout,stderr:chk.stderr};
 });
 t('the SAP flag raises the countersignature requirement on a 2b subcontract', ()=>{
   E("resetFormFields();document.getElementById('i2b').value='SUB-0001';document.getElementById('sapFlag').checked=true;run();");
@@ -7480,18 +7384,6 @@ t('the dynamic XFA data carries 3a on a Revision and a Final as well as 3b', ()=
   const h=k=>{ const m=y.match(new RegExp('<'+k+'>([^<]*)</'+k+'>')); return m?m[1]:null; };
   const fin=h('three_C')==='1' && h('three_dateA')==='2025-01-05' && h('three_dateC')==='2027-01-01' && h('three_RevisionNum')==='';
   return rev && fin ? true : {rev:[g('three_A'),g('three_dateA'),g('three_RevisionNum'),g('three_dateB')],fin:[h('three_dateA'),h('three_dateC'),h('three_RevisionNum')]}; });
-await ta('the flattened PDF of a Revision prints the original date and the revision date', async()=>{
-  F(); V('i2a','ITEM3-PDF-2601'); V('i3a_date','20250105'); V('i3b_rev','7'); V('i3b_date','20260315'); R('spec','3b'); RUN();
-  let bytes=null; const OB=w.Blob;
-  w.Blob=function(p,o){ try{ if(p&&p[0]&&p[0].length>10000) bytes=Buffer.from(p[0]); }catch(e){} return new OB(p,o); };
-  try{ await E("exportOfficial254(true)"); } finally { w.Blob=OB; }
-  if(!bytes) return 'PDF bytes were not captured';
-  const out=path.join(os.tmpdir(),'dd254-item3-'+process.pid+'.pdf');
-  fs.writeFileSync(out,bytes);
-  const python=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
-  const chk=cp.spawnSync(python,[path.join(__dirname,'pdf_content_regression.py'),out,'ITEM3-PDF-2601','1x:2025-01-05','1x:2026-03-15'],{encoding:'utf8'});
-  try{fs.unlinkSync(out);}catch(e){}
-  return chk.status===0 ? true : {status:chk.status,stdout:chk.stdout,stderr:chk.stderr}; });
 t("the preparer's worksheet shows the original date with the revision", ()=>{
   F(); V('i3a_date','20250105'); V('i3b_rev','x'); V('i3b_date','20260315'); R('spec','3b'); RUN(); grabWindow(); E("exportPrep254();");
   const a=/3b — Revised \(Rev x, Date 20260315; original date 20250105\)/.test(grabbed) && /Item 3b: Revision number must be a whole number/.test(grabbed);
@@ -7914,10 +7806,13 @@ await ta('an order-specific received DD254 uses its own saved language',async()=
   const own=await E("ctOrderCreate('TEST-PRIME','0021','Delivery Order','order')");w.__ORDER_ID=own.order.ioId;
   return E("ctOrderSource(ctOrderRows().find(o=>o.ioId===window.__ORDER_ID)).snapshot.data.i13==='ORDER WORDING'");
 });
-await ta('new workflow preserves order type and prime identity without deriving the outgoing standalone flag',async()=>{
+/* v2.12.0 (REQ-06): 0021 carries its own order template, so the outgoing form
+   IS specific to that order and the box belongs ticked. It used to be forced
+   false by the order-template creators, which is DEF-06. */
+await ta('new workflow preserves order identity and ticks standalone for an order with its own DD-254',async()=>{
   const rec=await E('ctOrderStart(window.__ORDER_ID)');w.__OWN_DRAFT=rec.id;
   const ws=E('collectWorkspace()');
-  return ws.texts.i2a==='TEST-PRIME'&&ws.texts.iEffort==='0021'&&ws.selects.iOrderType==='Delivery Order'&&!ws.checks.iStandalone&&ws.texts.item13.includes('ORDER WORDING')&&ws.ctSource.sourceMode==='order'&&ws.ctSource.snapshot.label==='Order language';
+  return ws.texts.i2a==='TEST-PRIME'&&ws.texts.iEffort==='0021'&&ws.selects.iOrderType==='Delivery Order'&&ws.checks.iStandalone===true&&ws.texts.item13.includes('ORDER WORDING')&&ws.ctSource.sourceMode==='order'&&ws.ctSource.snapshot.label==='Order language';
 });
 await ta('open-existing order does not create another outgoing DD254',async()=>{
   const before=(await E('draftAll()')).length;const rec=await E('ctOrderStart(window.__ORDER_ID)');
@@ -7928,7 +7823,7 @@ await ta('automatic checkbox language, attachments and marking use the workflow 
   E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
   const rec=await E('draftGet(window.__OWN_DRAFT)');w.__SNAP_REC=rec;
   await E("ctInsertAll('own-src')");
-  return E("ctGv('item13').includes('SAVED CHECKBOX LANGUAGE')&&!ctGv('item13').includes('NEW REPOSITORY LANGUAGE')&&ctGv('iEffort')==='0021'&&!ctCk('iStandalone')&&ctTplAttachments().att.includes('Saved attachment.pdf')&&!ctTplAttachments().att.includes('New attachment.pdf')&&dashDistAttachments(window.__SNAP_REC).tpl.includes('Saved attachment.pdf')&&!dd254WorkspaceCuiMarking(window.__SNAP_REC.workspace)");
+  return E("ctGv('item13').includes('SAVED CHECKBOX LANGUAGE')&&!ctGv('item13').includes('NEW REPOSITORY LANGUAGE')&&ctGv('iEffort')==='0021'&&ctCk('iStandalone')&&ctTplAttachments().att.includes('Saved attachment.pdf')&&!ctTplAttachments().att.includes('New attachment.pdf')&&dashDistAttachments(window.__SNAP_REC).tpl.includes('Saved attachment.pdf')&&!dd254WorkspaceCuiMarking(window.__SNAP_REC.workspace)");
 });
 await ta('template edits flag review and keep saved source wording and existing drafts intact',async()=>{
   await E("var a=tplLoad(TPL_CT);a[0].data.i13='NEW PRIME WORDING';tplSave(TPL_CT,a);");
@@ -8033,7 +7928,16 @@ await ta('a task-order-specific DD254 creates its own editable template beneath 
 t('prime and task-order templates use the same complete block editor',()=>{
   const i=E("TPL_EDIT.findIndex(t=>t.data.taskOrder==='0042')");E('ctMgrToggle('+i+')');
   const editor=w.document.getElementById('ctEd_'+i);
-  return editor.style.display==='block'&&editor.querySelectorAll('input[type="checkbox"]').length===E('CT_10.length+CT_11.length+CT_18.length')&&/Required attachments/.test(editor.textContent)&&!!editor.querySelector('textarea[placeholder="Block 13 language…"]');
+  /* v2.12.0 (REQ-11): each Item 10/11 key gained an "always insert" box beside
+     its language, so a bare total no longer says what it used to. Counted
+     apart, which pins down more than the total did: every selection box is
+     present, and every 10/11 key has its always-insert control. */
+  const allBoxes=editor.querySelectorAll('input[type="checkbox"]').length;
+  const alwaysBoxes=editor.querySelectorAll('label[id^="ctAlw_"] input[type="checkbox"]').length;
+  const selBoxes=allBoxes-alwaysBoxes;
+  return editor.style.display==='block'
+      &&selBoxes===E('CT_10.length+CT_11.length+CT_18.length')
+      &&alwaysBoxes===E('CT_10.length+CT_11.length')&&/Required attachments/.test(editor.textContent)&&!!editor.querySelector('textarea[placeholder="Block 13 language…"]');
 });
 await ta('editing a child autosaves the child without overwriting prime language',async()=>{
   const tx=w.document.querySelector('.ct-order-card textarea[placeholder="Block 13 language…"]');tx.value='Unique order guidance';tx.dispatchEvent(new w.Event('input',{bubbles:true}));await E('dashTplFlush()');
@@ -8256,9 +8160,13 @@ t('a template carrying a task order no longer claims to be order-specific', ()=>
   const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{taskOrder:'0007'}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
   /* Block 2a carries the order only when the form says it is specific to it */
   return ws.checks.iStandalone===false && ws.texts.iEffort==='0007' ? true : ws.checks; });
-t('a template that records the choice still honours it', ()=>{
+/* v2.12.0 (REQ-06): this previously asserted the defect. A template carrying
+   standalone:true ticked the box on any order it was applied to, including one
+   that follows the prime - which is the exact complaint REQ-06 records. The
+   flag is derived from the order's coverage now, so a stored one is ignored. */
+t('a template that records the choice no longer imposes it', ()=>{
   const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{taskOrder:'0007',standalone:true}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
-  return ws.checks.iStandalone===true; });
+  return ws.checks.iStandalone===false ? true : ('got '+ws.checks.iStandalone); });
 E("tplSave(TPL_B13,[]);tplSave(TPL_SM,[]);showDashView();resetFormFields();");
 
 H('112. v2.7.0 contract type is chosen from its own picker, not at origination');
@@ -9280,6 +9188,801 @@ await ta('a full backup carries the settings alongside the audit log, outside th
       ? true : ('carried='+carried+' version='+body.version+' applied='+applied); });
 
 E("distRolesSet([]);");
+
+H('123. v2.12.0 the flat PDF writer is retired');
+/* Owner decision, 23 October 2026: the dynamic XFA form is the only official
+   export. Fourteen assertions describing the flat writer were deleted rather
+   than weakened, because the thing they tested no longer exists. These take
+   their place, so the removal is itself held in place by the suite. */
+
+t('the flat writer, its module and its payload are all gone', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return E("typeof exportOfficial254")==='undefined'
+      && E("typeof DD254Export")==='undefined'
+      && src.indexOf('DD254_BASE_B64')<0
+      && src.indexOf('buildOfficialPdf')<0
+      ? true : ('exportOfficial254='+E("typeof exportOfficial254")
+               +' DD254Export='+E("typeof DD254Export")
+               +' base64='+(src.indexOf('DD254_BASE_B64')>=0)
+               +' builder='+(src.indexOf('buildOfficialPdf')>=0));
+});
+
+t('the dynamic XFA export survives it, and still reads collect254Data', ()=>{
+  return E("typeof DD254XFA")==='object'
+      && E("typeof DD254XFA.buildXfaDatasets")==='function'
+      && E("typeof DD254XFA.injectXfaDatasets")==='function'
+      && E("typeof collect254Data")==='function'
+      && E("typeof DD254_XFA_B64")==='string'
+      && E("DD254_XFA_B64.length")>1000
+      ? true : ('xfa='+E("typeof DD254XFA")+' collect='+E("typeof collect254Data"));
+});
+
+t('the Item 13 rich-text toolbar is gone and pasting is plain text', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  /* execCommand('copy') is the clipboard helper elsewhere and must survive;
+     only the formatting command is retired. */
+  return src.indexOf('fmt13')<0
+      && src.indexOf("execCommand('copy')")>0
+      && src.indexOf('execCommand(cmd')<0
+      && E("typeof i13PastePlain")==='function'
+      ? true : ('fmt13='+(src.indexOf('fmt13')>=0)
+               +' paste='+E("typeof i13PastePlain"));
+});
+
+
+H('124. v2.12.0 one attachment name per box (REQ-15)');
+/* attText remains the stored field. attList is the editor's working copy and
+   writes straight back to it, so there is one source of truth and no migration
+   step for a template written by an older build. */
+
+const ATTED=function(text){
+  E("window.TPL_EDIT=[{label:'T',data:Object.assign(ctBlankData(),{attText:"+JSON.stringify(text||'')+"})}];window.TPL_EDIT_KIND='ct';");
+};
+
+t('a template written before this existed edits as boxes', ()=>{
+  ATTED(['SCG-1234','DD Form 254 of the prime'].join(String.fromCharCode(10)));
+  const rows=E("ctAttRowsHtml(0)");
+  const n=(rows.match(/ctAttSet\(0,\d+,this\.value\)/g)||[]).length;
+  return n===2 && rows.indexOf('SCG-1234')>0 ? true : ('boxes='+n);
+});
+
+t('adding a box appends it and keeps attText in step', ()=>{
+  ATTED('SCG-1234');
+  E("ctAttAdd(0);ctAttSet(0,1,'Programme OPSEC Plan');");
+  const d=E("window.TPL_EDIT[0].data");
+  return d.attList.length===2 && d.attText===['SCG-1234','Programme OPSEC Plan'].join(String.fromCharCode(10))
+      ? true : JSON.stringify(d.attText);
+});
+
+t('removing a box removes exactly that one', ()=>{
+  ATTED(['A','B','C'].join(String.fromCharCode(10)));
+  E("ctAttDel(0,1);");
+  const d=E("window.TPL_EDIT[0].data");
+  return d.attText===['A','C'].join(String.fromCharCode(10)) ? true : JSON.stringify(d.attText);
+});
+
+t('an empty box is not an attachment', ()=>{
+  ATTED('A');
+  E("ctAttAdd(0);ctAttAdd(0);ctAttSet(0,2,'   ');");
+  const d=E("window.TPL_EDIT[0].data");
+  return d.attText==='A' && E('ctAttLines('+JSON.stringify(d)+').length')===1 ? true : (JSON.stringify(d.attText)+' n='+E('ctAttLines('+JSON.stringify(d)+').length'));
+});
+
+t('what the rest of the tool reads is unchanged', ()=>{
+  /* ctAttLines is what the reminder panel, the copy list and the issuance
+     e-mail all go through. It still reads attText, so none of them had to
+     learn about the editor. */
+  ATTED(['One','Two'].join(String.fromCharCode(10)));
+  E("ctAttSet(0,0,'One edited');");
+  const lines=E("ctAttLines(window.TPL_EDIT[0].data)");
+  return lines.join('|')==='One edited|Two' ? true : lines.join('|');
+});
+
+
+H('125. v2.12.0 the issuance e-mail names its attachments (REQ-15)');
+/* The operator used to be told who to send to and not what to send. A DD-254
+   without its SCG is a DD-254 nobody can act on. */
+
+const ATTREC=function(id,notes){
+  return {id:id,title:id,requestedBy:'req@gov.mil',
+    workspace:{checks:{},selects:{},radios:{},perf:[],
+      texts:{i6c:'cso@dcsa.mil',attachNotes:notes}}};
+};
+
+t('a document required by two records is named once', ()=>{
+  const a=ATTREC('A',['SCG-1234','Prime DD Form 254'].join(String.fromCharCode(10)));
+  const b=ATTREC('B',['Prime DD Form 254','OPSEC Plan'].join(String.fromCharCode(10)));
+  const atts=E("dashMailAttachments("+JSON.stringify([a,b])+")");
+  return atts.join('|')==='SCG-1234|Prime DD Form 254|OPSEC Plan'
+      ? true : atts.join('|');
+});
+
+t('the body names every attachment and nothing else', ()=>{
+  const a=ATTREC('A',['SCG-1234','OPSEC Plan'].join(String.fromCharCode(10)));
+  const body=E("dashMailBody("+JSON.stringify([a])+")");
+  return /must travel with it/.test(body)
+      && body.indexOf('SCG-1234')>0 && body.indexOf('OPSEC Plan')>0
+      && body.indexOf('req@gov.mil')<0 && body.indexOf('cso@dcsa.mil')<0
+      ? true : body;
+});
+
+t('with no attachments the body says so rather than going quiet', ()=>{
+  const body=E("dashMailBody("+JSON.stringify([ATTREC('A','')])+")");
+  return /No further attachments are required/.test(body) ? true : body;
+});
+
+t('the manifest rides in the mailto when it fits', ()=>{
+  const m=E("dashIssueMail("+JSON.stringify(ATTREC('A','SCG-1234'))+")");
+  const href=decodeURIComponent(m.href);
+  return m.bodyInHref===true && href.indexOf('&body=')>0
+      && href.indexOf('SCG-1234')>0 && m.atts.join('|')==='SCG-1234'
+      ? true : ('fits='+m.bodyInHref+' href='+href.slice(0,120));
+});
+
+t('an over-long manifest is dropped whole, never truncated', ()=>{
+  /* Half a list looks exactly like a whole one. The operator is told instead,
+     and Copy Attachments still carries all of it. */
+  const many=[]; for(let i=0;i<120;i++) many.push('Attachment number '+i+' with a long descriptive name');
+  const m=E("dashIssueMail("+JSON.stringify(ATTREC('A',many.join(String.fromCharCode(10))))+")");
+  return m.bodyInHref===false
+      && m.href.indexOf('&body=')<0
+      && m.href.length<=E("DASH_MAILTO_MAX")
+      && m.atts.length===120
+      ? true : ('fits='+m.bodyInHref+' len='+m.href.length+' atts='+m.atts.length);
+});
+
+await ta('the single issuance window offers Copy Attachments and Copy e-mail body', async()=>{
+  E("window.__attDlg=dashDistDialog("+JSON.stringify(ATTREC('ATT1','SCG-1234'))+")");
+  const d=await waitDlg('#dashDistDlg',10000); if(!d) return 'no dialog';
+  const txt=d.textContent;
+  const ok=/Copy Attachments/.test(txt) && /Copy e-mail body/.test(txt);
+  d.querySelector('#ddSkip').click(); await E("window.__attDlg");
+  return ok ? true : txt.slice(0,160); });
+
+await ta('each bulk group panel lists what that e-mail must carry', async()=>{
+  const a=ATTREC('BA','SCG-1234'), b=ATTREC('BB','OPSEC Plan');
+  b.workspace.texts.i7a='Beta'; b.workspace.texts.i7fsoEmail='fso@beta.com';
+  E("window.__bulkAtt=dashBulkDistDialog("+JSON.stringify([a,b])+")");
+  const d=await waitDlg('#dashBulkDistDlg',10000); if(!d) return 'no dialog';
+  const txt=d.textContent;
+  /* Two audiences, so two panels, and each names only its own documents. */
+  const ok=/Attach to this e-mail/.test(txt)
+        && txt.indexOf('SCG-1234')>0 && txt.indexOf('OPSEC Plan')>0
+        && (txt.match(/Copy Attachments/g)||[]).length===2;
+  const c=d.querySelector('#bddCancel'); if(c) c.click();
+  await E("window.__bulkAtt");
+  return ok ? true : ('panels='+(txt.match(/Copy Attachments/g)||[]).length); });
+
+
+H('126. v2.12.0 copying asks the stage and the intake, once (REQ-02)');
+/* The copy dialog carries the source's requester and identifiers already
+   filled in, asks whether the copy is an Original or a Solicitation, and lets
+   the operator correct anything that differs. There is exactly one dialog. */
+
+const CPSRC=async function(id,extra){
+  await E("draftPut("+JSON.stringify(Object.assign({
+    id:id,title:id,status:'Draft',stage:'orig',meta:{contract:'N00178-24-D-1234',
+      identity:{prime:'N00178-24-D-1234',order:'TO-0007',sub:'SUB-1'}},
+    requestedBy:'jane.doe@example.com',requestedByName:'Jane Doe',
+    requester:{firstName:'Jane',lastName:'Doe',email:'jane.doe@example.com'},
+    todos:[],notes:'',dist:[],holds:[],
+    workspace:{selects:{},checks:{c10a:true,c11c:true},radios:{},perf:[],
+      texts:{i2a:'N00178-24-D-1234',i2b:'SUB-1',iEffort:'TO-0007',
+             item13:'MARKER-KEEP-THIS-LANGUAGE',i3a_date:'20260101'}}
+  },extra||{}))+")");
+};
+
+await ta('the copy dialog arrives pre-filled and asks the stage', async()=>{
+  await CPSRC('CP1');
+  const pr=E("dashDuplicate('CP1')");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000);
+  if(!d) return 'no dialog';
+  const v=function(id){ const e=d.querySelector('#'+id); return e?e.value:null; };
+  const ok=v('cp_first')==='Jane' && v('cp_last')==='Doe'
+        && v('cp_email')==='jane.doe@example.com'
+        && v('cp_prime')==='N00178-24-D-1234' && v('cp_order')==='TO-0007'
+        && !!d.querySelector('#cpStageOrig') && !!d.querySelector('#cpStageSol')
+        && d.querySelector('#cpStageOrig').getAttribute('aria-checked')==='true';
+  d.querySelector('#cpCancel').click(); await pr;
+  return ok ? true : ('first='+v('cp_first')+' prime='+v('cp_prime')); });
+
+await ta('only one dialog opens, so nothing is left waiting on a second', async()=>{
+  await CPSRC('CP2');
+  const pr=E("dashDuplicate('CP2')");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000);
+  if(!d) return 'no dialog';
+  d.querySelector('#cpKeep').click(); await pr;
+  await new Promise(r=>setTimeout(r,80));
+  /* This is DEF-01 held down: a second modal here is what stalled the suite
+     for 800 assertions. */
+  const second=w.document.getElementById('dashPartyDlg');
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of CP2')===0);
+  await dropCopies();
+  return !second && made.length===1 ? true : ('second='+!!second+' made='+made.length); });
+
+await ta('a matching template never overwrites the copied language', async()=>{
+  /* DEF-02. The copy exists for the language it carries; applying a template
+     over Items 10 to 18 because the contract number matches one would throw
+     away the thing being copied. */
+  await E("tplSave(TPL_CT,[{label:'Matching',ioId:'ct-match',data:Object.assign(ctBlankData(),{primeContract:'N00178-24-D-1234',i13:'TEMPLATE LANGUAGE',c10:{'10a':false},c11:{'11c':false}})}])");
+  await CPSRC('CP3');
+  const r=await copyAs('CP3','keep');
+  if(r.err) return r.err;
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of CP3')===0)[0];
+  await dropCopies(); E("tplSave(TPL_CT,[])");
+  if(!made) return 'no copy';
+  const tx=made.workspace.texts||{}, ck=made.workspace.checks||{};
+  return tx.item13==='MARKER-KEEP-THIS-LANGUAGE' && ck.c10a===true && ck.c11c===true
+      ? true : ('item13='+tx.item13+' c10a='+ck.c10a+' c11c='+ck.c11c); });
+
+await ta('a copy does not inherit the original issue date', async()=>{
+  /* DEF-04. Item 3 records what happened to THIS DD-254, and none of it has
+     happened to the copy yet. */
+  await CPSRC('CP4');
+  const r=await copyAs('CP4','keep');
+  if(r.err) return r.err;
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of CP4')===0)[0];
+  await dropCopies();
+  if(!made) return 'no copy';
+  const tx=made.workspace.texts||{};
+  return tx.i3a_date==='' && tx.item13==='MARKER-KEEP-THIS-LANGUAGE'
+      ? true : ('i3a='+JSON.stringify(tx.i3a_date)); });
+
+await ta('a draft that never recorded a requester can still be copied', async()=>{
+  /* DEF-03. Refusing would block the one action that lets the operator fix it. */
+  await E("draftPut({id:'CP5',title:'Legacy',status:'Draft',stage:'orig',meta:{},todos:[],notes:'',dist:[],holds:[],workspace:{selects:{},checks:{},radios:{},perf:[],texts:{item13:'OLD'}}})");
+  const r=await copyAs('CP5','keep');
+  if(r.err) return r.err;
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of Legacy')===0);
+  await dropCopies();
+  return made.length===1 ? true : ('made='+made.length); });
+
+await ta('choosing Solicitation writes Block 2c and leaves 2b alone', async()=>{
+  await CPSRC('CP6');
+  const pr=E("dashDuplicate('CP6')");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'copy dialog',10000);
+  if(!d) return 'no dialog';
+  d.querySelector('#cpStageSol').click();
+  const sol=d.querySelector('#cp_sol'); sol.value='N00178-26-R-0001';
+  const due=d.querySelector('#cp_due'); due.value='2026-11-30';
+  d.querySelector('#cpKeep').click(); await pr;
+  const made=(await E("draftAll()")).filter(x=>(x.title||'').indexOf('Copy of CP6')===0)[0];
+  await dropCopies();
+  if(!made) return 'no copy';
+  const tx=made.workspace.texts||{};
+  return made.stage==='sol' && tx.i2c==='N00178-26-R-0001' && tx.i2c_due==='2026-11-30'
+      && tx.item13==='MARKER-KEEP-THIS-LANGUAGE'
+      ? true : ('stage='+made.stage+' i2c='+tx.i2c+' due='+tx.i2c_due); });
+
+
+H('127. v2.12.0 the standalone task-order box follows the order (REQ-06)');
+/* "This outgoing DD Form 254 is specific to the order above" is true when that
+   order has a DD-254 of its own and false when it runs under the prime's. It
+   is asked of the order every time rather than remembered anywhere. */
+
+const SAORDERS=function(rows){ E("tplSave(TPL_ORDERS,"+JSON.stringify(rows)+")"); };
+const SAORDER=function(prime,number,mode){
+  return {recordType:'order',primeContract:prime,number:number,
+          ioId:'sa-'+number,coverageMode:mode};
+};
+
+t('an order that follows the prime is never ticked, whatever a template says', ()=>{
+  /* DEF-05 from the template end. */
+  SAORDERS([SAORDER('P-1','TO-1','prime')]);
+  const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{primeContract:'P-1',taskOrder:'TO-1',standalone:true}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
+  const direct=E("dd254OrderStandalone('P-1','TO-1')");
+  SAORDERS([]);
+  return ws.checks.iStandalone===false && direct===false
+      ? true : ('ws='+ws.checks.iStandalone+' direct='+direct);
+});
+
+t('an order with its own DD-254 is ticked, whatever a template says', ()=>{
+  /* DEF-06 from the other end: the creators used to force it false. */
+  SAORDERS([SAORDER('P-2','TO-2','order')]);
+  const ws=E("ctApplyDataToWorkspace(Object.assign(ctBlankData(),{primeContract:'P-2',taskOrder:'TO-2',standalone:false}),{texts:{},checks:{},radios:{},selects:{},perf:[]})");
+  const direct=E("dd254OrderStandalone('P-2','TO-2')");
+  SAORDERS([]);
+  return ws.checks.iStandalone===true && direct===true
+      ? true : ('ws='+ws.checks.iStandalone+' direct='+direct);
+});
+
+t('an order nobody has recorded is not claimed to have its own DD-254', ()=>{
+  SAORDERS([]);
+  return E("dd254OrderStandalone('P-3','TO-UNKNOWN')")===false
+      && E("dd254OrderStandalone('P-3','')")===false ? true : 'claimed';
+});
+
+t('changing the order coverage changes the answer, with nothing to migrate', ()=>{
+  /* The whole point of deriving it: the answer follows the order, so there is
+     no stored copy anywhere that can disagree with it. */
+  SAORDERS([SAORDER('P-4','TO-4','prime')]);
+  const before=E("dd254OrderStandalone('P-4','TO-4')");
+  E("(function(){var a=tplLoad(TPL_ORDERS);a[0].coverageMode='order';tplSave(TPL_ORDERS,a);})()");
+  const after=E("dd254OrderStandalone('P-4','TO-4')");
+  SAORDERS([]);
+  return before===false && after===true ? true : ('before='+before+' after='+after);
+});
+
+t('the flag is no longer captured into a template, nor exported to CSV', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const d=E("ctCaptureData()");
+  return !('standalone' in d)
+      && src.indexOf('Outgoing Order-specific')<0
+      ? true : ('captured='+('standalone' in d)+' csv='+(src.indexOf('Outgoing Order-specific')>=0));
+});
+
+
+H('128. v2.12.0 standard language sits where you put it (REQ-07, REQ-08)');
+/* Top is the default and reproduces what the tool always did. Bottom puts the
+   language after the Item 10/11 sections and above the classified mailing
+   address, which stays last whatever this setting says. */
+
+const SLSET=function(entries){ E("tplSave(TPL_SL,"+JSON.stringify(entries)+")"); };
+const SLBODY=function(){ E("showFormView();resetFormFields();"); };
+
+t('the default is top, which is what the tool did before the setting existed', ()=>{
+  E("localStorage.removeItem('dd254_sl_position')");
+  return E("slPositionGet()")==='top' ? true : E("slPositionGet()");
+});
+
+t('the writer is the only thing that decides a valid value', ()=>{
+  E("slPositionSet('sideways')");
+  const bad=E("slPositionGet()");
+  E("slPositionSet('bottom')"); const b=E("slPositionGet()");
+  E("slPositionSet('top')"); const t2=E("slPositionGet()");
+  return bad==='top' && b==='bottom' && t2==='top' ? true : (bad+'/'+b+'/'+t2);
+});
+
+await ta('an Item 10 section never lands above top-placed language', async()=>{
+  /* DEF-07. The section used to be inserted at the head offset, which is above
+     language the operator asked to lead with. */
+  SLBODY();
+  SLSET([{label:'Lead',programme:'',level:'',text:'SL-TOP-BOILERPLATE'}]);
+  E("slPositionSet('top');slInsert(0);");
+  E("b13SectionSet('10a','Reference 10a language.',true);");
+  const v=E("b13Text()");
+  const sl=v.indexOf('SL-TOP-BOILERPLATE'), sec=v.indexOf('Reference 10a');
+  SLSET([]); SLBODY();
+  return sl>=0 && sec>sl ? true : ('sl='+sl+' sec='+sec);
+});
+
+await ta('bottom places it after the sections and above the mailing address', async()=>{
+  SLBODY();
+  SLSET([{label:'Tail',programme:'',level:'',text:'SL-BOTTOM-BOILERPLATE'}]);
+  E("b13SectionSet('10a','Reference 10a language.',true);");
+  E("slPositionSet('bottom');slInsert(0);");
+  const v=E("b13Text()");
+  const sec=v.indexOf('Reference 10a'), sl=v.indexOf('SL-BOTTOM-BOILERPLATE');
+  const pdq=v.indexOf(E("PDQ_TEXT"));
+  E("slPositionSet('top')"); SLSET([]); SLBODY();
+  /* REQ-08: the mailing address block stays below it when present. */
+  return sl>sec && (pdq<0||pdq>sl) ? true : ('sec='+sec+' sl='+sl+' pdq='+pdq);
+});
+
+t('the duplicate-entry warning no longer blocks the page', ()=>{
+  /* DEF-18: the rest of the tool uses uiAlert. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const i=src.indexOf('function slInsert(');
+  const body=src.slice(i,i+900);
+  return body.indexOf('uiAlert')>0 ? true : body.slice(0,120);
+});
+
+
+H('129. v2.12.0 the standing sentence is the only editable boilerplate (REQ-09)');
+/* Four of the five fixed-text writers are derived from the form. Making those
+   editable would let a DD-254 contradict its own boxes, so only the sentence
+   an office chose to say is under Settings. */
+
+t('the default is the shipped sentence, not blank', ()=>{
+  E("localStorage.removeItem('dd254_pdq_text')");
+  return E("pdqTextGet()")===E("PDQ_TEXT") ? true : E("pdqTextGet()");
+});
+
+t('changing it changes what Item 13 is given', ()=>{
+  E("pdqTextSet('Direct all questions to the contracting officer.')");
+  const built=E("cmaBuild()");
+  E("localStorage.removeItem('dd254_pdq_text')");
+  return built==='Direct all questions to the contracting officer.' ? true : built.slice(0,80);
+});
+
+t('clearing it stops writing it rather than writing an empty line', ()=>{
+  E("pdqTextSet('')");
+  const built=E("cmaBuild()");
+  E("localStorage.removeItem('dd254_pdq_text')");
+  return built==='' || built.indexOf(E("PDQ_TEXT"))<0 ? true : built.slice(0,80);
+});
+
+t('the derived writers are not offered as settings', ()=>{
+  /* supBuild, the revision summary, the CUI block and the solicitation marking
+     all read the form. The inventory records why each one stays fixed. */
+  const keys=E("SETTINGS_DEFS.map(function(d){return d.key;})");
+  return keys.indexOf('pdqText')>=0
+      && keys.indexOf('solMark')<0 && keys.indexOf('supText')<0
+      && keys.indexOf('cuiText')<0 && keys.indexOf('rsumText')<0
+      ? true : keys.join(',');
+});
+
+t('the inventory exists and names all five', ()=>{
+  const doc=fs.readFileSync('../02_DOCS/DD254_Item13_Fixed_Text_Inventory.md','utf8');
+  return /PDQ_TEXT/.test(doc) && /supBuild/.test(doc) && /RSUM_LAST/.test(doc)
+      && /cuiBuild/.test(doc) && /SOL_MARK/.test(doc) ? true : 'incomplete';
+});
+
+
+H('130. v2.12.0 purchase language and bids language are different sets (REQ-03, REQ-05)');
+/* A solicitation asks bidders what they would need; an award tells a
+   contractor what they must do. The wording differs, so the library is split
+   by which one an entry is written for. */
+
+t('one controlled list of keys, each with a label', ()=>{
+  /* DEF-10: the Argon build showed raw keys in the banner and prose in the
+     editor, for the same field. */
+  const keys=E("DD254_SCENARIOS.map(function(p){return p[0];})");
+  return keys.join(',')==='both,purchase,bids'
+      && E("dd254ScenarioLabel('bids')").indexOf('Bids')===0
+      && E("dd254ScenarioLabel('nonsense')")==='Either'
+      ? true : keys.join(',');
+});
+
+t('an entry written before this existed is offered on both', ()=>{
+  /* DEF-09: classifying it as purchase would make it vanish from every
+     solicitation without anyone being told. */
+  return E("slScenarioOf({label:'Legacy'})")==='both'
+      && E("dd254ScenarioFits('both','bids')")===true
+      && E("dd254ScenarioFits('both','purchase')")===true ? true : 'narrowed';
+});
+
+t('a bids entry is kept off an award, and the reverse', ()=>{
+  return E("dd254ScenarioFits('bids','purchase')")===false
+      && E("dd254ScenarioFits('purchase','bids')")===false
+      && E("dd254ScenarioFits('bids','bids')")===true
+      ? true : 'filter wrong';
+});
+
+t('only a solicitation draws on bids wording', ()=>{
+  return E("dd254StageScenario('sol')")==='bids'
+      && E("dd254StageScenario('orig')")==='purchase'
+      && E("dd254StageScenario('rev')")==='purchase'
+      && E("dd254StageScenario('final')")==='purchase'
+      ? true : 'stage map wrong';
+});
+
+t('the candidate filter honours the scenario alongside programme and level', ()=>{
+  const lib=[{label:'Award only',scenario:'purchase',text:'AWARD TEXT'},
+             {label:'Bid only',scenario:'bids',text:'BID TEXT'},
+             {label:'Either way',text:'SHARED TEXT'}];
+  const award=E("slCandidates('','',"+JSON.stringify(lib)+",'purchase').map(function(t){return t.label;})");
+  const bids=E("slCandidates('','',"+JSON.stringify(lib)+",'bids').map(function(t){return t.label;})");
+  return award.join('|')==='Award only|Either way' && bids.join('|')==='Bid only|Either way'
+      ? true : ('award='+award.join('|')+' bids='+bids.join('|'));
+});
+
+t('the editor renders the selector from the same list', ()=>{
+  /* The row builder is private to the editor, so this reads the source: what
+     matters is that the editor is driven by DD254_SCENARIOS rather than a
+     second hand-written list, which is how the two vocabularies diverged. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const i=src.indexOf("if(kind==='sl'){");
+  const body=src.slice(i,i+2600);
+  return i>0 && body.indexOf('DD254_SCENARIOS.map')>0 && body.indexOf('slScenarioOf(t)')>0
+      ? true : 'editor not wired to the controlled list';
+});
+
+
+H('131. v2.12.0 the left language banner (REQ-04)');
+/* The language this DD-254 may use, beside the form instead of two clicks away
+   in a repository screen, carrying only what fits the stage. */
+
+t('it starts closed and the choice is remembered', ()=>{
+  E("localStorage.removeItem('dd254_left_banner')");
+  const closed=E("lbOpenGet()")===false;
+  E("lbOpenSet(true)"); const open=E("lbOpenGet()")===true;
+  E("lbOpenSet(false)");
+  return closed && open ? true : ('closed='+closed+' open='+open);
+});
+
+t('closed it takes no width from the form', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  /* The facsimile has a fixed shape. The rail borrows page width when open,
+     never column width from the form. */
+  return /\.left-col\{width:0/.test(src)
+      && /body\.lb-open \.layout\{max-width:1640px\}/.test(src)
+      ? true : 'rail takes column width';
+});
+
+t('it is not printed', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return /@media print\{ \.left-col,\.lb-tab\{display:none!important\} \}/.test(src)
+      ? true : 'banner would print';
+});
+
+await ta('opening it lists the entries that fit, and says what it is showing', async()=>{
+  E("showFormView();resetFormFields();");
+  E("tplSave(TPL_SL,"+JSON.stringify([
+      {label:'Award wording',scenario:'purchase',text:'AWARD BODY'},
+      {label:'Bid wording',scenario:'bids',text:'BID BODY'},
+      {label:'Either wording',text:'SHARED BODY'}])+")");
+  E("lbOpenSet(true);lbApply();");
+  const host=w.document.getElementById('workflowLeftBanner');
+  const txt=host?host.textContent:'';
+  E("lbOpenSet(false);lbApply();tplSave(TPL_SL,[]);");
+  /* A fresh form is not a solicitation, so bids wording is withheld. */
+  return /Award wording/.test(txt) && /Either wording/.test(txt)
+      && !/Bid wording/.test(txt) && /Purchase/.test(txt)
+      ? true : txt.slice(0,200); });
+
+await ta('closed, it renders nothing at all', async()=>{
+  E("lbOpenSet(false);lbApply();");
+  const host=w.document.getElementById('workflowLeftBanner');
+  return (host && host.innerHTML==='') ? true : 'rendered while closed'; });
+
+
+H('132. v2.12.0 template caveats are chosen, inserted and withdrawn (REQ-10, REQ-11)');
+/* Built on the per-key template language the tool already had, not beside it.
+   Argon added a parallel insert/remove machine with its own offsets and its
+   own text search, which is where DEF-08 and DEF-11 came from. */
+
+const CAVTPL=function(always){
+  const d=E("ctBlankData()");
+  d.l11={'11c':'CAVEAT 11C WORDING.','11d':'CAVEAT 11D WORDING.'};
+  if(always) d.always={'11c':true};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Caveats',ioId:'cav-tpl',data:d}])+");buildCtSelect();");
+  E("showFormView();document.getElementById('ctTplSel').value='cav-tpl';");
+};
+
+t('a template offers exactly the keys it has wording for', ()=>{
+  CAVTPL(false);
+  const keys=E("ctCaveatKeys(ctActiveTpl())");
+  E("tplSave(TPL_CT,[])");
+  return keys.join(',')==='11c,11d' ? true : keys.join(',');
+});
+
+t('the always-insert flag is read per key', ()=>{
+  CAVTPL(true);
+  const a=E("ctCaveatAlways(ctActiveTpl(),'11c')"), b=E("ctCaveatAlways(ctActiveTpl(),'11d')");
+  E("tplSave(TPL_CT,[])");
+  return a===true && b===false ? true : ('11c='+a+' 11d='+b);
+});
+
+t('an unrecorded choice still means everything the template offers', ()=>{
+  /* Nothing written before today changes behaviour. */
+  E("showFormView();resetFormFields();");
+  return E("cavChosenGet({texts:{}})")===null && E("cavWanted('11c',{texts:{}})")===true
+      ? true : 'default changed';
+});
+
+await ta('ticking the box writes the caveat, unticking takes it back out', async()=>{
+  CAVTPL(false);
+  E("resetFormFields();document.getElementById('ctTplSel').value='cav-tpl';");
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  const inserted=E("ctGv('item13')").indexOf('CAVEAT 11C WORDING.')>=0;
+  E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');");
+  const removed=E("ctGv('item13')").indexOf('CAVEAT 11C WORDING.')<0;
+  E("tplSave(TPL_CT,[])");
+  return inserted && removed ? true : ('inserted='+inserted+' removed='+removed); });
+
+await ta('a caveat declined at intake is not written however the box is ticked', async()=>{
+  CAVTPL(false);
+  E("resetFormFields();document.getElementById('ctTplSel').value='cav-tpl';");
+  E("cavChosenSet(['11d']);");
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  const c=E("ctGv('item13')").indexOf('CAVEAT 11C WORDING.')<0;
+  E("document.getElementById('c11d').checked=true;ctAutoLangKey('11d');");
+  const d=E("ctGv('item13')").indexOf('CAVEAT 11D WORDING.')>=0;
+  E("cavChosenSet([]);tplSave(TPL_CT,[])");
+  return c && d ? true : ('declined-absent='+c+' chosen-present='+d); });
+
+await ta('an edited caveat is left alone and said out loud, not half-deleted', async()=>{
+  /* DEF-08. Removing an approximate match would delete somebody's writing. */
+  CAVTPL(false);
+  E("resetFormFields();document.getElementById('ctTplSel').value='cav-tpl';");
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  E("(function(){var el=document.getElementById('item13');el.value=el.value.replace('CAVEAT 11C WORDING.','CAVEAT 11C WORDING, as amended for this contract.');})();");
+  E("document.getElementById('c11c').checked=false;ctAutoLangKey('11c');");
+  const kept=E("ctGv('item13')").indexOf('as amended for this contract')>=0;
+  const told=(w.document.getElementById('cavNotice')||{}).textContent||'';
+  E("tplSave(TPL_CT,[])");
+  return kept && /left it in Item 13|left in Item 13/.test(told) ? true : ('kept='+kept+' told='+told.slice(0,90)); });
+
+t('the always flag survives a CSV round trip', ()=>{
+  const d=E("ctBlankData()");
+  d.l11={'11c':'W'}; d.always={'11c':true};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'RT',ioId:'rt',data:d}])+")");
+  const back=E("ioDD(tplLoad(TPL_CT)[0]).always");
+  E("tplSave(TPL_CT,[])");
+  /* The column exists so the flag is settable where templates are actually
+     bulk-edited, and it survives being read back off a stored template. */
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return back && back['11c']===true && /\+' Always'/.test(src)
+      ? true : ('stored='+JSON.stringify(back)+' column='+/\+' Always'/.test(src));
+});
+
+
+H('133. v2.12.0 the acquisition caveat engine, off unless asked for (REQ-13)');
+/* The matrix is a pure function, so it is tested rather than clicked. 11c is
+   about generating classified information; 11d is about holding or making
+   classified hardware. They are independent, which is the whole confusion. */
+
+const CAV=function(a){ return E("cavEvaluate("+JSON.stringify(a)+")"); };
+
+t('it is off by default and the writer validates the value', ()=>{
+  E("localStorage.removeItem('dd254_caveat_engine')");
+  const off=E("cavEngineGet()")==='off' && E("cavEngineOn()")===false;
+  E("cavEngineSet('maybe')"); const bad=E("cavEngineGet()");
+  E("cavEngineSet('on')"); const on=E("cavEngineOn()");
+  E("cavEngineSet('off')");
+  return off && bad==='off' && on===true ? true : ('off='+off+' bad='+bad+' on='+on);
+});
+
+t('an unclassified part with classified testing is 11c and NOT 11d', ()=>{
+  /* The case the architecture calls out as most often got wrong. */
+  const r=CAV({archetype:'parts',hwClassified:false,testClassified:true});
+  return r.checks.c11c===true && r.checks.c11d===false
+      && /UNCLASSIFIED in its physical configuration/.test(r.text.join(' '))
+      && /Item 11d is not applicable/.test(r.text.join(' '))
+      ? true : JSON.stringify(r.checks);
+});
+
+t('a classified part with unclassified testing is 11d and NOT 11c', ()=>{
+  const r=CAV({archetype:'parts',hwClassified:true,testClassified:false});
+  return r.checks.c11d===true && r.checks.c11c===false
+      && /Item 11c is not applicable/.test(r.text.join(' ')) ? true : JSON.stringify(r.checks);
+});
+
+t('both classified sets both, and neither sets neither', ()=>{
+  const both=CAV({archetype:'parts',hwClassified:true,testClassified:true});
+  const none=CAV({archetype:'parts',hwClassified:false,testClassified:false});
+  return both.checks.c11c===true && both.checks.c11d===true
+      && none.checks.c11c===false && none.checks.c11d===false
+      && /neither 11c nor 11d/.test(none.notes.join(' '))
+      ? true : (JSON.stringify(both.checks)+JSON.stringify(none.checks));
+});
+
+t('services at a government site need visits, not storage', ()=>{
+  const r=CAV({archetype:'services',site:'government'});
+  return r.checks.c11a===true && r.checks.c11e===true && r.checks.c11d===false
+      && r.safeguard===false && /no classified mailing address is required/.test(r.notes.join(' '))
+      ? true : JSON.stringify(r.checks);
+});
+
+t('services at the contractor facility store documents', ()=>{
+  const r=CAV({archetype:'services',site:'contractor'});
+  return r.checks.c11b===true && r.checks.c11e===true && r.checks.c11d===false
+      && r.safeguard===true ? true : JSON.stringify(r.checks);
+});
+
+t('COMSEC custody is a different answer from COMSEC access', ()=>{
+  const held=CAV({archetype:'services',site:'government',comsec:true,comsecCustody:true});
+  const seen=CAV({archetype:'services',site:'government',comsec:true,comsecCustody:false});
+  return held.checks.c10a===true && held.checks.c11h===true && held.safeguard===true
+      && seen.checks.c10a===true && !seen.checks.c11h && seen.checks.c11a===true
+      && /does not establish a COMSEC account/.test(seen.text.join(' '))
+      ? true : (JSON.stringify(held.checks)+' / '+JSON.stringify(seen.checks));
+});
+
+t('OPSEC sets 11j and names the CIL', ()=>{
+  const r=CAV({archetype:'parts',hwClassified:false,testClassified:false,opsec:true});
+  return r.checks.c11j===true && /Critical Information List/.test(r.text.join(' '))
+      ? true : JSON.stringify(r.checks);
+});
+
+t('carte blanche derives nothing and says so', ()=>{
+  const r=CAV({archetype:'blanket'});
+  return Object.keys(r.checks).length===0 && /Review Items 10 and 11/.test(r.notes.join(' '))
+      ? true : JSON.stringify(r);
+});
+
+t('with no archetype it advises nothing at all', ()=>{
+  const r=CAV({});
+  return r.text.length===0 && Object.keys(r.checks).length===0 ? true : JSON.stringify(r);
+});
+
+await ta('the banner shows the questionnaire only when the engine is on', async()=>{
+  E("showFormView();resetFormFields();lbOpenSet(true);");
+  E("cavEngineSet('off');lbApply();");
+  const offTxt=(w.document.getElementById('workflowLeftBanner')||{}).textContent||'';
+  E("cavEngineSet('on');lbApply();");
+  const onTxt=(w.document.getElementById('workflowLeftBanner')||{}).textContent||'';
+  E("cavEngineSet('off');lbOpenSet(false);lbApply();");
+  return !/Acquisition caveats/.test(offTxt) && /Acquisition caveats/.test(onTxt)
+      && /Components \/ parts/.test(onTxt)
+      ? true : ('off='+/Acquisition caveats/.test(offTxt)+' on='+/Acquisition caveats/.test(onTxt)); });
+
+await ta('nothing is changed until it is applied', async()=>{
+  E("showFormView();resetFormFields();cavEngineSet('on');");
+  E("cavEngineAnswerSet({archetype:'parts',hwClassified:false,testClassified:true});");
+  const before=E("document.getElementById('c11c').checked");
+  const n=E("cavEngineApply()");
+  const after=E("document.getElementById('c11c').checked");
+  const wrote=E("ctGv('item13')").indexOf('UNCLASSIFIED in its physical configuration')>=0;
+  E("cavEngineSet('off');resetFormFields();");
+  return before===false && after===true && wrote && n>0
+      ? true : ('before='+before+' after='+after+' wrote='+wrote+' n='+n); });
+
+
+H('134. v2.12.0 the intake dialog actually renders what it collects');
+/* Written because it did not. The submit collected .np-cav boxes and nothing
+   rendered them, so caveatsOffered was always false and the choice was never
+   recorded - and every other test passed, because they called the data layer
+   directly. A dialog test is the only thing that catches that. */
+
+const INTAKE_TPL=function(always){
+  const d=E("ctBlankData()");
+  d.primeContract='N00178-24-D-9000';
+  d.l11={'11c':'INTAKE CAVEAT 11C.','11d':'INTAKE CAVEAT 11D.'};
+  if(always) d.always={'11c':true};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Intake caveats',ioId:'intake-cav',data:d}])+")");
+};
+
+await ta('a matched template lists its caveats, pre-ticking the always ones', async()=>{
+  INTAKE_TPL(true);
+  const pr=E("dashPartyPrompt({stage:'orig'})");
+  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const pe=d.querySelector('#np_prime'); pe.value='N00178-24-D-9000';
+  if(pe.oninput) pe.oninput();
+  await new Promise(r=>setTimeout(r,60));
+  const boxes=Array.prototype.slice.call(d.querySelectorAll('.np-cav'));
+  const ticked=boxes.filter(function(b){ return b.checked; }).map(function(b){ return b.value; });
+  const all=boxes.map(function(b){ return b.value; });
+  d.querySelector('#np_cancel').click(); await pr;
+  E("tplSave(TPL_CT,[])");
+  return all.join(',')==='11c,11d' && ticked.join(',')==='11c'
+      ? true : ('all='+all.join(',')+' ticked='+ticked.join(',')); });
+
+await ta('what is ticked reaches the record, and what is not stays declined', async()=>{
+  await wipe(); INTAKE_TPL(true);
+  const pr=E("dashPartyPrompt({stage:'orig'})");
+  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const put=function(id,v){ const e=d.querySelector('#'+id); if(e){ e.value=v; if(e.oninput) e.oninput(); } };
+  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane@example.com');
+  put('np_prime','N00178-24-D-9000'); put('np_sub','N/A');
+  await new Promise(r=>setTimeout(r,60));
+  const ans=await (async()=>{ d.querySelector('#np_ok').click(); return await pr; })();
+  E("tplSave(TPL_CT,[])");
+  if(!ans) return 'dialog refused';
+  return ans.caveatsOffered===true && (ans.caveats||[]).join(',')==='11c'
+      ? true : ('offered='+ans.caveatsOffered+' caveats='+JSON.stringify(ans.caveats)); });
+
+await ta('the engine questionnaire appears only when the engine is on', async()=>{
+  E("cavEngineSet('off')");
+  let pr=E("dashPartyPrompt({stage:'orig'})");
+  let d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const offShown=d.querySelector('#np_eng').style.display!=='none';
+  d.querySelector('#np_cancel').click(); await pr;
+  E("cavEngineSet('on')");
+  pr=E("dashPartyPrompt({stage:'orig'})");
+  d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog 2';
+  const onShown=d.querySelector('#np_eng').style.display!=='none';
+  const hasPills=!!d.querySelector('[data-eng-arch="parts"]');
+  d.querySelector('#np_cancel').click(); await pr;
+  E("cavEngineSet('off')");
+  return offShown===false && onShown===true && hasPills
+      ? true : ('off='+offShown+' on='+onShown+' pills='+hasPills); });
+
+await ta('answering the engine at intake writes the boxes and the wording', async()=>{
+  await wipe();
+  E("cavEngineSet('on')");
+  const pr=E("dashPartyPrompt({stage:'orig'})");
+  const d=await waitDlg('#dashPartyDlg',10000); if(!d) return 'no dialog';
+  const put=function(id,v){ const e=d.querySelector('#'+id); if(e){ e.value=v; if(e.oninput) e.oninput(); } };
+  put('np_first','Jane'); put('np_last','Doe'); put('np_email','jane@example.com');
+  put('np_prime','N00178-24-D-9100'); put('np_sub','N/A');
+  d.querySelector('[data-eng-arch="parts"]').click();
+  await new Promise(r=>setTimeout(r,40));
+  const tc=d.querySelector('[data-eng-ask="testClassified"]');
+  tc.checked=true; tc.onchange();
+  await new Promise(r=>setTimeout(r,40));
+  d.querySelector('#np_ok').click();
+  const ans=await pr;
+  E("cavEngineSet('off')");
+  if(!ans||!ans.engine) return 'no engine answers carried';
+  /* The unclassified-part, classified-testing case: 11c and not 11d. */
+  const rec={id:'ENG1',workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]},meta:{}};
+  const out=await E("dashPartyApply("+JSON.stringify(rec)+","+JSON.stringify(ans)+",{})");
+  return out.workspace.checks.c11c===true && out.workspace.checks.c11d===false
+      && /UNCLASSIFIED in its physical configuration/.test(out.workspace.texts.item13||'')
+      ? true : JSON.stringify(out.workspace.checks); });
+
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 
 console.log('\n================================');

@@ -1,3 +1,50 @@
+## v2.12.0 — 23 October 2026
+
+Tool version 2.158. The Argon prototype rebuilt on v2.11.0. Argon branched
+from the shipped v2.11.0 and drifted; its good ideas were reimplemented here
+against the real tree, with its regressions left behind.
+
+- **The flat PDF writer is gone.** DD254_BASE_B64 (733 KB of base64), the
+  DD254Export module and exportOfficial254 are removed, not dormant; the build
+  drops 762 KB. The dynamic XFA form is the only official export. Note that an
+  XFA form cannot be digitally signed in the free Adobe Reader without Reader
+  Extensions usage rights, so signing needs Acrobat.
+- **The Item 13 bold/underline toolbar is gone.** Item 13 is plain text, and a
+  paste now arrives as its text rather than carrying Word markup.
+- **The issuance e-mail names what travels with the form.** The prepared
+  message carries a manifest of every required attachment, deduplicated across
+  the records in that audience group. Too long for the link means the body is
+  dropped whole rather than truncated, and said so; Copy Attachments is always
+  there. The bulk window shows each group’s documents in that group’s panel.
+- **Template attachments are one name per box.** attText is still what is
+  stored, so CSV and legacy templates are untouched.
+- **Copying asks what the copy is.** One dialog: Original or Solicitation, with
+  the requester, contract, order and Security Manager pre-filled. A matching
+  template never overwrites copied language, and Item 3 starts empty.
+- **The standalone task-order box is derived, never stored.** It follows the
+  order’s coverage, so a template cannot tick it on an order that follows the
+  prime and an order with its own DD-254 always gets it.
+- **Standard language goes top or bottom**, chosen in Settings, and top-placed
+  language stays above every Item 10/11 section. The classified mailing address
+  stays last either way.
+- **The standing Item 13 sentence is editable** in Settings, defaulting to the
+  sentence it has always written. Everything else the tool writes into Item 13
+  is derived from the form and stays fixed — see the new fixed-text inventory.
+- **Purchase and bids language are different sets.** A solicitation is offered
+  bids wording, an award purchase wording, and an entry written before this
+  existed counts as either rather than vanishing from solicitations.
+- **A collapsible language banner** sits beside the form carrying what this
+  DD-254 may actually use. Closed by default; never printed.
+- **Template caveats are chosen at intake and withdrawn on untick.** An edited
+  caveat is left alone and said out loud rather than half-deleted. A caveat can
+  be flagged to arrive pre-ticked.
+- **An optional acquisition caveat engine**, off by default. On, it asks what is
+  being bought and works out 11c against 11d, the COMSEC and OPSEC
+  flow-throughs and whether a classified mailing address is required. It
+  advises; nothing changes until you apply it.
+
+1460 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.11.0 — 19 October 2026
 
 Tool version 2.157. Owner decision of 17 October 2026. The issuance e-mail now

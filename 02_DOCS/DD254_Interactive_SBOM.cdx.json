@@ -8,12 +8,12 @@
       "type": "application",
       "bom-ref": "dd254-interactive",
       "name": "DD254 Interactive",
-      "version": "2.11.0",
+      "version": "2.12.0",
       "description": "Single-file offline DD Form 254 preparation tool. No installer, no network access at run time, no server component; data stays in the browser profile that opened the file.",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "e595b10429dc6fcb4c1291758d5f63b39a5ad864e5843764caab3eaff179cab2"
+          "content": "2fae3050fbef6523336ad8338798649accfaae5d2abc00370547b47146fd1f03"
         }
       ],
       "externalReferences": [
@@ -26,11 +26,11 @@
     "properties": [
       {
         "name": "dd254:toolVersion",
-        "value": "2.157"
+        "value": "2.158"
       },
       {
         "name": "dd254:buildFile",
-        "value": "DD254_Interactive_v2.11.0.HTM"
+        "value": "DD254_Interactive_v2.12.0.HTM"
       },
       {
         "name": "dd254:runtimeNetworkAccess",
@@ -105,35 +105,15 @@
       ]
     },
     {
-      "type": "data",
-      "bom-ref": "dd254-flat",
-      "name": "DD Form 254 flat derivative",
-      "version": "APR 2018",
-      "description": "Flat print-to-PDF derivative of DD Form 254; exact rendering procedure is undocumented. Not a byte-identical Government download.",
-      "licenses": [
-        {
-          "license": {
-            "name": "U.S. Government work, not subject to copyright"
-          }
-        }
-      ],
-      "hashes": [
-        {
-          "alg": "SHA-256",
-          "content": "ff0b984f0a217339904eb037c4c27f344c5dd42804df2d9ed614cca35d025cf0"
-        }
-      ]
-    },
-    {
       "type": "application",
       "bom-ref": "dd254-application",
       "name": "DD254 Interactive application code",
-      "version": "2.157",
+      "version": "2.158",
       "description": "Application code, markup and CSS. THIS is the part to review.",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "baf4e9dc46743a2189f42aa7f03890764dfda728ef15966092640e67e768ff80"
+          "content": "afb620aacb5137e67e0c2cd6967ae692f35456d3e078f68d5fe67f7e98394115"
         }
       ]
     }

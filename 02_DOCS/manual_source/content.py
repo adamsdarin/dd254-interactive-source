@@ -1,10 +1,22 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.11.0 (tool version 2.157)"
+VER="DD254 Interactive v2.12.0 (tool version 2.158)"
 
 DOC = [
-("h1","DD254 Interactive v2.11.0 changes"),
+("h1","DD254 Interactive v2.12.0 changes"),
+("b","<b>The official export is the dynamic XFA form, and only that.</b> The flat print-to-PDF writer and its embedded copy of the form are gone, which makes the tool 762 KB smaller. Note that an XFA form cannot be digitally signed in the free Adobe Reader without Reader Extensions usage rights, so signing needs Acrobat."),
+("b","<b>Item 13 is plain text.</b> The bold and underline buttons are gone, and pasting from Word now brings the words without the formatting."),
+("b","<b>The issuance e-mail lists what must travel with the form.</b> Every required attachment is named in the prepared message, once per audience group, with a <b>Copy Attachments</b> button beside Copy To and Copy CC. If the list is too long for the e-mail link it is left out rather than cut in half, and the window says so. See 3.13."),
+("b","<b>Template attachments are one name per box</b> instead of one text area, so a line wrap or a pasted note can no longer become a phantom attachment."),
+("b","<b>Copying asks what the copy is.</b> One window: Original or Solicitation, with the requester, contract, order and Security Manager already filled in. A matching template never overwrites the language you copied, and the Item 3 dates start empty."),
+("b","<b>The standalone task-order box follows the order.</b> It is ticked when that order has a DD-254 of its own and never when the order runs under the prime’s."),
+("b","<b>Standard language goes to the top or the bottom of Item 13</b>, your choice in Settings, and top-placed language stays above the Item 10 and 11 sections. The classified mailing address stays last either way. See 2.5."),
+("b","<b>Purchase and bids wording are separate sets.</b> A solicitation is offered bids language and an award purchase language. Anything written before this counts as either, so nothing disappears."),
+("b","<b>A language banner</b> opens beside the form carrying what this DD-254 may actually use. It starts closed and is never printed."),
+("b","<b>Template caveats are chosen when the DD-254 is created</b> and taken back out when their box is unticked. An edited caveat is left alone and flagged rather than half-deleted."),
+("b","<b>An optional acquisition caveat engine</b>, off unless you turn it on, asks what is being bought and works out 11c against 11d, the COMSEC and OPSEC consequences, and whether a classified mailing address is required. It advises; nothing changes until you apply it. See 2.5."),
+("h2","DD254 Interactive v2.11.0 changes"),
 ("b","<b>The issuance e-mail now tells two groups apart.</b> The <b>To</b> line is everyone the DD-254 has to reach and you cannot switch any of them off: the requestor, the <b>Item 7</b> FSO of the receiving facility, every <b>Item 8</b> performance-location FSO, the cognizant security office, and anyone written into <b>Block 18f</b>. See 3.13."),
 ("b","<b>Who else is copied is now yours to choose.</b> <b>Manage → Settings</b> gains <i>Who is copied on an issuance</i> — the <b>Security Manager</b> and the <b>Item 6 FSO</b>, the two the tool works out for itself. <b>Both start switched off</b>, so after upgrading they stop being e-mailed until you turn them on. FSOs you type in by hand, and managers you add with <b>Add to CC</b>, are always copied: you chose those on the form itself. See 2.5."),
 ("b","<b>A DD-254 can no longer be issued while somebody it must reach has no address.</b> The message names each one, and names a performance site by its location. A requirement only applies where the form asks for it, so an Item 7 naming no subcontractor is not a gap and a prime DD-254 is unaffected."),
