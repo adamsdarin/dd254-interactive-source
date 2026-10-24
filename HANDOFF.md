@@ -1,6 +1,43 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-18T10:00-05:00 by Maintainer
+Last updated: 2026-10-23T18:00-05:00 by Maintainer
+
+## IN PROGRESS — branch `argon-port`, v2.12.0 not released
+
+Eight feature commits on `argon-port` off d9d6bab. **1460 assertions pass; both
+builds pass the native-browser smoke test; every commit was smoke-tested before
+it landed.** The Argon prototype (untracked, in `dd254-interactive/`) was
+rebuilt on v2.11.0 rather than adopted: it measurably descends from the shipped
+v2.11.0 (it carries DIST_CC_ALWAYS, which exists in no earlier build) but had
+deleted the flat PDF writer and the Item 13 toolbar and drifted elsewhere.
+
+Owner decision, 23 October 2026: ACCEPT both deletions. The dynamic XFA form is
+the only export and Item 13 is plain text. Raised twice, decided twice.
+Consequence recorded beside the removal and in the changelog: an XFA form cannot
+be digitally signed in the free Adobe Reader without Reader Extensions usage
+rights, so signing needs Acrobat.
+
+**BLOCKER for the release.** `01_TOOL/make_build_facts.py` (lines 58, 60, 114)
+and `01_TOOL/rebuild_kit/split.py` (lines 80, 85) still expect
+`DD254_BASE_B64`. With the flat payload gone make_build_facts throws, so
+BUILD_FACTS.md, manifest.json and the check_manifest gate are all stale. Both
+files need the flat constant made optional before v2.12.0 can be cut. Nothing
+else is known to be wrong.
+
+Done for the release: version bumped to v2.12.0 / Tool 2.158,
+DD254_Interactive_v2.12.0.HTM and its demo built, TEST_RESULT.txt regenerated
+(build fbbbf4e2), CHANGELOG entry written.
+
+Still to do: fix those two scripts, regenerate BUILD_FACTS and manifest, the
+manual (VER plus a changes section, then rebuild both PDFs), the fact sheet and
+ISSM brief version lines, the rule catalog and SBOM,
+RELEASE_ASSESSMENT_v2.12.0.md and product_planning/IMPLEMENTATION_v2.12.0.md,
+then the five gates, then merge to main, tag and publish.
+
+Deliberately left short, and said rather than hidden: REQ-11's always-insert
+flag is settable through a CSV column on each Item 10/11 key rather than a
+dedicated editor control, and the caveat engine surfaces in the language banner
+but not yet in the intake dialog.
 
 ## Current State
 
