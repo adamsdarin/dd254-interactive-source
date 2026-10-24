@@ -2,9 +2,15 @@
 
 Last updated: 2026-10-24T11:40-05:00 by Maintainer
 
-Built and verified locally: **v2.14.0 (Tool 2.160)**, build b45d553c, demo
-89eb2330. Not yet tagged or published at the time of writing — see the
-publication checklist in SETUP.md for what remains.
+Latest published release: **v2.14.0 (Tool 2.160)**, build b45d553c. Signed tag
+at fc84ef0 on `main`; assets, checksums, the provenance attestation and the kit
+rebuild all verified from a fresh download (official b45d553c..., demo
+89eb2330..., ref refs/tags/v2.14.0, attested commit fc84ef0, rebuild
+byte-identical, no bytecode in the kit); the downloaded build passes the
+native-browser smoke test; the attached manual, ISSM brief, fact sheet,
+release assessment and implementation map are all this version's. Live demo
+published as dd254-interactive 1809a03, staged blob byte-identical to the
+attested demo asset.
 
 What v2.14.0 contains, build b45d553c.
 The language a DD-254 may use now lives in one place, beside the form, and
