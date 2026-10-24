@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-23T18:00-05:00 by Maintainer
 
-## IN PROGRESS — branch `argon-port`, v2.12.0 not released
+## BUILT AND GATED — branch `argon-port`, v2.12.0 not yet merged or tagged
 
 Eight feature commits on `argon-port` off d9d6bab. **1460 assertions pass; both
 builds pass the native-browser smoke test; every commit was smoke-tested before
@@ -17,22 +17,21 @@ Consequence recorded beside the removal and in the changelog: an XFA form cannot
 be digitally signed in the free Adobe Reader without Reader Extensions usage
 rights, so signing needs Acrobat.
 
-**BLOCKER for the release.** `01_TOOL/make_build_facts.py` (lines 58, 60, 114)
-and `01_TOOL/rebuild_kit/split.py` (lines 80, 85) still expect
-`DD254_BASE_B64`. With the flat payload gone make_build_facts throws, so
-BUILD_FACTS.md, manifest.json and the check_manifest gate are all stale. Both
-files need the flat constant made optional before v2.12.0 can be cut. Nothing
-else is known to be wrong.
+**v2.12.0 is cut and gated**, build fbbbf4e2. 1460 assertions pass, all five
+gates pass, and both builds pass the native-browser smoke test.
 
-Done for the release: version bumped to v2.12.0 / Tool 2.158,
-DD254_Interactive_v2.12.0.HTM and its demo built, TEST_RESULT.txt regenerated
-(build fbbbf4e2), CHANGELOG entry written.
+Retiring the flat payload rippled through four release scripts, all of which
+assumed it was always present: `make_build_facts.py` threw,
+`rebuild_kit/split.py` would have written an empty part, `rebuild_kit/
+rebuild.py` read a file that was no longer cut, and `make_sbom.py` indexed a
+component that no longer exists. All four now treat the flat payload as
+optional and describe only what a build actually carries. The XFA payload
+stays mandatory: it is the official export. The ISSM brief's stated file size
+moved from 2.3 MB to 1.7 MB.
 
-Still to do: fix those two scripts, regenerate BUILD_FACTS and manifest, the
-manual (VER plus a changes section, then rebuild both PDFs), the fact sheet and
-ISSM brief version lines, the rule catalog and SBOM,
-RELEASE_ASSESSMENT_v2.12.0.md and product_planning/IMPLEMENTATION_v2.12.0.md,
-then the five gates, then merge to main, tag and publish.
+Still to do: merge `argon-port` to main, tag v2.12.0, publish, refresh the live
+demo, and verify the published assets from a fresh download the way v2.11.0
+was verified.
 
 Deliberately left short, and said rather than hidden: REQ-11's always-insert
 flag is settable through a CSV column on each Item 10/11 key rather than a

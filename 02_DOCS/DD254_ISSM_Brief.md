@@ -1,6 +1,6 @@
 # DD254 Interactive — brief for the ISSM
 
-DD254 Interactive v2.11.0 / Tool v2.157. Two pages, for the officer deciding
+DD254 Interactive v2.12.0 / Tool v2.158. Two pages, for the officer deciding
 whether this file may be opened on a managed workstation.
 
 The longer [security fact sheet](DD254_Tool_Security_Fact_Sheet.md) is written
@@ -11,7 +11,7 @@ asked before that.
 
 ## 1. What is it?
 
-One HTML file, about 2.3 MB, opened from the local filesystem in a browser the
+One HTML file, about 1.7 MB, opened from the local filesystem in a browser the
 workstation already has. It helps a Facility Security Officer prepare, validate
 and track DD Form 254 security classification specifications.
 

@@ -77,8 +77,14 @@ def split(src,out):
     s=s[:m.start(1)]+'@@PDFLIB@@'+s[m.end(1):]
 
     # 2 & 3. the two government forms
+    # The flat derivative is optional: it was retired on 23 October 2026 and a
+    # build without it is a smaller, correct build. The XFA form is not
+    # optional - it is the official export, and a kit that could not rebuild
+    # it would be claiming something it cannot do.
     for const,fn in [('DD254_BASE_B64','02_dd254_flat.b64'),('DD254_XFA_B64','03_dd254_xfa.b64')]:
         m=re.search(const+r'\s*=\s*"([A-Za-z0-9+/=]+)"',s)
+        if not m and const=='DD254_BASE_B64':
+            continue
         assert m,const+' not found'
         b64=m.group(1)
         note=('Flat print-to-PDF derivative of DD Form 254; exact rendering procedure is undocumented. Not a byte-identical Government download.'

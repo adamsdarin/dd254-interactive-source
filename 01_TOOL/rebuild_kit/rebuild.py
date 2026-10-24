@@ -13,8 +13,13 @@ for n,meta in man['parts'].items():
 
 out=(rd('04_application.html')
      .replace('@@PDFLIB@@',rd('01_pdflib.js'))
-     .replace('@@DD254_BASE_B64@@',rd('02_dd254_flat.b64'))
      .replace('@@DD254_XFA_B64@@',rd('03_dd254_xfa.b64')))
+# The flat derivative was retired on 23 October 2026. A kit cut from a build
+# that never carried it has no such part, and substituting a placeholder that
+# is not in the application would be a no-op either way - but reading a file
+# that is not there is not.
+if '02_dd254_flat.b64' in man['parts']:
+    out=out.replace('@@DD254_BASE_B64@@',rd('02_dd254_flat.b64'))
 # The manifest authenticates bytes. Text-mode output can rewrite line endings
 # on Windows, making an unchanged set of parts fail against the genuine build.
 # Encoding once and writing binary keeps the reconstruction platform-neutral.
