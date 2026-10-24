@@ -1,3 +1,33 @@
+## v2.13.0 — 24 October 2026
+
+Tool version 2.159. Contract templates are offered the way standard language
+already was: the tool works out which ones fit the DD-254 in front of you
+rather than leaving you to remember.
+
+- A contract template now records **what it is written for** — a programme, an
+  **Item 1a level**, and whether it is for a **purchase** or for **bids**. All
+  three may be left as Any or Either, and a template saved before this existed
+  reads as Any on every one of them, so nothing disappears from a library the
+  first time this version opens it.
+- A new **Contract Templates That Fit** panel sits beside the form, listing
+  only the templates that match, each with an Apply button, and a link to the
+  rest with a count of how many are written for something else. It is the same
+  panel the Standard Language section has had, answering the same question.
+- Capturing a form into a template records the Item 1a level from the form, so
+  a captured template knows what it was written for without being told.
+- The level is read from the template first and from captured data second, the
+  same two-place lookup the programme already used, so a captured template and
+  a hand-edited one cannot disagree.
+- The Item 1a level is **not** the CUI marking. A template marked CUI is still
+  offered at every clearance level; the two were never the same question.
+
+Nothing was removed to do this. Task orders and their coverage, source
+provenance and revision tracking, and duplicate detection all work exactly as
+they did; the matching is layered on top of the repository rather than
+replacing it.
+
+1473 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.12.0 — 23 October 2026
 
 Tool version 2.158. The Argon prototype rebuilt on v2.11.0. Argon branched

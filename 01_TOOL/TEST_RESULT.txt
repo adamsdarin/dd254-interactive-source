@@ -1,4 +1,4 @@
-BUILD_SHA256 2fae3050fbef6523336ad8338798649accfaae5d2abc00370547b47146fd1f03
+BUILD_SHA256 ce0bee7ebc66e4aac4f72140dfcea71ae35f9fad361ee489a3ea123d6616f274
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1748,6 +1748,17 @@ BUILD_SHA256 2fae3050fbef6523336ad8338798649accfaae5d2abc00370547b47146fd1f03
   PASS  the engine questionnaire appears only when the engine is on
   PASS  answering the engine at intake writes the boxes and the wording
 
+### 135. v2.12.0 contract templates offer what fits, like standard language
+  PASS  a template with no level or scenario fits everything
+  PASS  the level comes from the template, then from what was captured
+  PASS  the level is not the CUI marking
+  PASS  candidates narrow by programme, level and scenario together
+  PASS  with nothing to go on, nothing is hidden
+  PASS  the panel lists what fits and offers the rest one link away
+  PASS  an empty library says so rather than rendering an empty list
+  PASS  capturing a form records the Item 1a level on the template
+  PASS  the repository machinery is untouched
+
 ================================
-  PASS 1464   FAIL 0
+  PASS 1473   FAIL 0
 ================================

@@ -2,6 +2,26 @@
 
 Last updated: 2026-10-23T18:00-05:00 by Maintainer
 
+BUILT AND GATED, NOT YET TAGGED: **v2.13.0 (Tool 2.159)**, build ce0bee7e.
+Contract templates now offer what fits the open DD-254 the way standard
+language already did: a template records a programme, an Item 1a level and a
+purchase/bids scenario, and a new "Contract Templates That Fit" panel lists the
+matching ones beside the form with the rest one link away. All three keys may
+be left as Any, and a template saved earlier reads as Any on every one, so no
+library shrinks when this version is installed. The Item 1a level is its own
+field and deliberately not `data.cls`, which is the form's CUI marking.
+
+Layered, not rebuilt: orders and coverage, source provenance and duplicate
+detection are untouched, and section 135 asserts they still exist. 1473
+assertions pass, all five gates pass, both builds pass the smoke test.
+
+Watch for this next time: v2.12.0 was already tagged when that work started,
+and the versioned v2.12.0 build files were rebuilt in place before anyone
+noticed. They were restored from the tag (2fae3050) and the new work cut as
+v2.13.0. A tagged artefact must never change under its tag; compare
+`git show v<ver>:01_TOOL/DD254_Interactive_v<ver>.HTM` against the working copy
+before assuming a rebuild was harmless.
+
 Latest published release: **v2.12.0 (Tool 2.158)**, build 2fae3050. Signed tag
 at 276a4c3 on `main`; assets, checksums, the provenance attestation, the kit
 rebuild and the pdf-lib check all verified from a fresh download (official

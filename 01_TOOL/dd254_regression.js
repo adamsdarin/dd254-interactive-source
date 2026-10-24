@@ -4251,8 +4251,11 @@ t('nothing was dropped in the split', ()=>{
   const c=w.document.getElementById('rpanelChecklist');
   const n=v.querySelectorAll('.rp-section').length+c.querySelectorAll('.rp-section').length;
   /* v1.15.2 added the Security Classification Guides section to the checklist
-     panel; v2.7.0 added Contract Type, which used to be a chooser at origination. */
-  return n===13 ? true : n+' sections, expected 13';
+     panel; v2.7.0 added Contract Type, which used to be a chooser at
+     origination; v2.12.0 added Contract Templates That Fit, which lists the
+     templates matching this DD-254's programme, Item 1a level and scenario the
+     way Standard Language already did. */
+  return n===14 ? true : n+' sections, expected 14';
 });
 t('no panel content ended up outside either panel', ()=>{
   const stray=Array.from(w.document.querySelectorAll('.panel-col .rp-section'))
@@ -9982,6 +9985,93 @@ await ta('answering the engine at intake writes the boxes and the wording', asyn
   return out.workspace.checks.c11c===true && out.workspace.checks.c11d===false
       && /UNCLASSIFIED in its physical configuration/.test(out.workspace.texts.item13||'')
       ? true : JSON.stringify(out.workspace.checks); });
+
+
+H('135. v2.12.0 contract templates offer what fits, like standard language');
+/* Same three keys, same panel, same honesty about narrowing. Layered on the
+   repository rather than replacing it: orders, coverage, provenance and
+   duplicate detection are untouched. */
+
+const CTFIT=function(rows){ E("tplSave(TPL_CT,"+JSON.stringify(rows)+");buildCtSelect&&buildCtSelect();"); };
+const CTLIB=[
+  {label:'Shoes award S',   ioId:'ct-a', program:'SHOES', level:'S',  scenario:'purchase', data:{}},
+  {label:'Shoes bids S',    ioId:'ct-b', program:'SHOES', level:'S',  scenario:'bids',     data:{}},
+  {label:'Shoes award TS',  ioId:'ct-c', program:'SHOES', level:'TS', scenario:'purchase', data:{}},
+  {label:'Boots award S',   ioId:'ct-d', program:'BOOTS', level:'S',  scenario:'purchase', data:{}},
+  {label:'Anything',        ioId:'ct-e', data:{}}
+];
+
+t('a template with no level or scenario fits everything', ()=>{
+  /* Nothing written before these fields existed may be narrowed out. */
+  return E("ctLevelOf({label:'x'})")==='' && E("ctScenarioOf({label:'x'})")==='both'
+      && E("ctMatchesForm({label:'x'},'SHOES','S','bids')")===true ? true : 'narrowed';
+});
+
+t('the level comes from the template, then from what was captured', ()=>{
+  /* ctProgram already looks in two places; this matches it so a captured
+     template and a hand-edited one agree. */
+  return E("ctLevelOf({level:'TS',data:{level:'S'}})")==='TS'
+      && E("ctLevelOf({data:{level:'S'}})")==='S'
+      && E("ctLevelOf({})")==='' ? true : 'lookup wrong';
+});
+
+t('the level is not the CUI marking', ()=>{
+  /* data.cls is whether the FORM is marked CUI, a different question from the
+     clearance the work needs. Conflating them would hide templates. */
+  return E("ctLevelOf({data:{cls:'CUI'}})")==='' ? true : 'cls leaked into level';
+});
+
+t('candidates narrow by programme, level and scenario together', ()=>{
+  const lib=JSON.stringify(CTLIB);
+  const n=function(p,l,sc){ return E("ctCandidates("+JSON.stringify(p)+","+JSON.stringify(l)+","+lib+","+JSON.stringify(sc)+").map(function(t){return t.label;})").join('|'); };
+  return n('SHOES','S','purchase')==='Shoes award S|Anything'
+      && n('SHOES','S','bids')==='Shoes bids S|Anything'
+      && n('SHOES','TS','purchase')==='Shoes award TS|Anything'
+      && n('BOOTS','S','purchase')==='Boots award S|Anything'
+      ? true : n('SHOES','S','purchase');
+});
+
+t('with nothing to go on, nothing is hidden', ()=>{
+  const all=E("ctCandidates('','',"+JSON.stringify(CTLIB)+",'purchase').map(function(t){return t.label;})");
+  /* Only the bids-only entry is withheld, because the stage is known even when
+     the programme and level are not. */
+  return all.indexOf('Shoes bids S')<0 && all.length===4 ? true : all.join('|');
+});
+
+await ta('the panel lists what fits and offers the rest one link away', async()=>{
+  E("showFormView();resetFormFields();");
+  CTFIT(CTLIB);
+  E("document.getElementById('fcl1a').value='S';");
+  E("window.CT_PANEL_ALL=false;ctRenderFitPanel();");
+  const host=w.document.getElementById('ctFitPanel');
+  const fit=host?host.textContent:'';
+  E("ctPanelShowAll(true)");
+  const all=host?host.textContent:'';
+  E("ctPanelShowAll(false);tplSave(TPL_CT,[]);resetFormFields();");
+  /* No programme on a blank form, so level and scenario do the narrowing. */
+  return /Shoes award S/.test(fit) && !/Shoes bids S/.test(fit) && !/Shoes award TS/.test(fit)
+      && /Show all/.test(fit) && /Shoes award TS/.test(all)
+      ? true : fit.slice(0,200); });
+
+await ta('an empty library says so rather than rendering an empty list', async()=>{
+  CTFIT([]);
+  E("ctRenderFitPanel()");
+  const host=w.document.getElementById('ctFitPanel');
+  return /No contract templates saved/.test(host.textContent) ? true : host.textContent.slice(0,80); });
+
+t('capturing a form records the Item 1a level on the template', ()=>{
+  E("showFormView();resetFormFields();document.getElementById('fcl1a').value='TS';");
+  const d=E("ctCaptureData()");
+  E("resetFormFields()");
+  return d.level==='TS' ? true : JSON.stringify(d.level);
+});
+
+t('the repository machinery is untouched', ()=>{
+  /* The point of layering rather than rebuilding: orders, coverage, source
+     provenance and duplicate detection all still exist. */
+  return ['ctOrderRows','ctOrderCoverage','ctOrderSource','ctDuplicatePairs','ctSourceSnapshot']
+    .every(function(f){ return E("typeof "+f)==='function'; }) ? true : 'machinery lost';
+});
 
 E("tplSave(TPL_REQ,[]);tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
 

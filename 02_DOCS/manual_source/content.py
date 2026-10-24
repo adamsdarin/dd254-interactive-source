@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.12.0 (tool version 2.158)"
+VER="DD254 Interactive v2.13.0 (tool version 2.159)"
 
 DOC = [
-("h1","DD254 Interactive v2.12.0 changes"),
+("h1","DD254 Interactive v2.13.0 changes"),
+("b","<b>The tool now works out which contract templates fit the DD-254 in front of you.</b> A template records a programme, an <b>Item 1a level</b> and whether it is written for a <b>purchase</b> or for <b>bids</b>. All three can be left as Any or Either, and a template you saved before this version reads as Any on every one of them — nothing vanishes from your library."),
+("b","<b>A new Contract Templates That Fit panel</b> sits beside the form listing only the ones that match, each with an Apply button, and a link to the rest saying how many are written for something else. It is the same panel Standard Language has always had."),
+("b","<b>Capturing a form into a template records its Item 1a level</b>, so a captured template knows what it was written for without being told."),
+("n","The Item 1a level is not the CUI marking. A template marked CUI is still offered at every clearance level; they were never the same question."),
+("n","Nothing was removed. Task orders and their coverage, source provenance and revision tracking, and duplicate detection all behave exactly as before."),
+("h2","DD254 Interactive v2.12.0 changes"),
 ("b","<b>The official export is the dynamic XFA form, and only that.</b> The flat print-to-PDF writer and its embedded copy of the form are gone, which makes the tool 762 KB smaller. Note that an XFA form cannot be digitally signed in the free Adobe Reader without Reader Extensions usage rights, so signing needs Acrobat."),
 ("b","<b>Item 13 is plain text.</b> The bold and underline buttons are gone, and pasting from Word now brings the words without the formatting."),
 ("b","<b>The issuance e-mail lists what must travel with the form.</b> Every required attachment is named in the prepared message, once per audience group, with a <b>Copy Attachments</b> button beside Copy To and Copy CC. If the list is too long for the e-mail link it is left out rather than cut in half, and the window says so. See 3.13."),
