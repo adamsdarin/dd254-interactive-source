@@ -1,4 +1,4 @@
-BUILD_SHA256 c7c30816361301c024cd2f34cbd9260af77de3fbd9eff05ceb2d22a7072a7948
+BUILD_SHA256 769f90f9d36f4957861385f7ffee86efb7fb666d03d2871fc0cc76b8a4ca010e
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1776,6 +1776,34 @@ BUILD_SHA256 c7c30816361301c024cd2f34cbd9260af77de3fbd9eff05ceb2d22a7072a7948
   PASS  a template matched at intake leaves the form knowing which template it is
   PASS  ticking 11d then writes the clause the template holds for it
 
+### 140. v2.15.0 Block 18f survives a template that is silent about it
+  PASS  a revision keeps what its original wrote into 18f
+  PASS  a template with nothing to say about 18f leaves it alone
+  PASS  a template that ticks 18f and names somebody still replaces it
+  PASS  18f appears, and is ticked, when the template ticks it
+  PASS  ticking 18f with no address never blanks the one on the form
+  PASS  the confirmation no longer promises to clear 18f
+
+### 141. v2.15.0 a security manager runs as many programmes as they actually do
+  PASS  a listing reads as a list, however it was written
+  PASS  the first programme is mirrored, so every older reader still finds one
+  PASS  every programme a manager runs is offered, not just the first
+  PASS  the editor row holds a programme each, and can add and remove them
+  PASS  assigning a manager with one programme fills it in
+  PASS  a manager with several leaves the choice to the operator
+
+### 142. v2.15.0 Item 11c says one thing about testing and another about production
+  PASS  a template with no variants reads exactly as it always did
+  PASS  testing takes the testing wording, production the production wording
+  PASS  unanswered falls back to the general wording and says why
+  PASS  a variant only on one side still falls back on the other
+  PASS  ticking 11c inserts the wording for what this effort is
+  PASS  the template wins over the engine own 11c paragraph
+  PASS  with no template variants the engine still writes its own
+  PASS  the editor offers both 11c wordings, beside the box they belong to
+  PASS  the purpose chooses wording, never the selection
+  PASS  the rail asks it, from the one controlled list
+
 ### 137. v2.14.0 template language either always applies, or waits for its box
   PASS  a clause is read as always, or as waiting for its box
   PASS  unmarked language waits for its box, which is the safe default
@@ -1785,5 +1813,5 @@ BUILD_SHA256 c7c30816361301c024cd2f34cbd9260af77de3fbd9eff05ceb2d22a7072a7948
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1490   FAIL 0
+  PASS 1512   FAIL 0
 ================================

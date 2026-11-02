@@ -7744,7 +7744,12 @@ await ta('whole insertion snapshots assigned manager and blank template clears t
 });
 t('full replacement clears stale text, unchecked boxes, radio selections and CUI marking',()=>{
   E("resetFormFields();document.getElementById('item13').value='Old guidance';document.getElementById('dist18fOther').value='old@example.com';document.getElementById('dist18f').checked=true;document.getElementById('i14yes').checked=true;document.getElementById('i15yes').checked=true;document.getElementById('i16a').value='OLD';document.getElementById('c10a').checked=true;document.getElementById('c11c').checked=true;document.getElementById('clsSel').value='CUI';ctApplyWsToForm(ctApplyDataToWorkspace(ctBlankData(),null));run();");
-  return stripPdq(E("ctGv('item13')"))===''&&E("ctGv('dist18fOther')")===''&&!E("ctCk('dist18f')")&&!E("ctCk('c10a')")&&!E("ctCk('c11c')")&&E("ctGv('i16a')")===''&&!E("ctCk('i14yes')")&&!E("ctCk('i15yes')")&&E("ctGv('clsSel')")==='';
+  /* v2.15.0: Item 18f is exempt and is checked by section 140 instead. It is
+     an instruction to send a copy to a named person, not a property of the
+     work, so a template that is silent about it is silent rather than saying
+     nobody else needs one. Everything else here still replaces, blanks and
+     all - that is what this guard is for. */
+  return stripPdq(E("ctGv('item13')"))===''&&!E("ctCk('c10a')")&&!E("ctCk('c11c')")&&E("ctGv('i16a')")===''&&!E("ctCk('i14yes')")&&!E("ctCk('i15yes')")&&E("ctGv('clsSel')")==='';
 });
 t('absent legacy sections do not erase unrelated draft sections',()=>{
   const ws=E("ctApplyDataToWorkspace({i13:'New'},{texts:{i16a:'Keep',i6a:'Facility'},checks:{c10a:true},radios:{i14:'yes'},selects:{clsSel:'CUI'},perf:[]})");
@@ -10282,6 +10287,290 @@ await ta('ticking 11d then writes the clause the template holds for it', async()
   /* Out until its box is ticked, in when it is, out again when it is not. */
   return before && after && gone
       ? true : ('before='+before+' after='+after+' gone='+gone); });
+
+H('140. v2.15.0 Block 18f survives a template that is silent about it');
+/* Reported as "18f is not carrying over on a revision". The carry itself was
+   never broken - dashSpawn deep-copies the workspace - so the loss was the
+   first template applied afterwards, which cleared both the box and the name
+   in it. */
+
+const F18=function(){ E("showFormView();resetFormFields();"); };
+const SET18=function(addr){
+  E("document.getElementById('dist18f').checked=true;dist18fToggle(true);"
+   +"document.getElementById('dist18fOther').value="+JSON.stringify(addr)+";");
+};
+const APPLY18=function(mut){
+  E("(function(){var d=ctBlankData();"+(mut||'')+"ctApplyWsToForm(ctApplyDataToWorkspace(d,null,null));if(typeof run==='function')run();})()");
+};
+const BOX18=()=>E("document.getElementById('dist18f').checked");
+const TXT18=()=>E("document.getElementById('dist18fOther').value");
+
+await ta('a revision keeps what its original wrote into 18f', async()=>{
+  /* The whole report, end to end: the spawn carries it and nothing afterwards
+     is allowed to quietly take it away. */
+  await wipe();
+  await E("draftPut({id:'r18-orig',title:'Orig',stage:'orig',status:'Issued',todos:[],notes:'',holds:[],dist:[],workspace:null,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),meta:{contract:'N00178-24-D-4040'}})");
+  E("DASH.current='r18-orig';showFormView();resetFormFields();");
+  SET18('other.party@example.com');
+  await E("(async function(){var r=await draftGet('r18-orig');r.workspace=collectWorkspace();await draftPut(r);})()");
+  await E("dashSpawn('r18-orig','rev')");
+  const kid=(await E("draftAll()")).filter(r=>r.parentId==='r18-orig')[0];
+  const carried=!!((kid&&kid.workspace&&kid.workspace.checks)||{}).dist18f;
+  E("resetFormFields();");
+  await E("dashOpen("+JSON.stringify(kid.id)+")");
+  const onForm=BOX18()&&TXT18()==='other.party@example.com';
+  /* and now the template the revision is built from, which says nothing. */
+  APPLY18("d.primeContract='N00178-24-D-4040';");
+  const survived=BOX18()&&TXT18()==='other.party@example.com';
+  await wipe();
+  return (carried&&onForm&&survived)
+      ? true : ('carried='+carried+' onForm='+onForm+' survived='+survived); });
+
+await ta('a template with nothing to say about 18f leaves it alone', async()=>{
+  F18(); SET18('keep.me@example.com');
+  APPLY18("d.primeContract='N00178-24-D-5050';");
+  const box=BOX18(), txt=TXT18();
+  E("resetFormFields();");
+  return (box===true&&txt==='keep.me@example.com') ? true : ('box='+box+' txt='+txt); });
+
+await ta('a template that ticks 18f and names somebody still replaces it', async()=>{
+  /* The template is entitled to its own opinion where it has one. */
+  F18(); SET18('old.party@example.com');
+  APPLY18("d.c18={'18f':true};d.t18f='from.template@example.com';");
+  const box=BOX18(), txt=TXT18();
+  const shown=E("document.getElementById('dist18fRev').classList.contains('show')");
+  E("resetFormFields();");
+  return (box===true&&txt==='from.template@example.com'&&shown)
+      ? true : ('box='+box+' txt='+txt+' shown='+shown); });
+
+await ta('18f appears, and is ticked, when the template ticks it', async()=>{
+  /* The second half of the report. A ticked box whose field stays hidden is a
+     box nobody can fill in. */
+  F18();
+  APPLY18("d.c18={'18f':true};d.t18f='named@example.com';");
+  const box=BOX18(), shown=E("document.getElementById('dist18fRev').classList.contains('show')");
+  E("resetFormFields();");
+  return (box===true&&shown===true) ? true : ('box='+box+' shown='+shown); });
+
+await ta('ticking 18f with no address never blanks the one on the form', async()=>{
+  /* A distribution instruction addressed to nobody is the one state the
+     issuance gate refuses to send, so a template must not create it. */
+  F18(); SET18('still.here@example.com');
+  APPLY18("d.c18={'18f':true};d.t18f='';");
+  const box=BOX18(), txt=TXT18();
+  E("resetFormFields();");
+  return (box===true&&txt==='still.here@example.com') ? true : ('box='+box+' txt='+txt); });
+
+t('the confirmation no longer promises to clear 18f', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  return src.indexOf('Existing contacts in Item 18f are cleared')<0
+      && src.indexOf('Item 18f is left as it is unless the template ticks it')>0
+      ? true : 'the wording still promises a clear';
+});
+
+H('141. v2.15.0 a security manager runs as many programmes as they actually do');
+/* One listing per person. The same name and address entered four times was
+   four things to keep in step, and three of them went stale. */
+
+t('a listing reads as a list, however it was written', ()=>{
+  const many=E("smPrograms({name:'A',programs:['ALDER','BIRCH','ALDER','  ']})");
+  const one=E("smPrograms({name:'B',program:'CEDAR'})");
+  const none=E("smPrograms({name:'C'})");
+  /* Duplicates and blanks are not programmes, and a record written before
+     this existed still reads as the one programme it has. */
+  return (many.join('|')==='ALDER|BIRCH' && one.join('|')==='CEDAR' && none.length===0)
+      ? true : JSON.stringify({many,one,none});
+});
+
+t('the first programme is mirrored, so every older reader still finds one', ()=>{
+  E("window.TPL_EDIT=[{name:'M',email:'m@example.com'}];");
+  const out=E("smProgramsSet(0,['  DELTA ','ECHO','DELTA'])");
+  const t=E("window.TPL_EDIT[0]");
+  E("window.TPL_EDIT=[];");
+  return (out.join('|')==='DELTA|ECHO' && t.program==='DELTA' && t.programs.join('|')==='DELTA|ECHO')
+      ? true : JSON.stringify({out,program:t.program,programs:t.programs});
+});
+
+t('every programme a manager runs is offered, not just the first', ()=>{
+  E("tplSave(TPL_SM,[{ioId:'m1',name:'Reed, Ann',email:'a@example.com',programs:['ALDER','BIRCH']},"
+   +"{ioId:'m2',name:'Vance, Bo',email:'b@example.com',program:'CEDAR'}]);");
+  const opts=E("ctProgramOptions([])");
+  E("tplSave(TPL_SM,[]);");
+  return opts.join('|')==='ALDER|BIRCH|CEDAR' ? true : opts.join('|');
+});
+
+await ta('the editor row holds a programme each, and can add and remove them', async()=>{
+  await wipe();
+  E("tplSave(TPL_SM,[{ioId:'m1',name:'Reed, Ann',email:'a@example.com',programs:['ALDER','BIRCH']}]);");
+  await E("dashTplEdit('sm')");
+  const boxes=()=>Array.from(w.document.querySelectorAll('.sm-program')).map(x=>x.value);
+  const start=boxes();
+  E("smProgramAdd(0)");
+  const added=boxes().length;
+  E("smProgramEdit(0,2,'CEDAR')");
+  const typed=E("smPrograms(window.TPL_EDIT[0])").join('|');
+  E("smProgramDel(0,0)");
+  const afterDel=E("smPrograms(window.TPL_EDIT[0])").join('|');
+  await E('dashTplFlush()');
+  E("window.TPL_EDIT=[];tplSave(TPL_SM,[]);showDashView();");
+  return (start.join('|')==='ALDER|BIRCH' && added===3 && typed==='ALDER|BIRCH|CEDAR' && afterDel==='BIRCH|CEDAR')
+      ? true : JSON.stringify({start,added,typed,afterDel}); });
+
+await ta('assigning a manager with one programme fills it in', async()=>{
+  E("tplSave(TPL_SM,[{ioId:'m1',name:'Solo, Sam',email:'s@example.com',programs:['ONLYONE']}]);");
+  E("window.TPL_EDIT=[{ioId:'ct1',label:'T',data:ctBlankData()}];");
+  E("ctSetSm(0,'Solo, Sam')");
+  const t=E("window.TPL_EDIT[0]");
+  E("window.TPL_EDIT=[];tplSave(TPL_SM,[]);");
+  return (t.smProgram==='ONLYONE'&&t.program==='ONLYONE'&&t.smEmail==='s@example.com')
+      ? true : JSON.stringify({smProgram:t.smProgram,program:t.program}); });
+
+await ta('a manager with several leaves the choice to the operator', async()=>{
+  /* The point of the feature, and the safeguard: picking one of somebody's
+     programmes for them is how a DD-254 gets another programme's language. */
+  E("tplSave(TPL_SM,[{ioId:'m1',name:'Many, Mo',email:'m@example.com',programs:['ALDER','BIRCH','CEDAR']}]);");
+  E("window.TPL_EDIT=[{ioId:'ct1',label:'T',data:ctBlankData()}];");
+  E("ctSetSm(0,'Many, Mo')");
+  const blank=E("window.TPL_EDIT[0].program");
+  /* and one the operator picks is kept when the same manager is re-picked */
+  E("window.TPL_EDIT[0].program='BIRCH';window.TPL_EDIT[0].smProgram='BIRCH';ctSetSm(0,'Many, Mo')");
+  const kept=E("window.TPL_EDIT[0].program");
+  /* but a programme this manager does not run is not kept */
+  E("window.TPL_EDIT[0].program='NOTTHEIRS';window.TPL_EDIT[0].smProgram='NOTTHEIRS';ctSetSm(0,'Many, Mo')");
+  const dropped=E("window.TPL_EDIT[0].program");
+  E("window.TPL_EDIT=[];tplSave(TPL_SM,[]);");
+  return (blank===''&&kept==='BIRCH'&&dropped==='')
+      ? true : JSON.stringify({blank,kept,dropped}); });
+
+H('142. v2.15.0 Item 11c says one thing about testing and another about production');
+/* A template used to carry one 11c clause, so an FSO issuing both test and
+   production efforts under one contract kept two templates differing in a
+   single paragraph, or edited it by hand every time. */
+
+const PURPTPL=function(){
+  const d=E("ctBlankData()");
+  d.primeContract='N00178-24-D-8800';
+  d.l11={'11c':'GENERAL 11C WORDING.'};
+  d.l11v={'11c':{testing:'TESTING 11C WORDING.',producing:'PRODUCING 11C WORDING.'}};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Purpose',ioId:'purp-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();document.getElementById('ctTplSel').value='purp-tpl';");
+};
+const PURPSET=function(v){
+  E("cavEngineSet('on');cavEngineAnswerSet({archetype:'parts',purpose:"+JSON.stringify(v)+"});");
+};
+
+t('a template with no variants reads exactly as it always did', ()=>{
+  PURPTPL();
+  E("cavEngineSet('off');");
+  const off=E("ctLangOf(ctActiveTpl(),'11c')");
+  /* and the variants are ignored while the engine is off, because an operator
+     who never turned it on has not said what this effort is */
+  PURPSET('testing'); E("cavEngineSet('off');");
+  const stillOff=E("ctLangOf(ctActiveTpl(),'11c')");
+  E("tplSave(TPL_CT,[]);resetFormFields();");
+  return (off==='GENERAL 11C WORDING.'&&stillOff==='GENERAL 11C WORDING.')
+      ? true : ('off='+off+' stillOff='+stillOff);
+});
+
+t('testing takes the testing wording, production the production wording', ()=>{
+  PURPTPL();
+  PURPSET('testing');  const a=E("ctLangOf(ctActiveTpl(),'11c')");
+  PURPSET('production'); const b=E("ctLangOf(ctActiveTpl(),'11c')");
+  PURPSET('both');     const c=E("ctLangOf(ctActiveTpl(),'11c')");
+  E("cavEngineSet('off');tplSave(TPL_CT,[]);resetFormFields();");
+  return (a==='TESTING 11C WORDING.'&&b==='PRODUCING 11C WORDING.'
+       && c==='TESTING 11C WORDING.\n\nPRODUCING 11C WORDING.')
+      ? true : JSON.stringify({a,b,c});
+});
+
+t('unanswered falls back to the general wording and says why', ()=>{
+  PURPTPL();
+  E("cavEngineSet('on');cavEngineAnswerSet({archetype:'parts'});");
+  const txt=E("ctLangOf(ctActiveTpl(),'11c')");
+  const notes=E("cavEvaluate({archetype:'parts'}).notes").join(' ');
+  E("cavEngineSet('off');tplSave(TPL_CT,[]);resetFormFields();");
+  return (txt==='GENERAL 11C WORDING.' && /testing, production or both/.test(notes))
+      ? true : ('txt='+txt+' notes='+notes);
+});
+
+t('a variant only on one side still falls back on the other', ()=>{
+  const d=E("ctBlankData()");
+  d.l11={'11c':'GENERAL ONLY.'};
+  d.l11v={'11c':{testing:'TEST ONLY.',producing:''}};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Half',ioId:'half-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();document.getElementById('ctTplSel').value='half-tpl';");
+  PURPSET('testing');    const a=E("ctLangOf(ctActiveTpl(),'11c')");
+  PURPSET('production'); const b=E("ctLangOf(ctActiveTpl(),'11c')");
+  E("cavEngineSet('off');tplSave(TPL_CT,[]);resetFormFields();");
+  return (a==='TEST ONLY.'&&b==='GENERAL ONLY.') ? true : JSON.stringify({a,b});
+});
+
+await ta('ticking 11c inserts the wording for what this effort is', async()=>{
+  /* End to end through the box trigger, which is the path a DD-254 actually
+     takes: the purpose chooses the wording, the box still decides whether any
+     wording goes in at all. */
+  PURPTPL(); PURPSET('production');
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  const inProd=E("ctGv('item13')");
+  E("cavEngineSet('off');tplSave(TPL_CT,[]);resetFormFields();");
+  return (inProd.indexOf('PRODUCING 11C WORDING.')>=0 && inProd.indexOf('TESTING 11C WORDING.')<0)
+      ? true : inProd.slice(0,120); });
+
+await ta('the template wins over the engine own 11c paragraph', async()=>{
+  PURPTPL();
+  E("cavEngineSet('on');cavEngineAnswerSet({archetype:'parts',purpose:'testing',testClassified:true});");
+  E("document.getElementById('c11c').checked=false;");
+  await E("cavEngineApply()");
+  const txt=E("ctGv('item13')");
+  E("cavEngineSet('off');tplSave(TPL_CT,[]);resetFormFields();");
+  /* the engine's own 11c paragraph opens with this; the template's does not */
+  return (txt.indexOf('TESTING 11C WORDING.')>=0
+       && txt.indexOf('The hardware manufactured or tested under this effort is UNCLASSIFIED')<0)
+      ? true : txt.slice(0,160); });
+
+await ta('with no template variants the engine still writes its own', async()=>{
+  /* The fallback has to keep working, or turning the engine on would make a
+     library of ordinary templates say less than it did before. */
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Plain',ioId:'plain-tpl',data:{}}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();");
+  E("cavEngineSet('on');cavEngineAnswerSet({archetype:'parts',purpose:'testing',testClassified:true});");
+  await E("cavEngineApply()");
+  const txt=E("ctGv('item13')");
+  E("cavEngineSet('off');tplSave(TPL_CT,[]);resetFormFields();");
+  return txt.indexOf('The hardware manufactured or tested under this effort is UNCLASSIFIED')>=0
+      ? true : txt.slice(0,160); });
+
+await ta('the editor offers both 11c wordings, beside the box they belong to', async()=>{
+  await wipe();
+  E("var d=ctBlankData();d.c11={'11c':true};d.l11={'11c':'GEN'};d.l11v={'11c':{testing:'T WORD',producing:'P WORD'}};"
+   +"tplSave(TPL_CT,[{label:'E',ioId:'e1',data:d}]);");
+  await E("dashTplEdit('ct')");
+  E("ctMgrToggle(0)");
+  const boxes=Array.from(w.document.querySelectorAll('.ct-l11v')).map(x=>x.value);
+  const shown=(w.document.getElementById('ctLvWrap_0')||{style:{}}).style.display;
+  /* and only 11c has them: the other keys carry one wording, as they always did */
+  const only11c=w.document.querySelectorAll('.ct-l11v').length===2;
+  await E('dashTplFlush()');
+  E("window.TPL_EDIT=[];tplSave(TPL_CT,[]);showDashView();resetFormFields();");
+  return (boxes.join('|')==='T WORD|P WORD'&&shown==='block'&&only11c)
+      ? true : JSON.stringify({boxes,shown,only11c}); });
+
+t('the purpose chooses wording, never the selection', ()=>{
+  /* What 11c is TICKED for is whether classified information is generated.
+     Answering "production" must not stop a classified test effort ticking it. */
+  const prod=E("cavEvaluate({archetype:'parts',purpose:'production',testClassified:true})");
+  const test=E("cavEvaluate({archetype:'parts',purpose:'testing',hwClassified:true})");
+  return (prod.checks.c11c===true && test.checks.c11d===true)
+      ? true : JSON.stringify({prod:prod.checks,test:test.checks});
+});
+
+await ta('the rail asks it, from the one controlled list', async()=>{
+  E("showFormView();resetFormFields();cavEngineSet('on');cavEngineAnswerSet({archetype:'parts'});");
+  E("lbApply();");
+  const rail=w.document.querySelector('#workflowLeftBanner .cav-purpose');
+  const railOpts=rail?Array.from(rail.options).map(o=>o.value).join('|'):'(absent)';
+  E("cavEngineSet('off');lbApply();");
+  return (railOpts==='|testing|production|both') ? true : ('rail='+railOpts); });
 
 H('137. v2.14.0 template language either always applies, or waits for its box');
 /* The owner's model, and it replaces the intake caveat checklist outright: a

@@ -90,7 +90,10 @@
               address:B[i][2]+', '+B[i][3], cage:B[i][1], phone:p[2], email:p[3]};
     }));
     seed(TPL_SM, PEOPLE.map(function(p,i){
-      return {label:p[0], name:p[0], email:p[3], program:['Programme ALDER (demo)','Programme BIRCH (demo)','Programme CEDAR (demo)','Programme DAMSON (demo)'][i]};
+      /* R. Vance runs two programmes, because that is the case the repository
+         exists to stop being entered twice. The rest run one each. */
+      const ps=[['Programme ALDER (demo)','Programme ELM (demo)'],['Programme BIRCH (demo)'],['Programme CEDAR (demo)'],['Programme DAMSON (demo)']][i];
+      return {label:p[0], name:p[0], email:p[3], program:ps[0], programs:ps.slice()};
     }));
     seed(TPL_SL, [
       {label:'Derivative classification', text:'Reference 11c:\n\nAll classified material generated or derived under this effort shall be marked in accordance with the applicable security classification guide.'},

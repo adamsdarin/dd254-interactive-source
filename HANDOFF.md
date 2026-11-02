@@ -1,6 +1,48 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-10-24T12:40-05:00 by Maintainer
+Last updated: 2026-11-02T14:10-06:00 by Maintainer
+
+Built and verified locally: **v2.15.0 (Tool 2.162)**, build 769f90f9. Not yet
+tagged or published at the time of writing.
+
+What v2.15.0 contains, build 769f90f9. Three things the owner asked for.
+
+A **security manager is one listing however many programmes they run**.
+`programs` is the record and `program` is mirrored to the first of them on
+every write, so the party dialog, the duplicate detector, the CSV and an older
+build all still find the single value they expect. Assigning a manager to a
+contract template fills the programme when they run one and leaves it blank
+when they run several, naming the choices — the same rule the requester
+search follows for a shared address.
+
+**Block 18f stopped disappearing.** The report was "18f is not carrying over on
+a revision"; the carry was never broken. A probe against v2.14.1 showed
+dashSpawn deep-copies it and the form shows it, and that the loss was the first
+template applied afterwards: whole-template application was treating 18f as a
+section to replace including blanks. It is now exempt — 18f is an
+instruction to send somebody a copy, not a property of the work — and a
+template that ticks 18f without naming anybody no longer blanks the address on
+the form, which used to leave a ticked box the issuance gate refuses to send.
+
+**Item 11c can carry a testing wording and a production one**, chosen by the
+caveat engine, which now asks what the effort is. `ctLangOf` is where the
+choice is made, so every insertion path gets it without knowing the rule. A
+template with no variants, or an engine that is off or unanswered, behaves
+exactly as before.
+
+1512 assertions pass (24 new), all five gates pass, both builds pass the
+native-browser smoke test, and all three features were driven in a real browser
+against the demo build.
+
+Two assertions were restated rather than deleted, both encoding the 18f rule
+that changed: the jsdom full-replacement guard and `templateReplaceOk` in
+browser_smoke.js. The browser one is the reason to keep reading that file:
+**the smoke test is the only thing that caught it** — the jsdom suite was
+green.
+
+Note for the next release: `make_build_facts.py` runs BEFORE `make_sbom.py` and
+`make_rule_catalog.py`. Build facts rewrites rebuild_kit/manifest.json, and an
+SBOM generated first no longer matches it.
 
 Latest published release: **v2.14.1 (Tool 2.161)**, build c7c30816. Signed tag
 at 783a4f2 on `main`; assets, checksums, the provenance attestation and the kit

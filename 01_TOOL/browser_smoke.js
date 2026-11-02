@@ -266,7 +266,12 @@ class CDP {
       document.getElementById('dist18f').checked=true;document.getElementById('dist18fOther').value='stale@example.test';
       document.getElementById('i14yes').checked=true;document.getElementById('i16a').value='STALE';
       ctApplyWsToForm(ctApplyDataToWorkspace(ctBlankData(),null,{label:'Blank template'}));run();
-      const templateReplaceOk=!document.getElementById('dist18f').checked&&fv('dist18fOther')===''
+      /* v2.15.0: Item 18f is deliberately exempt from whole-template
+         replacement - it is an instruction to send somebody a copy, not a
+         property of the work, so a template that does not tick it has no
+         opinion rather than a negative one. Everything else here still
+         replaces, blanks included, which is what this assertion is for. */
+      const templateReplaceOk=document.getElementById('dist18f').checked&&fv('dist18fOther')==='stale@example.test'
         &&!document.getElementById('i14yes').checked&&fv('i16a')==='';
       await tplSave(TPL_CT,[]);window.TPL_EDIT_KIND='';window.TPL_EDIT=null;
       document.getElementById('i2a').value='EXAMPLE-PRIME';document.getElementById('item13').value='EXAMPLE reusable language';

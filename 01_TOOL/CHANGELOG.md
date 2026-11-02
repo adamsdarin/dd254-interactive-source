@@ -1,3 +1,46 @@
+## v2.15.0 — 2 November 2026
+
+Tool version 2.162. A security manager is one listing however many programmes
+they run, Block 18f stops disappearing, and Item 11c can say one thing about
+testing and another about production.
+
+- **A security manager runs as many programmes as they actually do.** One
+  listing, with a programme each on its own line and a **+ Programme** button.
+  Entering the same person four times to cover four programmes meant four
+  copies of their name and address to keep in step, and three of them went
+  stale. Assigning that manager to a contract template then asks which of their
+  programmes the template is for: one is filled in, several are offered and
+  none is chosen, because picking one of somebody's programmes for them is how
+  a DD-254 ends up matched to another programme's standard language. Your
+  existing managers are unchanged and read as the one programme they have.
+- **Fixed: Block 18f no longer disappears behind a template.** A Revision has
+  always inherited 18f from its Original correctly — what took it away was
+  the first template applied afterwards, which cleared the box and the address
+  with it. A template that does not tick 18f is silent about distribution, not
+  a statement that nobody else needs a copy, so it now leaves it alone. A
+  template that **does** tick 18f still ticks it on the form and opens the
+  field, as before.
+- **Fixed: a template that ticks 18f without naming anybody** no longer wipes
+  the address already on the form. That combination produced a distribution
+  instruction addressed to nobody, which is the one state the issuance gate
+  refuses to send.
+- **Item 11c can carry two wordings.** A **Testing** box and a **Producing**
+  box sit beside the general one. With the acquisition caveat engine on, it
+  asks what this effort is — testing, production or both — and writes
+  the matching wording into Item 13; "both" writes both, testing first. With
+  the engine off, or the question unanswered, the general wording applies
+  exactly as it does today. Where a template supplies the wording, the
+  engine's own 11c paragraph stays out of the way.
+- The **spreadsheet** carries all of it: one `Programs` column for a manager's
+  programmes, and `11c Testing` and `11c Producing` columns for the two
+  wordings.
+
+What a purpose answer does **not** do is change which boxes are ticked. Whether
+Item 11c applies is still whether classified information is generated, which
+the engine's existing questions decide.
+
+1512 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.14.1 — 24 October 2026
 
 Tool version 2.161. The demonstration portfolio gains the people who requested

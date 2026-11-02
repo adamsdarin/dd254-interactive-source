@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.14.1 (tool version 2.161)"
+VER="DD254 Interactive v2.15.0 (tool version 2.162)"
 
 DOC = [
-("h1","DD254 Interactive v2.14.1 changes"),
+("h1","DD254 Interactive v2.15.0 changes"),
+("b","<b>A security manager is one listing however many programmes they run.</b> Add programmes to a manager with <b>+ Programme</b> instead of entering the same person once per programme. When you assign that manager to a contract template, the template asks which of their programmes it is for: one is filled in for you, and where there are several none is chosen \u2014 picking one on your behalf is how a DD-254 ends up matched to another programme\u2019s standard language. Managers you already have are unchanged."),
+("b","<b>Fixed: Block 18f no longer disappears when a template is applied.</b> A Revision has always inherited 18f from its Original; what removed it was the first template applied afterwards, which cleared the box and the address. A template that does not tick 18f now leaves it alone. One that does tick it still ticks it on the form and opens the field, and one that ticks it without naming anybody no longer wipes the address you had."),
+("b","<b>Item 11c can carry a testing wording and a production wording.</b> Both sit beside the general one in the template editor. With the acquisition caveat engine on it asks what the effort is \u2014 testing, production or both \u2014 and writes the matching wording into Item 13. With the engine off, or the question unanswered, the general wording applies as before. See 2.5."),
+("n","Answering that question changes the wording, never the ticks. Whether Item 11c applies is still whether classified information is generated."),
+("h2","DD254 Interactive v2.14.1 changes"),
 ("n","The demonstration build's example portfolio now includes the people who requested its DD-254s, so the requester repository and the requester search below can be seen working."),
 ("b","<b>Fixed:</b> a requester name filled in from one e-mail address no longer stays behind when you change the address. Picking an address two people share now clears it and names them both, rather than leaving the previous person in the field while telling you the name was not filled in. A name you typed yourself is still never touched."),
 ("h2","DD254 Interactive v2.14.0 changes"),
