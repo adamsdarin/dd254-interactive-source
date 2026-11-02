@@ -2,8 +2,14 @@
 
 Last updated: 2026-11-02T14:10-06:00 by Maintainer
 
-Built and verified locally: **v2.15.0 (Tool 2.162)**, build 769f90f9. Not yet
-tagged or published at the time of writing.
+Latest published release: **v2.15.0 (Tool 2.162)**, build 769f90f9. Signed tag
+at 3f5a4e1 on `main`; assets, checksums, the provenance attestation and the kit
+rebuild all verified from a fresh download (official 769f90f9..., demo
+c73d3d95..., ref refs/tags/v2.15.0, attested commit 3f5a4e1, rebuild
+byte-identical, no bytecode in the kit); the downloaded build passes the
+native-browser smoke test; the attached documents are this version's. Live demo
+published as dd254-interactive 21a5ffa, staged blob byte-identical to the
+attested demo asset.
 
 What v2.15.0 contains, build 769f90f9. Three things the owner asked for.
 
