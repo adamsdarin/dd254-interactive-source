@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.15.0 (tool version 2.162)"
+VER="DD254 Interactive v2.15.1 (tool version 2.163)"
 
 DOC = [
-("h1","DD254 Interactive v2.15.0 changes"),
+("h1","DD254 Interactive v2.15.1 changes"),
+("b","<b>Fixed: template wording that waits for its box.</b> A clause marked <i>Applies when its box is ticked</i> was being written into Item 13 when the template was applied, and then could not be taken out again \u2014 unticking the box left it there to delete by hand. Worse, ticking a box the template had left alone inserted nothing. The box now governs its own clause on every DD-254, whichever template repository it came from and however the template was applied."),
+("b","<b>Fixed: you can now write a clause that waits.</b> The wording box only appeared while the template ticked that Item 10 or 11 box \u2014 and a template that ticks the box asserts it on every DD-254 built from it. Wording for a box the template leaves unticked is now shown and editable, which is how a clause is kept ready without asserting that it applies."),
+("b","<b>Fixed: wording marked <i>Always applies</i></b> is written by whole-template application even when the template leaves its box alone, which is the one case that setting exists for."),
+("b","<b>Fixed: Item 11c's testing and production wordings</b> are used when a whole template is applied, not only when the box is ticked afterwards."),
+("h2","DD254 Interactive v2.15.0 changes"),
 ("b","<b>A security manager is one listing however many programmes they run.</b> Add programmes to a manager with <b>+ Programme</b> instead of entering the same person once per programme. When you assign that manager to a contract template, the template asks which of their programmes it is for: one is filled in for you, and where there are several none is chosen \u2014 picking one on your behalf is how a DD-254 ends up matched to another programme\u2019s standard language. Managers you already have are unchanged."),
 ("b","<b>Fixed: Block 18f no longer disappears when a template is applied.</b> A Revision has always inherited 18f from its Original; what removed it was the first template applied afterwards, which cleared the box and the address. A template that does not tick 18f now leaves it alone. One that does tick it still ticks it on the form and opens the field, and one that ticks it without naming anybody no longer wipes the address you had."),
 ("b","<b>Item 11c can carry a testing wording and a production wording.</b> Both sit beside the general one in the template editor. With the acquisition caveat engine on it asks what the effort is \u2014 testing, production or both \u2014 and writes the matching wording into Item 13. With the engine off, or the question unanswered, the general wording applies as before. See 2.5."),

@@ -1,3 +1,39 @@
+## v2.15.1 — 3 November 2026
+
+Tool version 2.163. A fix: an Item 10 or 11 box governs its own template
+wording again — whichever repository the template came from, and however it
+was applied.
+
+- **Fixed: wording that waits for its box was written in anyway, and could not
+  be taken out.** Unticking the box left the clause in Item 13 to be deleted by
+  hand, and ticking a box the template had left alone inserted nothing at all.
+  The box trigger only ever read the template picker above Item 13 — and
+  the dashboard's own apply paths never set that picker, while a **Contract
+  Type** template is not in the store that picker reads, so for that whole
+  repository the box did nothing. Applying a template now records what it says
+  for each box on the DD-254 itself, so the box goes on working afterwards
+  whatever applied it, and keeps working if the template is edited later.
+- **Fixed: wording marked *Always applies* was silently dropped** by
+  whole-template application whenever the template did not also tick that box
+  — which is the one case the setting exists for.
+- **Fixed: a clause that waits can now be written at all.** The wording box and
+  its setting only appeared while the template ticked that Item 10/11 box, and a
+  template that ticks the box asserts it on every DD-254 from that template. So
+  *Applies when its box is ticked* had nowhere to be typed. Wording is now shown
+  and editable for a box the template leaves unticked — which is how a
+  clause is kept ready without asserting that it applies.
+- **Fixed: Item 11c's testing and production wordings** are used when a whole
+  template is applied, not only when the box is ticked afterwards. A DD-254
+  written in the background is given its own answer about what the effort is,
+  never whatever the DD-254 on screen says.
+- **Applying one block's selections** follows the same two rules as applying a
+  whole template, because the two must not mean different things about the same
+  clause.
+- The **demo** shows it: *Task Order 0042 — Meridian* asserts 11c and keeps
+  an 11d clause ready. Tick 11d and it appears; untick it and it goes.
+
+1522 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.15.0 — 2 November 2026
 
 Tool version 2.162. A security manager is one listing however many programmes

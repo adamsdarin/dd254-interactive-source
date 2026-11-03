@@ -111,7 +111,11 @@
       {label:'Aurora Dynamics — Programme ALDER (demo)', srcDate:'2026-02-02', smName:'R. Vance', smEmail:'r.vance@example.com', smProgram:'Programme ALDER (demo)',
        data:ctData({primeContract:'HQ0034-25-D-0101', taskOrder:'', c10:{'10a':true}, l10:{'10a':'Reference 10a:\n\nAccess to COMSEC information requires a final entity eligibility determination and a final personnel clearance at the appropriate level (32 CFR 117.21(c)(3)).'}})},
       {label:'Task Order 0042 — Meridian (demo)', srcDate:'2026-03-14', smName:'T. Okafor', smEmail:'t.okafor@example.com', smProgram:'Programme BIRCH (demo)',
-       data:ctData({primeContract:'HQ0034-25-D-0101', taskOrder:'0042', c11:{'11c':true}, l11:{'11c':'Reference 11c:\n\nThe contractor will reference the applicable security classification guide when generating or deriving classified material.'}})},
+       /* 11c is wording this template asserts: it ticks the box, and the clause
+          goes in with it. 11d is wording kept ready - the template does not tick
+          11d, so nothing is written until a preparer ticks 11d on the form, and
+          unticking it takes the clause back out again. */
+       data:ctData({primeContract:'HQ0034-25-D-0101', taskOrder:'0042', c11:{'11c':true}, l11:{'11c':'Reference 11c:\n\nThe contractor will reference the applicable security classification guide when generating or deriving classified material.','11d':'Reference 11d:\n\nClassified hardware fabricated, modified or stored under this task order shall be marked in accordance with the applicable security classification guide and stored in approved security equipment at the cleared facility named in Item 8a.'}})},
       {label:'Calder Aerospace — Programme CEDAR (demo)', srcDate:'2026-04-01', smName:'M. Lindqvist', smEmail:'m.lindqvist@example.com', smProgram:'Programme CEDAR (demo)',
        data:ctData({primeContract:'N00178-25-D-2204', c11:{'11l':true}, l11:{'11l':'Reference 11l:\n\nControlled Unclassified Information generated under this contract shall be marked and safeguarded per 32 CFR Part 2002 and the CUI designation block below. CUI requirements are outside the scope of 32 CFR Part 117 (32 CFR 117.7(h)(1)(iii)).'}})},
       {label:'Northwind Defense — Programme DAMSON (demo)', srcDate:'2026-05-20', smName:'J. Serrano', smEmail:'j.serrano@example.com', smProgram:'Programme DAMSON (demo)',

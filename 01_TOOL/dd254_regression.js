@@ -10442,6 +10442,151 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('143. v2.15.1 a box governs its own clause however the template was applied');
+/* Reported as "11d language is inserted and I have to delete it by hand". The
+   box trigger read the picker above Item 13 and nothing else: the dashboard's
+   apply paths never set that picker, and a Contract Type template is not in
+   the store it reads at all. So the clause arrived with the template, the box
+   could not take it back out, and ticking a box the template had left alone
+   inserted nothing. */
+
+const GATETPL=function(opts){
+  opts=opts||{};
+  const d=E("ctBlankData()");
+  d.primeContract='N00178-24-D-9100';
+  d.i13='BASE GUIDANCE LINE.';
+  d.c11={'11d':!!opts.tick};
+  d.l11={'11d':'BOX-GATED 11D CLAUSE.'};
+  if(opts.always) d.always={'11d':true};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Box',ioId:'box-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();");
+  if(opts.pickIt) E("document.getElementById('ctTplSel').value='box-tpl';");
+  return d;
+};
+const has11d=()=>E("ctGv('item13')").indexOf('BOX-GATED 11D CLAUSE.')>=0;
+const untick11d=()=>E("if(document.getElementById('c11d').checked)document.getElementById('cb11d').click()");
+const tick11d=()=>E("if(!document.getElementById('c11d').checked)document.getElementById('cb11d').click()");
+const boxClean=()=>E("tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);resetFormFields();document.getElementById('ctTplSel').value='';");
+
+await ta('applying a template leaves the form knowing what it says per box', async()=>{
+  GATETPL({tick:true});
+  await E("ctInsertAll(0)");
+  const snap=E("ctLangSnapshot()");
+  const picker=E("document.getElementById('ctTplSel').value");
+  boxClean();
+  return (snap&&snap.data&&snap.data.l11&&snap.data.l11['11d']==='BOX-GATED 11D CLAUSE.'&&picker==='')
+    ? true : JSON.stringify({snap:snap&&snap.data,picker}); });
+
+await ta('unticking the box withdraws its clause with the picker empty', async()=>{
+  /* THE REPORT. The wording used to stay in Item 13 and have to be deleted. */
+  GATETPL({tick:true});
+  await E("ctInsertAll(0)");
+  const arrived=has11d();
+  untick11d();
+  const gone=!has11d();
+  const baseKept=E("ctGv('item13')").indexOf('BASE GUIDANCE LINE.')>=0;
+  boxClean();
+  return (arrived&&gone&&baseKept)?true:('arrived='+arrived+' gone='+gone+' base='+baseKept); });
+
+await ta('ticking a box the template left alone inserts that wording', async()=>{
+  GATETPL({tick:false});
+  await E("ctInsertAll(0)");
+  const out=!has11d();
+  tick11d();
+  const inNow=has11d();
+  boxClean();
+  return (out&&inNow)?true:('out='+out+' in='+inNow); });
+
+await ta('a Contract Type applied from the dashboard is governed the same way', async()=>{
+  /* TPL_B13 cannot ever be the picker's template - ctFind reads TPL_CT only -
+     so for this whole repository the box trigger did nothing at all. */
+  const d=E("ctBlankData()");
+  d.c11={'11d':true}; d.l11={'11d':'CONTRACT TYPE 11D CLAUSE.'}; d.i13='CT BASE LINE.';
+  E("tplSave(TPL_B13,"+JSON.stringify([{label:'CT',ioId:'ct-b13',data:null}])+");");
+  E("(function(){var a=tplLoad(TPL_B13);a[0].data="+JSON.stringify(d)+";tplSave(TPL_B13,a);})()");
+  await E("draftPut({id:'BG1',title:'Box gate',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
+  E("showFormView();resetFormFields();DASH.current='BG1';");
+  await E("dashApplyB13('BG1',0)");
+  const arrived=E("ctGv('item13')").indexOf('CONTRACT TYPE 11D CLAUSE.')>=0;
+  untick11d();
+  const gone=E("ctGv('item13')").indexOf('CONTRACT TYPE 11D CLAUSE.')<0;
+  E("DASH.current=null;");
+  await wipe();
+  boxClean();
+  return (arrived&&gone)?true:('arrived='+arrived+' gone='+gone); });
+
+await ta('always-applies wording is written even when the box is left alone', async()=>{
+  /* The mode says "part of every DD-254 from this template". Gating it on the
+     template's own tick meant it was silently dropped. */
+  GATETPL({tick:false,always:true});
+  await E("ctInsertAll(0)");
+  const arrived=has11d();
+  const ticked=E("!!document.getElementById('c11d').checked");
+  untick11d();
+  const kept=has11d();
+  boxClean();
+  return (arrived&&!ticked&&kept)?true:('arrived='+arrived+' ticked='+ticked+' kept='+kept); });
+
+await ta('box-mode wording is not written when the box is left alone', async()=>{
+  GATETPL({tick:false});
+  await E("ctInsertAll(0)");
+  const out=!has11d();
+  boxClean();
+  return out?true:'box-mode wording was written anyway'; });
+
+t('the editor shows wording for a box the template does not tick', ()=>{
+  /* Writing it required the tick, and the tick is what makes the template
+     assert the box - so "applies when its box is ticked" could not be written
+     at all. */
+  E("window.TPL_EDIT=[{label:'E',data:{c10:{},c11:{'11d':false},l11:{'11d':'WAITING CLAUSE.'},i16:{}}}];window.TPL_EDIT_KIND='ct';");
+  const html=E("ctEditorHtml(window.TPL_EDIT[0],0)");
+  E("window.TPL_EDIT=[];window.TPL_EDIT_KIND='';");
+  const ta11d=html.indexOf('id="ctL_0_11d"');
+  const shown=ta11d>=0 && html.slice(ta11d,ta11d+260).indexOf('display:block')>=0;
+  const mode=html.indexOf('id="ctAlw_0_11d"');
+  const modeShown=mode>=0 && html.slice(mode,mode+400).indexOf('display:flex')>=0;
+  return (shown&&modeShown)?true:('textarea shown='+shown+' mode shown='+modeShown);
+});
+
+await ta('whole-template application uses the Item 11c wording for the effort', async()=>{
+  /* ctLangOf knew about the two wordings; the apply path did not, so applying
+     a template wrote the general clause whatever the engine had been told. */
+  const d=E("ctBlankData()");
+  d.c11={'11c':true};
+  d.l11={'11c':'GENERAL 11C.'};
+  d.l11v={'11c':{testing:'TESTING 11C.',producing:'PRODUCING 11C.'}};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Var',ioId:'var-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();");
+  E("cavEngineSet('on');cavEngineAnswerSet({archetype:'parts',purpose:'production'});");
+  await E("ctInsertAll(0)");
+  const txt=E("ctGv('item13')");
+  E("cavEngineSet('off');");
+  boxClean();
+  return (txt.indexOf('PRODUCING 11C.')>=0&&txt.indexOf('GENERAL 11C.')<0)?true:txt.slice(0,140); });
+
+t('a record written in the background gets its own purpose, not the open form\u2019s', ()=>{
+  const d=E("ctBlankData()");
+  d.c11={'11c':true};
+  d.l11={'11c':'GENERAL 11C.'};
+  d.l11v={'11c':{testing:'TESTING 11C.',producing:'PRODUCING 11C.'}};
+  E("showFormView();resetFormFields();cavEngineSet('on');cavEngineAnswerSet({archetype:'parts',purpose:'production'});");
+  const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+",{texts:{cavEngine:JSON.stringify({archetype:'parts',purpose:'testing'})},checks:{},radios:{},selects:{},perf:[]},null)");
+  E("cavEngineSet('off');resetFormFields();");
+  const txt=String(ws.texts.item13||'');
+  return (txt.indexOf('TESTING 11C.')>=0&&txt.indexOf('PRODUCING 11C.')<0)?true:txt.slice(0,140);
+});
+
+await ta('the box withdraws the wording that went in, not the wording now stored', async()=>{
+  /* A template edited after it was applied must not leave the preparer unable
+     to untick what is actually on their form. */
+  GATETPL({tick:true});
+  await E("ctInsertAll(0)");
+  E("(function(){var a=tplLoad(TPL_CT);a[0].data.l11['11d']='REWRITTEN SINCE.';tplSave(TPL_CT,a);})()");
+  untick11d();
+  const gone=!has11d();
+  boxClean();
+  return gone?true:'the applied wording could not be withdrawn after the template changed'; });
+
 H('142. v2.15.0 Item 11c says one thing about testing and another about production');
 /* A template used to carry one 11c clause, so an FSO issuing both test and
    production efforts under one contract kept two templates differing in a

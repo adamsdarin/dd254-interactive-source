@@ -1,6 +1,54 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-02T14:10-06:00 by Maintainer
+Last updated: 2026-11-03T08:05-06:00 by Maintainer
+
+Built and verified locally: **v2.15.1 (Tool 2.163)**, build a1178052. Not yet
+tagged or published at the time of writing. The previous published release is
+v2.15.0, recorded below.
+
+What v2.15.1 fixes, build a1178052. One report: "the 11d language is inserted
+and I have to delete it by hand."
+
+**An Item 10/11 box governs its own template wording again.** The box trigger
+resolved its wording through `ctActiveTpl` — the picker above Item 13 —
+and nothing else. Every other path that applies a template leaves that picker
+alone, and `ctFind` reads TPL_CT only, so a **Contract Type** template (TPL_B13)
+could never be the active one at all: for that whole repository the box did
+nothing. The clause arrived with the template, unticking left it on the form,
+and ticking a box the template had left alone inserted nothing.
+
+Applying a template now writes what it says per box into a hidden `ctLangSrc`
+field on the form, and `ctLangSourceFor(key)` reads the picker first and that
+snapshot second. A snapshot and not a reference, deliberately: what the box has
+to withdraw is the wording that is on the form, not what the template says
+today — there is an assertion for exactly that.
+
+Two more in the same mechanism. Whole-template application decided what to
+write from the template's own ticks, so wording marked **always applies** was
+dropped whenever the template left its box alone — the one case the setting
+exists for. And the editor only showed wording while the template ticked that
+box, so **"applies when its box is ticked" could not be written at all**: the
+tick is what makes a template assert the box. Wording is now shown for an
+unticked box, which is what "kept ready" looks like.
+
+Item 11c's two wordings now also apply on the whole-template path, through the
+one function `ctLangFromData`. `cavPurposeForWs(ws,live)` exists because
+`cavPurposeNow` reads the open form: a record written in the background would
+otherwise be given whichever DD-254 happens to be on screen.
+
+1522 assertions pass (ten new, section 143), all five gates pass, both builds
+pass the native-browser smoke test, and the demo was driven in a real browser:
+Task Order 0042 — Meridian asserts 11c and keeps an 11d clause ready.
+
+`browser_smoke.js` gained `boxGateOk`, which **fails against v2.15.0** —
+worth knowing because that is twice now that the browser caught what the jsdom
+suite was green on.
+
+Release ordering, again: `make_build_facts.py` runs BEFORE `make_sbom.py` and
+`make_rule_catalog.py`, because build facts rewrites rebuild_kit/manifest.json.
+Note too that `02_DOCS/manual_source/build.py` writes `DD254_User_Manual.pdf`,
+which is copied to `02_DOCS/DD254_Interactive_User_Manual.pdf` — the names
+differ.
 
 Latest published release: **v2.15.0 (Tool 2.162)**, build 769f90f9. Signed tag
 at 3f5a4e1 on `main`; assets, checksums, the provenance attestation and the kit

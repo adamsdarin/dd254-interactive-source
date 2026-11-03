@@ -273,6 +273,26 @@ class CDP {
          replaces, blanks included, which is what this assertion is for. */
       const templateReplaceOk=document.getElementById('dist18f').checked&&fv('dist18fOther')==='stale@example.test'
         &&!document.getElementById('i14yes').checked&&fv('i16a')==='';
+      /* v2.15.1: an Item 10/11 box governs its own template wording. The
+         picker above Item 13 is deliberately left empty, because that is the
+         state the dashboard's apply paths leave it in - and the state in which
+         unticking the box used to leave the clause on the form to be deleted
+         by hand, while ticking a box the template had left alone inserted
+         nothing at all. */
+      showFormView();resetFormFields();
+      const gateD=ctBlankData();
+      gateD.c11={'11d':true};
+      gateD.l11={'11d':'BROWSER BOX CLAUSE 11D.','11e':'BROWSER WAITING CLAUSE 11E.'};
+      ctApplyWsToForm(ctApplyDataToWorkspace(gateD,null,{label:'Box gate'}));run();
+      const b13Now=()=>String(ctGv('item13')||'');
+      const gateArrived=b13Now().includes('BROWSER BOX CLAUSE 11D.')
+        &&!b13Now().includes('BROWSER WAITING CLAUSE 11E.');
+      document.getElementById('cb11d').click();
+      const gateWithdrawn=!b13Now().includes('BROWSER BOX CLAUSE 11D.');
+      document.getElementById('cb11e').click();
+      const gateWaitedThenCame=b13Now().includes('BROWSER WAITING CLAUSE 11E.');
+      const boxGateOk=gateArrived&&gateWithdrawn&&gateWaitedThenCame;
+      showFormView();resetFormFields();
       await tplSave(TPL_CT,[]);window.TPL_EDIT_KIND='';window.TPL_EDIT=null;
       document.getElementById('i2a').value='EXAMPLE-PRIME';document.getElementById('item13').value='EXAMPLE reusable language';
       document.getElementById('i3a_date').value='20261001';document.querySelector('input[name="spec"][value="3a"]').checked=true;
@@ -318,7 +338,7 @@ class CDP {
       await tplSave(TPL_CT,[]);await tplSave(TPL_SM,[]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';
       showFormView();resetFormFields();window.CURRENT_REQUESTOR_EMAIL='';
       return {version:document.getElementById('toolVer').textContent,release:(document.getElementById('releaseVer')||{}).textContent||'',settingsOk,exportUiOk,signingUiOk,signingExportOk,validationSafe,
-        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
+        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,boxGateOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
     })()`;
     const result = await cdp.send('Runtime.evaluate', {
       expression, awaitPromise: true, returnByValue: true
@@ -419,7 +439,7 @@ class CDP {
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk && value.facCertLinkOk
       && value.completionReuseOk && value.completionPromptOk && value.completionInsertOk && value.completionJumpOk
       && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
-    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
+    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.boxGateOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.map(e=>e.params.exceptionDetails) }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));
   } finally {

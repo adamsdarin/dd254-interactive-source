@@ -1,4 +1,4 @@
-BUILD_SHA256 769f90f9d36f4957861385f7ffee86efb7fb666d03d2871fc0cc76b8a4ca010e
+BUILD_SHA256 a11780521feed8ff71b877e6bc2903ac8a589615c5f509ed2eeed5fde0210660
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1792,6 +1792,18 @@ BUILD_SHA256 769f90f9d36f4957861385f7ffee86efb7fb666d03d2871fc0cc76b8a4ca010e
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 143. v2.15.1 a box governs its own clause however the template was applied
+  PASS  applying a template leaves the form knowing what it says per box
+  PASS  unticking the box withdraws its clause with the picker empty
+  PASS  ticking a box the template left alone inserts that wording
+  PASS  a Contract Type applied from the dashboard is governed the same way
+  PASS  always-applies wording is written even when the box is left alone
+  PASS  box-mode wording is not written when the box is left alone
+  PASS  the editor shows wording for a box the template does not tick
+  PASS  whole-template application uses the Item 11c wording for the effort
+  PASS  a record written in the background gets its own purpose, not the open form’s
+  PASS  the box withdraws the wording that went in, not the wording now stored
+
 ### 142. v2.15.0 Item 11c says one thing about testing and another about production
   PASS  a template with no variants reads exactly as it always did
   PASS  testing takes the testing wording, production the production wording
@@ -1813,5 +1825,5 @@ BUILD_SHA256 769f90f9d36f4957861385f7ffee86efb7fb666d03d2871fc0cc76b8a4ca010e
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1512   FAIL 0
+  PASS 1522   FAIL 0
 ================================
