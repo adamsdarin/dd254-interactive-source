@@ -12,6 +12,9 @@ demonstration is `index.html` on the main branch of the separate
    `02_DOCS/product_planning/IMPLEMENTATION_vX.Y.Z.md` for the version: the
    release workflow attaches the pair named for the tag and fails if either is
    missing. (Until v1.14.0 it attached v1.12.0's pair to every release.)
+   The security fact sheet and the ISSM brief each carry a version line and a
+   date. Both move. Only the version was being updated, so the fact sheet's
+   date read 24 October 2026 in v2.13.0 through v2.15.1.
 2. Use Node 24 and `npm ci --ignore-scripts`. Python needs `pypdf` for tests and
    `reportlab` to rebuild the manual. These are development tools only.
 3. Run `python make_demo.py`. It derives the current demo from the official

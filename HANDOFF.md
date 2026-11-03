@@ -2,9 +2,22 @@
 
 Last updated: 2026-11-03T08:05-06:00 by Maintainer
 
-Built and verified locally: **v2.15.1 (Tool 2.163)**, build a1178052. Not yet
-tagged or published at the time of writing. The previous published release is
-v2.15.0, recorded below.
+Latest published release: **v2.15.1 (Tool 2.163)**, build a1178052. Signed tag
+at b180205 on `main`; assets, checksums, the provenance attestation and the kit
+rebuild all verified from a fresh download (official a1178052..., demo
+5cb3bebb..., ref refs/tags/v2.15.1, attested commit b180205, rebuild
+byte-identical, no bytecode in the kit); the downloaded build passes the
+native-browser smoke test; the attached documents are this version's. Live demo
+published as dd254-interactive fe271cf, staged blob byte-identical to the
+attested demo asset and now served by Pages.
+
+Corrected after the tag, so it ships with the next release rather than being
+patched onto this one: the security fact sheet's date line read 24 October 2026
+in v2.13.0 through v2.15.1. Only its version was being moved at release time.
+SETUP.md step 1 now says both lines move. The published v2.15.1 fact sheet
+still carries the stale date; it is a documentation asset, so it can be
+replaced with `gh release upload --clobber` plus a regenerated SHA256SUMS.txt
+if that is ever wanted.
 
 What v2.15.1 fixes, build a1178052. One report: "the 11d language is inserted
 and I have to delete it by hand."
