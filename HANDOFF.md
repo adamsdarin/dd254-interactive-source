@@ -2,8 +2,13 @@
 
 Last updated: 2026-11-06T13:05-06:00 by Maintainer
 
-Built and verified locally: **v2.17.0 (Tool 2.166)**, build b1f6c094. Not yet
-tagged or published at the time of writing.
+Latest published release: **v2.17.0 (Tool 2.166)**, build b1f6c094. Signed tag
+at 4e63153 on `main`; 12/12 checksums, the provenance attestation (official
+b1f6c094..., demo cdf0e01a..., ref refs/tags/v2.17.0, attested commit 4e63153),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive cd18fc3 and served by Pages, byte-identical
+to the attested demo asset.
 
 **v2.16.0 (Tool 2.165), build 91f1fc44, IS published**: signed tag at b911416 on
 `main`; 12/12 checksums, attestation (official 407ad934..., demo 3bc5d2b6...,
