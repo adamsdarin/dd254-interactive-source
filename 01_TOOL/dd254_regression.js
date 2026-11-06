@@ -4677,7 +4677,10 @@ t('every save in the editor goes through the one writer', ()=>{
 });
 
 H('74. Standalone DD-254 — combined Block 2a');
-const setSA=(on)=>{ const c=w.document.getElementById('iStandalone'); c.checked=!!on; E("run()"); };
+const setSA=(on)=>{ const c=w.document.getElementById('iStandalone');
+  /* click(), not .checked=, because the box's own handler is what reconciles
+     the Item 13 supported-effort line with the coverage answer. */
+  if(c.checked!==!!on) c.click(); E("run()"); };
 const seed2a=()=>{ w.document.getElementById('i2a').value='N00178-24-D-1234';
                    w.document.getElementById('iEffort').value='0007'; E("supSync();run()"); };
 t('the checkbox exists beside the effort field', ()=>{
@@ -4727,10 +4730,18 @@ await ta('the export filename still uses the bare contract number', async()=>{
   const n=await E("dd254ExportName()");
   return (/^N00178-24-D-1234/.test(String(n)) && !/Task Order/.test(String(n))) ? true : n;
 });
-t('the Item 13 reference line still appears', ()=>{
+t('the Item 13 reference line gives way to Block 2a', ()=>{
+  /* Reversed in v2.15.2 on the owner's instruction, and section 144 is where
+     the whole rule now lives. The line exists because an order running under
+     its prime's DD-254 has nowhere else to be named. This DD-254 IS the
+     order's own, so Item 2a names it on the face of the form, and Item 13
+     saying it again was something the preparer had to delete. */
   seed2a(); setSA(true);
-  return /This is in support of effort 0007\./.test(w.document.getElementById('item13').value)
-    ? true : JSON.stringify(w.document.getElementById('item13').value.slice(0,60));
+  const v=w.document.getElementById('item13').value;
+  setSA(false);
+  const back=/This is in support of effort 0007\./.test(w.document.getElementById('item13').value);
+  return (!/This is in support of effort/.test(v) && back)
+    ? true : JSON.stringify({ticked:v.slice(0,60),untickedRestores:back});
 });
 t('the combined value survives a draft round-trip', ()=>{
   seed2a(); setSA(true);
@@ -10441,6 +10452,124 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   E("window.TPL_EDIT=[];tplSave(TPL_SM,[]);");
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
+
+H('144. v2.15.2 the supported-effort line follows the order coverage');
+/* Reported two ways round. A task order running under its prime's DD-254 got
+   no "This is in support of effort N" line when the DD-254 was generated from
+   the order repository - that path composes the workspace directly and never
+   went through the form writer that puts the line in, so the order field was
+   filled and Item 13 said nothing about which effort it was for. And an order
+   WITH its own DD-254 kept the line while Item 2a also named the order. */
+
+const SUPSEED=async()=>{
+  /* Cancel any autosave this run has queued before the store is emptied:
+     a timer that fires against a wiped draft writes it back. */
+  E("clearTimeout(DASH.timer);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  await E("tplSave(TPL_ORDERS,[]);tplSave(TPL_CT,[{ioId:'sup-prime',label:'Prime language',srcType:'rev',srcRev:'1',srcDate:'2026-10-01',data:Object.assign(ctBlankData(),{primeContract:'SUP-PRIME',i13:'PRIME WORDING'})},{ioId:'sup-own',label:'Order language',srcType:'orig',srcDate:'2026-10-02',data:Object.assign(ctBlankData(),{primeContract:'SUP-PRIME',taskOrder:'0500',i13:'ORDER WORDING'})}]);");
+};
+const SUPLINE=/This is in support of effort/;
+const supOnForm=()=>SUPLINE.test(String(E("ctGv('item13')")||''));
+
+await ta('an order generated under its prime DD-254 carries the line', async()=>{
+  /* THE REPORT. */
+  await SUPSEED();
+  const o=await E("ctOrderCreate('SUP-PRIME','0400','Task Order','prime')");
+  const rec=await E("ctOrderStart("+JSON.stringify(o.order.ioId)+")");
+  const stored=String((rec.workspace.texts||{}).item13||'');
+  const onForm=supOnForm();
+  return (stored.indexOf('This is in support of effort 0400.')===0
+       && stored.indexOf('PRIME WORDING')>0
+       && rec.workspace.checks.iStandalone===false
+       && onForm)
+    ? true : JSON.stringify({stored:stored.slice(0,70),sa:rec.workspace.checks.iStandalone,onForm}); });
+
+await ta('an order with its own DD-254 is named in Item 2a instead', async()=>{
+  const o=await E("ctOrderCreate('SUP-PRIME','0500','Delivery Order','order')");
+  const rec=await E("ctOrderStart("+JSON.stringify(o.order.ioId)+")");
+  const stored=String((rec.workspace.texts||{}).item13||'');
+  const i2a=E("collect254Data(false).v.i2a");
+  return (!SUPLINE.test(stored) && stored.indexOf('ORDER WORDING')===0
+       && rec.workspace.checks.iStandalone===true
+       && i2a==='SUP-PRIME | Delivery Order 0500')
+    ? true : JSON.stringify({stored:stored.slice(0,70),sa:rec.workspace.checks.iStandalone,i2a}); });
+
+t('answering the coverage question on the form moves the line', ()=>{
+  E("showFormView();resetFormFields();DASH.current=null;");
+  E("document.getElementById('i2a').value='SUP-PRIME';document.getElementById('iEffort').value='0600';supSync();");
+  const typed=supOnForm();
+  E("document.getElementById('iStandalone').click();");
+  const ticked=supOnForm(), i2a=E("collect254Data(false).v.i2a");
+  E("document.getElementById('iStandalone').click();");
+  const back=supOnForm();
+  return (typed&&!ticked&&back&&i2a==='SUP-PRIME | Task Order 0600')
+    ? true : JSON.stringify({typed,ticked,back,i2a});
+});
+
+t('the line is replaced, never doubled, when the order number changes', ()=>{
+  /* The writer now heals a head line it does not recognise as its own, which
+     is what lets a record from an older build be corrected. It must not turn
+     that into two lines. */
+  E("showFormView();resetFormFields();");
+  E("document.getElementById('item13').value='This is in support of effort OLD-0001.\\n\\nKeep this wording.';");
+  E("SUP_LAST='';document.getElementById('iEffort').value='NEW-0002';supSync();");
+  const v=E("ctGv('item13')");
+  const n=(v.match(/This is in support of effort/g)||[]).length;
+  return (n===1 && v.indexOf('This is in support of effort NEW-0002.')===0 && v.indexOf('Keep this wording.')>0)
+    ? true : JSON.stringify({n,v:v.slice(0,90)});
+});
+
+t('a line the preparer moved down the block stays where they put it', ()=>{
+  E("showFormView();resetFormFields();");
+  E("document.getElementById('iEffort').value='0700';supSync();");
+  E("document.getElementById('item13').value='First paragraph.\\n\\nThis is in support of effort 0700.\\n\\nLast paragraph.';");
+  E("document.getElementById('iEffort').value='0701';supSync();");
+  const v=E("ctGv('item13')");
+  return (v.indexOf('First paragraph.')===0
+       && v.indexOf('This is in support of effort 0701.')>0
+       && (v.match(/in support of effort/g)||[]).length===1)
+    ? true : JSON.stringify(v.slice(0,120));
+});
+
+await ta('a draft that predates this gains the line when it is opened', async()=>{
+  /* Every order DD-254 generated before v2.15.2 is in this state: order field
+     filled, Item 13 silent. */
+  await wipe();
+  await E("draftPut({id:'SUP1',title:'Legacy order',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],workspace:{texts:{i2a:'SUP-PRIME',iEffort:'0800',item13:'EXISTING GUIDANCE.'},checks:{iStandalone:false},radios:{},selects:{},perf:[]}})");
+  await E("dashOpen('SUP1')");
+  const v=E("ctGv('item13')");
+  return (v.indexOf('This is in support of effort 0800.')===0 && v.indexOf('EXISTING GUIDANCE.')>0)
+    ? true : JSON.stringify(v.slice(0,80)); });
+
+await ta('an issued DD-254 is left exactly as it went out', async()=>{
+  /* It is the record of what was sent. Same rule as the required Item 13 line
+     and the standard language, and for the same reason. */
+  await E("draftPut({id:'SUP2',title:'Issued order',status:'Issued',stage:'orig',meta:{},todos:[],dist:[],holds:[],workspace:{texts:{i2a:'SUP-PRIME',iEffort:'0900',item13:'AS ISSUED.'},checks:{iStandalone:false},radios:{},selects:{},perf:[]}})");
+  await E("dashOpen('SUP2')");
+  const v=E("ctGv('item13')");
+  await wipe();
+  return (v==='AS ISSUED.') ? true : JSON.stringify(v.slice(0,80)); });
+
+await ta('an autosave in flight is abandoned when the draft is closed', async()=>{
+  /* Found while fixing the above: reconciling the line queues an autosave, and
+     dashSaveNow read DASH.current AGAIN after awaiting. Closing the draft in
+     between wrote a record with id null - which the store rejects and the
+     operator sees as a storage failure they cannot account for - and swapping
+     records wrote the open form onto the record that had just been left. */
+  await wipe();
+  await E("draftPut({id:'SUP3',title:'Open one',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],workspace:{texts:{item13:'ORIGINAL TEXT.'},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("dashOpen('SUP3')");
+  E("document.getElementById('item13').value='EDITED AFTER CLOSING.';window.__SV=dashSaveNow();DASH.current=null;");
+  await E("window.__SV");
+  const all=await E("draftAll()");
+  const rec=all.filter(function(r){return r.id==='SUP3';})[0];
+  const unkeyed=all.filter(function(r){return typeof r.id!=='string';}).length;
+  const kept=rec?String((rec.workspace.texts||{}).item13||''):'';
+  await wipe();
+  return (unkeyed===0 && !!rec && kept.indexOf('EDITED AFTER CLOSING.')<0 && kept.indexOf('ORIGINAL TEXT.')>=0)
+    ? true : JSON.stringify({unkeyed,kept:kept.slice(0,60)}); });
+
+E("tplSave(TPL_CT,[]);tplSave(TPL_ORDERS,[]);showDashView();resetFormFields();");
 
 H('143. v2.15.1 a box governs its own clause however the template was applied');
 /* Reported as "11d language is inserted and I have to delete it by hand". The

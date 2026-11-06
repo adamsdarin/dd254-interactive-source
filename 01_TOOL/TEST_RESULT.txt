@@ -1,4 +1,4 @@
-BUILD_SHA256 a11780521feed8ff71b877e6bc2903ac8a589615c5f509ed2eeed5fde0210660
+BUILD_SHA256 6ee1ced368eaef11d9cc5c6f126d89c26776efe0ea078f5d5a97293ff06ec53f
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -954,7 +954,7 @@ BUILD_SHA256 a11780521feed8ff71b877e6bc2903ac8a589615c5f509ed2eeed5fde0210660
   PASS  the form field itself is never rewritten
   PASS  the 17-character check still reads the bare contract number
   PASS  the export filename still uses the bare contract number
-  PASS  the Item 13 reference line still appears
+  PASS  the Item 13 reference line gives way to Block 2a
   PASS  the combined value survives a draft round-trip
 
 ### 75. Safe validation rendering and the sole official export
@@ -1792,6 +1792,16 @@ BUILD_SHA256 a11780521feed8ff71b877e6bc2903ac8a589615c5f509ed2eeed5fde0210660
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 144. v2.15.2 the supported-effort line follows the order coverage
+  PASS  an order generated under its prime DD-254 carries the line
+  PASS  an order with its own DD-254 is named in Item 2a instead
+  PASS  answering the coverage question on the form moves the line
+  PASS  the line is replaced, never doubled, when the order number changes
+  PASS  a line the preparer moved down the block stays where they put it
+  PASS  a draft that predates this gains the line when it is opened
+  PASS  an issued DD-254 is left exactly as it went out
+  PASS  an autosave in flight is abandoned when the draft is closed
+
 ### 143. v2.15.1 a box governs its own clause however the template was applied
   PASS  applying a template leaves the form knowing what it says per box
   PASS  unticking the box withdraws its clause with the picker empty
@@ -1825,5 +1835,5 @@ BUILD_SHA256 a11780521feed8ff71b877e6bc2903ac8a589615c5f509ed2eeed5fde0210660
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1522   FAIL 0
+  PASS 1530   FAIL 0
 ================================

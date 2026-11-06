@@ -293,6 +293,21 @@ class CDP {
       const gateWaitedThenCame=b13Now().includes('BROWSER WAITING CLAUSE 11E.');
       const boxGateOk=gateArrived&&gateWithdrawn&&gateWaitedThenCame;
       showFormView();resetFormFields();
+      /* v2.15.2: a task order running under its prime's DD-254 is named in
+         Item 13, because the form has no field for the order; one with a
+         DD-254 of its own is named in Item 2a instead, and Item 13 does not
+         repeat it. Driven through the box's own handler, which is what a
+         preparer clicks. */
+      document.getElementById('i2a').value='SMOKE-PRIME';
+      document.getElementById('iEffort').value='0042';supSync();
+      const supUnder=String(ctGv('item13')||'').indexOf('This is in support of effort 0042.')===0;
+      document.getElementById('iStandalone').click();
+      const supOwn=!/This is in support of effort/.test(String(ctGv('item13')||''))
+        && collect254Data(false).v.i2a==='SMOKE-PRIME | Task Order 0042';
+      document.getElementById('iStandalone').click();
+      const supBack=String(ctGv('item13')||'').indexOf('This is in support of effort 0042.')===0;
+      const supLineOk=supUnder&&supOwn&&supBack;
+      showFormView();resetFormFields();
       await tplSave(TPL_CT,[]);window.TPL_EDIT_KIND='';window.TPL_EDIT=null;
       document.getElementById('i2a').value='EXAMPLE-PRIME';document.getElementById('item13').value='EXAMPLE reusable language';
       document.getElementById('i3a_date').value='20261001';document.querySelector('input[name="spec"][value="3a"]').checked=true;
@@ -338,7 +353,7 @@ class CDP {
       await tplSave(TPL_CT,[]);await tplSave(TPL_SM,[]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';
       showFormView();resetFormFields();window.CURRENT_REQUESTOR_EMAIL='';
       return {version:document.getElementById('toolVer').textContent,release:(document.getElementById('releaseVer')||{}).textContent||'',settingsOk,exportUiOk,signingUiOk,signingExportOk,validationSafe,
-        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,boxGateOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
+        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,boxGateOk,supLineOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
     })()`;
     const result = await cdp.send('Runtime.evaluate', {
       expression, awaitPromise: true, returnByValue: true
@@ -439,7 +454,7 @@ class CDP {
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk && value.facCertLinkOk
       && value.completionReuseOk && value.completionPromptOk && value.completionInsertOk && value.completionJumpOk
       && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
-    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.boxGateOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
+    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.boxGateOk&&value.supLineOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.map(e=>e.params.exceptionDetails) }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));
   } finally {

@@ -1,6 +1,55 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-03T08:05-06:00 by Maintainer
+Last updated: 2026-11-06T09:20-06:00 by Maintainer
+
+Built and verified locally: **v2.15.2 (Tool 2.164)**, build 6ee1ced3. Not yet
+tagged or published at the time of writing. The previous published release is
+v2.15.1, recorded below.
+
+What v2.15.2 fixes, build 6ee1ced3. One report, two ways round, plus one thing
+found while testing it.
+
+**The Item 13 supported-effort line now follows the task order's coverage.** A
+task order has no field of its own on the DD Form 254, so the tool owns a
+leading line in Item 13 naming the effort. It was written by exactly one path -
+`supSync`, the form writer - and every DD-254 generated from the order
+repository is composed and saved as a workspace BEFORE it is opened. So an
+order running under its prime's DD-254 went out with the order field filled and
+Item 13 silent. `ctApplyDataToWorkspace` now reconciles the line on the
+workspace it builds, which also covers a dashboard card updated in the
+background.
+
+The other half: an order WITH its own DD-254 kept the line while Item 2a
+already carried `PRIME | Task Order N`. `supBuild` is now
+`supWant(supNum(),supStandalone())`, so no line when the DD-254 is the order's
+own, and the `iStandalone` handler calls `supSync`. Section 74's assertion "the
+Item 13 reference line still appears" was **reversed** on the owner's
+instruction and now reads "gives way to Block 2a"; the whole rule lives in
+section 144. Item 2a's combined format was left exactly as it was - the owner's
+example used a colon, which was read as describing the composition rather than
+specifying a separator, and it is flagged for them.
+
+`dashOpen` reconciles the line under the same `I13_FINAL_STATUS` guard as
+`cmaSync` and `slAutoApply`, so older task-order records converge on open and
+an Issued one is untouched.
+
+**Also fixed: `dashSaveNow` read `DASH.current` again after awaiting.** It
+reads the record, awaits the store, collects the live form, then used
+`DASH.current` for the fallback record - so closing or switching records mid-save
+wrote the open form onto the record just left, or wrote one with `id:null`,
+which IndexedDB rejects and the operator sees as an unexplained storage
+failure. The id is captured once and the save is abandoned if it is no longer
+the open record. Proved against the published v2.15.1 build, which overwrites
+the closed record; it is what made the new section crash the suite, which is
+how it was found.
+
+1530 assertions pass (eight new), all five gates pass, both builds pass the
+native-browser smoke test, whose new `supLineOk` fails against v2.15.1.
+
+Note for writing tests here: a section that empties the draft store should
+cancel the pending autosave first (`clearTimeout(DASH.timer)`), and `E()`
+strings that set Item 13 need `\n` so the escape survives into the inner JS
+string literal.
 
 Latest published release: **v2.15.1 (Tool 2.163)**, build a1178052. Signed tag
 at b180205 on `main`; assets, checksums, the provenance attestation and the kit

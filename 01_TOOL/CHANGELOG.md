@@ -1,3 +1,37 @@
+## v2.15.2 — 6 November 2026
+
+Tool version 2.164. A fix: the Item 13 supported-effort line follows the task
+order's coverage — present when the order runs under its prime's DD-254,
+absent when the order has a DD-254 of its own.
+
+- **Fixed: a task order running under its prime's DD-254 was generated with no
+  supported-effort line.** The order field was filled in and Item 13 said
+  nothing about which effort the guidance was for. Every DD-254 generated from
+  the order repository is composed and saved before it is opened, and that path
+  never went through the writer that puts the line in. The line is now written
+  where the DD-254 is built, so it is on the record before anyone opens it.
+- **Fixed: an order with its own DD-254 kept the line while Item 2a also named
+  the order.** Item 2a carries the prime and the order together on the face of
+  the form — the line was the same fact a second time, and the preparer was
+  deleting it by hand. Ticking **This outgoing DD Form 254 is specific to the
+  order above** now takes the line out; unticking it puts the line back.
+- **Fixed: creating a DD-254 and typing the order number at the same time.**
+  The order number is written after any matched template is applied, so the
+  line was not written until somebody typed in the order field again.
+- **A task-order DD-254 made before this release** gains or loses the line the
+  next time it is opened, whichever its coverage calls for. An **Issued**
+  DD-254 is the record of what was sent and is left exactly as it went out, as
+  with every other line the tool maintains.
+- **Fixed, found while testing the above: an autosave in flight could overwrite
+  a DD-254 you had just left.** The autosave re-read which record was open
+  after it had already read the form, so closing or switching records at that
+  moment wrote the open form's content onto the record just left, or wrote a
+  record with no identifier at all — which browser storage rejects and
+  reports as a storage failure. A save now belongs to the record it started on,
+  and is abandoned if that record is no longer the open one.
+
+1530 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.15.1 — 3 November 2026
 
 Tool version 2.163. A fix: an Item 10 or 11 box governs its own template

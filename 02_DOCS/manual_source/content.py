@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.15.1 (tool version 2.163)"
+VER="DD254 Interactive v2.15.2 (tool version 2.164)"
 
 DOC = [
-("h1","DD254 Interactive v2.15.1 changes"),
+("h1","DD254 Interactive v2.15.2 changes"),
+("b","<b>Fixed: the Item 13 supported-effort line follows the order\u2019s coverage.</b> A task order that runs under its prime\u2019s DD-254 has nowhere else to be named \u2014 the form has no field for the order \u2014 so Item 13 says <i>This is in support of effort N</i>. That line was missing from every DD-254 generated from the order repository, and present on orders that have a DD-254 of their own, where Item 2a already names the order. Both are corrected."),
+("b","<b>Ticking <i>This outgoing DD Form 254 is specific to the order above</i></b> now takes the line out and leaves Item 2a to name the order; unticking it puts the line back. A task-order DD-254 made before this release is reconciled the next time it is opened, and an Issued one is left exactly as it went out."),
+("b","<b>Fixed: an autosave in flight could overwrite a DD-254 you had just left.</b> Closing or switching records while a save was in progress could write the open form onto the record you left. A save now belongs to the record it started on."),
+("h2","DD254 Interactive v2.15.1 changes"),
 ("b","<b>Fixed: template wording that waits for its box.</b> A clause marked <i>Applies when its box is ticked</i> was being written into Item 13 when the template was applied, and then could not be taken out again \u2014 unticking the box left it there to delete by hand. Worse, ticking a box the template had left alone inserted nothing. The box now governs its own clause on every DD-254, whichever template repository it came from and however the template was applied."),
 ("b","<b>Fixed: you can now write a clause that waits.</b> The wording box only appeared while the template ticked that Item 10 or 11 box \u2014 and a template that ticks the box asserts it on every DD-254 built from it. Wording for a box the template leaves unticked is now shown and editable, which is how a clause is kept ready without asserting that it applies."),
 ("b","<b>Fixed: wording marked <i>Always applies</i></b> is written by whole-template application even when the template leaves its box alone, which is the one case that setting exists for."),
