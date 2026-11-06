@@ -1,4 +1,4 @@
-BUILD_SHA256 407ad934ad69b17b1dd66711b14310328a91d9ebfa3399979e824262f0601819
+BUILD_SHA256 b1f6c094db1c98035dd971ebd4215c4b0374791442c462a27a07c2ef62934957
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -271,7 +271,7 @@ BUILD_SHA256 407ad934ad69b17b1dd66711b14310328a91d9ebfa3399979e824262f0601819
   PASS  the export includes cancelled work even though the board hides it
 
 ### 21. Item 13 cross-reference scanning
-  PASS  Item 13 preserves newlines (root cause of the missed references)
+  PASS  Item 13 preserves newlines, and wraps a token with no spaces in it
   PASS  a second reference on a later line is found
   PASS  11m and 11M both register
   PASS  every requested variation of 10a registers
@@ -1793,6 +1793,16 @@ BUILD_SHA256 407ad934ad69b17b1dd66711b14310328a91d9ebfa3399979e824262f0601819
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 146. v2.17.0 a contract template can be required, and Done says what is outstanding
+  PASS  the setting is there, optional by default, and writes to the audit log
+  PASS  optional raises nothing, however the form was built
+  PASS  mandatory and no template holds the DD-254 with a named finding
+  PASS  the Contract Type recorded on the DD-254 counts as a template
+  PASS  so does the template the form is carrying, with the picker empty
+  PASS  Done lists what is outstanding instead of pointing at a panel
+  PASS  and says so plainly when nothing is outstanding
+  PASS  the repository editors wrap a token with no spaces in it
+
 ### 145. v2.16.0 a clause that waits is not asserted by its own template
   PASS  the template neither ticks the box nor writes the wording
   PASS  ticking it in the workflow is what populates the wording
@@ -1850,5 +1860,5 @@ BUILD_SHA256 407ad934ad69b17b1dd66711b14310328a91d9ebfa3399979e824262f0601819
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1543   FAIL 0
+  PASS 1551   FAIL 0
 ================================

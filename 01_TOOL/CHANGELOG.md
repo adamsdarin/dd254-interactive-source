@@ -1,3 +1,40 @@
+## v2.17.0 — 6 November 2026
+
+Tool version 2.166. An organisation can require that a contract template was
+used, Done says what is still outstanding, and text wraps everywhere it is
+typed.
+
+- **New setting: Contract template — Optional or Mandatory.** Mandatory means a
+  DD-254 built from no template at all cannot leave Draft. Any of three things
+  counts as used: the template selected above Item 13, the Contract Type
+  recorded on the DD-254, or the template whose wording the form is carrying —
+  because all three are a template having been applied. A form that genuinely
+  has none can still be set aside with a written reason, like any other finding,
+  and changing the setting is written to the audit log. It sits beside
+  **Standard language — Optional or Mandatory**, which already worked this way.
+- **Done now says what is outstanding.** The last step's button wrote a single
+  line under the buttons pointing at the panel on the other side of the screen,
+  so a DD-254 missing its mandatory standard language or its contract template
+  reached the export with nothing said. It now lists what is outstanding, and
+  says plainly when nothing is — a prompt that only ever warns is one people
+  learn to click through.
+- **Text wraps.** Item 13 and every text box in both template repositories broke
+  lines at spaces only, so an SCG number, a long contract number or a pasted URL
+  ran off the side of the box behind a horizontal scrollbar. Those boxes now
+  wrap anywhere a long token needs to, and the repository boxes can be dragged
+  taller.
+
+**Known, not fixed in this release:** on the dynamic PDF, Items 14 and 15
+marked **No** leave their explanation box open and empty instead of closing up.
+That box is hidden by a script in the DD Form 254's own template, and that
+script runs on the *change* event — when somebody clicks the radio in Adobe.
+A form filled from saved data never fires it, so the box stays as the form
+draws it. Fixing it means adding a start-up script to the embedded form's
+template that applies the same rule, which needs checking in Adobe on a real
+export before it ships.
+
+1551 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.16.0 — 6 November 2026
 
 Tool version 2.165. Template language marked *Applies when its box is ticked*

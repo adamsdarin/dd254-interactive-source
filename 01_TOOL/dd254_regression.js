@@ -1201,9 +1201,14 @@ await ta('the export includes cancelled work even though the board hides it', as
   return !!rows.find(r=>r[0]==='Yankee') && !!rows.find(r=>r[0]==='Sierra — Solicitation');});
 
 H('21. Item 13 cross-reference scanning');
-t('Item 13 preserves newlines (root cause of the missed references)', ()=>{
+t('Item 13 preserves newlines, and wraps a token with no spaces in it', ()=>{
+  /* pre-wrap is what keeps the line breaks the scanner anchors on. The wrap
+     rule beside it is v2.17.0: an SCG number or a pasted URL is one unbroken
+     token and used to run off the side of the box. */
   const css=Array.from(w.document.querySelectorAll('style')).map(x=>x.textContent).join('');
-  return /#item13\{white-space:pre-wrap;\}/.test(css);});
+  const m=/#item13\{([^}]*)\}/.exec(css), decl=m?m[1]:'';
+  return (/white-space:\s*pre-wrap/.test(decl)&&/overflow-wrap:\s*anywhere/.test(decl))
+    ? true : ('#item13 declares: '+decl);});
 const hits=c=>Object.keys(E("scanItem13("+JSON.stringify(c)+")")).sort().join(',');
 t('a second reference on a later line is found', ()=>
   hits('Reference 10a:\n\nCOMSEC text.\n\nReference 11m:\n\nOther text.')==='10a,11m');
@@ -10461,6 +10466,98 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   E("window.TPL_EDIT=[];tplSave(TPL_SM,[]);");
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
+
+H('146. v2.17.0 a contract template can be required, and Done says what is outstanding');
+/* The owner: "within the settings, can you add an option to require standard
+   language? yes no require a contract template? yes no. so that way if standard
+   language isn't inputted into the document and or if a template is not used,
+   an error pops up when you click done". Standard language already had the
+   setting; the contract template did not, and Done said nothing - it wrote one
+   line under the buttons pointing at a panel on the other side of the screen. */
+
+const CTREQ=function(on){ E("ctRequiredModeSet("+JSON.stringify(on?'on':'off')+")"); };
+
+t('the setting is there, optional by default, and writes to the audit log', ()=>{
+  E("lsPut(CT_REQ_KEY,'');");
+  const before=E("ctRequiredModeGet()");
+  const n0=E("audAll().length");
+  CTREQ(true);
+  const after=E("ctRequiredModeGet()");
+  const logged=E("audAll().length")>n0;
+  CTREQ(false);
+  return (before==='off'&&after==='on'&&logged) ? true : JSON.stringify({before,after,logged});
+});
+
+t('optional raises nothing, however the form was built', ()=>{
+  E("showFormView();resetFormFields();window.DD254_CT_APPLIED='';");
+  CTREQ(false);
+  const err=E("ctRequiredError()");
+  return err==='' ? true : err;
+});
+
+t('mandatory and no template holds the DD-254 with a named finding', ()=>{
+  E("showFormView();resetFormFields();window.DD254_CT_APPLIED='';");
+  CTREQ(true);
+  const err=E("ctRequiredError()");
+  const inErrors=E("run();(window.DD254_ERRORS||[]).some(function(e){return /contract template is mandatory/.test(e);})");
+  CTREQ(false);
+  return (/contract template is mandatory/.test(err)&&inErrors===true)
+    ? true : JSON.stringify({err,inErrors});
+});
+
+t('the Contract Type recorded on the DD-254 counts as a template', ()=>{
+  E("showFormView();resetFormFields();window.DD254_CT_APPLIED='CPFF Research';");
+  CTREQ(true);
+  const err=E("ctRequiredError()"), used=E("ctTplUsedLabel()");
+  CTREQ(false); E("window.DD254_CT_APPLIED='';");
+  return (err===''&&used==='CPFF Research') ? true : JSON.stringify({err,used});
+});
+
+await ta('so does the template the form is carrying, with the picker empty', async()=>{
+  /* The library's own apply never sets the picker - which is what v2.15.1 and
+     v2.16.0 were about - so the snapshot has to answer this too. */
+  E("showFormView();resetFormFields();window.DD254_CT_APPLIED='';");
+  const d=E("ctBlankData()"); d.i13='SOME WORDING.';
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Carried',ioId:'carried-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  await E("ctInsertAll(0)");
+  CTREQ(true);
+  const picker=E("document.getElementById('ctTplSel').value");
+  const err=E("ctRequiredError()"), used=E("ctTplUsedLabel()");
+  CTREQ(false); E("tplSave(TPL_CT,[]);resetFormFields();");
+  return (picker===''&&err===''&&used==='Carried') ? true : JSON.stringify({picker,err,used}); });
+
+await ta('Done lists what is outstanding instead of pointing at a panel', async()=>{
+  E("showFormView();resetFormFields();window.DD254_CT_APPLIED='';");
+  CTREQ(true);
+  E("window.__SAID='';window.uiAlert=async function(m){window.__SAID=String(m);};");
+  E("showStep(WIZ_TOTAL-1);nextStep();");
+  await waitFor(()=>E("window.__SAID"),'the Done report');
+  const said=E("window.__SAID");
+  CTREQ(false);
+  return (/not finished/.test(said)&&/contract template is mandatory/.test(said))
+    ? true : said.slice(0,120); });
+
+await ta('and says so plainly when nothing is outstanding', async()=>{
+  /* A Done that only ever warns teaches people to click through it. */
+  E("showFormView();resetFormFields();");
+  E("window.DD254_ERRORS=[];window.__SAID='';window.uiAlert=async function(m){window.__SAID=String(m);};");
+  /* run() is restored by hand: a global function declaration is not
+     configurable, so `delete window.run` fails silently and every later
+     section would be running against a stub. */
+  E("window.__REALRUN=run;window.run=function(){window.DD254_ERRORS=[];};showStep(WIZ_TOTAL-1);nextStep();");
+  await waitFor(()=>E("window.__SAID"),'the Done report');
+  const said=E("window.__SAID");
+  E("window.run=window.__REALRUN;delete window.__REALRUN;");
+  const restored=E("typeof run==='function'&&!/DD254_ERRORS=\[\];\}$/.test(String(run))");
+  return (/Nothing is outstanding/.test(said)&&restored) ? true : JSON.stringify({said:said.slice(0,80),restored}); });
+
+t('the repository editors wrap a token with no spaces in it', ()=>{
+  const css=Array.from(w.document.querySelectorAll('style')).map(x=>x.textContent).join('');
+  return /#tplRows textarea[^{]*\{[^}]*overflow-wrap:\s*anywhere/.test(css)
+    ? true : 'no wrap rule for the repository editors';
+});
+
+E("showDashView();resetFormFields();");
 
 H('145. v2.16.0 a clause that waits is not asserted by its own template');
 /* The owner, reporting it a second time: "11D, I have it checked, applies when

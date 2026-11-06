@@ -1,9 +1,60 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-06T11:40-06:00 by Maintainer
+Last updated: 2026-11-06T13:05-06:00 by Maintainer
 
-Built and verified locally: **v2.16.0 (Tool 2.165)**, build 91f1fc44. Not yet
+Built and verified locally: **v2.17.0 (Tool 2.166)**, build b1f6c094. Not yet
 tagged or published at the time of writing.
+
+**v2.16.0 (Tool 2.165), build 91f1fc44, IS published**: signed tag at b911416 on
+`main`; 12/12 checksums, attestation (official 407ad934..., demo 3bc5d2b6...,
+ref refs/tags/v2.16.0, commit b911416), byte-identical kit rebuild, no bytecode,
+downloaded build smoke PASS; live demo dd254-interactive 2d25ebf, served by
+Pages and byte-identical to the attested asset.
+
+What v2.17.0 adds, build b1f6c094. Three things the owner asked for in one
+message, plus one thing diagnosed and deliberately NOT shipped.
+
+**Contract template can be made mandatory**, beside the standard-language
+setting that already worked that way. `ctRequiredError()` is an ordinary
+finding, raised in both places `slRequiredError` is, so it holds the status at
+Draft and can be set aside with a reason. `ctTplUsedLabel()` answers "was a
+template used" three ways - the picker, `DD254_CT_APPLIED`, and the carried
+snapshot's `srcLabel` - because the library's own apply sets only the last.
+`ctLangSrcData` now records the template's name even when it carries no wording
+or attachments, which is what makes that third answer exist.
+
+**Done says what is outstanding.** `nextStep` on the last step re-runs the
+validation pass and reports `DD254_ERRORS` through `uiAlert`, and says plainly
+when the list is empty.
+
+**Text wraps** in Item 13 and in both repositories' editors: `overflow-wrap:
+anywhere` beside the `white-space: pre-wrap` that keeps the line breaks the
+Item 13 scanner anchors on.
+
+**Items 14/15 on the dynamic PDF - diagnosed, not fixed.** Marked No, the
+explanation box stays open and empty. The DD Form 254's OWN XFA template hides
+it, on each No radio:
+
+    if (this.rawValue == "1") { ... fourteen_identify.presence = "hidden"; }
+
+and that is an `activity="change"` event - it fires when somebody clicks the
+radio in Adobe. A form filled from saved data never fires it, and nothing on
+the datasets side can set presence. The fix is a start-up event on those two
+fields inside the embedded template, i.e. editing the embedded government form,
+and it cannot be verified without Adobe on a real export. Both are the owner's
+call; the evidence is in RELEASE_ASSESSMENT_v2.17.0.md. The XFA is at
+01_TOOL/rebuild_kit/parts/03_dd254_xfa.b64 - base64 of a PDF whose XFA template
+is in its Flate streams.
+
+1551 assertions pass (eight new, one restated), all five gates pass, both builds
+pass the native-browser smoke test, whose new `reqSettingsOk` drives the
+requirement and the Done report in a real browser.
+
+Note for whoever edits this file next: the Bash heredoc path collapses
+backslashes, so a JS escape written through one (
+, —) arrives as a real
+newline or character and breaks the script it lands in. Build them from
+chr(92), or use the editor directly. It cost two broken builds this session.
 
 **v2.15.2 (Tool 2.164), build 6ee1ced3, IS published**: signed tag at 629aedf on
 `main`; checksums, the provenance attestation (official 6ee1ced3..., demo

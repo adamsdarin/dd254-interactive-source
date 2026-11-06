@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.16.0 (tool version 2.165)"
+VER="DD254 Interactive v2.17.0 (tool version 2.166)"
 
 DOC = [
-("h1","DD254 Interactive v2.16.0 changes"),
+("h1","DD254 Interactive v2.17.0 changes"),
+("b","<b>New setting: Contract template \u2014 Optional or Mandatory.</b> Mandatory means a DD-254 built from no template at all cannot leave Draft. The template selected above Item 13, the Contract Type recorded on the DD-254, and the template whose wording the form is carrying all count as used. It sits beside <i>Standard language \u2014 Optional or Mandatory</i>, which already worked this way."),
+("b","<b>Done says what is outstanding.</b> The last step\u2019s button listed nothing; it pointed at the panel on the other side of the screen. It now names what is still outstanding on this DD-254, and says plainly when nothing is."),
+("b","<b>Text wraps.</b> Item 13 and every text box in both template repositories broke lines at spaces only, so an SCG number or a pasted URL ran off the side. They now wrap wherever a long token needs to."),
+("n","Known: on the dynamic PDF, Items 14 and 15 marked No leave their explanation box open and empty. That box is hidden by a script in the DD Form 254\u2019s own template which only runs when somebody clicks the radio in Adobe, so a form filled from saved data never triggers it."),
+("h2","DD254 Interactive v2.16.0 changes"),
 ("b","<b>Changed: template wording that waits for its box is no longer asserted by the template.</b> Marking wording <i>Applies when 11d is ticked in the workflow</i> now means what it says: applying the template neither ticks 11d nor writes the wording. Ticking 11d on the form is what puts the clause in, and unticking takes it out. Wording marked <i>Always applies</i> is unchanged \u2014 the template states the box and writes the wording into every DD-254 built from it."),
 ("n","Your existing templates are unchanged: wording already stored is stamped once as <i>Always applies</i>, which is what it has been doing all along, so templates you never edited go on asserting their boxes and writing their wording. From then on the settings in a template are yours — set any clause back to <i>applies when its box is ticked</i> and it stays that way. Wording you add from now on waits for its box by default."),
 ("b","<b>Fixed: required attachments recorded on a template reach both lists.</b> They were read through the template picker above Item 13 and the Contract Type recorded on the DD-254, so a template applied from the library contributed none of them \u2014 neither to the form\u2019s reminder nor to the issue screen that lists what to attach before sending."),
