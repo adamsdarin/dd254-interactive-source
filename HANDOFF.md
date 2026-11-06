@@ -1,10 +1,56 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-06T09:20-06:00 by Maintainer
+Last updated: 2026-11-06T11:40-06:00 by Maintainer
 
-Built and verified locally: **v2.15.2 (Tool 2.164)**, build 6ee1ced3. Not yet
-tagged or published at the time of writing. The previous published release is
-v2.15.1, recorded below.
+Built and verified locally: **v2.16.0 (Tool 2.165)**, build 91f1fc44. Not yet
+tagged or published at the time of writing.
+
+**v2.15.2 (Tool 2.164), build 6ee1ced3, IS published**: signed tag at 629aedf on
+`main`; checksums, the provenance attestation (official 6ee1ced3..., demo
+87e15378..., ref refs/tags/v2.15.2, attested commit 629aedf) and a
+byte-identical kit rebuild all verified from a fresh download; the downloaded
+build passes the native-browser smoke test; live demo published as
+dd254-interactive fe271cf..5a54267 and served by Pages, byte-identical to the
+attested asset. What it contains is below.
+
+What v2.16.0 changes, build 91f1fc44. The owner reported the box-mode rule a
+second time: "11D, I have it checked, applies when 11D is ticked. That language
+only populates when 11D is ticked in the workflow. That is currently not how
+it's working."
+
+**A clause that waits is no longer asserted by its own template.** v2.15.1 made
+the box govern the clause after application; what was still wrong is that the
+template ticked the box itself, so the condition the mode exists to leave open
+was true the instant the template was applied. `ctBoxDeferredIn(d,key)` is the
+new reader, and `ctApplyDataToWorkspace` skips `ws.checks['c'+k]` for such a box
+- the same shape as the 18f exemption - and takes its wording from the tick
+already on the record rather than the template's. `ctApplySel` does the same.
+A tick the record already had is left alone, so a Revision keeps what its
+Original asserted and the wording then applies.
+
+This CHANGES EXISTING TEMPLATES: wording with no setting recorded reads as
+"waits for its box", so those templates now leave those boxes to the workflow.
+The changelog and the manual both say to mark such wording **Always applies**
+where the contract type is meant to assert it. The demo seed was updated the
+same way - every demo template now declares its setting, and Meridian keeps 11d
+waiting on purpose.
+
+**Attachments had the same defect as the wording.** `ctTplAttachments` and
+`dashDistAttachments` read only the picker above Item 13 and the Contract Type
+label on the record, so a template applied from the library listed none of its
+required attachments - on the form or on the issue screen. The v2.15.1 snapshot
+(`ctLangSrc`) now carries `attText`/`attList` and the template's name, and both
+readers consult it through `ctLangSnapshotOf`.
+
+1539 assertions pass (nine new, eight restated), all five gates pass, both
+builds pass the native-browser smoke test, whose restated `boxGateOk` fails
+against v2.15.2.
+
+Two notes for whoever edits the tests or the smoke harness next. The smoke
+test's page code is delivered inside a template literal, so an escape written
+there is consumed before the page sees it - build a newline in the page
+(`String.fromCharCode(10)`) instead. And in the regression suite, a string
+inside an `E("...")` call needs the escape doubled.
 
 What v2.15.2 fixes, build 6ee1ced3. One report, two ways round, plus one thing
 found while testing it.

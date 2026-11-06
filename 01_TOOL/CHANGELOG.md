@@ -1,3 +1,43 @@
+## v2.16.0 — 6 November 2026
+
+Tool version 2.165. Template language marked *Applies when its box is ticked*
+now waits for the workflow, and required attachments travel with the template
+that was applied.
+
+- **Changed: a clause that waits is no longer asserted by its own template.**
+  Marking wording *Applies when 11d is ticked in the workflow* means the
+  template does not answer that question: applying it neither ticks 11d nor
+  writes the wording. The preparer ticking 11d on the form is what puts the
+  clause in, and unticking takes it back out. Until now the template ticked the
+  box itself, so the condition was true the moment the template was applied and
+  the wording went straight in — which is the opposite of what the setting
+  says.
+- **Wording marked *Always applies* is unchanged:** the template states the box
+  as it always did and writes the wording into every DD-254 built from it. That
+  is now the setting to use for wording a contract type always carries.
+- **Every box the template is not deferring behaves exactly as before**,
+  blanks included: a box with no wording of its own is still stated by the
+  template, ticked or not.
+- **Your existing templates are unchanged.** Wording already stored is stamped
+  once as **Always applies** — which is what it has been doing all along,
+  whatever its setting read — so templates you never edited go on asserting
+  their boxes and writing their wording exactly as they do today. The stamp
+  happens the next time each template is read, and from then on the settings in
+  it are yours: set any clause back to *applies when its box is ticked* in the
+  editor and it stays that way. Wording you add from now on waits for its box
+  by default.
+- **Fixed: required attachments recorded on a template now reach both lists.**
+  They were read through the template picker above Item 13 and the Contract
+  Type recorded on the record, so a template applied from the library
+  contributed none of its attachments — not to the form's own reminder, and not
+  to the issue screen that lists what has to be attached before sending. The
+  DD-254 now carries what the applied template requires, so both lists agree
+  and an attachment both libraries ask for is listed once.
+- The **demo** shows the distinction: *Task Order 0042 — Meridian* asserts 11c
+  and keeps an 11d clause waiting, and lists two required attachments.
+
+1543 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.15.2 — 6 November 2026
 
 Tool version 2.164. A fix: the Item 13 supported-effort line follows the task

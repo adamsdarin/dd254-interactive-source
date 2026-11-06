@@ -2369,10 +2369,18 @@ t('a contract type carries checkboxes into a draft workspace', ()=>{
   const d=E("(function(){var d=ctBlankData();d.c10['10a']=true;d.c11['11h']=true;d.c18['18b']=true;d.i13='Body';return d;})()");
   const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+",null)");
   return ws.checks.c10a===true && ws.checks.c11h===true && ws.checks.dist18b===true && ws.texts.item13==='Body'; });
-t('box language is folded into Block 13 beneath the free text', ()=>{
-  const d=E("(function(){var d=ctBlankData();d.i13='Intro';d.c10['10a']=true;d.l10['10a']='Reference 10a: COMSEC.';return d;})()");
+t('box language marked always applies is folded into Block 13 beneath the free text', ()=>{
+  const d=E("(function(){var d=ctBlankData();d.i13='Intro';d.c10['10a']=true;d.l10['10a']='Reference 10a: COMSEC.';d.always={'10a':true};return d;})()");
   const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+",null)");
   return ws.texts.item13==='Intro\n\nReference 10a: COMSEC.'; });
+t('box language that waits is not folded in, and its box is left alone', ()=>{
+  /* v2.16.0: the mode means what it says. A template that ticked the box
+     itself answered the very question the mode leaves open, so the wording
+     went in the moment the template was applied. Section 145 holds the rule. */
+  const d=E("(function(){var d=ctBlankData();d.i13='Intro';d.c10['10a']=true;d.l10['10a']='Reference 10a: COMSEC.';return d;})()");
+  const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+",null)");
+  return (ws.texts.item13==='Intro' && !('c10a' in ws.checks))
+    ? true : JSON.stringify({i13:ws.texts.item13,c10a:ws.checks.c10a}); });
 t('language for an unchecked box is not carried over', ()=>{
   const d=E("(function(){var d=ctBlankData();d.i13='Intro';d.l10['10a']='should not appear';return d;})()");
   const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+",null)");
@@ -2411,6 +2419,7 @@ H('41. Applying a Contract Type to the open form');
 const _ctSave=function(){ E(`tplSave(TPL_B13,[{label:'CPFF R&D',data:(function(){
   var d=ctBlankData();
   d.c10['10a']=true; d.l10['10a']='Reference 10a:\\n\\nCOMSEC per NSA policy.';
+  d.always={'10a':true};   /* v2.16.0: this template asserts 10a and its wording */
   d.c11['11h']=true; d.c11['11c']=true;
   d.c18['18a']=true; d.c18['18c']=true;
   d.i12route='thru'; d.i12specify='AFLCMC/PA';
@@ -10453,6 +10462,150 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('145. v2.16.0 a clause that waits is not asserted by its own template');
+/* The owner, reporting it a second time: "11D, I have it checked, applies when
+   11D is ticked. That language only populates when 11D is ticked in the
+   workflow. That is currently not how it's working." It was not: the template
+   ticked 11d itself, so the condition the mode exists to leave open was true
+   the instant the template was applied, and the wording went straight in. */
+
+const WAITTPL=function(opts){
+  opts=opts||{};
+  const d=E("ctBlankData()");
+  d.primeContract='WAIT-PRIME'; d.i13='BASE WORDING.';
+  d.c11={'11d':true,'11e':true};              /* the template ticks both */
+  d.l11={'11d':'WORDING THAT WAITS.'};         /* only 11d carries wording */
+  if(opts.always) d.always={'11d':true};
+  if(opts.att) d.attText='SCG dated 2026-01-01.\nAnnex B.';
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Waits',ioId:'wait-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();document.getElementById('ctTplSel').value='';");
+};
+const waitState=()=>({d:!!E("document.getElementById('c11d').checked"),
+                      e:!!E("document.getElementById('c11e').checked"),
+                      text:String(E("ctGv('item13')")).indexOf('WORDING THAT WAITS.')>=0});
+const waitClean=()=>E("tplSave(TPL_CT,[]);resetFormFields();document.getElementById('ctTplSel').value='';");
+
+await ta('the template neither ticks the box nor writes the wording', async()=>{
+  WAITTPL();
+  await E("ctInsertAll(0)");
+  const s=waitState();
+  const base=String(E("ctGv('item13')")).indexOf('BASE WORDING.')>=0;
+  waitClean();
+  /* 11e carries no wording, so the template states it as it always did */
+  return (s.d===false&&s.text===false&&s.e===true&&base)
+    ? true : JSON.stringify(s); });
+
+await ta('ticking it in the workflow is what populates the wording', async()=>{
+  WAITTPL();
+  await E("ctInsertAll(0)");
+  E("document.getElementById('cb11d').click()");
+  const on=waitState();
+  E("document.getElementById('cb11d').click()");
+  const off=waitState();
+  waitClean();
+  return (on.d&&on.text&&!off.d&&!off.text)
+    ? true : JSON.stringify({on,off}); });
+
+await ta('always applies still ticks the box and writes the wording', async()=>{
+  WAITTPL({always:true});
+  await E("ctInsertAll(0)");
+  const s=waitState();
+  waitClean();
+  return (s.d===true&&s.text===true) ? true : JSON.stringify(s); });
+
+await ta('a tick the DD-254 already had is left alone, and its wording applies', async()=>{
+  /* A Revision inherits its Original's selections. The template is silent
+     about that box, which is not the same as denying it. */
+  WAITTPL();
+  E("document.getElementById('cb11d').click()");
+  await E("ctInsertAll(0)");
+  const s=waitState();
+  waitClean();
+  return (s.d===true&&s.text===true) ? true : JSON.stringify(s); });
+
+t('a box with no wording is still stated by the template, ticked or not', ()=>{
+  /* The replacement rule is unchanged for every box the template is not
+     deferring: blanks included. */
+  const d=E("(function(){var d=ctBlankData();d.c11['11e']=false;d.i13='X';return d;})()");
+  const ws=E("ctApplyDataToWorkspace("+JSON.stringify(d)+",{texts:{},checks:{c11e:true},radios:{},selects:{},perf:[]})");
+  return ws.checks.c11e===false ? true : JSON.stringify(ws.checks.c11e);
+});
+
+t('applying one block’s selections follows the same rule', ()=>{
+  WAITTPL();
+  E("document.getElementById('ctTplSel').value='wait-tpl';");
+  E("ctApplySel('wait-tpl','11')");
+  const s=waitState();
+  waitClean();
+  return (s.d===false&&s.e===true&&s.text===false) ? true : JSON.stringify(s);
+});
+
+t('wording stored before this release keeps asserting its box', ()=>{
+  /* The owner's choice: a setting nobody chose should not become a decision.
+     Wording stored before v2.16.0 behaved as "always applies" whatever its
+     setting read, so it is stamped once as what it has been doing. */
+  E("tplSave(TPL_CT,[{label:'Legacy',ioId:'legacy-tpl',data:{c10:{},c11:{'11d':true},l11:{'11d':'LEGACY WORDING.'},i16:{},c18:{}}}]);");
+  const t=E("tplLoad(TPL_CT)[0]");
+  const mode=E("ctLangMode(tplLoad(TPL_CT)[0],'11d')");
+  const deferred=E("ctBoxDeferredIn(tplLoad(TPL_CT)[0].data,'11d')");
+  E("tplSave(TPL_CT,[]);");
+  return (t.data.always&&t.data.always['11d']===true&&t.data.langModeV===1&&mode==='always'&&deferred===false)
+    ? true : JSON.stringify({always:t.data.always,v:t.data.langModeV,mode,deferred});
+});
+
+t('a template whose settings are the author’s is left exactly as set', ()=>{
+  /* Stamped once. Setting a clause back to "waits" afterwards must stick. */
+  E("tplSave(TPL_CT,[{label:'Chosen',ioId:'chosen-tpl',data:{c11:{'11d':true},l11:{'11d':'CHOSEN WORDING.'},langModeV:1,i16:{},c18:{},c10:{}}}]);");
+  const t=E("tplLoad(TPL_CT)[0]");
+  const deferred=E("ctBoxDeferredIn(tplLoad(TPL_CT)[0].data,'11d')");
+  E("tplSave(TPL_CT,[]);");
+  return (!(t.data.always&&t.data.always['11d'])&&deferred===true)
+    ? true : JSON.stringify({always:t.data.always,deferred});
+});
+
+t('a template written from now on waits by default', ()=>{
+  const d=E("ctBlankData()");
+  return (d.langModeV===1) ? true : JSON.stringify(d.langModeV);
+});
+
+t('a saved received-DD254 source is stamped the same way', ()=>{
+  E("tplSave(TPL_ORDERS,[{recordType:'source',ioId:'src-1',templateId:'x',label:'S',snapshot:{label:'S',data:{c11:{'11d':true},l11:{'11d':'SOURCE WORDING.'},i16:{},c18:{},c10:{}}}}]);");
+  const r=E("tplLoad(TPL_ORDERS)[0]");
+  E("tplSave(TPL_ORDERS,[]);");
+  return (r.snapshot.data.always&&r.snapshot.data.always['11d']===true&&r.snapshot.data.langModeV===1)
+    ? true : JSON.stringify(r.snapshot.data.always);
+});
+
+await ta('required attachments reach the form and the issue list', async()=>{
+  /* The second half of the same report: attachments were read through the
+     picker and the recorded Contract Type label, so a template applied from
+     the library contributed none - not to the form's own list, and not to the
+     issue screen that says what to attach before sending. */
+  await wipe();
+  WAITTPL({att:true});
+  await E("draftPut({id:'ATT9',title:'Att',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("dashOpen('ATT9')");
+  await E("ctInsertAll(0)");
+  await E("dashSaveNow()");
+  const picker=E("document.getElementById('ctTplSel').value");
+  const onForm=E("ctTplAttachments().att");
+  const rec=await E("draftGet('ATT9')");
+  const onIssue=E("dashDistAttachments("+JSON.stringify(rec)+").tpl");
+  const named=E("ctTplAttachments().tpl.label");
+  await wipe();
+  waitClean();
+  return (picker==='' && onForm.length===2 && onForm[0]==='SCG dated 2026-01-01.'
+       && onIssue.length===2 && onIssue[1]==='Annex B.' && named==='Waits')
+    ? true : JSON.stringify({picker,onForm,onIssue,named}); });
+
+await ta('an attachment both libraries require is listed once', async()=>{
+  WAITTPL({att:true});
+  await E("ctInsertAll(0)");
+  E("document.getElementById('ctTplSel').value='wait-tpl';");
+  const att=E("ctTplAttachments().att");
+  waitClean();
+  return (att.length===2) ? true : JSON.stringify(att); });
+
 H('144. v2.15.2 the supported-effort line follows the order coverage');
 /* Reported two ways round. A task order running under its prime's DD-254 got
    no "This is in support of effort N" line when the DD-254 was generated from
@@ -10607,9 +10760,13 @@ await ta('applying a template leaves the form knowing what it says per box', asy
     ? true : JSON.stringify({snap:snap&&snap.data,picker}); });
 
 await ta('unticking the box withdraws its clause with the picker empty', async()=>{
-  /* THE REPORT. The wording used to stay in Item 13 and have to be deleted. */
+  /* v2.15.1's report: the wording used to stay in Item 13 and have to be
+     deleted by hand. The template no longer ticks the box for a clause that
+     waits (v2.16.0, section 145), so the preparer ticks it here - which is
+     the sequence the rule now describes. */
   GATETPL({tick:true});
   await E("ctInsertAll(0)");
+  tick11d();
   const arrived=has11d();
   untick11d();
   const gone=!has11d();
@@ -10636,6 +10793,7 @@ await ta('a Contract Type applied from the dashboard is governed the same way', 
   await E("draftPut({id:'BG1',title:'Box gate',status:'Draft',stage:'orig',meta:{},todos:[],dist:[],holds:[],workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
   E("showFormView();resetFormFields();DASH.current='BG1';");
   await E("dashApplyB13('BG1',0)");
+  tick11d();
   const arrived=E("ctGv('item13')").indexOf('CONTRACT TYPE 11D CLAUSE.')>=0;
   untick11d();
   const gone=E("ctGv('item13')").indexOf('CONTRACT TYPE 11D CLAUSE.')<0;
@@ -10682,6 +10840,7 @@ await ta('whole-template application uses the Item 11c wording for the effort', 
      a template wrote the general clause whatever the engine had been told. */
   const d=E("ctBlankData()");
   d.c11={'11c':true};
+  d.always={'11c':true};   /* v2.16.0: asserted, so it lands on application */
   d.l11={'11c':'GENERAL 11C.'};
   d.l11v={'11c':{testing:'TESTING 11C.',producing:'PRODUCING 11C.'}};
   E("tplSave(TPL_CT,"+JSON.stringify([{label:'Var',ioId:'var-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
@@ -10696,6 +10855,7 @@ await ta('whole-template application uses the Item 11c wording for the effort', 
 t('a record written in the background gets its own purpose, not the open form\u2019s', ()=>{
   const d=E("ctBlankData()");
   d.c11={'11c':true};
+  d.always={'11c':true};   /* v2.16.0: asserted, so it lands on application */
   d.l11={'11c':'GENERAL 11C.'};
   d.l11v={'11c':{testing:'TESTING 11C.',producing:'PRODUCING 11C.'}};
   E("showFormView();resetFormFields();cavEngineSet('on');cavEngineAnswerSet({archetype:'parts',purpose:'production'});");

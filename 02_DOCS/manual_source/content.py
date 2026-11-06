@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.15.2 (tool version 2.164)"
+VER="DD254 Interactive v2.16.0 (tool version 2.165)"
 
 DOC = [
-("h1","DD254 Interactive v2.15.2 changes"),
+("h1","DD254 Interactive v2.16.0 changes"),
+("b","<b>Changed: template wording that waits for its box is no longer asserted by the template.</b> Marking wording <i>Applies when 11d is ticked in the workflow</i> now means what it says: applying the template neither ticks 11d nor writes the wording. Ticking 11d on the form is what puts the clause in, and unticking takes it out. Wording marked <i>Always applies</i> is unchanged \u2014 the template states the box and writes the wording into every DD-254 built from it."),
+("n","Your existing templates are unchanged: wording already stored is stamped once as <i>Always applies</i>, which is what it has been doing all along, so templates you never edited go on asserting their boxes and writing their wording. From then on the settings in a template are yours — set any clause back to <i>applies when its box is ticked</i> and it stays that way. Wording you add from now on waits for its box by default."),
+("b","<b>Fixed: required attachments recorded on a template reach both lists.</b> They were read through the template picker above Item 13 and the Contract Type recorded on the DD-254, so a template applied from the library contributed none of them \u2014 neither to the form\u2019s reminder nor to the issue screen that lists what to attach before sending."),
+("h2","DD254 Interactive v2.15.2 changes"),
 ("b","<b>Fixed: the Item 13 supported-effort line follows the order\u2019s coverage.</b> A task order that runs under its prime\u2019s DD-254 has nowhere else to be named \u2014 the form has no field for the order \u2014 so Item 13 says <i>This is in support of effort N</i>. That line was missing from every DD-254 generated from the order repository, and present on orders that have a DD-254 of their own, where Item 2a already names the order. Both are corrected."),
 ("b","<b>Ticking <i>This outgoing DD Form 254 is specific to the order above</i></b> now takes the line out and leaves Item 2a to name the order; unticking it puts the line back. A task-order DD-254 made before this release is reconciled the next time it is opened, and an Issued one is left exactly as it went out."),
 ("b","<b>Fixed: an autosave in flight could overwrite a DD-254 you had just left.</b> Closing or switching records while a save was in progress could write the open form onto the record you left. A save now belongs to the record it started on."),

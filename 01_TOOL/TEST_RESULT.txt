@@ -1,4 +1,4 @@
-BUILD_SHA256 6ee1ced368eaef11d9cc5c6f126d89c26776efe0ea078f5d5a97293ff06ec53f
+BUILD_SHA256 407ad934ad69b17b1dd66711b14310328a91d9ebfa3399979e824262f0601819
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -528,7 +528,8 @@ BUILD_SHA256 6ee1ced368eaef11d9cc5c6f126d89c26776efe0ea078f5d5a97293ff06ec53f
   PASS  migration is idempotent — reading twice changes nothing
   PASS  migration never loses the old text
   PASS  a contract type carries checkboxes into a draft workspace
-  PASS  box language is folded into Block 13 beneath the free text
+  PASS  box language marked always applies is folded into Block 13 beneath the free text
+  PASS  box language that waits is not folded in, and its box is left alone
   PASS  language for an unchecked box is not carried over
   PASS  12, 14, 15 and 16 all travel with the template
   PASS  an explicitly empty template field clears the supported draft section
@@ -1792,6 +1793,20 @@ BUILD_SHA256 6ee1ced368eaef11d9cc5c6f126d89c26776efe0ea078f5d5a97293ff06ec53f
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 145. v2.16.0 a clause that waits is not asserted by its own template
+  PASS  the template neither ticks the box nor writes the wording
+  PASS  ticking it in the workflow is what populates the wording
+  PASS  always applies still ticks the box and writes the wording
+  PASS  a tick the DD-254 already had is left alone, and its wording applies
+  PASS  a box with no wording is still stated by the template, ticked or not
+  PASS  applying one block’s selections follows the same rule
+  PASS  wording stored before this release keeps asserting its box
+  PASS  a template whose settings are the author’s is left exactly as set
+  PASS  a template written from now on waits by default
+  PASS  a saved received-DD254 source is stamped the same way
+  PASS  required attachments reach the form and the issue list
+  PASS  an attachment both libraries require is listed once
+
 ### 144. v2.15.2 the supported-effort line follows the order coverage
   PASS  an order generated under its prime DD-254 carries the line
   PASS  an order with its own DD-254 is named in Item 2a instead
@@ -1835,5 +1850,5 @@ BUILD_SHA256 6ee1ced368eaef11d9cc5c6f126d89c26776efe0ea078f5d5a97293ff06ec53f
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1530   FAIL 0
+  PASS 1543   FAIL 0
 ================================

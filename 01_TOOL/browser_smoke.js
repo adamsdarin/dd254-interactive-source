@@ -273,25 +273,36 @@ class CDP {
          replaces, blanks included, which is what this assertion is for. */
       const templateReplaceOk=document.getElementById('dist18f').checked&&fv('dist18fOther')==='stale@example.test'
         &&!document.getElementById('i14yes').checked&&fv('i16a')==='';
-      /* v2.15.1: an Item 10/11 box governs its own template wording. The
-         picker above Item 13 is deliberately left empty, because that is the
-         state the dashboard's apply paths leave it in - and the state in which
-         unticking the box used to leave the clause on the form to be deleted
-         by hand, while ticking a box the template had left alone inserted
-         nothing at all. */
+      /* v2.15.1/v2.16.0: an Item 10/11 box governs its own template
+         wording, and a clause marked "applies when its box is ticked" is one
+         the template does not answer for - it neither ticks that box nor
+         writes the wording until the preparer ticks it in the workflow. 11d
+         here is marked always applies and is asserted; 11e waits. The picker
+         above Item 13 is deliberately left empty, which is the state every
+         dashboard apply path leaves it in. */
       showFormView();resetFormFields();
       const gateD=ctBlankData();
-      gateD.c11={'11d':true};
-      gateD.l11={'11d':'BROWSER BOX CLAUSE 11D.','11e':'BROWSER WAITING CLAUSE 11E.'};
+      gateD.c11={'11d':true,'11e':true};
+      gateD.l11={'11d':'BROWSER ASSERTED CLAUSE 11D.','11e':'BROWSER WAITING CLAUSE 11E.'};
+      gateD.always={'11d':true};
+      gateD.attText=['Browser SCG.','Browser annex.'].join(String.fromCharCode(10));
       ctApplyWsToForm(ctApplyDataToWorkspace(gateD,null,{label:'Box gate'}));run();
       const b13Now=()=>String(ctGv('item13')||'');
-      const gateArrived=b13Now().includes('BROWSER BOX CLAUSE 11D.')
-        &&!b13Now().includes('BROWSER WAITING CLAUSE 11E.');
-      document.getElementById('cb11d').click();
-      const gateWithdrawn=!b13Now().includes('BROWSER BOX CLAUSE 11D.');
+      const gateAsserted=b13Now().includes('BROWSER ASSERTED CLAUSE 11D.')
+        &&document.getElementById('c11d').checked;
+      const gateWaiting=!b13Now().includes('BROWSER WAITING CLAUSE 11E.')
+        &&!document.getElementById('c11e').checked;
       document.getElementById('cb11e').click();
-      const gateWaitedThenCame=b13Now().includes('BROWSER WAITING CLAUSE 11E.');
-      const boxGateOk=gateArrived&&gateWithdrawn&&gateWaitedThenCame;
+      const gateCameOnTick=b13Now().includes('BROWSER WAITING CLAUSE 11E.');
+      document.getElementById('cb11e').click();
+      const gateWentOnUntick=!b13Now().includes('BROWSER WAITING CLAUSE 11E.');
+      document.getElementById('cb11d').click();
+      const gateAssertedStays=b13Now().includes('BROWSER ASSERTED CLAUSE 11D.');
+      /* and what the same template requires attached reaches the form's own
+         list even though the picker was never pointed at it */
+      const attFromApplied=ctTplAttachments().att;
+      const boxGateOk=gateAsserted&&gateWaiting&&gateCameOnTick&&gateWentOnUntick&&gateAssertedStays
+        &&attFromApplied.length===2&&attFromApplied[0]==='Browser SCG.';
       showFormView();resetFormFields();
       /* v2.15.2: a task order running under its prime's DD-254 is named in
          Item 13, because the form has no field for the order; one with a
