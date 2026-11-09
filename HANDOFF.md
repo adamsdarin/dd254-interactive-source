@@ -2,8 +2,20 @@
 
 Last updated: 2026-11-09T10:15-06:00 by Maintainer
 
-Built and verified locally: **v2.18.0 (Tool 2.167)**, build 78bd3892. Not yet
-tagged or published at the time of writing.
+Latest published release: **v2.18.0 (Tool 2.167)**, build 78bd3892. Signed tag
+at a76cd85 on `main`; 12/12 checksums, the provenance attestation (official
+78bd3892..., demo 8f893118..., ref refs/tags/v2.18.0, attested commit a76cd85),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive 71f465f and served by Pages,
+byte-identical to the attested demo asset.
+
+The release workflow failed once on this tag and was re-run: the hosted
+runner's Chrome never opened its DevTools port ("chrome said nothing") after
+all 1560 assertions had passed in the same job. It is the runner, not the
+build - `verify` had run the same smoke step on the same commit fifteen
+minutes earlier - and `gh run rerun <id> --failed` cleared it. Worth knowing
+before anyone treats that failure as a defect.
 
 **v2.17.0 (Tool 2.166), build b1f6c094, IS published**: signed tag at 4e63153
 on `main`; 12/12 checksums, attestation (official b1f6c094..., demo
