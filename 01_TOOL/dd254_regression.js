@@ -10467,6 +10467,127 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('147. v2.18.0 a manager is offered once per programme they run');
+/* The owner: "when I select program, the only security managers that should
+   appear are security managers that have that program identified for them...
+   it should be like Joe Schmuckatelli Windfall. You know, Joe Schmuckatelli
+   Ocean Breeze." And of the create dialog: "it only lists one of the programs
+   they're assigned. It should say Schmuckatelli, comma, Joe, dot program 1,
+   dot program 2..." Both lists read the single `program` field, which since
+   v2.15.0 holds only the first of them. */
+
+const SMSEED=function(){
+  E("tplSave(TPL_SM,[{ioId:'m1',name:'Schmuckatelli, Joe',email:'j.s@example.test',program:'WINDFALL',programs:['WINDFALL','OCEAN BREEZE','HIGH TIDE']},{ioId:'m2',name:'Reyes, Ana',email:'a.r@example.test',program:'OCEAN BREEZE',programs:['OCEAN BREEZE']},{ioId:'m3',name:'Nobody, Nora',email:'n.n@example.test'}]);");
+};
+const smPairsOf=(p)=>E("smPairsFor("+JSON.stringify(p)+").map(function(x){return smPairLabel(x.manager.name,x.program);})");
+const SMROW=function(){ E("window.TPL_EDIT=[{ioId:'ct1',label:'T',data:ctBlankData()}];window.TPL_EDIT_KIND='ct';"); };
+const SMCLEAN=function(){ E("window.TPL_EDIT=[];window.TPL_EDIT_KIND='';tplSave(TPL_SM,[]);"); };
+
+t('a manager who runs three programmes is three choices', ()=>{
+  SMSEED();
+  const all=smPairsOf('');
+  SMCLEAN();
+  return (all.length===5
+    && all[0]==='Schmuckatelli, Joe \u00b7 WINDFALL'
+    && all[2]==='Schmuckatelli, Joe \u00b7 HIGH TIDE'
+    && all[3]==='Reyes, Ana \u00b7 OCEAN BREEZE'
+    && all[4]==='Nobody, Nora')
+    ? true : JSON.stringify(all);
+});
+
+t('naming a programme leaves only the managers assigned to it', ()=>{
+  SMSEED();
+  const ob=smPairsOf('OCEAN BREEZE'), wf=smPairsOf('WINDFALL');
+  SMCLEAN();
+  /* Nora is assigned to no programme, so she is not an answer to "who runs
+     OCEAN BREEZE" - she is offered only while nothing has been chosen. */
+  return (ob.length===2&&ob[0]==='Schmuckatelli, Joe \u00b7 OCEAN BREEZE'&&ob[1]==='Reyes, Ana \u00b7 OCEAN BREEZE'
+       && wf.length===1&&wf[0]==='Schmuckatelli, Joe \u00b7 WINDFALL')
+    ? true : JSON.stringify({ob,wf});
+});
+
+t('choosing a pair settles the manager and the programme at once', ()=>{
+  SMSEED(); SMROW();
+  E("ctSetSm(0,'Schmuckatelli, Joe \u00b7 HIGH TIDE')");
+  const t0=E("window.TPL_EDIT[0]");
+  SMCLEAN();
+  return (t0.smName==='Schmuckatelli, Joe'&&t0.smProgram==='HIGH TIDE'
+       && t0.program==='HIGH TIDE'&&t0.smEmail==='j.s@example.test')
+    ? true : JSON.stringify({n:t0.smName,p:t0.program,e:t0.smEmail});
+});
+
+t('a bare name still resolves, and still waits where there is a choice', ()=>{
+  /* Typed rather than picked, which this field has always allowed. */
+  SMSEED(); SMROW();
+  E("ctSetSm(0,'Schmuckatelli, Joe')");
+  const many=E("window.TPL_EDIT[0].program");
+  E("ctSetSm(0,'Reyes, Ana')");
+  const one=E("window.TPL_EDIT[0].program");
+  SMCLEAN();
+  return (many===''&&one==='OCEAN BREEZE') ? true : JSON.stringify({many,one});
+});
+
+t('a programme the manager is not assigned to is not quietly accepted', ()=>{
+  SMSEED(); SMROW();
+  E("ctSetSm(0,'Reyes, Ana \u00b7 WINDFALL')");
+  const t0=E("window.TPL_EDIT[0]");
+  SMCLEAN();
+  return (t0.smName==='Reyes, Ana'&&t0.program==='OCEAN BREEZE')
+    ? true : JSON.stringify({n:t0.smName,p:t0.program});
+});
+
+t('a manager whose own name contains the separator is still found', ()=>{
+  E("tplSave(TPL_SM,[{ioId:'m9',name:'Vance \u00b7 Reyes, Jo',email:'v.r@example.test',programs:['ALDER']}]);");
+  SMROW();
+  E("ctSetSm(0,'Vance \u00b7 Reyes, Jo')");
+  const t0=E("window.TPL_EDIT[0]");
+  SMCLEAN();
+  return (t0.smName==='Vance \u00b7 Reyes, Jo'&&t0.program==='ALDER')
+    ? true : JSON.stringify({n:t0.smName,p:t0.program});
+});
+
+await ta('the create dialog lists every programme a manager runs', async()=>{
+  SMSEED();
+  E("window.__D=dashPartyPrompt({heading:'probe',stage:'orig'});");
+  await waitFor(()=>w.document.getElementById('np_sm'),'the create dialog');
+  const opts=Array.from(w.document.getElementById('np_sm').options).map(o=>o.textContent);
+  const cancel=w.document.getElementById('np_cancel'); if(cancel) cancel.click();
+  await E("window.__D");
+  SMCLEAN();
+  return (opts[1]==='Schmuckatelli, Joe \u00b7 WINDFALL \u00b7 OCEAN BREEZE \u00b7 HIGH TIDE'
+       && opts[2]==='Reyes, Ana \u00b7 OCEAN BREEZE'
+       && opts[3]==='Nobody, Nora')
+    ? true : JSON.stringify(opts); });
+
+await ta('and records all of them, claiming none where there is a choice', async()=>{
+  /* The dialog cannot know which programme this DD-254 is for - the template
+     row is where that is answered against the contract - so it records the
+     list and leaves the single value blank rather than asserting the first. */
+  SMSEED();
+  const pick=async function(idx){
+    E("window.__D=dashPartyPrompt({heading:'probe',stage:'orig',first:'A',last:'B',email:'a.b@example.test',prime:'P-1'});");
+    await waitFor(()=>w.document.getElementById('np_sm'),'the create dialog');
+    E("document.getElementById('np_sub').value='N/A';document.getElementById('np_sm').value='"+idx+"';document.getElementById('np_ok').click();");
+    const ans=await E("window.__D");
+    return ans&&ans.securityManager;
+  };
+  const many=await pick(0), one=await pick(1);
+  SMCLEAN();
+  return (many&&many.programs.length===3&&many.program===''
+       && one&&one.programs.length===1&&one.program==='OCEAN BREEZE')
+    ? true : JSON.stringify({many,one}); });
+
+t('a manager shown on a DD-254 shows every programme they run', ()=>{
+  const now=E("dashSecurityManagerLabel({securityManager:{name:'Schmuckatelli, Joe',email:'j.s@example.test',programs:['WINDFALL','OCEAN BREEZE']}})");
+  /* and a record written before this, which carries only the single field */
+  const before=E("dashSecurityManagerLabel({securityManager:{name:'Reyes, Ana',email:'a.r@example.test',program:'OCEAN BREEZE'}})");
+  return (now==='Schmuckatelli, Joe \u00b7 j.s@example.test \u00b7 WINDFALL \u00b7 OCEAN BREEZE'
+       && before==='Reyes, Ana \u00b7 a.r@example.test \u00b7 OCEAN BREEZE')
+    ? true : JSON.stringify({now,before});
+});
+
+E("tplSave(TPL_SM,[]);window.TPL_EDIT=[];window.TPL_EDIT_KIND='';showDashView();resetFormFields();");
+
 H('146. v2.17.0 a contract template can be required, and Done says what is outstanding');
 /* The owner: "within the settings, can you add an option to require standard
    language? yes no require a contract template? yes no. so that way if standard

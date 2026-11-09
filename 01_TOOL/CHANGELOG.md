@@ -1,3 +1,33 @@
+## v2.18.0 — 9 November 2026
+
+Tool version 2.167. A security manager is offered once per programme they run,
+and naming a programme narrows the list to the managers assigned to it.
+
+- **In both template repositories, the security manager list is one entry per
+  manager and programme** — *Schmuckatelli, Joe · WINDFALL*, *Schmuckatelli,
+  Joe · OCEAN BREEZE* — and choosing one sets the manager **and** the programme
+  in a single action. Until now it listed bare names, and a manager who runs
+  several programmes left the programme blank for you to fill in afterwards.
+- **Naming the programme first narrows the list** to the managers that
+  programme is recorded against in the Security Manager repository. A manager
+  with no programme recorded is offered only while no programme has been
+  chosen: with one named, a manager who does not run it is not an answer.
+- **A programme a manager is not assigned to is said out loud**, on the row,
+  rather than quietly dropped — it is usually the programme that is wrong, not
+  the manager, and the row is where either can be corrected. Typing a name
+  still works, and still waits where the manager runs several programmes.
+- **Creating a DD-254 lists every programme a manager runs** —
+  *Schmuckatelli, Joe · WINDFALL · OCEAN BREEZE · HIGH TIDE* — instead of
+  whichever was recorded first. The record keeps the whole list; the single
+  programme stays blank where the manager runs several, because the dialog
+  cannot know which one this DD-254 is for. The template row is where that is
+  answered against the contract.
+- **Everywhere a manager is shown on a DD-254** — the distribution panel, the
+  issuance record — now shows every programme they run. A manager recorded
+  before this release, carrying one programme, reads exactly as before.
+
+1560 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.17.0 — 6 November 2026
 
 Tool version 2.166. An organisation can require that a contract template was

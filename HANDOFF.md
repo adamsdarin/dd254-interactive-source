@@ -1,14 +1,48 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-06T13:05-06:00 by Maintainer
+Last updated: 2026-11-09T10:15-06:00 by Maintainer
 
-Latest published release: **v2.17.0 (Tool 2.166)**, build b1f6c094. Signed tag
-at 4e63153 on `main`; 12/12 checksums, the provenance attestation (official
-b1f6c094..., demo cdf0e01a..., ref refs/tags/v2.17.0, attested commit 4e63153),
-a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
-build's native-browser smoke test, all verified from a fresh download. Live
-demo published as dd254-interactive cd18fc3 and served by Pages, byte-identical
-to the attested demo asset.
+Built and verified locally: **v2.18.0 (Tool 2.167)**, build 78bd3892. Not yet
+tagged or published at the time of writing.
+
+**v2.17.0 (Tool 2.166), build b1f6c094, IS published**: signed tag at 4e63153
+on `main`; 12/12 checksums, attestation (official b1f6c094..., demo
+cdf0e01a..., ref refs/tags/v2.17.0, commit 4e63153), byte-identical kit
+rebuild, no bytecode, downloaded build smoke PASS; live demo dd254-interactive
+cd18fc3, served by Pages and byte-identical to the attested asset.
+
+What v2.18.0 changes, build 78bd3892. The owner's report: the template row
+offered bare manager names with no programme and no narrowing, and the create
+dialog listed a manager with one of their programmes. Both lists read the
+single `program` field, which since v2.15.0 holds only the first.
+
+**A manager is now offered once per programme they run.** `smPairsFor(program)`
+is the list, `smPairLabel` the label, `smPairParse` reads one back - exact name
+first, then split from the right and checked against that manager's own
+programmes, so a manager whose name contains the separator still resolves. The
+row's manager control has its own datalist `ctSmList_<i>` because the options
+depend on the row, and `ctSmProgRender` ends by calling `ctSmListRender` while
+the programme input calls `ctSmProgRender` - the two controls narrow each other
+in both directions. A manager-programme mismatch is reported on the row, not
+resolved: it is usually the programme that is wrong.
+
+**The create dialog lists every programme** and records `programs`, leaving
+`program` blank where the manager runs several - the rule the template row has
+followed since v2.15.0. `dashSecurityManagerLabel` and `distSmAdd` read
+`smPrograms`, so a record written before this reads unchanged.
+
+1560 assertions pass (nine new, none restated - the v2.15.0 manager assertions
+all still hold), all five gates pass, both builds pass the native-browser smoke
+test, whose new `smPairsOk` drives the pair list and the dialog in a real
+browser.
+
+**Still open, awaiting the owner:** Items 14/15 on the dynamic PDF leave their
+explanation box open when marked No. Diagnosed in v2.17.0's release assessment -
+the DD Form 254's own XFA template hides that field on an `activity="change"`
+event, which a form filled from saved data never fires. The owner asked to be
+told more before anything is touched; they have been, including the free test
+(if an exported form shows the form's own "Please read Instructions" alert in
+Adobe, then `$form`-ready scripts do fire and the fix will work).
 
 **v2.16.0 (Tool 2.165), build 91f1fc44, IS published**: signed tag at b911416 on
 `main`; 12/12 checksums, attestation (official 407ad934..., demo 3bc5d2b6...,

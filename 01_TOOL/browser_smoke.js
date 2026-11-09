@@ -319,6 +319,25 @@ class CDP {
       const supBack=String(ctGv('item13')||'').indexOf('This is in support of effort 0042.')===0;
       const supLineOk=supUnder&&supOwn&&supBack;
       showFormView();resetFormFields();
+      /* v2.18.0: a manager who runs several programmes is offered once per
+         programme, and naming a programme narrows the list to the managers
+         assigned to it. Driven in the browser because the create dialog's
+         option text is what the owner reported. */
+      await tplSave(TPL_SM,[{ioId:'p1',name:'Pairs, Pat',email:'p.p@example.test',program:'ALPHA',programs:['ALPHA','BETA']},
+                            {ioId:'p2',name:'Solo, Sam',email:'s.s@example.test',programs:['BETA']}]);
+      const pairAll=smPairsFor('').map(function(x){ return smPairLabel(x.manager.name,x.program); });
+      const pairBeta=smPairsFor('BETA').map(function(x){ return smPairLabel(x.manager.name,x.program); });
+      const dlgP=dashPartyPrompt({heading:'smoke',stage:'orig'});
+      let smOptText=[];
+      for(let i=0;i<100&&!document.getElementById('np_sm');i++) await new Promise(function(r){setTimeout(r,20);});
+      const smSelEl=document.getElementById('np_sm');
+      if(smSelEl) smOptText=Array.from(smSelEl.options).map(function(o){ return o.textContent; });
+      const cancelEl=document.getElementById('np_cancel'); if(cancelEl) cancelEl.click();
+      await dlgP;
+      await tplSave(TPL_SM,[]);
+      const smPairsOk=pairAll.length===3&&pairAll[0]==='Pairs, Pat \u00b7 ALPHA'&&pairAll[1]==='Pairs, Pat \u00b7 BETA'
+        &&pairBeta.length===2&&pairBeta[0]==='Pairs, Pat \u00b7 BETA'
+        &&smOptText[1]==='Pairs, Pat \u00b7 ALPHA \u00b7 BETA';
       /* v2.17.0: the two policies an organisation can require, and the Done
          button that now says what is outstanding instead of pointing at a
          panel on the other side of the screen. */
@@ -383,7 +402,7 @@ class CDP {
       await tplSave(TPL_CT,[]);await tplSave(TPL_SM,[]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';
       showFormView();resetFormFields();window.CURRENT_REQUESTOR_EMAIL='';
       return {version:document.getElementById('toolVer').textContent,release:(document.getElementById('releaseVer')||{}).textContent||'',settingsOk,exportUiOk,signingUiOk,signingExportOk,validationSafe,
-        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,boxGateOk,supLineOk,reqSettingsOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
+        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,boxGateOk,supLineOk,reqSettingsOk,smPairsOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
     })()`;
     const result = await cdp.send('Runtime.evaluate', {
       expression, awaitPromise: true, returnByValue: true
@@ -484,7 +503,7 @@ class CDP {
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk && value.facCertLinkOk
       && value.completionReuseOk && value.completionPromptOk && value.completionInsertOk && value.completionJumpOk
       && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
-    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.boxGateOk&&value.supLineOk&&value.reqSettingsOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
+    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.boxGateOk&&value.supLineOk&&value.reqSettingsOk&&value.smPairsOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.map(e=>e.params.exceptionDetails) }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));
   } finally {

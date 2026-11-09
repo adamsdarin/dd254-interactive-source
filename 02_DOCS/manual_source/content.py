@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.17.0 (tool version 2.166)"
+VER="DD254 Interactive v2.18.0 (tool version 2.167)"
 
 DOC = [
-("h1","DD254 Interactive v2.17.0 changes"),
+("h1","DD254 Interactive v2.18.0 changes"),
+("b","<b>A security manager is offered once per programme they run.</b> In both template repositories the list now reads <i>Schmuckatelli, Joe \u00b7 WINDFALL</i>, <i>Schmuckatelli, Joe \u00b7 OCEAN BREEZE</i>, and choosing one sets the manager and the programme together. Naming the programme first narrows the list to the managers that programme is recorded against."),
+("b","<b>Creating a DD-254 lists every programme a manager runs</b> rather than whichever was recorded first. The record keeps the whole list, and leaves the single programme blank where the manager runs several \u2014 which one this DD-254 is for is answered on the template row, against the contract."),
+("n","A programme a manager is not assigned to is said out loud on the row rather than quietly dropped: it is usually the programme that is wrong, not the manager."),
+("h2","DD254 Interactive v2.17.0 changes"),
 ("b","<b>New setting: Contract template \u2014 Optional or Mandatory.</b> Mandatory means a DD-254 built from no template at all cannot leave Draft. The template selected above Item 13, the Contract Type recorded on the DD-254, and the template whose wording the form is carrying all count as used. It sits beside <i>Standard language \u2014 Optional or Mandatory</i>, which already worked this way."),
 ("b","<b>Done says what is outstanding.</b> The last step\u2019s button listed nothing; it pointed at the panel on the other side of the screen. It now names what is still outstanding on this DD-254, and says plainly when nothing is."),
 ("b","<b>Text wraps.</b> Item 13 and every text box in both template repositories broke lines at spaces only, so an SCG number or a pasted URL ran off the side. They now wrap wherever a long token needs to."),
