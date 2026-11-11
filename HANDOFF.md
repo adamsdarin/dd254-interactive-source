@@ -2,8 +2,13 @@
 
 Last updated: 2026-11-11T11:30-06:00 by Maintainer
 
-Built and verified locally: **v2.19.0 (Tool 2.168)**, build b206a6d2. Not yet
-tagged or published at the time of writing.
+Latest published release: **v2.19.0 (Tool 2.168)**, build b206a6d2. Signed tag
+at 03743df on `main`; 12/12 checksums, the provenance attestation (official
+b206a6d2..., demo 71279f7e..., ref refs/tags/v2.19.0, attested commit 03743df),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive 5674c71 and served by Pages,
+byte-identical to the attested demo asset.
 
 What v2.19.0 contains, build b206a6d2. One approved change to the embedded
 form and three reports from the same message.
