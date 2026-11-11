@@ -1,3 +1,40 @@
+## v2.19.0 — 11 November 2026
+
+Tool version 2.168. Items 14 and 15 close up on the exported PDF, the caveat
+engine says what pressing Apply would do, its guidance lands where the box it
+belongs to reads, and a solicitation whose bids-due date has passed cannot be
+issued.
+
+- **Fixed: Items 14 and 15 marked No no longer print an open, empty
+  explanation box.** The DD Form 254's own template hides that field — but on
+  the *change* event, which fires when somebody clicks the radio in Adobe. A
+  form filled from saved data never clicked anything, so the box stayed as the
+  form draws it. The embedded form now carries one start-up event per field
+  that runs the form's own rule when the document opens. **This is the one
+  change this tool has ever made to the embedded DD Form 254**; it is written
+  up in `THIRD_PARTY_NOTICES.md` and the release assessment, and the form is
+  otherwise byte-for-byte what it was.
+- **Fixed: the caveat engine's Apply button looked disabled before it was
+  used.** It took the panel's default grey whether there was work to do or
+  none. It is now blue while something is outstanding, blue with a green tick
+  once the form already says what the answers say, and grey only when there is
+  genuinely nothing to apply. The tooltip says how many boxes and paragraphs
+  are waiting.
+- **Fixed: guidance goes where its box reads.** A clause for Item 11c was
+  appended to the end of Item 13, so it could sit below Item 18 wording
+  somebody happened to add first. Clauses now sort by the box they belong to —
+  10a before 10b before 11c before 11l — whoever wrote them, the template or
+  the engine. The supported-effort line still opens Item 13 and the classified
+  mailing address still closes it.
+- **New: a solicitation whose bids-due date has passed cannot be issued.** The
+  date is checked against today: a DD-254 that would tell bidders to respond by
+  a day that is gone is held at Draft with a finding naming the date. It can be
+  set aside with a written reason where a late issue is deliberate, and a
+  DD-254 already issued, skipped or cancelled is left alone — the finding is
+  about issuing, and history has nothing to answer for.
+
+1568 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.18.0 — 9 November 2026
 
 Tool version 2.167. A security manager is offered once per programme they run,

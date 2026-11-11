@@ -141,3 +141,30 @@ including one item still open.
 
 Embedding the form is not an endorsement by, and implies no relationship
 with, the Department of Defense or any of its components.
+
+## DD Form 254 (APR 2018) — one documented addition, v2.19.0
+
+The embedded blank DD Form 254 is the Government's own dynamic XFA form. From
+v2.19.0 the tool ships it with **one addition**, and nothing else about it is
+changed:
+
+Each of the Item 14 and Item 15 **No** radios already carries a script that
+hides that item's explanation field:
+
+    if (this.rawValue == "1") { ... fourteen_identify.presence = "hidden"; }
+
+It is attached as `activity="change"`, so it runs when a person clicks the
+radio in Adobe. A form filled from saved data never fires it, and the
+explanation box printed open and empty on every exported DD-254 that answered
+No. Nothing in the XFA *datasets* packet can set a field's presence.
+
+The tool therefore adds one `activity="ready" ref="$form"` event to each of
+those two fields, running the same rule the form itself wrote, named
+`event__form_ready_fourteen` and `event__form_ready_fifteen`. The form already
+uses `ready` events of its own — including the one that shows its "Please read
+Instructions" alert — which is how the approach was confirmed before it
+shipped.
+
+The addition is asserted by the regression suite (section 148), which also
+checks that every XFA packet survived and that no other `ready` event appeared.
+

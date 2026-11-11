@@ -1,4 +1,4 @@
-BUILD_SHA256 78bd389227f9a3ce64513e1c9c756c6dd95e055fa80a087e4f0a011f03c450d9
+BUILD_SHA256 b206a6d2f736a849a2f102fa8be628524b81fe8ab5d3c6ef3029baa8e168a6c8
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1793,6 +1793,16 @@ BUILD_SHA256 78bd389227f9a3ce64513e1c9c756c6dd95e055fa80a087e4f0a011f03c450d9
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 148. v2.19.0 the caveat engine applies where it should, and a stale bids date stops issue
+  PASS  the Apply button is live before it is pressed, and ticked after
+  PASS  grey is kept for the case where there is nothing to apply
+  PASS  guidance for a box is placed where that box reads, not on the end
+  PASS  the classified mailing address is still last, whatever is placed
+  PASS  a solicitation whose bids-due date has passed cannot be issued
+  PASS  today and later are fine, and so is no date at all
+  PASS  a DD-254 already issued, skipped or cancelled is not told it cannot issue
+  PASS  the embedded DD Form 254 carries the two start-up events, and nothing else moved
+
 ### 147. v2.18.0 a manager is offered once per programme they run
   PASS  a manager who runs three programmes is three choices
   PASS  naming a programme leaves only the managers assigned to it
@@ -1871,5 +1881,5 @@ BUILD_SHA256 78bd389227f9a3ce64513e1c9c756c6dd95e055fa80a087e4f0a011f03c450d9
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1560   FAIL 0
+  PASS 1568   FAIL 0
 ================================

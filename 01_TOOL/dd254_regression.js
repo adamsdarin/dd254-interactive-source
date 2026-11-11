@@ -10467,6 +10467,168 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('148. v2.19.0 the caveat engine applies where it should, and a stale bids date stops issue');
+/* Three reports in one message, plus the Items 14/15 change the owner approved
+   after checking in Adobe that the form's own start-up scripts do fire. */
+
+const CAVBTN=()=>{
+  const host=w.document.getElementById('workflowLeftBanner');
+  if(!host) return null;
+  const b=Array.from(host.querySelectorAll('button')).filter(function(x){
+    return /Apply to this DD-254|Applied|Nothing to apply/.test(x.textContent||''); })[0];
+  /* the tick is a span inside the button, so the mark-up is read too */
+  return b?{text:(b.textContent||'').replace(/\s+/g,' ').trim(),disabled:!!b.disabled,
+            style:String(b.getAttribute('style')||''),html:String(b.innerHTML||'')}:null;
+};
+
+await ta('the Apply button is live before it is pressed, and ticked after', async()=>{
+  /* THE REPORT: "the button to apply is grayed out prior to me hitting it,
+     which that shouldn't be." It was the panel's default button colour, and it
+     looked identical whether there was work to do or none. */
+  E("showFormView();resetFormFields();cavEngineSet('on');");
+  E("cavEngineAnswerSet({archetype:'parts',purpose:'testing',testClassified:true});lbApply();");
+  const before=CAVBTN();
+  E("cavEngineApply();lbApply();");
+  const after=CAVBTN();
+  E("cavEngineSet('off');resetFormFields();lbApply();");
+  return (before&&!before.disabled&&/Apply to this DD-254/.test(before.text)&&/#2e5077/.test(before.style)
+       && after&&!after.disabled&&/Applied/.test(after.text)
+       && /#8ff0a4/.test(after.html)&&/#2e5077/.test(after.style))
+    ? true : JSON.stringify({before,after}); });
+
+await ta('grey is kept for the case where there is nothing to apply', async()=>{
+  E("showFormView();resetFormFields();cavEngineSet('on');");
+  E("cavEngineAnswerSet({archetype:'parts'});lbApply();");
+  const b=CAVBTN();
+  const pending=E("cavPending(cavEvaluate(cavEngineAnswers()))");
+  E("cavEngineSet('off');resetFormFields();lbApply();");
+  /* Either there is something to offer and the button is live, or there is
+     not and it says so - never a live-looking button that does nothing, and
+     never a dead-looking one that would. */
+  return (b ? ((pending.offered>0)===(!b.disabled)) : pending.offered===0)
+    ? true : JSON.stringify({b,pending}); });
+
+t('guidance for a box is placed where that box reads, not on the end', ()=>{
+  /* THE REPORT: "that 11c guidance would be inserted in block 11C, not at the
+     bottom of the DD254." */
+  const d=E("ctBlankData()");
+  d.c11={'11c':true,'11l':true};
+  d.always={'11c':true,'11l':true};
+  d.l11={'11c':'ELEVEN C CLAUSE.','11l':'ELEVEN L CLAUSE.'};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Order',ioId:'ord-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();document.getElementById('ctTplSel').value='ord-tpl';");
+  E("SUP_LAST='';document.getElementById('item13').value='ELEVEN L CLAUSE.';");
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  const v=stripPdq(E("ctGv('item13')"));
+  E("tplSave(TPL_CT,[]);resetFormFields();");
+  return (v.indexOf('ELEVEN C CLAUSE.')===0 && v.indexOf('ELEVEN L CLAUSE.')>0)
+    ? true : JSON.stringify(v);
+});
+
+t('the classified mailing address is still last, whatever is placed', ()=>{
+  /* REQ-08. Placement moves clauses among themselves; it never crosses the
+     tail region, and the head region is the supported-effort line's. */
+  const d=E("ctBlankData()");
+  d.c11={'11c':true}; d.always={'11c':true}; d.l11={'11c':'ELEVEN C CLAUSE.'};
+  E("tplSave(TPL_CT,"+JSON.stringify([{label:'Tail',ioId:'tail-tpl',data:d}])+");buildCtSelect&&buildCtSelect();");
+  E("showFormView();resetFormFields();document.getElementById('ctTplSel').value='tail-tpl';");
+  E("document.getElementById('iEffort').value='TO-0042';supSync();");
+  E("document.getElementById('c11c').checked=true;ctAutoLangKey('11c');");
+  const v=E("ctGv('item13')");
+  const sup=v.indexOf('This is in support of effort TO-0042.');
+  const cls=v.indexOf('ELEVEN C CLAUSE.');
+  const pdq=v.indexOf('Please direct all questions to the prime contractor.');
+  E("tplSave(TPL_CT,[]);resetFormFields();");
+  return (sup===0 && cls>sup && (pdq<0||pdq>cls))
+    ? true : JSON.stringify({sup,cls,pdq,v:v.slice(0,160)});
+});
+
+const YMD=(days)=>E("(function(){var d=new Date();d.setDate(d.getDate()+("+days+"));var p=function(n){return (n<10?'0':'')+n;};return ''+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());})()");
+const dueFinding=()=>E("(window.DD254_ERRORS||[]).filter(function(e){return /bids were due/.test(e);})");
+
+t('a solicitation whose bids-due date has passed cannot be issued', ()=>{
+  /* THE REPORT, in the owner's own numbers: today is the 11th, bids were due
+     on the 20th of last month. */
+  E("showFormView();resetFormFields();");
+  E("document.getElementById('i2c_due').value='"+YMD(-22)+"';run();");
+  const found=dueFinding();
+  const marked=E("document.getElementById('i2c_due').classList.contains('req-missing')");
+  E("resetFormFields();");
+  return (found.length===1 && /has passed/.test(found[0]) && marked===true)
+    ? true : JSON.stringify({found,marked});
+});
+
+t('today and later are fine, and so is no date at all', ()=>{
+  E("showFormView();resetFormFields();");
+  E("document.getElementById('i2c_due').value='"+YMD(0)+"';run();");
+  const today=dueFinding().length;
+  E("document.getElementById('i2c_due').value='"+YMD(30)+"';run();");
+  const later=dueFinding().length;
+  E("document.getElementById('i2c_due').value='';run();");
+  const none=dueFinding().length;
+  E("document.getElementById('i2c_due').value='2026';run();");
+  const partial=dueFinding().length;
+  E("resetFormFields();");
+  return (today===0&&later===0&&none===0&&partial===0)
+    ? true : JSON.stringify({today,later,none,partial});
+});
+
+await ta('a DD-254 already issued, skipped or cancelled is not told it cannot issue', async()=>{
+  /* The finding is about issuing. History has nothing to answer for, and the
+     demonstration portfolio's Skipped solicitation is exactly this case. */
+  await wipe();
+  const stale=YMD(-40);
+  await E("draftPut({id:'DUE1',title:'Open',status:'Draft',stage:'sol',meta:{},todos:[],dist:[],holds:[],workspace:{texts:{i2c_due:'"+stale+"'},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("draftPut({id:'DUE2',title:'Closed',status:'Skipped',stage:'sol',meta:{},todos:[],dist:[],holds:[],workspace:{texts:{i2c_due:'"+stale+"'},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("dashOpen('DUE1')");
+  const open=dueFinding().length;
+  await E("dashOpen('DUE2')");
+  const closed=dueFinding().length;
+  E("DASH.current=null;");
+  await wipe();
+  E("showDashView();resetFormFields();");
+  return (open===1&&closed===0) ? true : JSON.stringify({open,closed}); });
+
+t('the embedded DD Form 254 carries the two start-up events, and nothing else moved', ()=>{
+  /* v2.19.0 adds one $form-ready event to each of the Item 14 and Item 15 No
+     radios, running the rule the form's own change script already runs - which
+     a form filled from saved data never fires. The owner confirmed in Adobe
+     that the form's own start-up alert appears, so start-up events do run.
+     This asserts the addition is there, that it is the only thing added, and
+     that every XFA packet survived the rewrite. */
+  const zlib=require('zlib');
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const m=/const DD254_XFA_B64="([A-Za-z0-9+/=]+)"/.exec(src);
+  if(!m) return 'the embedded form was not found';
+  const pdf=Buffer.from(m[1],'base64');
+  const txt=pdf.toString('latin1');
+  const packets=['(xdp:xdp)','(config)','(template)','(localeSet)','(datasets)','(xmpmeta)','(xfdf)','(form)'];
+  const missing=packets.filter(function(p){ return txt.indexOf(p)<0; });
+  let tpl='';
+  const re=/stream\r?\n/g; let mm;
+  while((mm=re.exec(txt))!==null){
+    const start=mm.index+mm[0].length, end=txt.indexOf('endstream',start);
+    if(end<0) continue;
+    try{
+      const out=zlib.inflateSync(Buffer.from(pdf.slice(start,end)));
+      if(out.indexOf('fourteen_identify')>=0){ tpl=out.toString('utf8'); break; }
+    }catch(e){}
+  }
+  if(!tpl) return 'the XFA template packet could not be read';
+  const ready=(tpl.match(/activity="ready"/g)||[]).length;
+  return (!missing.length
+       && tpl.indexOf('event__form_ready_fourteen')>=0
+       && tpl.indexOf('event__form_ready_fifteen')>=0
+       && /if \(fourteen_No\.rawValue == "1"\)/.test(tpl)
+       && /fourteen_identify\.presence = "hidden"/.test(tpl)
+       && ready===5)
+    ? true : JSON.stringify({missing,ready,
+        fourteen:tpl.indexOf('event__form_ready_fourteen')>=0,
+        fifteen:tpl.indexOf('event__form_ready_fifteen')>=0});
+});
+
+E("cavEngineSet('off');tplSave(TPL_CT,[]);showDashView();resetFormFields();");
+
 H('147. v2.18.0 a manager is offered once per programme they run');
 /* The owner: "when I select program, the only security managers that should
    appear are security managers that have that program identified for them...

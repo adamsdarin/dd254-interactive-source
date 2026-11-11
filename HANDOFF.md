@@ -1,6 +1,51 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-09T10:15-06:00 by Maintainer
+Last updated: 2026-11-11T11:30-06:00 by Maintainer
+
+Built and verified locally: **v2.19.0 (Tool 2.168)**, build b206a6d2. Not yet
+tagged or published at the time of writing.
+
+What v2.19.0 contains, build b206a6d2. One approved change to the embedded
+form and three reports from the same message.
+
+**ITEMS 14/15: THE EMBEDDED DD FORM 254 IS NO LONGER BYTE-IDENTICAL TO THE
+GOVERNMENT DOWNLOAD.** It carries one addition and nothing else: an
+`activity="ready" ref="$form"` event on each of `fourteen_No` and `fifteen_No`,
+running the rule the form's own `change` script already runs
+(`fourteen_identify.presence = "hidden"`). That change event only fires when a
+person clicks the radio in Adobe, so a form filled from saved data left the
+explanation box open and empty. Nothing in the datasets packet can set
+presence. The owner approved it after confirming in Adobe that the form's own
+"Please read Instructions" alert appears on an export - itself a `$form` ready
+script, which is the evidence that ready events fire on a data-filled open.
+Written up in THIRD_PARTY_NOTICES.md and the release assessment; asserted by
+section 148, which inflates the template out of the build and checks both
+additions, every XFA packet, and that no other ready event appeared. The patch
+script is in the session scratchpad; it works through the page's own pdf-lib so
+the xref is rebuilt by the same writer the export uses.
+
+**The caveat engine's Apply button** was the panel's default grey whether there
+was work to do or none. `cavPending(out)` counts what is outstanding against
+the form as it is now: grey only when nothing is offered, blue while something
+is outstanding, blue with a tick when the form already matches the answers. No
+state is stored, so unticking a box by hand corrects it.
+
+**Guidance is placed where its box reads.** `i13BoxOffset(text,key)` finds the
+spot between the head region (supported-effort line, revision summary) and the
+tail (standing sentence, classified mailing address), after every earlier Item
+10/11 box's clause and before every later one. `ctAutoLangKey`, `ctForceLang`
+and `cavEngineApply` all place through it.
+
+**A solicitation whose bids-due date has passed cannot be issued.** An ordinary
+finding, so it holds the record at Draft and can be set aside with a reason. It
+asks `window.DD254_STATUS` first - new, set by `dashOpen` and
+`dashRecountDrafts`, cleared by `resetFormFields` - and says nothing on a
+record that is Issued, Skipped or Cancelled. Without that the demonstration
+portfolio's Skipped solicitation, closed 215 days ago, would have carried a
+permanent error and the seeded counts would have drifted from the recount.
+
+1568 assertions pass (eight new), all five gates pass, both builds pass the
+native-browser smoke test including its export assertions.
 
 Latest published release: **v2.18.0 (Tool 2.167)**, build 78bd3892. Signed tag
 at a76cd85 on `main`; 12/12 checksums, the provenance attestation (official

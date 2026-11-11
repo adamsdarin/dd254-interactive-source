@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.18.0 (tool version 2.167)"
+VER="DD254 Interactive v2.19.0 (tool version 2.168)"
 
 DOC = [
-("h1","DD254 Interactive v2.18.0 changes"),
+("h1","DD254 Interactive v2.19.0 changes"),
+("b","<b>Fixed: Items 14 and 15 marked No no longer print an open, empty explanation box.</b> The DD Form 254\u2019s own template hides that field when the No radio is <i>clicked</i>; a form filled from saved data never clicks it. The embedded form now carries a start-up event that runs the form\u2019s own rule when the document opens."),
+("b","<b>Fixed: the caveat engine\u2019s Apply button.</b> It is blue while something is outstanding, blue with a green tick once the form already says what the answers say, and grey only when there is nothing to apply."),
+("b","<b>Fixed: guidance goes where its box reads.</b> A clause for Item 11c used to be appended to the end of Item 13. Clauses now sort by the box they belong to \u2014 10a, 10b, 11c, 11l \u2014 with the supported-effort line still opening Item 13 and the classified mailing address still closing it."),
+("b","<b>New: a solicitation whose bids-due date has passed cannot be issued.</b> The date is checked against today and the DD-254 is held at Draft with a finding naming it. Set it aside with a reason where a late issue is deliberate; one already issued, skipped or cancelled is left alone."),
+("h2","DD254 Interactive v2.18.0 changes"),
 ("b","<b>A security manager is offered once per programme they run.</b> In both template repositories the list now reads <i>Schmuckatelli, Joe \u00b7 WINDFALL</i>, <i>Schmuckatelli, Joe \u00b7 OCEAN BREEZE</i>, and choosing one sets the manager and the programme together. Naming the programme first narrows the list to the managers that programme is recorded against."),
 ("b","<b>Creating a DD-254 lists every programme a manager runs</b> rather than whichever was recorded first. The record keeps the whole list, and leaves the single programme blank where the manager runs several \u2014 which one this DD-254 is for is answered on the template row, against the contract."),
 ("n","A programme a manager is not assigned to is said out loud on the row rather than quietly dropped: it is usually the programme that is wrong, not the manager."),
