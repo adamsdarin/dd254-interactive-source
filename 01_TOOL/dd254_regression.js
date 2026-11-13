@@ -10467,6 +10467,228 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('150. v2.20.0 standard language that has been edited is still standard language');
+/* The owner: "when it's applied, if I edit it, an error flag saying standard
+   language isn't present. Where that isn't true, I just edited it. The rule is
+   supposed to be you need to apply standard language, not that standard
+   language needs to be exactly the same." */
+
+const SL150='All classified material furnished or generated under this contract remains the property of the United States Government and shall be safeguarded in accordance with the security classification guide identified in this block and returned or destroyed at completion.';
+const SL150SEED=function(){
+  E("tplSave(TPL_SL,"+JSON.stringify([{label:'Standing clause',text:SL150}])+");showFormView();resetFormFields();");
+};
+const sl150Clean=function(){ E("slRequiredModeSet('off');tplSave(TPL_SL,[]);resetFormFields();"); };
+
+t('an entry applied and then edited still counts as applied', ()=>{
+  SL150SEED();
+  const edited=SL150.replace('this contract','contract N00178-26-C-0042').replace('returned or destroyed','returned to the GCA or destroyed');
+  E("document.getElementById('item13').value="+JSON.stringify(edited)+";");
+  const on=E("slApplied()");
+  sl150Clean();
+  return (on.length===1&&on[0]==='Standing clause') ? true : JSON.stringify(on);
+});
+
+t('so the mandatory finding is not raised against it', ()=>{
+  /* THE REPORT. */
+  SL150SEED();
+  E("slRequiredModeSet('on');");
+  const edited=SL150.replace('United States Government','U.S. Government').replace('at completion','when the work is complete');
+  E("document.getElementById('item13').value="+JSON.stringify(edited)+";");
+  const err=E("slRequiredError()");
+  sl150Clean();
+  return err==='' ? true : err;
+});
+
+t('deleting it is still deleting it', ()=>{
+  /* Presence stays the source of truth: the setting must not believe its own
+     bookkeeping over what the form actually says. */
+  SL150SEED();
+  E("slRequiredModeSet('on');");
+  E("document.getElementById('item13').value='The contractor shall safeguard classified material under this contract.';");
+  const on=E("slApplied()"), err=E("slRequiredError()");
+  sl150Clean();
+  return (on.length===0&&/mandatory/.test(err)) ? true : JSON.stringify({on,err:err.slice(0,60)});
+});
+
+t('rewritten past recognition, it is no longer the library’s wording', ()=>{
+  SL150SEED();
+  E("document.getElementById('item13').value='Government property is to be protected per the guide and disposed of when the effort ends.';");
+  const on=E("slApplied()");
+  sl150Clean();
+  return on.length===0 ? true : JSON.stringify(on);
+});
+
+t('the automatic insert does not put a second copy beside an edited one', ()=>{
+  /* The other half of the same defect: an edited paragraph read as absent, so
+     the insert that runs when the form is opened wrote it again. */
+  SL150SEED();
+  E("slRequiredModeSet('on');");
+  const edited=SL150.replace('this contract','contract N00178-26-C-0042');
+  E("document.getElementById('item13').value="+JSON.stringify(edited)+";");
+  const wrote=E("slAutoApply()");
+  const v=E("ctGv('item13')");
+  const copies=(v.match(/remains the property of the United States Government/g)||[]).length;
+  sl150Clean();
+  return (!wrote&&copies===1) ? true : JSON.stringify({wrote,copies});
+});
+
+t('an untouched entry is found exactly as before', ()=>{
+  SL150SEED();
+  E("document.getElementById('item13').value="+JSON.stringify('Opening line.  '+SL150)+";");
+  const on=E("slApplied()");
+  sl150Clean();
+  return on.length===1 ? true : JSON.stringify(on);
+});
+
+H('149. v2.20.0 a copy does not carry another contract\u2019s Block 13');
+/* The owner: "I'll have a DD254 in the workflow, I'll finish it, I'll put it in
+   draft, I'll go to copy it, and I'll forget to update the block 13 language,
+   which results in incorrect language being provided." A DD-254 template is
+   written for one contract; its language on a copy is right only if the copy
+   is for the same contract, and a copy is made precisely when it usually is
+   not. */
+
+const BLK_SEED=async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  await E("tplSave(TPL_CT,[{ioId:'cp-a',label:'Alpha contract',data:Object.assign(ctBlankData(),{primeContract:'CP-ALPHA',i13:'ALPHA WORDING.',c11:{'11c':true},i14:'yes',i14text:'ALPHA 14.',i16:{a:'ALPHA GCA',b:'',c:'',d:'',e:'',f:''}})},{ioId:'cp-b',label:'Bravo contract',data:Object.assign(ctBlankData(),{primeContract:'CP-BRAVO',i13:'BRAVO WORDING.',c11:{'11e':true},i16:{a:'BRAVO GCA',b:'',c:'',d:'',e:'',f:''}})}]);tplSave(TPL_B13,[]);");
+};
+const BLK_SRC=(extra)=>Object.assign({id:'CPY1',title:'Alpha DD-254',status:'Draft',stage:'orig',meta:{identity:{prime:'CP-ALPHA',order:'',sub:'N/A'}},todos:[],dist:[],holds:[],
+  requestedBy:'r.q@example.test',requestedByName:'Rae Quinn',
+  workspace:{texts:{i2a:'CP-ALPHA',i2b:'N/A',i6a:'Example Contractor',item13:'ALPHA WORDING.',i14text:'ALPHA 14.',i16a:'ALPHA GCA'},
+             checks:{c11c:true,dist18a:true},radios:{i14:'yes'},selects:{ctTplSel:'cp-a'},perf:[]}},extra||{});
+const blkOpen=async(src)=>{
+  E("window.__C=dashCopyPrompt("+JSON.stringify(src)+");");
+  await waitFor(()=>w.document.getElementById('dashCopyDlg'),'the copy dialog');
+};
+const blkVal=(id)=>(w.document.getElementById(id)||{}).value;
+const blkDup=async(setup)=>{
+  /* dashDuplicate, with the dialog driven the way an operator drives it */
+  E("window.__D=dashDuplicate('CPY1');");
+  await waitFor(()=>w.document.getElementById('dashCopyDlg'),'the copy dialog');
+  setup();
+  w.document.getElementById('cpForm').click();
+  await E("window.__D");
+  const all=await E("draftAll()");
+  return all.filter(function(r){ return r.copiedFrom==='CPY1'; })[0];
+};
+
+await ta('the dialog says Blocks 10 to 16 stay behind, and starts with no contract', async()=>{
+  await BLK_SEED();
+  await blkOpen(BLK_SRC());
+  const note=(w.document.getElementById('cpResetNote')||{}).textContent||'';
+  const prime=blkVal('cp_prime'), same=!!w.document.getElementById('cpSame');
+  const opts=Array.from((w.document.getElementById('cpPrimeList')||{options:[]}).options).map(o=>o.value);
+  w.document.getElementById('cpCancel').click(); await E("window.__C");
+  return (/Blocks 10 to 16 are not copied/.test(note)&&/Alpha contract/.test(note)
+       && prime===''&&same&&opts.join('|')==='CP-ALPHA|CP-BRAVO')
+    ? true : JSON.stringify({note:note.slice(0,80),prime,same,opts}); });
+
+await ta('it will not copy until a contract is named', async()=>{
+  /* The one thing the dialog insists on, and only in this case: a copy with
+     Blocks 10 to 16 left behind and no contract has no language and no way to
+     be given the right one. */
+  await blkOpen(BLK_SRC());
+  w.document.getElementById('cpForm').click();
+  const still=!!w.document.getElementById('dashCopyDlg');
+  const err=(w.document.getElementById('cp_prime_err')||{}).textContent||'';
+  w.document.getElementById('cpCancel').click(); await E("window.__C");
+  return (still&&/Enter the contract this copy is for/.test(err)) ? true : JSON.stringify({still,err}); });
+
+await ta('naming a different contract rebuilds 10 to 16 from that contract\u2019s template', async()=>{
+  /* THE REPORT, prevented: the copy cannot carry ALPHA's wording to BRAVO. */
+  await BLK_SEED();
+  await E("draftPut("+JSON.stringify(BLK_SRC())+")");
+  const copy=await blkDup(function(){
+    const p=w.document.getElementById('cp_prime'); p.value='CP-BRAVO'; p.oninput();
+  });
+  const tx=copy.workspace.texts, ch=copy.workspace.checks;
+  await wipe();
+  return (String(tx.item13).indexOf('BRAVO WORDING.')>=0 && String(tx.item13).indexOf('ALPHA')<0
+       && tx.i2a==='CP-BRAVO' && tx.i16a==='BRAVO GCA' && tx.i14text===''
+       && ch.c11e===true && ch.c11c===false
+       && copy.workspace.selects.ctTplSel==='cp-b'
+       /* who the contractor is comes across; Item 18 is the new contract's
+          template's to state, exactly as when a DD-254 is created from it */
+       && tx.i6a==='Example Contractor')
+    ? true : JSON.stringify({i13:tx.item13,i2a:tx.i2a,i16a:tx.i16a,i14:tx.i14text,c11e:ch.c11e,c11c:ch.c11c,sel:copy.workspace.selects.ctTplSel,i6a:tx.i6a}); });
+
+await ta('Same contract reaffirms it, and rebuilds from the template as it is now', async()=>{
+  /* The template is the record of what this contract says. A copy takes the
+     wording saved for the contract today, not whatever the original had been
+     edited into. */
+  await BLK_SEED();
+  const src=BLK_SRC(); src.workspace.texts.item13='ALPHA WORDING, EDITED BY HAND.';
+  await E("draftPut("+JSON.stringify(src)+")");
+  const copy=await blkDup(function(){ w.document.getElementById('cpSame').click(); });
+  const tx=copy.workspace.texts;
+  await wipe();
+  return (tx.i2a==='CP-ALPHA' && String(tx.item13).indexOf('ALPHA WORDING.')>=0
+       && String(tx.item13).indexOf('EDITED BY HAND')<0 && copy.workspace.selects.ctTplSel==='cp-a')
+    ? true : JSON.stringify({i2a:tx.i2a,i13:tx.item13,sel:copy.workspace.selects.ctTplSel}); });
+
+await ta('a contract with no template leaves 10 to 16 blank, and says so first', async()=>{
+  await BLK_SEED();
+  await E("draftPut("+JSON.stringify(BLK_SRC())+")");
+  let note='';
+  const copy=await blkDup(function(){
+    const p=w.document.getElementById('cp_prime'); p.value='CP-NOBODY'; p.oninput();
+    note=(w.document.getElementById('cp_match')||{}).textContent||'';
+  });
+  const tx=copy.workspace.texts, ch=copy.workspace.checks;
+  await wipe();
+  return (/No template is saved for this contract/.test(note)
+       && !/ALPHA|BRAVO/.test(String(tx.item13||'')) && tx.i16a==='' && ch.c11c===false
+       && tx.i2a==='CP-NOBODY' && !copy.workspace.selects.ctTplSel && !copy.workspace.radios.i14)
+    ? true : JSON.stringify({note,i13:tx.item13,i16a:tx.i16a,c11c:ch.c11c,i2a:tx.i2a}); });
+
+await ta('a copy built from a Contract Type is carried whole, as it always was', async()=>{
+  /* A Contract Type is written for a kind of contract; its language is as
+     right on the copy as on the original. Nothing about that changed. */
+  await BLK_SEED();
+  const src=BLK_SRC({ctType:'CPFF R&D'}); src.workspace.selects={};
+  src.workspace.texts.item13='TYPE WORDING.';
+  await E("draftPut("+JSON.stringify(src)+")");
+  const copy=await blkDup(function(){});
+  const tx=copy.workspace.texts;
+  await wipe();
+  return (tx.item13==='TYPE WORDING.' && tx.i2a==='CP-ALPHA' && copy.workspace.checks.c11c===true && tx.i16a==='ALPHA GCA')
+    ? true : JSON.stringify({i13:tx.item13,i2a:tx.i2a}); });
+
+await ta('and so is one nobody\u2019s template wrote', async()=>{
+  await BLK_SEED();
+  const src=BLK_SRC(); src.workspace.selects={};
+  src.workspace.texts.item13='TYPED BY HAND.';
+  await E("draftPut("+JSON.stringify(src)+")");
+  const copy=await blkDup(function(){});
+  await wipe();
+  return (copy.workspace.texts.item13==='TYPED BY HAND.') ? true : JSON.stringify(copy.workspace.texts.item13); });
+
+await ta('a solicitation\u2019s fields are all there, the due date included', async()=>{
+  /* The form stores YYYYMMDD; a date field only accepts YYYY-MM-DD and shows
+     nothing for anything else. The due date arrived in this dialog blank. */
+  await BLK_SEED();
+  const src=BLK_SRC({stage:'sol'}); src.workspace.selects={};
+  src.workspace.texts.i2c='SOL-26-R-0007'; src.workspace.texts.i2c_due='20261120';
+  await blkOpen(src);
+  const sol=blkVal('cp_sol'), due=blkVal('cp_due');
+  const shown=(w.document.getElementById('cpSolOnly')||{style:{}}).style.display;
+  const scrolls=/overflow:\s*auto/.test(w.document.getElementById('dashCopyDlg').getAttribute('style')||'');
+  w.document.getElementById('cpCancel').click(); await E("window.__C");
+  return (sol==='SOL-26-R-0007'&&due==='2026-11-20'&&shown==='block'&&scrolls)
+    ? true : JSON.stringify({sol,due,shown,scrolls}); });
+
+t('a date the form wrote is shown by every dialog that asks for one', ()=>{
+  return (E("dashDateForInput('20261120')")==='2026-11-20'
+       && E("dashDateForInput('2026-11-20')")==='2026-11-20'
+       && E("dashDateForInput('')")===''
+       && E("dashDateForInput('2026')")==='')
+    ? true : 'conversion';
+});
+
+E("tplSave(TPL_CT,[]);showDashView();resetFormFields();");
+await wipe();
+
 H('148. v2.19.0 the caveat engine applies where it should, and a stale bids date stops issue');
 /* Three reports in one message, plus the Items 14/15 change the owner approved
    after checking in Adobe that the form's own start-up scripts do fire. */

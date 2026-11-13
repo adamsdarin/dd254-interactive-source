@@ -1,3 +1,43 @@
+## v2.20.0 — 13 November 2026
+
+Tool version 2.169. A copy no longer carries another contract's Block 13, and
+a solicitation's copy dialog shows everything it should.
+
+- **Changed: copying a DD-254 built from a DD-254 template leaves Blocks 10 to
+  16 behind.** A DD-254 template is written for one contract, so its language
+  on a copy is right only if the copy is for the same contract — and a copy is
+  made precisely when it usually is not. That is how a finished DD-254 got
+  copied, Block 13 went unedited, and the wrong contract's wording was issued.
+  The copy dialog now says so, starts with the contract fields **empty**, and
+  will not copy until you name the contract: choose one from the repository,
+  type one, or press **Same contract** to reaffirm the original's.
+- **The dialog says what will happen before it happens.** Name a contract and it
+  reports which template will rebuild Blocks 10 to 16 — or that none is saved
+  for that number and they will start blank. The rebuild uses the template as
+  it stands in the repository today, so a copy takes the current wording for
+  the contract rather than whatever the original had been edited into.
+- **A copy built from a Contract Type, or from nobody's template, is carried
+  whole, exactly as before.** A Contract Type is written for a kind of
+  contract; its language is as right on the copy as it was on the original.
+- **Fixed: a solicitation's due date was missing from the copy dialog.** The
+  form stores dates as YYYYMMDD and the dialog's date field shows nothing for
+  anything but YYYY-MM-DD, so a due date typed on the form arrived blank. The
+  same fix reaches the create and rename dialogs.
+- **Fixed: the copy dialog scrolls.** The solicitation fields and the security
+  manager are its last rows, and on a laptop screen they sat below the fold
+  with no way to reach them.
+
+- **Fixed: standard language you have edited is still standard language.** The
+  mandatory rule compared Item 13 with the library character for character, so
+  changing a contract number or a sentence made it report that standard
+  language was missing while you were looking at it — and the automatic
+  insert then wrote a second copy beside the first. An entry now counts while
+  most of its wording survives. Delete the paragraph and it is still gone;
+  rewrite it past recognition and the finding returns, to be set aside with a
+  reason like any other.
+
+1583 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.19.0 — 11 November 2026
 
 Tool version 2.168. Items 14 and 15 close up on the exported PDF, the caveat

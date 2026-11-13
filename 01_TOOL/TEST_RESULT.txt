@@ -1,4 +1,4 @@
-BUILD_SHA256 b206a6d2f736a849a2f102fa8be628524b81fe8ab5d3c6ef3029baa8e168a6c8
+BUILD_SHA256 8f4c420bea88a301919364d772ad4fc28fae629e7d542af29465c143b1d808da
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1793,6 +1793,25 @@ BUILD_SHA256 b206a6d2f736a849a2f102fa8be628524b81fe8ab5d3c6ef3029baa8e168a6c8
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 150. v2.20.0 standard language that has been edited is still standard language
+  PASS  an entry applied and then edited still counts as applied
+  PASS  so the mandatory finding is not raised against it
+  PASS  deleting it is still deleting it
+  PASS  rewritten past recognition, it is no longer the library’s wording
+  PASS  the automatic insert does not put a second copy beside an edited one
+  PASS  an untouched entry is found exactly as before
+
+### 149. v2.20.0 a copy does not carry another contract’s Block 13
+  PASS  the dialog says Blocks 10 to 16 stay behind, and starts with no contract
+  PASS  it will not copy until a contract is named
+  PASS  naming a different contract rebuilds 10 to 16 from that contract’s template
+  PASS  Same contract reaffirms it, and rebuilds from the template as it is now
+  PASS  a contract with no template leaves 10 to 16 blank, and says so first
+  PASS  a copy built from a Contract Type is carried whole, as it always was
+  PASS  and so is one nobody’s template wrote
+  PASS  a solicitation’s fields are all there, the due date included
+  PASS  a date the form wrote is shown by every dialog that asks for one
+
 ### 148. v2.19.0 the caveat engine applies where it should, and a stale bids date stops issue
   PASS  the Apply button is live before it is pressed, and ticked after
   PASS  grey is kept for the case where there is nothing to apply
@@ -1881,5 +1900,5 @@ BUILD_SHA256 b206a6d2f736a849a2f102fa8be628524b81fe8ab5d3c6ef3029baa8e168a6c8
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1568   FAIL 0
+  PASS 1583   FAIL 0
 ================================

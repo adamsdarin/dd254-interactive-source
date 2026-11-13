@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.19.0 (tool version 2.168)"
+VER="DD254 Interactive v2.20.0 (tool version 2.169)"
 
 DOC = [
-("h1","DD254 Interactive v2.19.0 changes"),
+("h1","DD254 Interactive v2.20.0 changes"),
+("b","<b>Changed: copying a DD-254 built from a DD-254 template leaves Blocks 10 to 16 behind.</b> A DD-254 template is written for one contract, so its language is right on a copy only if the copy is for the same contract. The copy dialog starts with the contract fields empty and will not copy until you name the contract \u2014 choose one, type one, or press <i>Same contract</i> \u2014 then rebuilds Blocks 10 to 16 from the template saved for it, and tells you which before you confirm."),
+("n","A copy built from a Contract Type, or from no template at all, is carried whole exactly as before. A Contract Type is written for a kind of contract, not for one contract number."),
+("b","<b>Fixed: a solicitation\u2019s copy dialog.</b> The due date typed on the form was missing from the dialog, and the dialog could not scroll, so its last rows were out of reach on a laptop screen."),
+("b","<b>Fixed: standard language you have edited is still standard language.</b> The mandatory rule used to demand the library’s exact characters, so editing the paragraph made it report standard language as missing and insert a second copy. An entry now counts while most of its wording survives; deleting it is still deleting it."),
+("h2","DD254 Interactive v2.19.0 changes"),
 ("b","<b>Fixed: Items 14 and 15 marked No no longer print an open, empty explanation box.</b> The DD Form 254\u2019s own template hides that field when the No radio is <i>clicked</i>; a form filled from saved data never clicks it. The embedded form now carries a start-up event that runs the form\u2019s own rule when the document opens."),
 ("b","<b>Fixed: the caveat engine\u2019s Apply button.</b> It is blue while something is outstanding, blue with a green tick once the form already says what the answers say, and grey only when there is nothing to apply."),
 ("b","<b>Fixed: guidance goes where its box reads.</b> A clause for Item 11c used to be appended to the end of Item 13. Clauses now sort by the box they belong to \u2014 10a, 10b, 11c, 11l \u2014 with the supported-effort line still opening Item 13 and the classified mailing address still closing it."),

@@ -1,6 +1,47 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-11T11:30-06:00 by Maintainer
+Last updated: 2026-11-13T10:40-06:00 by Maintainer
+
+Built and verified locally: **v2.20.0 (Tool 2.169)**, build 8f4c420b. Not yet
+tagged or published at the time of writing.
+
+What v2.20.0 changes, build 8f4c420b. Two reports from the owner.
+
+**A copy no longer carries another contract's Block 13.** The report: a
+finished DD-254 is copied, Block 13 is not updated, the wrong contract's
+language is issued. `dashCopyTplKind(rec)` says what the source was built from:
+`'dd254'` when a DD-254 template is behind it by any of the three paths that
+apply one (`selects.ctTplSel`, `ctSource` from the order repository, or the
+carried snapshot's `srcLabel` with no `ctType` from the library's own apply),
+`'type'` for a Contract Type, `''` for hand-typed. Only `'dd254'` changes:
+`dashCopyResetBlocks` clears Blocks 10 to 16 and the template link, the dialog
+starts with the contract fields EMPTY and refuses to copy until one is named
+(a **Same contract** button reaffirms the original's in one press), and
+`dashDuplicate` rebuilds from the template `dashIntakeMatch` finds for the
+named contract - reset, identifiers, template, then `dashPartyApply`, the same
+order creating a DD-254 follows. A copy built from a Contract Type or from no
+template is carried whole exactly as before, which is why no existing copy
+assertion needed restating.
+
+Deliberately not taken: keeping the blocks when the contract number is
+unchanged. It preserves hand edits, which is the failure with a narrower
+trigger. Rebuilding applies the WHOLE template, so the new contract's Item 18
+comes with it; where nothing is applied Item 18 stays as copied.
+
+Also in the copy dialog: a stored `YYYYMMDD` date showed blank in a date field
+(`dashDateForInput`, applied in `dashPartyRow`, so create and rename are fixed
+too), and the overlay could not scroll.
+
+**Standard language that has been edited is still standard language.**
+`slAppliedIn` compared Item 13 with the library character for character, so an
+edited paragraph read as missing - the mandatory finding fired, and
+`slAutoApply`, which asks the same question, wrote a second copy. Presence is
+still the only source of truth, with no bookkeeping: `slSurvivesIn` counts an
+entry while at least `SL_EDIT_KEEP` (0.5) of its three-word runs are still in
+Item 13. Deleting it is still deleting it.
+
+1583 assertions pass (fifteen new, none restated), all five gates pass, both
+builds pass the native-browser smoke test.
 
 Latest published release: **v2.19.0 (Tool 2.168)**, build b206a6d2. Signed tag
 at 03743df on `main`; 12/12 checksums, the provenance attestation (official
