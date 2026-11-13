@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.20.0 (tool version 2.169)"
+VER="DD254 Interactive v2.20.1 (tool version 2.170)"
 
 DOC = [
-("h1","DD254 Interactive v2.20.0 changes"),
+("h1","DD254 Interactive v2.20.1 changes"),
+("b","<b>Fixed: a solicitation is named for its solicitation number.</b> It now reads requester, contract, solicitation number, <i>Solicitation</i> — the same shape as an Original’s requester, contract, subcontract number. Solicitations still carrying the name the tool gave them gain their number the first time this version opens; a name you chose yourself is left alone."),
+("h2","DD254 Interactive v2.20.0 changes"),
 ("b","<b>Changed: copying a DD-254 built from a DD-254 template leaves Blocks 10 to 16 behind.</b> A DD-254 template is written for one contract, so its language is right on a copy only if the copy is for the same contract. The copy dialog starts with the contract fields empty and will not copy until you name the contract \u2014 choose one, type one, or press <i>Same contract</i> \u2014 then rebuilds Blocks 10 to 16 from the template saved for it, and tells you which before you confirm."),
 ("n","A copy built from a Contract Type, or from no template at all, is carried whole exactly as before. A Contract Type is written for a kind of contract, not for one contract number."),
 ("b","<b>Fixed: a solicitation\u2019s copy dialog.</b> The due date typed on the form was missing from the dialog, and the dialog could not scroll, so its last rows were out of reach on a laptop screen."),

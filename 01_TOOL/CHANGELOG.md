@@ -1,3 +1,20 @@
+## v2.20.1 — 13 November 2026
+
+Tool version 2.170. A solicitation is named for its solicitation number.
+
+- **Fixed: a solicitation's name left out its own number.** An Original is
+  named requester, contract, subcontract number. A solicitation was named
+  requester, contract, *Solicitation* — the solicitation number appeared
+  only when there was no contract number at all, so two solicitations under one
+  contract had the same name on the dashboard. It now reads requester,
+  contract, solicitation number, *Solicitation*, the same shape as an Original.
+- **Solicitations you already have are brought into line** the first time this
+  version opens: one still carrying the name the tool gave it gains its number.
+  A name you chose yourself is never rewritten — only an exact match with
+  what the tool itself wrote.
+
+1589 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.20.0 — 13 November 2026
 
 Tool version 2.169. A copy no longer carries another contract's Block 13, and

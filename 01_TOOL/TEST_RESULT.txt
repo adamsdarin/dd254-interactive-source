@@ -1,4 +1,4 @@
-BUILD_SHA256 8f4c420bea88a301919364d772ad4fc28fae629e7d542af29465c143b1d808da
+BUILD_SHA256 062dfcf958134324a646c33cb6e971750e9cd02a692a63ffc7e81b4d59930c01
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1793,6 +1793,14 @@ BUILD_SHA256 8f4c420bea88a301919364d772ad4fc28fae629e7d542af29465c143b1d808da
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 151. v2.20.1 a solicitation is named for its solicitation number
+  PASS  a solicitation under a contract carries its number, where an Original carries its subcontract
+  PASS  with no contract number the solicitation number leads, and is not said twice
+  PASS  an Original is named exactly as it was
+  PASS  a solicitation still carrying the old name gains its number
+  PASS  a name somebody chose is never rewritten
+  PASS  and the recount after an update is what brings existing ones into line
+
 ### 150. v2.20.0 standard language that has been edited is still standard language
   PASS  an entry applied and then edited still counts as applied
   PASS  so the mandatory finding is not raised against it
@@ -1900,5 +1908,5 @@ BUILD_SHA256 8f4c420bea88a301919364d772ad4fc28fae629e7d542af29465c143b1d808da
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1583   FAIL 0
+  PASS 1589   FAIL 0
 ================================

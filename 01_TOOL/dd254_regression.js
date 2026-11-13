@@ -10467,6 +10467,56 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('151. v2.20.1 a solicitation is named for its solicitation number');
+/* The owner: an Original reads requester, contract, subcontract number; a
+   solicitation read requester, contract, "Solicitation" - with its own number
+   left out whenever a contract number was present, so two solicitations under
+   one contract had the same name. */
+
+t('a solicitation under a contract carries its number, where an Original carries its subcontract', ()=>{
+  const sol=E("dashNameCompose({person:'Rae Quinn',prime:'N00178-26-D-0001',solicitation:'N00178-26-R-0007'})");
+  const orig=E("dashNameCompose({person:'Rae Quinn',prime:'N00178-26-D-0001',sub:'SUB-0042'})");
+  return (sol==='Rae Quinn \u2014 N00178-26-D-0001 · N00178-26-R-0007'
+       && orig==='Rae Quinn \u2014 N00178-26-D-0001 · SUB-0042')
+    ? true : JSON.stringify({sol,orig});
+});
+
+t('with no contract number the solicitation number leads, and is not said twice', ()=>{
+  const v=E("dashNameCompose({person:'Rae Quinn',prime:'',solicitation:'N00178-26-R-0007'})");
+  return v==='Rae Quinn \u2014 N00178-26-R-0007' ? true : v;
+});
+
+t('an Original is named exactly as it was', ()=>{
+  const a=E("dashNameCompose({person:'Rae Quinn',prime:'P-1',order:'0007',sub:'N/A'})");
+  const b=E("dashNameComposeLegacy({person:'Rae Quinn',prime:'P-1',order:'0007',sub:'N/A'})");
+  return (a===b&&a==='Rae Quinn \u2014 P-1 · 0007') ? true : JSON.stringify({a,b});
+});
+
+t('a solicitation still carrying the old name gains its number', ()=>{
+  const rec={stage:'sol',title:'Rae Quinn \u2014 P-1 \u2014 Solicitation',requestedByName:'Rae Quinn',
+             meta:{identity:{prime:'P-1',order:'',sub:'',solicitation:'SOL-9'}}};
+  const out=E("(function(){var r="+JSON.stringify(rec)+";var ch=dashSolRetitle(r);return {ch:ch,title:r.title};})()");
+  return (out.ch===true&&out.title==='Rae Quinn \u2014 P-1 · SOL-9 \u2014 Solicitation') ? true : JSON.stringify(out);
+});
+
+t('a name somebody chose is never rewritten', ()=>{
+  const mine={stage:'sol',title:'The big one',requestedByName:'Rae Quinn',meta:{identity:{prime:'P-1',solicitation:'SOL-9'}}};
+  const orig={stage:'orig',title:'Rae Quinn \u2014 P-1 \u2014 Solicitation',requestedByName:'Rae Quinn',meta:{identity:{prime:'P-1',solicitation:'SOL-9'}}};
+  const a=E("(function(){var r="+JSON.stringify(mine)+";return [dashSolRetitle(r),r.title];})()");
+  const b=E("(function(){var r="+JSON.stringify(orig)+";return [dashSolRetitle(r),r.title];})()");
+  return (a[0]===false&&a[1]==='The big one'&&b[0]===false) ? true : JSON.stringify({a,b});
+});
+
+await ta('and the recount after an update is what brings existing ones into line', async()=>{
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  await E("draftPut({id:'NAM1',title:'Rae Quinn \u2014 P-1 \u2014 Solicitation',stage:'sol',status:'Draft',requestedByName:'Rae Quinn',todos:[],dist:[],holds:[],meta:{identity:{prime:'P-1',order:'',sub:'',solicitation:'SOL-9'},rulesVersion:'0.0'},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
+  await E("dashAutoRecount()");
+  const rec=await E("draftGet('NAM1')");
+  await wipe();
+  E("showDashView();resetFormFields();");
+  return rec.title==='Rae Quinn \u2014 P-1 · SOL-9 \u2014 Solicitation' ? true : JSON.stringify(rec.title); });
+
 H('150. v2.20.0 standard language that has been edited is still standard language');
 /* The owner: "when it's applied, if I edit it, an error flag saying standard
    language isn't present. Where that isn't true, I just edited it. The rule is

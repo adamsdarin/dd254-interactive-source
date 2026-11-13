@@ -2,8 +2,25 @@
 
 Last updated: 2026-11-13T10:40-06:00 by Maintainer
 
-Built and verified locally: **v2.20.0 (Tool 2.169)**, build 8f4c420b. Not yet
+Built and verified locally: **v2.20.1 (Tool 2.170)**, build 062dfcf9. Not yet
 tagged or published at the time of writing.
+
+**v2.20.0 (Tool 2.169), build 8f4c420b, IS published**: signed tag at f58767c
+on `main`; 12/12 checksums, attestation (official 8f4c420b..., demo
+35e6c743..., ref refs/tags/v2.20.0, commit f58767c), byte-identical kit
+rebuild, no bytecode, downloaded build smoke PASS; live demo dd254-interactive
+2aab8d7, served by Pages and byte-identical to the attested asset. Its verify
+run took 15 minutes instead of 4 - the hosted runner was slow, not stuck.
+
+What v2.20.1 changes, build 062dfcf9. **A solicitation is named for its
+solicitation number.** `dashNameCompose` adds it to the tail when a contract
+number leads the name - the same place an Original carries its subcontract
+number - where before it was left out whenever a contract number was present.
+`dashSolRetitle(rec)` brings existing ones into line on the recount every
+update already triggers, and only when the stored title is EXACTLY what
+`dashNameComposeLegacy` composes from the record's own identifiers: a title is
+a name a person may change, so nothing is parsed or guessed. 1589 assertions
+pass (six new), all five gates, both builds smoke-tested.
 
 What v2.20.0 changes, build 8f4c420b. Two reports from the owner.
 
