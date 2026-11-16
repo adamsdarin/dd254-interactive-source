@@ -43,7 +43,7 @@ in a separate session; its brief is
 `02_DOCS/product_planning/REFERENCE_PDF_BRIEF.md` on that branch. Version 1 was
 rejected by the owner - see the branch's own HANDOFF entry.
 
-Latest published release: **v2.20.1 (Tool 2.170)**, build 062dfcf9. Signed tag
+**v2.20.1 (Tool 2.170), build 062dfcf9, IS published**: signed tag
 at 41740c8 on `main`; 12/12 checksums, the provenance attestation (official
 062dfcf9..., demo 43f29ecd..., ref refs/tags/v2.20.1, attested commit 41740c8),
 a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
