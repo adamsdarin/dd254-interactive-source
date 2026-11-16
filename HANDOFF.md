@@ -1,10 +1,16 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-16T10:05-06:00 by Maintainer
+Last updated: 2026-11-16T13:25-06:00 by Maintainer
 
-**v2.21.0 (Tool 2.171), build 7c7feadb, is BUILT AND VERIFIED LOCALLY, NOT YET
-PUBLISHED** - no commit, tag or push until the owner says so. Two requests from
-the owner, 16 November 2026.
+Latest published release: **v2.21.0 (Tool 2.171)**, build 7c7feadb. Signed tag
+at 285b874 on `main`; 12/12 checksums, the provenance attestation (official
+7c7feadb..., demo 826acfa9..., ref refs/tags/v2.21.0, attested commit 285b874),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive fa3f9b2 and served by Pages,
+byte-identical to the attested demo asset.
+
+What v2.21.0 changes. Two requests from the owner, 16 November 2026.
 
 **The template is chosen where a DD-254 is made.** The create dialog and the
 copy dialog both carry one control, `dashTplChooser`: **DD-254 template** or
