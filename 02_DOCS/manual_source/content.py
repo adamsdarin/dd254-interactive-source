@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.20.1 (tool version 2.170)"
+VER="DD254 Interactive v2.21.0 (tool version 2.171)"
 
 DOC = [
-("h1","DD254 Interactive v2.20.1 changes"),
+("h1","DD254 Interactive v2.21.0 changes"),
+("b","<b>New: choose the template where the DD-254 is made.</b> Creating a Solicitation or an Original now asks <i>Which template is this DD-254 built from?</i> <b>DD-254 template</b> lists the templates saved for individual contracts, with the one filed under the number you typed already selected. <b>Contract Type</b> lists every Contract Type you have saved. Pick another, or none. See 3.18."),
+("b","<b>The same choice when you copy.</b> The copy dialog asks it about Blocks 10 to 16 of the copy. <b>Keep as copied</b> is the default wherever the original’s language may come across; choosing a template rebuilds Blocks 10 to 16 from it. See 3.4."),
+("b","<b>Changed: a copy is named for the contract you give it.</b> The name is shown in the copy dialog and follows the fields as you change them. With nothing changed it is still <i>Copy of</i> the original."),
+("b","<b>Fixed: the pencil follows the contract number</b> on a name the tool wrote, including a solicitation’s and a copy’s, and no longer drops a solicitation’s number from the record."),
+("b","<b>Fixed: a Contract Type applied when a DD-254 was created was not recorded on it.</b> The DD-254 now carries the Contract Type it was built from, as one applied later from the form always has."),
+("h2","DD254 Interactive v2.20.1 changes"),
 ("b","<b>Fixed: a solicitation is named for its solicitation number.</b> It now reads requester, contract, solicitation number, <i>Solicitation</i> — the same shape as an Original’s requester, contract, subcontract number. Solicitations still carrying the name the tool gave them gain their number the first time this version opens; a name you chose yourself is left alone."),
 ("h2","DD254 Interactive v2.20.0 changes"),
 ("b","<b>Changed: copying a DD-254 built from a DD-254 template leaves Blocks 10 to 16 behind.</b> A DD-254 template is written for one contract, so its language is right on a copy only if the copy is for the same contract. The copy dialog starts with the contract fields empty and will not copy until you name the contract \u2014 choose one, type one, or press <i>Same contract</i> \u2014 then rebuilds Blocks 10 to 16 from the template saved for it, and tells you which before you confirm."),
@@ -254,6 +260,8 @@ DOC = [
         ["Copy","The whole dashboard face \u2014 title, contract, contractor, notes, to-dos, NISS verification and the form. Right when the paperwork is correct and this is a fresh run of it."],
         ["Copy the form only","The form and the NISS verification. The notes and to-dos stay on the original, because they are the record of work already done on it."]]),
 ("note","Either way the copy starts at <b>Draft</b> with no workflow history: status, holds, distribution record, countersignature, issue date, review date and the validation override stay with the original. Those are things that happened to that DD-254, and a copy they did not happen to must not claim them. Copying uses the same routine a spawned revision uses, so this means the same thing everywhere."),
+("p","<b>Blocks 10 to 16 of the copy.</b> The copy dialog asks the question the create dialog asks. <b>Keep as copied</b> carries the original’s Item 10 and 11 selections and its Block 13 across, and is the default. <b>DD-254 template</b> or <b>Contract Type</b> rebuilds Blocks 10 to 16 from the one you pick, and the dialog names it before the copy is made. A copy of a DD-254 that was built from a contract’s own template is not offered <b>Keep as copied</b>: its language belongs to one contract, so the copy is rebuilt from the template for the contract you name."),
+("n","<b>The copy’s name</b> is shown at the bottom of the dialog and follows the fields as you change them: give the copy another contract number and it is named for that contract. With nothing changed it is <i>Copy of</i> the original, so the two can be told apart. Type in the box to call it something else."),
 ("p","<b>Resetting a DD-254 in place.</b> A card carrying workflow history shows a <b>Reset workflow</b> button, so a DD-254 you have worked on can be put back to a clean run without copying it and losing everything done since. It is the same reset a copy performs, with a confirmation listing exactly what will go."),
 ("n","Kept: the form, your notes, to-dos and NISS verification."),
 ("n","Cleared: status, holds, distribution records, countersignature, issue date, review date and the Draft override."),
@@ -367,12 +375,13 @@ DOC = [
 ("n","The name builds itself as you type — <i>Jane Doe — N00178-24-D-1234 · SUB-0001</i> — and the box holding it is editable, so a DD-254 that does not fit the convention can still be called what it needs to be called."),
 ("n","Name, prime contract number and e-mail are required; the e-mail is checked for shape. The subcontract number is optional."),
 ("n","A solicitation still has <b>— Solicitation</b> added to the end."),
-("n","The <b>pencil</b>, on the card and beside the title on the form, reopens the same four fields and rebuilds the name from them."),
+("n","The <b>pencil</b>, on the card and beside the title on the form, reopens the same four fields and rebuilds the name from them. A name the tool wrote — including a solicitation’s and a copy’s — follows the fields; a name you typed is left alone. The pencil does not apply a template."),
 ("warn","An <b>Issued</b>, <b>Cancelled</b> or <b>Skipped</b> DD-254 can be renamed — a name is not a statement about what went out — but Items 2a and 2b are shown without being editable, because those are the record."),
 ("n","An <b>Original</b> also asks for <b>Block 2b</b>. It cannot be left blank: enter the subcontract number, or <b>N/A</b> when the DD-254 is not a subcontract. <b>N/A</b> goes in Item 2b but is not used in the name."),
 ("n","A <b>Solicitation</b> also asks for <b>Block 2c</b> and the <b>due date</b> beside it. Both are required."),
 ("n","An optional <b>task order, BPA, call or effort number</b> is carried into the task-order field and shown as the DD-254\u2019s primary identifier, with the prime contract beside it."),
-("n","If what you type matches exactly one saved template, it is named in the dialog and applied in full when the DD-254 is created. What you typed is not replaced by what the template carries."),
+("n","<b>Which template is this DD-254 built from?</b> The dialog offers two kinds. <b>DD-254 template</b> lists the templates saved for individual contracts; if what you typed matches exactly one, it is already selected. <b>Contract Type</b> lists every Contract Type you have saved. The one selected is named beneath the list and applied in full when the DD-254 is created. Pick another, or pick none. What you typed is not replaced by what the template carries."),
+("n","A DD-254 template is filed under one contract. Choosing one filed under a different contract is allowed — you may know it is the right starting point — and the dialog says where it is filed before you create."),
 ("n","The <b>Security Manager</b> chosen here is kept on this DD-254. Changing the repository later does not change it."),
 ("h1","4. The form — preparing the DD-254"),
 ("p","The form is an eight-step wizard with a live validation panel down the right-hand side. Steps are not locked: use Next and Previous, or the step dots, to move freely."),

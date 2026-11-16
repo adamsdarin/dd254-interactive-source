@@ -1,6 +1,47 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-13T10:40-06:00 by Maintainer
+Last updated: 2026-11-16T10:05-06:00 by Maintainer
+
+**v2.21.0 (Tool 2.171), build 7c7feadb, is BUILT AND VERIFIED LOCALLY, NOT YET
+PUBLISHED** - no commit, tag or push until the owner says so. Two requests from
+the owner, 16 November 2026.
+
+**The template is chosen where a DD-254 is made.** The create dialog and the
+copy dialog both carry one control, `dashTplChooser`: **DD-254 template** or
+**Contract Type**, each with a list of what is saved. The automatic match on
+the contract number (`dashIntakeMatch`) is still made and is pre-selected; the
+operator can pick another or none. On a copy whose language may come across, a
+third choice, **Keep as copied**, is the default; a copy of a DD-254 built from
+a contract's own template is still never offered it (v2.20.0). Choosing a
+DD-254 template filed under a different contract is allowed and the dialog says
+where it is filed. The status lines `np_match` / `cp_match` now report what is
+SELECTED, not what matched.
+
+**A copy is named for the contract it is given.** The copy dialog shows the
+name (`cp_title`) and recomposes it as identifying fields change; "Copy of"
+remains only when nothing changed or the original had a name of somebody's own
+and nothing identifying was edited. The pencil (`dashRename`, `nameStage`) now
+treats every name the tool writes as the tool's - a solicitation's suffix and
+"Copy of" included - so changing the contract number there renames it too.
+
+Two defects found by reading the paths being changed, both fixed: a Contract
+Type applied at creation was set on the record AFTER it was stored and so never
+saved (`dashNewDraft` now settles the template before the first `draftPut`);
+and the pencil, which shows no solicitation row, wrote the solicitation number
+out of `meta.identity` (`keepOr` keeps what the dialog did not ask about).
+
+1607 assertions pass (eighteen new, section 152; the 1589 existing ones passed
+unchanged before any new test was written), all five gates, both builds pass
+the native-browser smoke test, which gained `tplChooserOk`. The dialogs were
+photographed in headless Chrome and read. Limits: the copy dialog does not move
+the security manager when a template is chosen; task orders with their own
+DD-254 appear through their bound template, not under the order number.
+
+**The reference-guide PDF is not on `main`.** It was moved to branch
+`feature/reference-pdf` (local, not pushed) on 2026-11-16 and is being reworked
+in a separate session; its brief is
+`02_DOCS/product_planning/REFERENCE_PDF_BRIEF.md` on that branch. Version 1 was
+rejected by the owner - see the branch's own HANDOFF entry.
 
 Latest published release: **v2.20.1 (Tool 2.170)**, build 062dfcf9. Signed tag
 at 41740c8 on `main`; 12/12 checksums, the provenance attestation (official

@@ -10467,6 +10467,290 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('152. v2.21.0 the template is chosen where a DD-254 is made, and a copy is named for its contract');
+/* The owner, 16 November 2026: "are you using a DD254 template or are you
+   using a contract template? If you're using contract template, you get a
+   drop-down menu of all the available selections ... that would also apply
+   when you're copying a DD254", and "I'm copying, changing the contract
+   number. That doesn't change the name. So then I save it, copy it, and then
+   I go click the pencil and edit it." */
+
+const TKSEED=async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  await E("tplSave(TPL_CT,[{ioId:'tk-a',label:'Alpha contract',data:Object.assign(ctBlankData(),{primeContract:'TK-ALPHA',i13:'ALPHA WORDING.',c11:{'11c':true}})},{ioId:'tk-b',label:'Bravo contract',data:Object.assign(ctBlankData(),{primeContract:'TK-BRAVO',i13:'BRAVO WORDING.',c11:{'11e':true}})}]);"
+         +"tplSave(TPL_B13,[{label:'CPFF R&D',data:Object.assign(ctBlankData(),{i13:'TYPE WORDING.',c11:{'11c':true}})},{label:'T&M Services',data:Object.assign(ctBlankData(),{i13:'TM WORDING.',c11:{'11e':true}})}]);");
+};
+const TKSRC=(extra)=>Object.assign({id:'TK1',title:'Rae Quinn \u2014 TK-ALPHA',status:'Draft',stage:'orig',
+  meta:{contract:'TK-ALPHA',identity:{prime:'TK-ALPHA',order:'',sub:'N/A',solicitation:''}},todos:[],dist:[],holds:[],notes:'',
+  requestedBy:'r.q@example.test',requestedByName:'Rae Quinn',requester:{firstName:'Rae',lastName:'Quinn',email:'r.q@example.test'},
+  workspace:{texts:{i2a:'TK-ALPHA',i2b:'N/A',i6a:'Example Contractor',item13:'TYPED BY HAND.'},
+             checks:{c11c:true},radios:{},selects:{},perf:[]}},extra||{});
+const tkPut=(d,id,v)=>{ const el=d.querySelector('#'+id); if(!el) return; el.value=v; if(el.oninput) el.oninput(); };
+const tkPick=(d,id,v)=>{ const el=d.querySelector('#'+id); el.value=v; if(el.onchange) el.onchange(); };
+const tkOpts=(d,id)=>Array.from(d.querySelector('#'+id).options).map(o=>o.textContent);
+const tkShown=(d,id)=>{ const s=d.querySelector('#'+id); const o=s.options[s.selectedIndex]; return o?o.textContent:''; };
+const tkNew=async(stage)=>{
+  E("window.__N=dashNewDraft('"+stage+"');");
+  return await waitFor(()=>w.document.getElementById('dashPartyDlg'),'the create dialog');
+};
+const tkFill=(d,prime)=>{
+  tkPut(d,'np_first','Rae'); tkPut(d,'np_last','Quinn'); tkPut(d,'np_email','r.q@example.test');
+  tkPut(d,'np_prime',prime); tkPut(d,'np_sub','N/A');
+};
+const tkMade=async()=>{
+  await E("window.__N"); await E("dashSaveNow()");
+  const rec=await E("draftGet(DASH.current)");
+  const applied=E("String(window.DD254_CT_APPLIED||'')");
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  return {rec:rec,applied:applied};
+};
+const tkCopy=async(id,setup,btn)=>{
+  E("window.__D=dashDuplicate('"+id+"');");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'the copy dialog');
+  const out=setup?setup(d):null;
+  d.querySelector('#'+(btn||'cpForm')).click();
+  await E("window.__D");
+  const all=await E("draftAll()");
+  return {copy:all.filter(function(r){ return r.copiedFrom===id; })[0],out:out};
+};
+const tkRename=async(id)=>{
+  E("window.__R=dashRename('"+id+"');");
+  return await waitFor(()=>w.document.getElementById('dashPartyDlg'),'the pencil dialog');
+};
+
+await ta('the create dialog offers both kinds, and starts on the template filed under the number', async()=>{
+  await TKSEED();
+  const d=await tkNew('orig');
+  const has=!!d.querySelector('#np_tk_ct')&&!!d.querySelector('#np_tk_b13')&&!!d.querySelector('#np_tpl')&&!d.querySelector('#np_tk_keep');
+  tkFill(d,'TK-ALPHA');
+  const shown=tkShown(d,'np_tpl'), on=d.querySelector('#np_tk_ct').getAttribute('aria-checked');
+  const note=d.querySelector('#np_match').textContent;
+  d.querySelector('#np_cancel').click(); await E("window.__N");
+  return (has&&shown==='Alpha contract \u00b7 TK-ALPHA'&&on==='true'&&/matches this contract and will be applied/.test(note))
+    ? true : JSON.stringify({has,shown,on,note}); });
+
+await ta('Contract Type lists every Contract Type that is saved', async()=>{
+  const d=await tkNew('orig');
+  d.querySelector('#np_tk_b13').click();
+  const opts=tkOpts(d,'np_tpl'), on=d.querySelector('#np_tk_b13').getAttribute('aria-checked');
+  const note=d.querySelector('#np_match').textContent;
+  d.querySelector('#np_cancel').click(); await E("window.__N");
+  return (opts.length===3&&opts[1]==='CPFF R&D'&&opts[2]==='T&M Services'&&on==='true'&&/Choose a Contract Type above/.test(note))
+    ? true : JSON.stringify({opts,on,note}); });
+
+await ta('a Contract Type chosen at creation is applied, and the DD-254 remembers it', async()=>{
+  /* It used to be applied to the form and then forgotten by the record: the
+     type was set on an object that had already been stored, and cleared from
+     the page a few lines later. */
+  const d=await tkNew('orig');
+  tkFill(d,'TK-NOBODY');
+  d.querySelector('#np_tk_b13').click(); tkPick(d,'np_tpl','0');
+  const note=d.querySelector('#np_match').textContent;
+  d.querySelector('#np_ok').click();
+  const m=await tkMade(), rec=m.rec||{}, tx=((rec.workspace||{}).texts)||{};
+  await wipe();
+  return (/\u201cCPFF R&D\u201d will be applied/.test(note)&&rec.ctType==='CPFF R&D'&&m.applied==='CPFF R&D'
+       && String(tx.item13||'').indexOf('TYPE WORDING.')>=0 && tx.i2a==='TK-NOBODY'
+       && !String(((rec.workspace||{}).selects||{}).ctTplSel||''))
+    ? true : JSON.stringify({note,ctType:rec.ctType,applied:m.applied,i13:tx.item13,i2a:tx.i2a}); });
+
+await ta('the match can be overruled, and the dialog says where the other template is filed', async()=>{
+  const d=await tkNew('orig');
+  tkFill(d,'TK-ALPHA');
+  tkPick(d,'np_tpl','1');
+  const note=d.querySelector('#np_match').textContent;
+  d.querySelector('#np_ok').click();
+  const m=await tkMade(), rec=m.rec||{}, tx=((rec.workspace||{}).texts)||{};
+  await wipe();
+  return (/\u201cBravo contract\u201d will be applied \u2014 chosen here/.test(note)&&/filed under TK-BRAVO/.test(note)
+       && String(tx.item13||'').indexOf('BRAVO WORDING.')>=0 && String(tx.item13||'').indexOf('ALPHA')<0
+       && tx.i2a==='TK-ALPHA' && ((rec.workspace||{}).selects||{}).ctTplSel==='tk-b' && !rec.ctType)
+    ? true : JSON.stringify({note,i13:tx.item13,i2a:tx.i2a,sel:((rec.workspace||{}).selects||{}).ctTplSel}); });
+
+await ta('and it can be declined: no template at all', async()=>{
+  const d=await tkNew('orig');
+  tkFill(d,'TK-ALPHA');
+  tkPick(d,'np_tpl','');
+  const note=d.querySelector('#np_match').textContent;
+  d.querySelector('#np_ok').click();
+  const m=await tkMade(), rec=m.rec||{}, tx=((rec.workspace||{}).texts)||{};
+  await wipe();
+  return (note==='No template will be applied.'&&String(tx.item13||'').indexOf('ALPHA')<0
+       && !String(((rec.workspace||{}).selects||{}).ctTplSel||'') && !rec.ctType)
+    ? true : JSON.stringify({note,i13:tx.item13}); });
+
+await ta('left alone, the template filed under the number is applied as it always was', async()=>{
+  const d=await tkNew('orig');
+  tkFill(d,'TK-BRAVO');
+  d.querySelector('#np_ok').click();
+  const m=await tkMade(), rec=m.rec||{}, tx=((rec.workspace||{}).texts)||{};
+  await wipe();
+  return (String(tx.item13||'').indexOf('BRAVO WORDING.')>=0 && ((rec.workspace||{}).selects||{}).ctTplSel==='tk-b')
+    ? true : JSON.stringify({i13:tx.item13,sel:((rec.workspace||{}).selects||{}).ctTplSel}); });
+
+await ta('a copy that carries its language is offered Keep as copied, and keeps it unless told otherwise', async()=>{
+  await TKSEED();
+  await E("draftPut("+JSON.stringify(TKSRC())+")");
+  let seen={};
+  const r=await tkCopy('TK1',function(d){
+    seen={keep:(d.querySelector('#cp_tk_keep')||{getAttribute(){return '';}}).getAttribute('aria-checked'),
+          note:d.querySelector('#cp_match').textContent,
+          hidden:d.querySelector('#cp_tpl').style.display};
+  });
+  const tx=((r.copy||{}).workspace||{}).texts||{};
+  await wipe();
+  return (seen.keep==='true'&&/come across exactly as they are/.test(seen.note)&&seen.hidden==='none'
+       && tx.item13==='TYPED BY HAND.' && r.copy.workspace.checks.c11c===true)
+    ? true : JSON.stringify({seen,i13:tx.item13}); });
+
+await ta('choosing a Contract Type for a copy rebuilds Blocks 10 to 16 from it', async()=>{
+  await E("draftPut("+JSON.stringify(TKSRC())+")");
+  let note='';
+  const r=await tkCopy('TK1',function(d){
+    d.querySelector('#cp_tk_b13').click(); tkPick(d,'cp_tpl','1');
+    note=d.querySelector('#cp_match').textContent;
+  });
+  const c=r.copy||{}, tx=((c.workspace||{}).texts)||{}, ch=((c.workspace||{}).checks)||{};
+  await wipe();
+  return (/rebuilt from \u201cT&M Services\u201d/.test(note)&&c.ctType==='T&M Services'
+       && String(tx.item13||'').indexOf('TM WORDING.')>=0 && String(tx.item13||'').indexOf('TYPED BY HAND')<0
+       && ch.c11e===true && ch.c11c===false && tx.i6a==='Example Contractor')
+    ? true : JSON.stringify({note,ctType:c.ctType,i13:tx.item13,c11e:ch.c11e,c11c:ch.c11c}); });
+
+await ta('choosing DD-254 template lists the repository, and the one picked is applied', async()=>{
+  await E("draftPut("+JSON.stringify(TKSRC())+")");
+  let opts=[], start='';
+  const r=await tkCopy('TK1',function(d){
+    d.querySelector('#cp_tk_ct').click();
+    opts=tkOpts(d,'cp_tpl'); start=tkShown(d,'cp_tpl');
+    tkPick(d,'cp_tpl','1');
+  });
+  const c=r.copy||{}, tx=((c.workspace||{}).texts)||{};
+  await wipe();
+  /* it starts on the one filed under this copy's contract number, because
+     switching kind is not a reason to lose the match */
+  return (opts.length===3&&opts[1]==='Alpha contract \u00b7 TK-ALPHA'&&opts[2]==='Bravo contract \u00b7 TK-BRAVO'
+       && start==='Alpha contract \u00b7 TK-ALPHA'
+       && String(tx.item13||'').indexOf('BRAVO WORDING.')>=0 && ((c.workspace||{}).selects||{}).ctTplSel==='tk-b')
+    ? true : JSON.stringify({opts,start,i13:tx.item13}); });
+
+await ta('a copy built from a contract\u2019s own template is not offered Keep as copied', async()=>{
+  const src=TKSRC(); src.workspace.selects={ctTplSel:'tk-a'}; src.workspace.texts.item13='ALPHA WORDING.';
+  await E("draftPut("+JSON.stringify(src)+")");
+  let seen={};
+  const r=await tkCopy('TK1',function(d){
+    seen.keep=!!d.querySelector('#cp_tk_keep');
+    tkPut(d,'cp_prime','TK-BRAVO');
+    seen.shown=tkShown(d,'cp_tpl'); seen.on=d.querySelector('#cp_tk_ct').getAttribute('aria-checked');
+  });
+  const tx=((r.copy||{}).workspace||{}).texts||{};
+  await wipe();
+  return (seen.keep===false&&seen.shown==='Bravo contract \u00b7 TK-BRAVO'&&seen.on==='true'
+       && String(tx.item13||'').indexOf('BRAVO WORDING.')>=0)
+    ? true : JSON.stringify({seen,i13:tx.item13}); });
+
+await ta('a copy is named for the contract it is given', async()=>{
+  /* THE REPORT: copy, change the contract number, and the name still carried
+     the old one. */
+  await E("draftPut("+JSON.stringify(TKSRC())+")");
+  let before='', after='';
+  const r=await tkCopy('TK1',function(d){
+    before=d.querySelector('#cp_title').value;
+    tkPut(d,'cp_prime','TK-BRAVO');
+    after=d.querySelector('#cp_title').value;
+  });
+  const c=r.copy||{};
+  await wipe();
+  return (before==='Copy of Rae Quinn \u2014 TK-ALPHA'&&after==='Rae Quinn \u2014 TK-BRAVO'
+       && c.title==='Rae Quinn \u2014 TK-BRAVO' && c.meta.identity.prime==='TK-BRAVO' && c.workspace.texts.i2a==='TK-BRAVO')
+    ? true : JSON.stringify({before,after,title:c.title}); });
+
+await ta('with nothing changed it is still \u201cCopy of\u201d, so the two can be told apart', async()=>{
+  await E("draftPut("+JSON.stringify(TKSRC())+")");
+  const r=await tkCopy('TK1',null,'cpKeep');
+  const t=(r.copy||{}).title;
+  await wipe();
+  return t==='Copy of Rae Quinn \u2014 TK-ALPHA' ? true : JSON.stringify(t); });
+
+await ta('a name of somebody\u2019s own stays \u201cCopy of\u201d until something identifying changes', async()=>{
+  await E("draftPut("+JSON.stringify(TKSRC({title:'The big one'}))+")");
+  let before='', after='';
+  const r=await tkCopy('TK1',function(d){
+    before=d.querySelector('#cp_title').value;
+    tkPut(d,'cp_order','0042');
+    after=d.querySelector('#cp_title').value;
+  });
+  const t=(r.copy||{}).title;
+  await wipe();
+  return (before==='Copy of The big one'&&after==='Rae Quinn \u2014 TK-ALPHA \u00b7 0042'&&t===after)
+    ? true : JSON.stringify({before,after,t}); });
+
+await ta('a name typed in the dialog is the name, whatever is changed after it', async()=>{
+  await E("draftPut("+JSON.stringify(TKSRC())+")");
+  const r=await tkCopy('TK1',function(d){
+    tkPut(d,'cp_title','Hand name');
+    tkPut(d,'cp_prime','TK-BRAVO');
+  });
+  const t=(r.copy||{}).title;
+  await wipe();
+  return t==='Hand name' ? true : JSON.stringify(t); });
+
+await ta('a copy made into a solicitation is named as one', async()=>{
+  await E("draftPut("+JSON.stringify(TKSRC())+")");
+  const r=await tkCopy('TK1',function(d){
+    d.querySelector('#cpStageSol').click();
+    tkPut(d,'cp_sol','SOL-9'); tkPut(d,'cp_due','2027-01-15');
+  });
+  const c=r.copy||{};
+  await wipe();
+  return (c.title==='Rae Quinn \u2014 TK-ALPHA \u00b7 SOL-9 \u2014 Solicitation'&&c.stage==='sol')
+    ? true : JSON.stringify({title:c.title,stage:c.stage}); });
+
+await ta('the pencil follows the contract number on a name the tool wrote', async()=>{
+  /* "Copy of ..." used to count as a name somebody typed, so the pencil left
+     the old number in it. */
+  await E("draftPut("+JSON.stringify(TKSRC({title:'Copy of Rae Quinn \u2014 TK-ALPHA'}))+")");
+  const d=await tkRename('TK1');
+  const before=d.querySelector('#np_title').value, picker=!!d.querySelector('#np_tpl');
+  tkPut(d,'np_prime','TK-CHARLIE');
+  const after=d.querySelector('#np_title').value;
+  d.querySelector('#np_ok').click(); await E("window.__R");
+  const rec=await E("draftGet('TK1')");
+  await wipe();
+  /* and it is not a place a template is applied from */
+  return (before==='Copy of Rae Quinn \u2014 TK-ALPHA'&&after==='Rae Quinn \u2014 TK-CHARLIE'&&rec.title===after&&picker===false)
+    ? true : JSON.stringify({before,after,title:rec.title,picker}); });
+
+await ta('and on a solicitation, without losing the number the pencil does not show', async()=>{
+  const src=TKSRC({stage:'sol',title:'Rae Quinn \u2014 TK-ALPHA \u00b7 SOL-9 \u2014 Solicitation'});
+  src.meta.identity={prime:'TK-ALPHA',order:'',sub:'',solicitation:'SOL-9'};
+  src.workspace.texts.i2b=''; src.workspace.texts.i2c='SOL-9'; src.workspace.texts.i2c_due='20270115';
+  await E("draftPut("+JSON.stringify(src)+")");
+  const d=await tkRename('TK1');
+  tkPut(d,'np_prime','TK-DELTA');
+  const after=d.querySelector('#np_title').value;
+  d.querySelector('#np_ok').click(); await E("window.__R");
+  const rec=await E("draftGet('TK1')");
+  await wipe();
+  return (after==='Rae Quinn \u2014 TK-DELTA \u00b7 SOL-9 \u2014 Solicitation'&&rec.title===after
+       && rec.meta.identity.solicitation==='SOL-9' && rec.workspace.texts.i2c_due==='20270115')
+    ? true : JSON.stringify({after,title:rec.title,id:rec.meta.identity,due:rec.workspace.texts.i2c_due}); });
+
+await ta('a name somebody typed is still theirs', async()=>{
+  await E("draftPut("+JSON.stringify(TKSRC({title:'The big one'}))+")");
+  const d=await tkRename('TK1');
+  tkPut(d,'np_prime','TK-ECHO');
+  const after=d.querySelector('#np_title').value;
+  d.querySelector('#np_ok').click(); await E("window.__R");
+  const rec=await E("draftGet('TK1')");
+  await wipe();
+  return (after==='The big one'&&rec.title==='The big one'&&rec.meta.identity.prime==='TK-ECHO')
+    ? true : JSON.stringify({after,title:rec.title}); });
+
+E("tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);showDashView();resetFormFields();");
+await wipe();
+
 H('151. v2.20.1 a solicitation is named for its solicitation number');
 /* The owner: an Original reads requester, contract, subcontract number; a
    solicitation read requester, contract, "Solicitation" - with its own number

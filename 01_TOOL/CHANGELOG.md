@@ -1,3 +1,48 @@
+## v2.21.0 — 16 November 2026
+
+Tool version 2.171. The template is chosen where a DD-254 is made, and a copy
+is named for the contract it is given.
+
+- **New: "Which template is this DD-254 built from?"** The dialog that creates
+  a Solicitation or an Original now carries the choice. **DD-254 template**
+  lists the templates saved for individual contracts, with the one filed under
+  the number you typed already selected — what the tool did before, now
+  visible. **Contract Type** lists every Contract Type you have saved. Pick
+  another, or pick none. It is a control inside the dialog, not a question that
+  has to be answered: a DD-254 with no template costs nobody a click.
+- **The same choice when you copy.** The copy dialog asks it about Blocks 10 to
+  16 of the copy. Where the original's language may simply come across, **Keep
+  as copied** is offered and is the default; choose **DD-254 template** or
+  **Contract Type** and Blocks 10 to 16 are rebuilt from the one you pick. A
+  copy of a DD-254 built from a contract's own template is still never offered
+  **Keep as copied** (v2.20.0) — but you can now pick which template rebuilds
+  it instead of taking whichever is filed under the number.
+- **A DD-254 template filed under a different contract can be chosen, and the
+  dialog says so** before anything is created: "It is filed under …, not the
+  contract entered here".
+- **Changed: a copy is named for the contract you give it.** A copy was called
+  "Copy of …" whatever was changed in the dialog, so a copy made for another
+  contract carried the first contract's number until somebody opened the pencil
+  and retyped it. The name is now shown in the copy dialog and follows the
+  fields as you change them. With nothing changed it is still "Copy of …", so
+  the two can be told apart; a name of your own on the original stays "Copy of
+  …" until something identifying is changed; and a name typed in the box is the
+  name.
+- **Fixed: the pencil follows the contract number.** A name the tool wrote now
+  follows the fields in the pencil dialog too. It used to recognise only one
+  exact spelling, so a solicitation (which carries a suffix) and a copy
+  ("Copy of …") both counted as typed by hand and kept the old number.
+- **Fixed: the pencil no longer drops a solicitation's number from the record.**
+  The pencil shows no solicitation row, and wrote the solicitation number out
+  of the DD-254's identity every time it was used. Item 2c itself was never
+  touched; the identity now keeps what the dialog did not ask about.
+- **Fixed: a Contract Type applied when a DD-254 was created was not recorded
+  on it.** It was applied to the form and then forgotten by the record. The
+  DD-254 now carries the Contract Type it was built from, as one applied later
+  from the form always has.
+
+1607 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.20.1 — 13 November 2026
 
 Tool version 2.170. A solicitation is named for its solicitation number.

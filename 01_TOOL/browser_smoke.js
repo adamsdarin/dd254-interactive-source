@@ -338,6 +338,30 @@ class CDP {
       const smPairsOk=pairAll.length===3&&pairAll[0]==='Pairs, Pat \u00b7 ALPHA'&&pairAll[1]==='Pairs, Pat \u00b7 BETA'
         &&pairBeta.length===2&&pairBeta[0]==='Pairs, Pat \u00b7 BETA'
         &&smOptText[1]==='Pairs, Pat \u00b7 ALPHA \u00b7 BETA';
+      /* v2.21.0: the create dialog asks which template the DD-254 is built
+         from - a DD-254 template or a Contract Type - and lists what is saved
+         under each. Driven in the browser because it is a control the owner
+         presses. The libraries are put back as they were found. */
+      const tkCtWas=tplLoad(TPL_CT), tkB13Was=tplLoad(TPL_B13);
+      await tplSave(TPL_CT,[{ioId:'smk-a',label:'Smoke Alpha',data:Object.assign(ctBlankData(),{primeContract:'SMK-ALPHA',i13:'SMOKE ALPHA.'})}]);
+      await tplSave(TPL_B13,[{label:'Smoke Type',data:Object.assign(ctBlankData(),{i13:'SMOKE TYPE.'})}]);
+      const dlgT=dashPartyPrompt({heading:'smoke',stage:'orig'});
+      for(let i=0;i<100&&!document.getElementById('np_tpl');i++) await new Promise(function(r){setTimeout(r,20);});
+      let tkAuto='',tkTypes=[],tkNote='';
+      const tkPrime=document.getElementById('np_prime'), tkSel=document.getElementById('np_tpl');
+      if(tkPrime&&tkSel){
+        tkPrime.value='SMK-ALPHA'; tkPrime.oninput();
+        tkAuto=(tkSel.options[tkSel.selectedIndex]||{}).textContent||'';
+        document.getElementById('np_tk_b13').click();
+        tkTypes=Array.from(tkSel.options).map(function(o){ return o.textContent; });
+        tkSel.value='0'; tkSel.onchange();
+        tkNote=document.getElementById('np_match').textContent;
+      }
+      const tkCancel=document.getElementById('np_cancel'); if(tkCancel) tkCancel.click();
+      await dlgT;
+      await tplSave(TPL_CT,tkCtWas); await tplSave(TPL_B13,tkB13Was);
+      const tplChooserOk=tkAuto==='Smoke Alpha \u00b7 SMK-ALPHA'&&tkTypes.length===2&&tkTypes[1]==='Smoke Type'
+        &&/Smoke Type/.test(tkNote)&&/will be applied/.test(tkNote);
       /* v2.17.0: the two policies an organisation can require, and the Done
          button that now says what is outstanding instead of pointing at a
          panel on the other side of the screen. */
@@ -402,7 +426,7 @@ class CDP {
       await tplSave(TPL_CT,[]);await tplSave(TPL_SM,[]);window.TPL_EDIT=null;window.TPL_EDIT_KIND='';
       showFormView();resetFormFields();window.CURRENT_REQUESTOR_EMAIL='';
       return {version:document.getElementById('toolVer').textContent,release:(document.getElementById('releaseVer')||{}).textContent||'',settingsOk,exportUiOk,signingUiOk,signingExportOk,validationSafe,
-        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,boxGateOk,supLineOk,reqSettingsOk,smPairsOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
+        advisoryUiOk,inserted,removed,undoOffered,restored,block18fOk,issuanceSafetyOk,issuanceDetail,preparerCueOk,templateSaveOk,facCertLinkOk,facCertDetail,notesOk,managerDropdownOk,templateReplaceOk,boxGateOk,supLineOk,reqSettingsOk,smPairsOk,tplChooserOk,workflowSaveOk,repoOrganizationOk,orderCreateOk,savedCoverageOk,coverageGuardOk,reviewCoverageOk,orderStartOk,orderOwnOk,orderDuplicateOk};
     })()`;
     const result = await cdp.send('Runtime.evaluate', {
       expression, awaitPromise: true, returnByValue: true
@@ -503,7 +527,7 @@ class CDP {
       && value.restored && value.block18fOk && value.issuanceSafetyOk && value.preparerCueOk && value.templateSaveOk && value.facCertLinkOk
       && value.completionReuseOk && value.completionPromptOk && value.completionInsertOk && value.completionJumpOk
       && value.notesOk && value.checkboxGlyphClickWorks && value.backupDownloadOk && exceptions.length === 0;
-    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.boxGateOk&&value.supLineOk&&value.reqSettingsOk&&value.smPairsOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
+    if(!(value.managerDropdownOk&&value.templateReplaceOk&&value.boxGateOk&&value.supLineOk&&value.reqSettingsOk&&value.smPairsOk&&value.tplChooserOk&&value.workflowSaveOk&&value.repoOrganizationOk&&value.orderCreateOk&&value.savedCoverageOk&&value.coverageGuardOk&&value.reviewCoverageOk&&value.orderStartOk&&value.orderOwnOk&&value.orderDuplicateOk))throw new Error('recipient/template browser assertions failed: '+JSON.stringify(value));
     if (!ok) throw new Error('live assertions failed: ' + JSON.stringify({ value, exceptions: exceptions.map(e=>e.params.exceptionDetails) }));
     console.log('LIVE BROWSER: PASS ' + JSON.stringify(value));
   } finally {

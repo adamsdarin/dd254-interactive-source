@@ -1,4 +1,4 @@
-BUILD_SHA256 062dfcf958134324a646c33cb6e971750e9cd02a692a63ffc7e81b4d59930c01
+BUILD_SHA256 7c7feadb5b5aa86915cda57a76484512c8f4851aa250ba6961cc24c62889eb88
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1793,6 +1793,26 @@ BUILD_SHA256 062dfcf958134324a646c33cb6e971750e9cd02a692a63ffc7e81b4d59930c01
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 152. v2.21.0 the template is chosen where a DD-254 is made, and a copy is named for its contract
+  PASS  the create dialog offers both kinds, and starts on the template filed under the number
+  PASS  Contract Type lists every Contract Type that is saved
+  PASS  a Contract Type chosen at creation is applied, and the DD-254 remembers it
+  PASS  the match can be overruled, and the dialog says where the other template is filed
+  PASS  and it can be declined: no template at all
+  PASS  left alone, the template filed under the number is applied as it always was
+  PASS  a copy that carries its language is offered Keep as copied, and keeps it unless told otherwise
+  PASS  choosing a Contract Type for a copy rebuilds Blocks 10 to 16 from it
+  PASS  choosing DD-254 template lists the repository, and the one picked is applied
+  PASS  a copy built from a contract’s own template is not offered Keep as copied
+  PASS  a copy is named for the contract it is given
+  PASS  with nothing changed it is still “Copy of”, so the two can be told apart
+  PASS  a name of somebody’s own stays “Copy of” until something identifying changes
+  PASS  a name typed in the dialog is the name, whatever is changed after it
+  PASS  a copy made into a solicitation is named as one
+  PASS  the pencil follows the contract number on a name the tool wrote
+  PASS  and on a solicitation, without losing the number the pencil does not show
+  PASS  a name somebody typed is still theirs
+
 ### 151. v2.20.1 a solicitation is named for its solicitation number
   PASS  a solicitation under a contract carries its number, where an Original carries its subcontract
   PASS  with no contract number the solicitation number leads, and is not said twice
@@ -1908,5 +1928,5 @@ BUILD_SHA256 062dfcf958134324a646c33cb6e971750e9cd02a692a63ffc7e81b4d59930c01
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1589   FAIL 0
+  PASS 1607   FAIL 0
 ================================
