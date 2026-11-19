@@ -2,6 +2,17 @@
 
 Last updated: 2026-11-19 by Maintainer
 
+Latest published release: **v2.21.1 (Tool 2.172)**, build ea5c2787. Signed tag
+at 9b22cc6 on `main`; 12/12 checksums, the provenance attestation (official
+ea5c2787..., demo 2fe898a3..., ref refs/tags/v2.21.1, attested commit 9b22cc6),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive 53aab80 and served by Pages,
+byte-identical to the attested demo asset. The first release run failed on the
+hosted runner's known Chrome start-up flake ("timeout waiting for Chrome
+DevTools port", after all 1614 assertions had passed); `gh run rerun --failed`
+passed.
+
 What v2.21.1 (Tool 2.172), build ea5c2787, changes. Owner, 18 November 2026:
 Items 4 and 5 must always have an answer, because no template carries them.
 They were issued blank: every DD-254 clears its radios on opening, and `run()`
@@ -17,7 +28,7 @@ answer is invented. 1614 assertions (seven new, section 153); the shared
 failed did so only because it relied on the silent No. Five gates and both
 smokes pass. Existing records: the recount changes counts, never status.
 
-Latest published release: **v2.21.0 (Tool 2.171)**, build 7c7feadb. Signed tag
+**v2.21.0 (Tool 2.171), build 7c7feadb, IS published**: signed tag
 at 285b874 on `main`; 12/12 checksums, the provenance attestation (official
 7c7feadb..., demo 826acfa9..., ref refs/tags/v2.21.0, attested commit 285b874),
 a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
