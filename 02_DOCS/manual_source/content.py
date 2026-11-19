@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.21.0 (tool version 2.171)"
+VER="DD254 Interactive v2.21.1 (tool version 2.172)"
 
 DOC = [
-("h1","DD254 Interactive v2.21.0 changes"),
+("h1","DD254 Interactive v2.21.1 changes"),
+("b","<b>Fixed: Items 4 and 5 always have an answer.</b> No template carries them and a new DD-254 opens with both unanswered. The tool used to read that as No while the exported form showed neither box ticked. An unanswered Item 4 or 5 now holds the DD-254 at Draft, its Yes/No row is outlined in red, and <b>Done</b> lists it."),
+("b","<b>A copy answers Items 4 and 5 again</b>, and the preceding contract number, request date and retention period are cleared with them. A revision keeps its answers."),
+("h2","DD254 Interactive v2.21.0 changes"),
 ("b","<b>New: choose the template where the DD-254 is made.</b> Creating a Solicitation or an Original now asks <i>Which template is this DD-254 built from?</i> <b>DD-254 template</b> lists the templates saved for individual contracts, with the one filed under the number you typed already selected. <b>Contract Type</b> lists every Contract Type you have saved. Pick another, or none. See 3.18."),
 ("b","<b>The same choice when you copy.</b> The copy dialog asks it about Blocks 10 to 16 of the copy. <b>Keep as copied</b> is the default wherever the original’s language may come across; choosing a template rebuilds Blocks 10 to 16 from it. See 3.4."),
 ("b","<b>Changed: a copy is named for the contract you give it.</b> The name is shown in the copy dialog and follows the fields as you change them. With nothing changed it is still <i>Copy of</i> the original."),
@@ -419,8 +422,8 @@ DOC = [
         ["1a, 1b","Always \u2014 clearance and safeguarding levels."],
         ["2a","When a subcontract number is entered in 2b."],
         ["Item 3 date","Always. Which date depends on the form type: 3a original, 3b revision, 3c final."],
-        ["Item 4","Only when you mark this a follow-on contract."],
-        ["Item 5","Only when retention is claimed \u2014 then both the request date and the authorised period."],
+        ["Item 4","Always \u2014 mark Yes or No. The preceding contract number only when Yes."],
+        ["Item 5","Always \u2014 mark Yes or No. When Yes, both the request date and the authorised period."],
         ["6a, 6b, 6c","Always \u2014 contractor name and address, CAGE, cognizant security office."],
         ["7 FSO e-mail","Once a subcontractor exists. The DD-254 has to reach them."],
         ["Item 9","Always \u2014 the unclassified description."],

@@ -1,3 +1,27 @@
+## v2.21.1 — 18 November 2026
+
+Tool version 2.172. Items 4 and 5 always have an answer.
+
+- **Fixed: Items 4 and 5 could be issued blank.** No template carries them,
+  and a new DD-254 opens with both unanswered. The tool read "unanswered" as
+  No, so nothing was flagged — while the exported form went out with neither
+  box ticked in Block 4 or Block 5. An unanswered Item 4 or Item 5 is now a
+  finding that holds the DD-254 at Draft, the two Yes/No rows are outlined in
+  red until answered, and **Done** lists them with the rest.
+- **The page no longer pre-marks No.** It only ever did so on a page nobody
+  was working on; every DD-254 cleared it on opening.
+- **A copy answers Items 4 and 5 again.** Whether this is a follow-on, and
+  whether it is a final, belong to the contract and issuance the copy is for,
+  and a copy is usually made for a different one. The preceding contract
+  number, the request date and the retention period are cleared with them. A
+  revision keeps its answers.
+- **Fixed: selecting an Item 4 finding did not take you to Item 4.**
+- DD-254s you already have are not changed. One with Items 4 and 5 unanswered
+  shows the finding the next time it is opened; issued, cancelled and skipped
+  records are left as they went out.
+
+1614 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.21.0 — 16 November 2026
 
 Tool version 2.171. The template is chosen where a DD-254 is made, and a copy

@@ -1,6 +1,21 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-16T13:25-06:00 by Maintainer
+Last updated: 2026-11-19 by Maintainer
+
+What v2.21.1 (Tool 2.172), build ea5c2787, changes. Owner, 18 November 2026:
+Items 4 and 5 must always have an answer, because no template carries them.
+They were issued blank: every DD-254 clears its radios on opening, and `run()`
+read an unanswered Item 4/5 as No (`||'no'`), so the panel was clean while the
+export ticked neither box in Block 4 or 5. Now `S.fo`/`S.fin` are `''` when
+unanswered, `buildPanel()` raises "Item 4/5: Mark Yes or No" as blocking errors
+and outlines `#foYN`/`#finYN`, the No radios are no longer pre-checked in the
+markup, `completionTarget` maps Item 4 to radio `fo` (was `follow`, which does
+not exist), and `dashDuplicate` clears Items 4/5 and their detail fields on a
+copy (revisions untouched). Required rather than defaulted to No, so nobody's
+answer is invented. 1614 assertions (seven new, section 153); the shared
+`CLEAN` fixture now answers Items 4 and 5 - the seven old assertions that
+failed did so only because it relied on the silent No. Five gates and both
+smokes pass. Existing records: the recount changes counts, never status.
 
 Latest published release: **v2.21.0 (Tool 2.171)**, build 7c7feadb. Signed tag
 at 285b874 on `main`; 12/12 checksums, the provenance attestation (official

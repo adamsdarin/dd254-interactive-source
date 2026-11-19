@@ -1277,6 +1277,9 @@ const CLEAN=()=>{ F();
   V('i16a','AFLCMC'); V('i16b','FA8601'); V('i16c','WPAFB OH 45433');
   V('i17a','Adams, Darin'); V('i17b','Contracting Officer');
   V('i17c','WPAFB OH 45433'); V('i17d','FA8601'); V('i17f','(937) 555-0100');
+  /* Items 4 and 5 are answered by the preparer and no longer assumed No
+     (v2.21.1), so a complete form answers them like any other required item. */
+  R('fo','no'); R('fin','no');
   R('i12route','dir'); RUN(); };
 /* Wait for a dialog rather than guessing at a delay. A fixed setTimeout that
    fires before the dialog exists hangs the whole suite with no message. */
@@ -10466,6 +10469,94 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   E("window.TPL_EDIT=[];tplSave(TPL_SM,[]);");
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
+
+H('153. v2.21.1 Items 4 and 5 are always answered');
+/* The owner, 18 November 2026: "there is always a response to question 4 and
+   5, because those are not captured by the template." A new DD-254 opened with
+   both unanswered and the panel read that as No, so the exported form went out
+   with neither box ticked in Block 4 or Block 5 and nothing said so. */
+
+t('an unanswered Item 4 or 5 is a blocking finding', ()=>{
+  CLEAN();
+  E("document.querySelectorAll('input[name=\"fo\"],input[name=\"fin\"]').forEach(function(e){ e.checked=false; })");
+  RUN();
+  const both=hasE(/^Item 4: Mark Yes or No/)&&hasE(/^Item 5: Mark Yes or No/);
+  const lit=w.document.getElementById('foYN').classList.contains('req-missing')
+          &&w.document.getElementById('finYN').classList.contains('req-missing');
+  R('fo','no'); RUN();
+  const one=!hasE(/^Item 4: Mark Yes or No/)&&hasE(/^Item 5: Mark Yes or No/)
+          &&!w.document.getElementById('foYN').classList.contains('req-missing');
+  R('fin','no'); RUN();
+  return (both&&lit&&one&&ERRS().length===0
+        &&!w.document.getElementById('finYN').classList.contains('req-missing'))
+    ? true : JSON.stringify({both,lit,one,errs:ERRS()});
+});
+
+t('No is an answer, and so is Yes', ()=>{
+  CLEAN(); R('fo','yes'); V('i4prev','FA8601-24-C-0009'); R('fin','yes'); V('i5_reqdate','20260301'); V('i5ret','2 years'); RUN();
+  return (!hasE(/Mark Yes or No/)) ? true : JSON.stringify(ERRS());
+});
+
+t('the page no longer marks No before anybody has', ()=>{
+  /* The markup used to pre-check No. resetFormFields cleared it for every
+     DD-254 anyway, so the pre-check only ever described a page nobody was
+     working on - and suggested an answer had been given. */
+  const html=String(w.document.querySelector('input[name="fo"][value="no"]').outerHTML)
+            +String(w.document.querySelector('input[name="fin"][value="no"]').outerHTML);
+  return !/\bchecked\b/.test(html) ? true : html;
+});
+
+t('unanswered, the export ticks neither box; answered, it ticks the one chosen', ()=>{
+  CLEAN();
+  E("document.querySelectorAll('input[name=\"fo\"],input[name=\"fin\"]').forEach(function(e){ e.checked=false; })");
+  RUN();
+  const blank=String(E("DD254XFA.buildXfaDatasets(collect254Data())"));
+  R('fo','no'); R('fin','yes'); RUN();
+  const set=String(E("DD254XFA.buildXfaDatasets(collect254Data())"));
+  return (/<four_No>0<\/four_No>/.test(blank)&&/<four_Yes>0<\/four_Yes>/.test(blank)
+       && /<five_No>0<\/five_No>/.test(blank)&&/<five_Yes>0<\/five_Yes>/.test(blank)
+       && /<four_No>1<\/four_No>/.test(set)&&/<five_Yes>1<\/five_Yes>/.test(set))
+    ? true : 'export';
+});
+
+t('the finding takes you to the question', ()=>{
+  CLEAN();
+  E("document.querySelectorAll('input[name=\"fo\"]').forEach(function(e){ e.checked=false; })");
+  RUN();
+  const name=E("(function(){ var el=completionTarget('Item 4: Mark Yes or No \\u2014 is this a follow-on contract?'); return el?(el.name||el.id):''; })()");
+  return name==='fo' ? true : String(name);
+});
+
+await ta('a new DD-254 opens with Items 4 and 5 unanswered, and says so', async()=>{
+  await wipe();
+  await newDraft('orig',{});
+  RUN();
+  const both=hasE(/^Item 4: Mark Yes or No/)&&hasE(/^Item 5: Mark Yes or No/);
+  const none=!w.document.querySelector('input[name="fo"]:checked')&&!w.document.querySelector('input[name="fin"]:checked');
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  return (both&&none) ? true : JSON.stringify({both,none});
+});
+
+await ta('a copy answers Items 4 and 5 again; the original keeps its answers', async()=>{
+  await wipe();
+  const src={id:'Q45',title:'Rae Quinn \u2014 Q-45',status:'Draft',stage:'orig',meta:{contract:'Q-45',identity:{prime:'Q-45',order:'',sub:'N/A',solicitation:''}},
+    todos:[],dist:[],holds:[],notes:'',requestedBy:'r.q@example.test',requestedByName:'Rae Quinn',
+    workspace:{texts:{i2a:'Q-45',i2b:'N/A',i4prev:'OLD-PRIOR-1',i5_reqdate:'20260101',i5ret:'2 years',item13:'KEEP.'},
+               checks:{},radios:{spec:'3a',fo:'yes',fin:'yes'},selects:{},perf:[]}};
+  await E("draftPut("+JSON.stringify(src)+")");
+  E("window.__D=dashDuplicate('Q45');");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'the copy dialog');
+  d.querySelector('#cpForm').click(); await E("window.__D");
+  const copy=(await E("draftAll()")).filter(function(r){ return r.copiedFrom==='Q45'; })[0]||{};
+  const ws=copy.workspace||{}, rd=ws.radios||{}, tx=ws.texts||{};
+  const orig=await E("draftGet('Q45')");
+  await wipe();
+  return (!('fo' in rd)&&!('fin' in rd)&&tx.i4prev===''&&tx.i5_reqdate===''&&tx.i5ret===''
+       && tx.item13==='KEEP.' && rd.spec==='3a'
+       && orig.workspace.radios.fo==='yes' && orig.workspace.texts.i4prev==='OLD-PRIOR-1')
+    ? true : JSON.stringify({rd,tx});
+});
 
 H('152. v2.21.0 the template is chosen where a DD-254 is made, and a copy is named for its contract');
 /* The owner, 16 November 2026: "are you using a DD254 template or are you
