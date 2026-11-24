@@ -1,4 +1,4 @@
-BUILD_SHA256 ea5c2787c4c1b36d5b0cd6512583a23616920308b9bd7977110b4ffc4a9ccb29
+BUILD_SHA256 23c69e316bd25f0e5f79174f1da159c0d92a9774b1f0ff409bc89c3038933f60
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1793,6 +1793,43 @@ BUILD_SHA256 ea5c2787c4c1b36d5b0cd6512583a23616920308b9bd7977110b4ffc4a9ccb29
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 156. v2.22.0 spawning an Original asks for the contract it is awarded under
+  PASS  the dialog asks for the contract, and does not assume the solicitation’s
+  PASS  the award’s contract goes into Items 2a and 2b and names the Original
+  PASS  keeping the solicitation’s number is one deliberate press
+  PASS  a solicitation with a name of its own keeps it, with Original in place of Solicitation
+  PASS  a closed contract is red here too
+  PASS  a Revision is spawned without the question, as before
+
+### 155. v2.22.0 a closed contract is flagged red, and asks why
+  PASS  a closed prime closes every order under it; a closed order closes only itself
+  PASS  ticking Contract closed on the template records the day; unticking clears it
+  PASS  every picker marks a closed template
+  PASS  the create dialog shows the closure in red, by number or by choice
+  PASS  so does the copy dialog
+  PASS  on the form it is red beside Item 2a, and a finding that holds the DD-254 at Draft
+  PASS  a template chosen above Item 13 flags its contract even under another number
+  PASS  saying why clears the hold, and the reason stays on the DD-254
+  PASS  an issued DD-254 is not flagged: the contract closed after it went out
+  PASS  the closure survives a spreadsheet round trip, in any column order
+  PASS  the template library says which contracts are closed
+
+### 154. v2.22.0 the template library exports as a searchable PDF or Word document
+  PASS  every field a DD-254 template or Contract Type carries reaches the document
+  PASS  each box says whether the template ticks it and when its wording applies
+  PASS  Standard Language and the guides come with what they are written for
+  PASS  laying a template out never changes the stored template
+  PASS  the marking is CUI only when an included template is
+  PASS  the PDF is text a reader can search, marked on every page
+  PASS  the PDF opens on a bookmark for every repository and every template
+  PASS  the Word document is a valid .docx, with a heading for each repository, template and Item
+  PASS  characters Word cannot hold do not break the document, and line breaks survive
+  PASS  edits still on screen are what is exported
+  PASS  the dialog ticks the template-language repositories and counts each one
+  PASS  nothing ticked, nothing exported
+  PASS  pressing a format downloads that file and records the export
+  PASS  a phrase on the sensitive-terms list stops the export, naming the template and not the phrase
+
 ### 153. v2.21.1 Items 4 and 5 are always answered
   PASS  an unanswered Item 4 or 5 is a blocking finding
   PASS  No is an answer, and so is Yes
@@ -1937,5 +1974,5 @@ BUILD_SHA256 ea5c2787c4c1b36d5b0cd6512583a23616920308b9bd7977110b4ffc4a9ccb29
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1614   FAIL 0
+  PASS 1645   FAIL 0
 ================================

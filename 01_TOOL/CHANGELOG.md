@@ -1,3 +1,43 @@
+## v2.22.0 — 24 November 2026
+
+Tool version 2.173. The template library as a searchable document, closed
+contracts flagged in red, and an award that asks for its contract number.
+
+- **New: export the template library as a PDF or a Word document.** Manage ›
+  Share templates › **Export template library (PDF / Word)**, or **📚 PDF /
+  Word** in any template screen. Tick the repositories — the four that hold
+  template language are ticked to begin with — and choose a format. Each
+  template is laid out by Item, with a heading for every template and every
+  Item, so Word's Navigation Pane and the PDF's bookmarks list them all and the
+  wording can be searched for. Every Item 10 and 11 box says whether the
+  template ticks it and whether its wording always applies or waits for the
+  box. The document is a copy: edit wording in the tool.
+- **The export is screened before it leaves.** When this browser holds a
+  sensitive-terms list, a template containing a listed phrase is named — the
+  phrase never is — and the export waits for a yes. The marking is CUI when any
+  included template is recorded as producing a CUI form.
+- **The Word file is a genuine .docx, written by the tool itself.** No new
+  third-party code: the archive a .docx needs is about forty lines here.
+- **New: mark a contract closed, in the template.** Each DD-254 template has a
+  **Contract closed** box, which records the day it was ticked. A closed prime
+  contract closes every order under it; a closed task-order template closes
+  that order only.
+- **A closed contract is flagged red wherever it is used.** Its templates read
+  **CLOSED** in every picker. Choosing one, or typing its contract number, puts
+  a red line in the create, copy and spawn dialogs. On the form, a red banner
+  sits under Item 2a and a finding holds the DD-254 at Draft until it is set
+  aside with the reason it is being prepared — which records the "why" on the
+  DD-254 and in the audit log. A DD-254 already Issued, Cancelled or Skipped is
+  never flagged: contracts close after their DD-254s go out.
+- **Changed: spawning an Original asks for the contract it is awarded under.**
+  It used to happen without a question, carrying the solicitation's Item 2a
+  across and leaving Block 2b blank. The dialog starts with Item 2a empty —
+  **Same as the solicitation** keeps that number with one press — requires
+  Block 2b as creating an Original always has, and names the Original from the
+  contract given. A Revision or a Final is spawned as before.
+
+1645 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.21.1 — 18 November 2026
 
 Tool version 2.172. Items 4 and 5 always have an answer.

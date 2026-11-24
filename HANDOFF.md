@@ -1,6 +1,39 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-19 by Maintainer
+Last updated: 2026-11-24 by Maintainer
+
+What v2.22.0 (Tool 2.173), build 23c69e31, changes. Three owner requests,
+24 November 2026:
+
+1. **Template library export (PDF / Word).** Manage › Share templates, or the
+   📚 button in any template screen, opens `tplBookOpen`. One model
+   (`tplBookModel`), two writers (`tplBookPdfBytes`, `tplBookDocxBytes`); every
+   template laid out by Item with a heading per template and Item, PDF
+   outline and Word Heading1-3. The .docx is zipped by the tool's own stored
+   zip (`tplBookZip`, CRC-32) - no new third-party code, SBOM unchanged. The
+   export is screened against the sensitive-terms list first (template names
+   reported, never phrases); marking is CUI when an included template's form
+   classification is CUI. A test fills every `TPL_IO.ct` column and requires
+   each value in the export, so a new template field cannot be dropped silently.
+2. **Contract closed**, ticked on a DD-254 template (`closed`, `closedOn`).
+   `ctClosedFor` (a closed prime closes its orders); CLOSED in every picker;
+   red line in the create, copy and spawn dialogs (`dashClosedPaint`); red
+   banner `#a2aClosed` under Item 2a and a blocking finding cleared by setting
+   it aside with the reason (the existing dismissal, which audits the reason).
+   Never raised on Issued/Cancelled/Skipped. New `TPL_IO` columns
+   `Contract Closed`, `Closed On`.
+3. **Spawning an Original asks for the award's contract** (`dashSpawnPrompt`):
+   Item 2a starts empty with a "Same as the solicitation" button, Block 2b is
+   required, the name follows the contract when the solicitation's name was the
+   tool's. Revisions and Finals unchanged. The suite's six Original spawns go
+   through a `spawnOrig` helper that presses "Same as the solicitation" - what
+   the tool did silently before.
+
+1645 assertions (31 new: sections 154-156); one existing source-reading
+assertion was kept intact by not repeating the `if(kind==='sl'){` line it
+anchors on. Five gates, both smokes pass; the ISSM brief's stated size moved to
+1.8 MB (the documentation gate checks it). PDF read back with pypdf; DOCX with
+zipfile/XML in the suite, python-docx and a LibreOffice conversion by hand.
 
 Latest published release: **v2.21.1 (Tool 2.172)**, build ea5c2787. Signed tag
 at 9b22cc6 on `main`; 12/12 checksums, the provenance attestation (official

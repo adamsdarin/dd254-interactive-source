@@ -8,12 +8,12 @@
       "type": "application",
       "bom-ref": "dd254-interactive",
       "name": "DD254 Interactive",
-      "version": "2.21.1",
+      "version": "2.22.0",
       "description": "Single-file offline DD Form 254 preparation tool. No installer, no network access at run time, no server component; data stays in the browser profile that opened the file.",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "ea5c2787c4c1b36d5b0cd6512583a23616920308b9bd7977110b4ffc4a9ccb29"
+          "content": "23c69e316bd25f0e5f79174f1da159c0d92a9774b1f0ff409bc89c3038933f60"
         }
       ],
       "externalReferences": [
@@ -26,11 +26,11 @@
     "properties": [
       {
         "name": "dd254:toolVersion",
-        "value": "2.172"
+        "value": "2.173"
       },
       {
         "name": "dd254:buildFile",
-        "value": "DD254_Interactive_v2.21.1.HTM"
+        "value": "DD254_Interactive_v2.22.0.HTM"
       },
       {
         "name": "dd254:runtimeNetworkAccess",
@@ -108,12 +108,12 @@
       "type": "application",
       "bom-ref": "dd254-application",
       "name": "DD254 Interactive application code",
-      "version": "2.172",
+      "version": "2.173",
       "description": "Application code, markup and CSS. THIS is the part to review.",
       "hashes": [
         {
           "alg": "SHA-256",
-          "content": "34d9ba3f0b2d0d0894710804085a75ac8dc26321d1e5626d24615d6c1dd8e536"
+          "content": "437af1fa0380a1390c4f651f73ed0c89ed2d4f489c7ec02db612b86c3fddb087"
         }
       ]
     }

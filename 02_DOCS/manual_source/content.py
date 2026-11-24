@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.21.1 (tool version 2.172)"
+VER="DD254 Interactive v2.22.0 (tool version 2.173)"
 
 DOC = [
-("h1","DD254 Interactive v2.21.1 changes"),
+("h1","DD254 Interactive v2.22.0 changes"),
+("b","<b>New: export the template library as a PDF or a Word document.</b> Manage \u203a Share templates \u203a <b>Export template library (PDF / Word)</b>, or <b>PDF / Word</b> in any template screen. Tick the repositories and choose a format. Every template is laid out by Item, with a heading for each template and each Item, so the Word Navigation Pane and the PDF bookmarks list them and the wording can be searched. The document is a copy; edit wording in the tool."),
+("n","If this browser holds a sensitive-terms list, the export names any template containing a listed phrase \u2014 never the phrase \u2014 and waits for you to confirm. The marking is CUI when any included template is recorded as producing a CUI form."),
+("b","<b>New: Contract closed.</b> Tick it on the DD-254 template filed under a contract that has closed. Its templates then read CLOSED in every picker; choosing one, or typing its contract number, shows a red line in the create, copy and spawn dialogs; and on the form a red banner under Item 2a and a finding hold the DD-254 at Draft until you set the finding aside with the reason it is being prepared. Issued, Cancelled and Skipped DD-254s are never flagged."),
+("b","<b>Changed: spawning an Original asks for the contract it is awarded under.</b> Item 2a starts empty \u2014 <i>Same as the solicitation</i> keeps the solicitation\u2019s number with one press \u2014 and Block 2b is required, as it is for any Original."),
+("h2","DD254 Interactive v2.21.1 changes"),
 ("b","<b>Fixed: Items 4 and 5 always have an answer.</b> No template carries them and a new DD-254 opens with both unanswered. The tool used to read that as No while the exported form showed neither box ticked. An unanswered Item 4 or 5 now holds the DD-254 at Draft, its Yes/No row is outlined in red, and <b>Done</b> lists it."),
 ("b","<b>A copy answers Items 4 and 5 again</b>, and the preceding contract number, request date and retention period are cleared with them. A revision keeps its answers."),
 ("h2","DD254 Interactive v2.21.0 changes"),

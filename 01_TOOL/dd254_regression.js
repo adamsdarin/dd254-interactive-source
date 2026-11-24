@@ -57,6 +57,22 @@ const stripPdq=function(v){
   return (before&&after)?(before+'\n\n'+after):(before||after);
 };
 const wipe=async()=>E("(async function(){var a=await draftAll();for(const d of a)await draftDel(d.id);})()");
+/* v2.22.0: spawning an Original asks for the contract the award is under.
+   Tests that are about something else answer the way the tool used to behave
+   silently - the solicitation's own number, and N/A in Block 2b - so their
+   meaning is unchanged. */
+const spawnOrig=async(id,o)=>{
+  o=o||{};
+  E("window.__SP=dashSpawn("+JSON.stringify(id)+",'orig');");
+  const d=await waitFor(()=>w.document.getElementById('dashSpawnDlg'),'the spawn dialog',10000);
+  const put=(x,v)=>{ const e=d.querySelector('#'+x); e.value=v; if(e.oninput) e.oninput(); };
+  if(o.prime!=null) put('sp_prime',o.prime);
+  else if(d.querySelector('#spSame')) d.querySelector('#spSame').click();
+  else put('sp_prime','AWARD-TEST-1');
+  if(o.sub!=null) put('sp_sub',o.sub); else if(!d.querySelector('#sp_sub').value) put('sp_sub','N/A');
+  d.querySelector('#spOk').click();
+  await E("window.__SP");
+};
 /* Scope to the live dashboard. The manager rollup renders its own .dash-card
    elements into a separate container and closing it only hides that container,
    so a document-wide query keeps counting them. */
@@ -718,7 +734,7 @@ await ta('seed a fully-worked issued, blocked solicitation', async()=>{
   const r=await E("draftGet('S9')"); return r.holds.length===2;});
 const kid=async()=>(await E("draftAll()")).filter(x=>x.parentId==='S9')[0];
 await ta('spawn clears parent EVENTS', async()=>{
-  await E("dashSpawn('S9','orig')"); const c=await kid();
+  await spawnOrig('S9'); const c=await kid();
   return c.holds.length===0 && c.dist.length===0 && c.countersign===null && !('issuedAt' in c)
       && c.status==='Draft' && c.reviewDate==='';});
 await ta('spawn carries working CONTEXT', async()=>{const c=await kid();
@@ -1097,7 +1113,7 @@ t('Skipped is offered on a solicitation only', ()=>{
 await ta('seed a solicitation with an Original spawned from it', async()=>{
   await wipe();
   await E("draftPut({id:'SK1',title:'Sierra — Solicitation',stage:'sol',status:'Draft',todos:[],dist:[],holds:[],meta:{contract:'W-S',contractor:'Sierra',errors:3},workspace:{texts:{},checks:{},radios:{},selects:{}}})");
-  await E("dashSpawn('SK1','orig')");
+  await spawnOrig('SK1');
   await E("dashRenderCards()");
   return cards().length===2;});
 await ta('a solicitation with errors can still be Skipped', async()=>{
@@ -1878,7 +1894,7 @@ t('IndexedDB is the storage path under test', ()=>{
 await ta('a spawned child does not inherit the validation override', async()=>{
   await wipe();
   await E("draftPut({id:'OV',title:'Override',stage:'sol',status:'Draft',statusOverride:true,todos:[],dist:[],holds:[],meta:{errors:4},workspace:{texts:{},checks:{},radios:{},selects:{},perf:[]}})");
-  await E("dashSpawn('OV','orig')");
+  await spawnOrig('OV');
   const c=(await E("draftAll()")).filter(x=>x.parentId==='OV')[0];
   return c.statusOverride===false;});
 t('the reset clears it explicitly', ()=> /rec\.statusOverride=false/.test(E("String(dashResetWorkflow)")));
@@ -2926,7 +2942,7 @@ await ta('a real description does satisfy it', async()=>{
 await ta('spawning an Original strips the marker and keeps the description', async()=>{
   await E("dashSaveNow()");
   const id=E("DASH.current");
-  await E("dashSpawn('"+id+"','orig')");
+  await spawnOrig(id);
   const kid=(await E("draftAll()")).filter(x=>x.parentId===id)[0];
   const v=(kid.workspace.texts||{}).i9||'';
   return !/SOLICITATION PURPOSES/.test(v) && /Widget development services/.test(v); });
@@ -6367,7 +6383,7 @@ E("window.__UI_PROMPT_REAL=uiPrompt;");
 await ta('an Original spawned from a verified solicitation starts unverified with a re-confirm prompt', async()=>{
   await search(''); await wipe(); E("DASH.current=null;");
   await E("draftPut("+JSON.stringify(NREC('NS',{title:'Kilo — Solicitation',stage:'sol',niss:{on:true,date:'2026-05-01',by:'AB'}}))+")");
-  await E("dashSpawn('NS','orig')");
+  await spawnOrig('NS');
   const o=(await childOf('NS'))[0];
   await E("dashRenderCards()");
   const badge=w.document.querySelector('#dashCards .dash-card[data-id="'+o.id+'"] .dash-niss-reconfirm');
@@ -7390,7 +7406,7 @@ await ta('a Final carries the Original’s 3a date', async()=>{
 await ta('an award Original spawned from a Solicitation clears 3a, and its revisions start again at 1', async()=>{
   await E(I3REC('IS','sol','',{i3a_date:'20240601',i2c:'SOL-1'}));
   await E(I3REC('ISR','rev','IS',{i3a_date:'20240601',i3b_rev:'1',i3b_date:'20240701'}));
-  await E("dashSpawn('IS','orig')"); const o=await I3('IS','orig');
+  await spawnOrig('IS'); const o=await I3('IS','orig');
   const cleared=I3T(o).i3a_date==='';
   await E("(async function(){var r=await draftGet('"+o.id+"');r.workspace.texts.i3a_date='20240901';await draftPut(r);})()");
   await E("dashSpawn('"+o.id+"','rev')"); const k=await I3(o.id,'rev');
@@ -10469,6 +10485,436 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   E("window.TPL_EDIT=[];tplSave(TPL_SM,[]);");
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
+
+H('156. v2.22.0 spawning an Original asks for the contract it is awarded under');
+/* The owner, 24 November 2026: "when you have a solicitation, you go to spawn
+   an original, it should require you to enter in a contract number. It isn't
+   doing that currently." */
+
+const SPSRC=(extra)=>Object.assign({id:'SP1',title:'Rae Quinn \u2014 SOL-PRIME \u00b7 RFP-77 \u2014 Solicitation',stage:'sol',status:'Draft',todos:[],dist:[],holds:[],notes:'',
+  requestedBy:'r.q@example.test',requestedByName:'Rae Quinn',
+  meta:{contract:'SOL-PRIME',identity:{prime:'SOL-PRIME',order:'',sub:'',solicitation:'RFP-77'}},
+  workspace:{texts:{i2a:'SOL-PRIME',i2c:'RFP-77',i2c_due:'20270101',item13:'KEEP.'},checks:{},radios:{spec:'3a'},selects:{},perf:[]}},extra||{});
+const spOpen=async(id)=>{
+  E("window.__SP=dashSpawn('"+(id||'SP1')+"','orig');");
+  return await waitFor(()=>w.document.getElementById('dashSpawnDlg'),'the spawn dialog');
+};
+const spPut=(d,x,v)=>{ const e=d.querySelector('#'+x); e.value=v; if(e.oninput) e.oninput(); };
+
+await ta('the dialog asks for the contract, and does not assume the solicitation\u2019s', async()=>{
+  await wipe(); await E("draftPut("+JSON.stringify(SPSRC())+")");
+  const d=await spOpen();
+  const prime=d.querySelector('#sp_prime').value, same=(d.querySelector('#spSame')||{}).textContent||'';
+  d.querySelector('#spOk').click();
+  const still=!!w.document.getElementById('dashSpawnDlg');
+  const e1=d.querySelector('#sp_prime_err').textContent, e2=d.querySelector('#sp_sub_err').textContent;
+  d.querySelector('#spCancel').click(); await E("window.__SP");
+  const made=(await E("draftAll()")).filter(function(r){ return r.parentId==='SP1'; }).length;
+  return (prime===''&&/Same as the solicitation \u2014 SOL-PRIME/.test(same)&&still&&/Enter the contract number/.test(e1)&&/Required on an Original/.test(e2)&&made===0)
+    ? true : JSON.stringify({prime,same,still,e1,e2,made});
+});
+
+await ta('the award\u2019s contract goes into Items 2a and 2b and names the Original', async()=>{
+  const d=await spOpen();
+  spPut(d,'sp_prime','W91-AWARD-0001'); spPut(d,'sp_sub','SUB-42');
+  const shown=d.querySelector('#sp_title').value;
+  d.querySelector('#spOk').click(); await E("window.__SP");
+  const o=(await E("draftAll()")).filter(function(r){ return r.parentId==='SP1'; })[0]||{};
+  const tx=(o.workspace||{}).texts||{};
+  return (shown==='Rae Quinn \u2014 W91-AWARD-0001 \u00b7 SUB-42 \u2014 Original' && o.title===shown && o.stage==='orig'
+       && tx.i2a==='W91-AWARD-0001' && tx.i2b==='SUB-42' && tx.i2c==='' && o.meta.identity.prime==='W91-AWARD-0001'
+       && o.meta.identity.solicitation==='' && tx.item13==='KEEP.')
+    ? true : JSON.stringify({shown,title:o.title,i2a:tx.i2a,i2b:tx.i2b,id:o.meta&&o.meta.identity});
+});
+
+await ta('keeping the solicitation\u2019s number is one deliberate press', async()=>{
+  await wipe(); await E("draftPut("+JSON.stringify(SPSRC())+")");
+  const d=await spOpen();
+  d.querySelector('#spSame').click(); spPut(d,'sp_sub','N/A');
+  d.querySelector('#spOk').click(); await E("window.__SP");
+  const o=(await E("draftAll()")).filter(function(r){ return r.parentId==='SP1'; })[0]||{};
+  return (o.workspace.texts.i2a==='SOL-PRIME'&&o.workspace.texts.i2b==='N/A'&&o.title==='Rae Quinn \u2014 SOL-PRIME \u2014 Original')
+    ? true : JSON.stringify({i2a:o.workspace.texts.i2a,title:o.title});
+});
+
+await ta('a solicitation with a name of its own keeps it, with Original in place of Solicitation', async()=>{
+  await wipe(); await E("draftPut("+JSON.stringify(SPSRC({title:'Big radar buy \u2014 Solicitation'}))+")");
+  const d=await spOpen();
+  spPut(d,'sp_prime','W91-AWARD-0002'); spPut(d,'sp_sub','N/A');
+  const shown=d.querySelector('#sp_title').value;
+  d.querySelector('#spOk').click(); await E("window.__SP");
+  const o=(await E("draftAll()")).filter(function(r){ return r.parentId==='SP1'; })[0]||{};
+  await wipe();
+  return (shown==='Big radar buy \u2014 Original'&&o.title===shown) ? true : JSON.stringify({shown,title:o.title});
+});
+
+await ta('a closed contract is red here too', async()=>{
+  await E("tplSave(TPL_CT,[{ioId:'sp-c',label:'Closed award',closed:true,closedOn:'2026-09-30',data:Object.assign(ctBlankData(),{primeContract:'W91-CLOSED'})}])");
+  await E("draftPut("+JSON.stringify(SPSRC())+")");
+  const d=await spOpen();
+  spPut(d,'sp_prime','W91-CLOSED');
+  const box=d.querySelector('#sp_closed'), shown=box.style.display, text=box.textContent;
+  d.querySelector('#spCancel').click(); await E("window.__SP");
+  await E("tplSave(TPL_CT,[])"); await wipe();
+  return (shown==='block'&&/This contract is closed/.test(text)) ? true : JSON.stringify({shown,text});
+});
+
+await ta('a Revision is spawned without the question, as before', async()=>{
+  await wipe();
+  await E("draftPut("+JSON.stringify(SPSRC({id:'SP2',stage:'orig',title:'Award'}))+")");
+  await E("dashSpawn('SP2','rev')");
+  const asked=!!w.document.getElementById('dashSpawnDlg');
+  const r=(await E("draftAll()")).filter(function(x){ return x.parentId==='SP2'; })[0]||{};
+  await wipe();
+  return (!asked&&r.stage==='rev'&&r.workspace.texts.i2a==='SOL-PRIME') ? true : JSON.stringify({asked,stage:r.stage});
+});
+
+H('155. v2.22.0 a closed contract is flagged red, and asks why');
+/* The owner, 24 November 2026: "flag if a contract is closed to require me to
+   ask why we're ordering a part for something that is currently no longer
+   open. The trigger for the flag ... should be done in the template language.
+   And then when I try to use that template, it should flag red and be like,
+   this contract is closed." */
+
+const CLSEED=async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';window.DD254_STATUS='';clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  await E("tplSave(TPL_CT,["
+    +"{ioId:'cl-p',label:'Closed prime',closed:true,closedOn:'2026-11-01',data:Object.assign(ctBlankData(),{primeContract:'PX-1',i13:'CLOSED PRIME WORDING.'})},"
+    +"{ioId:'cl-o',label:'Closed order',closed:true,closedOn:'2026-10-15',data:Object.assign(ctBlankData(),{primeContract:'PY-1',taskOrder:'TO-9'})},"
+    +"{ioId:'cl-y',label:'Open prime Y',data:Object.assign(ctBlankData(),{primeContract:'PY-1'})},"
+    +"{ioId:'cl-z',label:'Open prime Z',data:Object.assign(ctBlankData(),{primeContract:'PZ-1',i13:'OPEN WORDING.'})}]);tplSave(TPL_B13,[]);");
+};
+const clFinding=/^Item 2a: PX-1 is marked closed in the DD-254 template \u201cClosed prime\u201d \(closed 2026-11-01\)\. Say why/;
+
+await ta('a closed prime closes every order under it; a closed order closes only itself', async()=>{
+  await CLSEED();
+  const L=function(p,o){ return E("(ctClosedFor("+JSON.stringify(p)+","+JSON.stringify(o)+")||{}).label||''"); };
+  const r={prime:L('PX-1',''),primeOrder:L(' px-1 ','TO-1'),order:L('PY-1','TO-9'),otherOrder:L('PY-1','TO-8'),openPrime:L('PY-1',''),open:L('PZ-1',''),none:L('','')};
+  return (r.prime==='Closed prime'&&r.primeOrder==='Closed prime'&&r.order==='Closed order'&&r.otherOrder===''&&r.openPrime===''&&r.open===''&&r.none==='')
+    ? true : JSON.stringify(r);
+});
+
+await ta('ticking Contract closed on the template records the day; unticking clears it', async()=>{
+  await E("tplSave(TPL_CT,[{ioId:'cl-t',label:'Tick me',data:Object.assign(ctBlankData(),{primeContract:'PT-1'})}])");
+  await E("dashTplEdit('ct')");
+  const box=await waitFor(()=>w.document.getElementById('ctClosed_0'),'the Contract closed box');
+  box.click();
+  const on=E("({c:TPL_EDIT[0].closed,d:TPL_EDIT[0].closedOn,today:ctTodayIso()})");
+  const red=w.document.getElementById('ctClosedLbl_0').style.color;
+  await E("dashTplSaveNow()");
+  const saved=E("(tplLoad(TPL_CT)[0]||{}).closed");
+  /* the editor redraws its rows on saving, so the box is found again */
+  w.document.getElementById('ctClosed_0').click();
+  const off=E("({c:TPL_EDIT[0].closed,d:TPL_EDIT[0].closedOn})");
+  await E("dashTplSaveNow()"); E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';showDashView();");
+  return (on.c===true&&on.d===on.today&&/160, 48, 40|#a03028/.test(red)&&saved===true&&off.c===false&&off.d==='')
+    ? true : JSON.stringify({on,red,saved,off});
+});
+
+await ta('every picker marks a closed template', async()=>{
+  await CLSEED();
+  const opts=E("ctPickerEntries(tplLoad(TPL_CT)).templates.map(function(x){ return x.text; })");
+  const closed=opts.filter(function(x){ return /\u2014 CLOSED$/.test(x); });
+  E("window.__N=dashNewDraft('orig');");
+  const d=await waitFor(()=>w.document.getElementById('dashPartyDlg'),'the create dialog');
+  const list=Array.from(d.querySelector('#np_tpl').options).map(function(o){ return o.textContent; });
+  d.querySelector('#np_cancel').click(); await E("window.__N");
+  return (closed.length===2 && list.some(function(x){ return x==='Closed prime \u00b7 PX-1 \u2014 CLOSED'; })
+       && list.some(function(x){ return x==='Open prime Z \u00b7 PZ-1'; }))
+    ? true : JSON.stringify({opts,list});
+});
+
+await ta('the create dialog shows the closure in red, by number or by choice', async()=>{
+  E("window.__N=dashNewDraft('orig');");
+  const d=await waitFor(()=>w.document.getElementById('dashPartyDlg'),'the create dialog');
+  const put=function(id,v){ const e=d.querySelector('#'+id); e.value=v; if(e.oninput) e.oninput(); };
+  const box=d.querySelector('#np_closed');
+  put('np_prime','PX-1');
+  const byNumber={shown:box.style.display,text:box.textContent};
+  put('np_prime','PZ-1');
+  const open=box.style.display;
+  const sel=d.querySelector('#np_tpl');
+  sel.value=String(Array.from(sel.options).findIndex(function(o){ return /^Closed order/.test(o.textContent); })-1); sel.onchange();
+  const byChoice=box.style.display;
+  d.querySelector('#np_cancel').click(); await E("window.__N");
+  return (byNumber.shown==='block'&&/This contract is closed\. PX-1 is marked closed/.test(byNumber.text)&&/ask why/.test(byNumber.text)
+       && open==='none' && byChoice==='block')
+    ? true : JSON.stringify({byNumber,open,byChoice});
+});
+
+await ta('so does the copy dialog', async()=>{
+  await E("draftPut({id:'CL1',title:'Rae Quinn \u2014 PX-1',status:'Draft',stage:'orig',meta:{contract:'PX-1',identity:{prime:'PX-1',order:'',sub:'N/A',solicitation:''}},todos:[],dist:[],holds:[],notes:'',requestedBy:'r.q@example.test',requestedByName:'Rae Quinn',workspace:{texts:{i2a:'PX-1',i2b:'N/A',item13:'X.'},checks:{},radios:{},selects:{},perf:[]}})");
+  E("window.__D=dashDuplicate('CL1');");
+  const d=await waitFor(()=>w.document.getElementById('dashCopyDlg'),'the copy dialog');
+  const box=d.querySelector('#cp_closed'), first=box.style.display;
+  const p=d.querySelector('#cp_prime'); p.value='PZ-1'; p.oninput();
+  const after=box.style.display;
+  d.querySelector('#cpCancel').click(); await E("window.__D");
+  await wipe();
+  return (first==='block'&&after==='none') ? true : JSON.stringify({first,after});
+});
+
+await ta('on the form it is red beside Item 2a, and a finding that holds the DD-254 at Draft', async()=>{
+  CLEAN(); V('i2a','PX-1'); RUN();
+  const al=w.document.getElementById('a2aClosed');
+  const shown=al.classList.contains('show'), text=al.textContent, held=hasE(clFinding);
+  V('i2a','PZ-1'); RUN();
+  const gone=!al.classList.contains('show')&&!hasE(/is marked closed/);
+  return (shown&&/^\u26d4 THIS CONTRACT IS CLOSED\. PX-1 is marked closed/.test(text)&&held&&gone)
+    ? true : JSON.stringify({shown,text,held,gone,errs:ERRS()});
+});
+
+await ta('a template chosen above Item 13 flags its contract even under another number', async()=>{
+  CLEAN(); E("buildCtSelect(); document.getElementById('ctTplSel').value='cl-o';"); RUN();
+  const hit=hasE(/^Item 2a: PY-1 \u00b7 TO-9 is marked closed in the DD-254 template \u201cClosed order\u201d/);
+  E("document.getElementById('ctTplSel').value='';"); RUN();
+  return hit&&!hasE(/is marked closed/) ? true : JSON.stringify(ERRS());
+});
+
+await ta('saying why clears the hold, and the reason stays on the DD-254', async()=>{
+  await newDraft('orig',{prime:'PX-1'});
+  RUN();
+  const f=ERRS().filter(function(x){ return clFinding.test(x); })[0];
+  if(!f) return 'no finding on a new DD-254 for a closed contract: '+JSON.stringify(ERRS());
+  E("window.__clPrompt=window.uiPrompt;window.uiPrompt=async function(){ return 'Spare part for a fielded system under warranty.'; };");
+  const ok=await E("dismissAdd("+JSON.stringify(f)+")");
+  E("window.uiPrompt=window.__clPrompt;");
+  RUN();
+  const rec=await E("draftGet(DASH.current)");
+  const kept=Object.keys(rec.dismissed||{}).map(function(k){ return rec.dismissed[k]; }).filter(function(d){ return d.text===f; })[0]||{};
+  const audited=E("audAll()").some(function(x){ return x.action==='flag dismissed'&&/PX-1 is marked closed/.test(JSON.stringify(x))&&/warranty/.test(JSON.stringify(x)); });
+  const stillRed=w.document.getElementById('a2aClosed').classList.contains('show');
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  return (ok===true&&!hasE(clFinding)&&kept.reason==='Spare part for a fielded system under warranty.'&&audited&&stillRed)
+    ? true : JSON.stringify({ok,reason:kept.reason,audited,stillRed});
+});
+
+await ta('an issued DD-254 is not flagged: the contract closed after it went out', async()=>{
+  CLEAN(); V('i2a','PX-1'); E("window.DD254_STATUS='Issued';"); RUN();
+  const quiet=!hasE(/is marked closed/), banner=w.document.getElementById('a2aClosed').classList.contains('show');
+  E("window.DD254_STATUS='';"); RUN();
+  return (quiet&&banner) ? true : JSON.stringify({quiet,banner});
+});
+
+await ta('the closure survives a spreadsheet round trip, in any column order', async()=>{
+  const r=E("(function(){ var c=function(h){ return TPL_IO.ct.cols.filter(function(x){ return x.h===h; })[0]; };"
+    +" var t=tplLoad(TPL_CT)[0], out={closed:c('Contract Closed').g(t),on:c('Closed On').g(t)};"
+    +" var a={label:'a',data:ctBlankData()}; c('Closed On').s(a,'2026-01-02'); c('Contract Closed').s(a,'X');"
+    +" var b={label:'b',data:ctBlankData()}; c('Contract Closed').s(b,'X'); c('Closed On').s(b,'2026-01-03');"
+    +" var o={label:'o',closed:true,closedOn:'2026-01-04',data:ctBlankData()}; c('Contract Closed').s(o,'');"
+    +" return {out:out,a:[a.closed,a.closedOn],b:[b.closed,b.closedOn],o:[o.closed,o.closedOn]}; })()");
+  return (r.out.closed==='X'&&r.out.on==='2026-11-01'&&r.a.join('|')==='true|2026-01-02'&&r.b.join('|')==='true|2026-01-03'&&r.o.join('|')==='false|')
+    ? true : JSON.stringify(r);
+});
+
+await ta('the template library says which contracts are closed', async()=>{
+  const plain=E("tplBookPlain(tplBookModel(['ct']))");
+  return (plain.indexOf('Contract status: CLOSED since 2026-11-01')>=0 && plain.indexOf('Contract status: CLOSED since 2026-10-15')>=0
+       && (plain.match(/Contract status:/g)||[]).length===2) ? true : plain.slice(0,500);
+});
+
+E("tplSave(TPL_CT,[]);window.DD254_STATUS='';showDashView();resetFormFields();");
+await wipe();
+
+H('154. v2.22.0 the template library exports as a searchable PDF or Word document');
+/* The owner, 24 November 2026: "a way within the tool to export all of the
+   templates that are stored in the repository as either a PDF or a Word
+   document. So that way it creates a searchable database that I can look for
+   keywords, key sections, what have you, to change language as necessary." */
+
+const BKPY=process.env.DD254_PYTHON||(process.platform==='win32'?'python':'python3');
+const BKTMP=(ext)=>path.join(os.tmpdir(),'dd254-book-'+process.pid+'-'+Math.random().toString(36).slice(2)+'.'+ext);
+const bkBytes=async(fmt,kinds)=>{
+  const arr=await E("(async function(){ var m=tplBookModel("+JSON.stringify(kinds)+"); var b="+(fmt==='pdf'?'await tplBookPdfBytes(m)':'tplBookDocxBytes(m)')+"; return Array.from(b); })()");
+  return Buffer.from(arr);
+};
+/* The Word file is read the way any reader would: the zip and its CRCs, every
+   XML part parsed, and the paragraphs with the style each one carries. Only
+   the standard library, so the release runner needs nothing new. */
+const BKDOCX=[
+  "import sys,zipfile,json,xml.etree.ElementTree as ET",
+  "W='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'",
+  "z=zipfile.ZipFile(sys.argv[1]); bad=z.testzip()",
+  "for n in z.namelist():",
+  "    if n.endswith('.xml') or n.endswith('.rels'): ET.fromstring(z.read(n))",
+  "doc=ET.fromstring(z.read('word/document.xml')); paras=[]",
+  "for p in doc.iter(W+'p'):",
+  "    st=p.find(W+'pPr/'+W+'pStyle'); paras.append([st.get(W+'val') if st is not None else '', ''.join(t.text or '' for t in p.iter(W+'t'))])",
+  "hdr=''.join(t.text or '' for t in ET.fromstring(z.read('word/header1.xml')).iter(W+'t'))",
+  "print(json.dumps({'bad':bad,'names':z.namelist(),'paras':paras,'header':hdr}))"].join('\n');
+const bkReadDocx=(bytes)=>{
+  const f=BKTMP('docx'); fs.writeFileSync(f,bytes);
+  const r=cp.spawnSync(BKPY,['-I','-c',BKDOCX,f],{encoding:'utf8'});
+  try{ fs.unlinkSync(f); }catch(e){}
+  if(r.status!==0) return {error:(r.stderr||r.stdout||String(r.error)).slice(-400)};
+  return JSON.parse(r.stdout);
+};
+const bkCheckPdf=(bytes,args)=>{
+  const f=BKTMP('pdf'); fs.writeFileSync(f,bytes);
+  const r=cp.spawnSync(BKPY,[path.join(__dirname,'pdf_content_regression.py'),f].concat(args),{encoding:'utf8'});
+  try{ fs.unlinkSync(f); }catch(e){}
+  return r.status===0?true:(r.stderr||r.stdout||String(r.error));
+};
+/* A template with every field the spreadsheet definition knows about filled
+   in, each with its own marker. Built FROM that definition, so a field added
+   to templates later is filled here too - and the next assertion fails until
+   the document carries it. */
+const BKFULL="(function(label,id){ var t={label:label,ioId:id,data:ctBlankData()}; var n=0;"
+  +"TPL_IO.ct.cols.forEach(function(c){ var h=c.h; if(/^ID \\(/.test(h)||h==='Template Name') return; var v;"
+  +" if(/ Sel$| Always$/.test(h)) v='X'; else if(/YesNo$/.test(h)) v='yes'; else if(/Routing$/.test(h)) v='thru';"
+  +" else if(h==='Order Type') v='Task Order'; else if(h==='Contract Closed') v='X'; else if(h==='Form Classification') v='CUI'; else if(h==='Source Type') v='rev';"
+  +" else { n++; v=label.slice(0,2).toUpperCase()+('000'+n).slice(-3)+'Q'; } c.s(t,v); }); return t; })";
+const BKENUM=/^ID \(| Sel$| Always$|YesNo$|Routing$|^Order Type$|^Form Classification$|^Source Type$|^Contract Closed$/;
+
+const bkSeed=async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';showDashView();resetFormFields();");
+  await E("tplSave(TPL_CT,["+BKFULL+"('Alpha contract','bk-a'),{ioId:'bk-b',label:'Bravo contract',data:Object.assign(ctBlankData(),{primeContract:'BK-B',c10:{'10a':true},l10:{'10a':'COMSEC WORDING.','10g':'NATO WORDING.'},always:{'10g':true},i13:'BRAVO SECURITY GUIDANCE.'})}])");
+  await E("tplSave(TPL_B13,["+BKFULL+"('Cost type','bk-t')])");
+  await E("tplSave(TPL_SL,[{label:'Corporate standard',text:'STANDARD PARAGRAPH ONE.',program:'WINDFALL',level:'S',scenario:'bids'}])");
+  await E("tplSave(TPL_SCG,[{label:'Widget guide',ident:'SCG-BK-1',date:'2026-01-01',office:'PEO BK',delivery:'attached'}])");
+  await E("tplSave(TPL_SM,[])");
+};
+
+await ta('every field a DD-254 template or Contract Type carries reaches the document', async()=>{
+  await bkSeed();
+  const r=E("(function(){ var plain=tplBookPlain(tplBookModel(['ct','b13'])); var miss=[];"
+    +"[[TPL_CT,0],[TPL_B13,0]].forEach(function(p){ var t=tplLoad(p[0])[p[1]];"
+    +" TPL_IO.ct.cols.forEach(function(c){ if("+BKENUM+".test(c.h)) return; var v=String(c.g(t)||'');"
+    +"  if(v&&plain.indexOf(v)<0) miss.push(t.label+' / '+c.h+' = '+v); }); });"
+    +" return {miss:miss, n:TPL_IO.ct.cols.length}; })()");
+  return (r.miss.length===0&&r.n>60) ? true : JSON.stringify(r);
+});
+
+await ta('each box says whether the template ticks it and when its wording applies', async()=>{
+  const plain=E("tplBookPlain(tplBookModel(['ct']))");
+  return (/10a COMSEC[^\n]* \u2014 ticked by this template \u00b7 wording applies when 10a is ticked/.test(plain)
+       && /10g NATO[^\n]* \u2014 not ticked by this template \u00b7 wording always applies/.test(plain)
+       && plain.indexOf('Item 10 \u2014 access requirements')>=0 && plain.indexOf('Item 13 \u2014 security guidance')>=0)
+    ? true : plain.slice(0,600);
+});
+
+await ta('Standard Language and the guides come with what they are written for', async()=>{
+  const plain=E("tplBookPlain(tplBookModel(['sl','scg']))");
+  return (plain.indexOf('STANDARD PARAGRAPH ONE.')>=0 && plain.indexOf('Programme: WINDFALL')>=0
+       && plain.indexOf('Item 1a level: Secret')>=0 && /Written for: Bids/.test(plain)
+       && plain.indexOf('Identifier: SCG-BK-1')>=0) ? true : plain;
+});
+
+await ta('laying a template out never changes the stored template', async()=>{
+  const before=E("JSON.stringify(tplLoad(TPL_CT))");
+  E("tplBookModel(['ct','b13','sl','scg','orders','sm','fac','cso','perf','cert','req'])");
+  return E("JSON.stringify(tplLoad(TPL_CT))")===before ? true : 'the stored template changed';
+});
+
+await ta('the marking is CUI only when an included template is', async()=>{
+  /* the full templates are marked CUI; Bravo and Standard Language are not */
+  const both=E("tplBookModel(['ct']).marking"), sl=E("tplBookModel(['sl']).marking");
+  return (both==='CUI // CONTROLLED UNCLASSIFIED INFORMATION'&&sl==='UNCLASSIFIED') ? true : JSON.stringify({both,sl});
+});
+
+await ta('the PDF is text a reader can search, marked on every page', async()=>{
+  const bytes=await bkBytes('pdf',['ct','sl','sm']);
+  const pages=await E("(async function(){ var b=await tplBookPdfBytes(tplBookModel(['ct','sl','sm'])); return (await PDFLib.PDFDocument.load(b)).getPageCount(); })()");
+  const r=bkCheckPdf(bytes,['DD-254 Template Library','Alpha contract','Bravo contract','COMSEC WORDING.','BRAVO SECURITY GUIDANCE.',
+    'STANDARD PARAGRAPH ONE.','Item 13','Nothing is saved in this repository.',(2*pages)+'x:CUI // CONTROLLED UNCLASSIFIED INFORMATION','page '+pages+' of '+pages]);
+  return (pages>=3&&r===true) ? true : JSON.stringify({pages,r});
+});
+
+await ta('the PDF opens on a bookmark for every repository and every template', async()=>{
+  const r=await E("(async function(){ var L=PDFLib, d=await L.PDFDocument.load(await tplBookPdfBytes(tplBookModel(['ct','sl']))), N=L.PDFName;"
+    +" var root=d.catalog.lookup(N.of('Outlines'),L.PDFDict), mode=String(d.catalog.get(N.of('PageMode'))), tops=[], kids=[];"
+    +" var o=root.lookup(N.of('First'),L.PDFDict); while(o){ tops.push(o.lookup(N.of('Title')).decodeText());"
+    +"  var k=o.get(N.of('First'))?o.lookup(N.of('First'),L.PDFDict):null; while(k){ kids.push(k.lookup(N.of('Title')).decodeText()); k=k.get(N.of('Next'))?k.lookup(N.of('Next'),L.PDFDict):null; }"
+    +"  o=o.get(N.of('Next'))?o.lookup(N.of('Next'),L.PDFDict):null; }"
+    +" return {mode:mode,tops:tops,kids:kids}; })()");
+  return (r.mode==='/UseOutlines'&&r.tops.join('|')==='DD-254 Template Language (2)|Standard Language (1)'
+       && r.kids.join('|')==='Alpha contract|Bravo contract|Corporate standard') ? true : JSON.stringify(r);
+});
+
+await ta('the Word document is a valid .docx, with a heading for each repository, template and Item', async()=>{
+  const d=bkReadDocx(await bkBytes('docx',['ct','sl']));
+  if(d.error) return d.error;
+  const h=function(s){ return d.paras.filter(function(p){ return p[0]===s; }).map(function(p){ return p[1]; }); };
+  const text=d.paras.map(function(p){ return p[1]; }).join('\n');
+  return (d.bad===null && d.names.indexOf('word/document.xml')>=0 && d.names.indexOf('[Content_Types].xml')===0
+       && h('Heading1').join('|')==='DD-254 Template Language \u2014 2|Standard Language \u2014 1'
+       && h('Heading2').join('|')==='Alpha contract|Bravo contract|Corporate standard'
+       && h('Heading3').indexOf('Item 13 \u2014 security guidance')>=0
+       && text.indexOf('BRAVO SECURITY GUIDANCE.')>=0 && text.indexOf('STANDARD PARAGRAPH ONE.')>=0
+       && d.header==='CUI // CONTROLLED UNCLASSIFIED INFORMATION')
+    ? true : JSON.stringify({bad:d.bad,h1:h('Heading1'),h2:h('Heading2'),header:d.header});
+});
+
+await ta('characters Word cannot hold do not break the document, and line breaks survive', async()=>{
+  await E("tplSave(TPL_SL,[{label:'Odd <one> & \"two\"',text:'LINE ONE\\u0001\\u000B\\nLINE TWO \\ud800 end'}])");
+  const d=bkReadDocx(await bkBytes('docx',['sl']));
+  if(d.error) return d.error;
+  const ps=d.paras.map(function(p){ return p[1]; });
+  return (ps.indexOf('Odd <one> & "two"')>=0 && ps.indexOf('LINE ONE')>=0 && ps.indexOf('LINE TWO  end')>=0)
+    ? true : JSON.stringify(ps.slice(-6));
+});
+
+await ta('edits still on screen are what is exported', async()=>{
+  E("window.TPL_EDIT=[{label:'On screen',text:'NOT YET SAVED.'}];window.TPL_EDIT_KIND='sl';");
+  const plain=E("tplBookPlain(tplBookModel(['sl']))");
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  return plain.indexOf('NOT YET SAVED.')>=0 ? true : plain;
+});
+
+await ta('the dialog ticks the template-language repositories and counts each one', async()=>{
+  await bkSeed();
+  E("tplBookOpen()");
+  const d=w.document.getElementById('tplBookDlg');
+  const on=function(k){ const c=d.querySelector('#tb_'+k); return !!(c&&c.checked); };
+  const lang=['b13','ct','sl','scg'].every(on), lists=!['orders','sm','fac','cso','perf','cert','req'].some(on);
+  const count=(d.querySelector('#tb_ct').parentElement.textContent||'').trim();
+  d.querySelector('#tbCancel').click();
+  E("tplBookOpen('fac')");
+  const d2=w.document.getElementById('tplBookDlg'), fac=d2.querySelector('#tb_fac').checked;
+  d2.querySelector('#tbCancel').click();
+  return (lang&&lists&&/DD-254 Template Language\s*2$/.test(count)&&fac&&!w.document.getElementById('tplBookDlg'))
+    ? true : JSON.stringify({lang,lists,count,fac});
+});
+
+await ta('nothing ticked, nothing exported', async()=>{
+  E("tplBookOpen()");
+  const d=w.document.getElementById('tplBookDlg');
+  d.querySelectorAll('input[type=checkbox]').forEach(function(c){ c.checked=false; });
+  d.querySelector('#tbPdf').click();
+  const still=!!w.document.getElementById('tplBookDlg'), err=d.querySelector('#tb_err').textContent;
+  d.querySelector('#tbCancel').click();
+  return (still&&/Tick at least one/.test(err)) ? true : JSON.stringify({still,err});
+});
+
+await ta('pressing a format downloads that file and records the export', async()=>{
+  E("window.__TPLBOOK_LAST=null;");
+  let got=null; const OB=w.Blob, oldURL=w.URL.createObjectURL;
+  w.Blob=function(p,o){ if(o&&/pdf|wordprocessing/.test(o.type)) got=o.type; return new OB(p,o); };
+  w.URL.createObjectURL=()=>'blob:tpl-book';
+  try{
+    E("tplBookOpen()"); w.document.querySelector('#tbDocx').click();
+    await waitFor(()=>w.__TPLBOOK_LAST,'the export',20000);
+  } finally { w.Blob=OB; w.URL.createObjectURL=oldURL; }
+  const audited=E("audAll()").some(x=>x.action==='templates-exported'&&/DOCX: Contract Types 1; DD-254 Template Language 2/.test(JSON.stringify(x)));
+  return (got==='application/vnd.openxmlformats-officedocument.wordprocessingml.document'&&audited) ? true : JSON.stringify({got,audited});
+});
+
+await ta('a phrase on the sensitive-terms list stops the export, naming the template and not the phrase', async()=>{
+  E("if(typeof termsClear==='function') termsClear();");
+  await E("termsAdd('Kestrel-7')");
+  await E("tplSave(TPL_SL,[{label:'Plain paragraph',text:'Nothing to see.'},{label:'Flagged paragraph',text:'Support to Kestrel-7 is required.'}])");
+  E("window.__BKMSG='';window.__bkConfirm=window.uiConfirm;window.uiConfirm=async function(m){ window.__BKMSG=m; return false; };");
+  const res=await E("tplBookExport('pdf',['sl'])");
+  const msg=E("window.__BKMSG");
+  E("window.uiConfirm=window.__bkConfirm; termsClear();");
+  const clean=await E("(async function(){ return (await tplBookScreen(tplBookModel(['sl']))).length; })()");
+  return (res===null && /Standard Language: Flagged paragraph/.test(msg) && !/Plain paragraph/.test(msg) && !/kestrel/i.test(msg) && clean===0)
+    ? true : JSON.stringify({res:!!res,msg,clean});
+});
+
+E("tplSave(TPL_CT,[]);tplSave(TPL_B13,[]);tplSave(TPL_SL,[]);tplSave(TPL_SCG,[]);showDashView();resetFormFields();");
 
 H('153. v2.21.1 Items 4 and 5 are always answered');
 /* The owner, 18 November 2026: "there is always a response to question 4 and
