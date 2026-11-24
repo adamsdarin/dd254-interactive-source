@@ -2,6 +2,22 @@
 
 Last updated: 2026-11-24 by Maintainer
 
+Latest published release: **v2.22.0 (Tool 2.173)**, build 23c69e31. Signed tag
+at 78f3d3b on `main`; 12/12 checksums, the provenance attestation (official
+23c69e31..., demo 3d6efb65..., ref refs/tags/v2.22.0, attested commit 78f3d3b),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive 7a4b683 and served by Pages,
+byte-identical to the attested demo asset.
+
+**Flaky test to fix:** the first v2.22.0 release run failed on "the portfolio
+export handles the whole portfolio" (`rows.length===62`), which passed for the
+same commit locally (twice) and in the verify run; `gh run rerun --failed`
+passed. The assertion counts every draft in the store at that instant, so a
+background autosave or recount landing mid-test changes the answer. Make it
+count only the 60 seeded `P*` drafts (or wait for `DD254_AUTO_RECOUNT` and
+clear `DASH.timer` first) rather than the whole store.
+
 What v2.22.0 (Tool 2.173), build 23c69e31, changes. Three owner requests,
 24 November 2026:
 
@@ -35,7 +51,7 @@ anchors on. Five gates, both smokes pass; the ISSM brief's stated size moved to
 1.8 MB (the documentation gate checks it). PDF read back with pypdf; DOCX with
 zipfile/XML in the suite, python-docx and a LibreOffice conversion by hand.
 
-Latest published release: **v2.21.1 (Tool 2.172)**, build ea5c2787. Signed tag
+**v2.21.1 (Tool 2.172), build ea5c2787, IS published**: signed tag
 at 9b22cc6 on `main`; 12/12 checksums, the provenance attestation (official
 ea5c2787..., demo 2fe898a3..., ref refs/tags/v2.21.1, attested commit 9b22cc6),
 a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
