@@ -2,22 +2,41 @@
 
 Last updated: 2026-11-25 by Maintainer
 
-**In the working build only, not committed (next: v2.24.0):** the template
-check also runs when spawning. `tplChangeForWorkspace(ws)` runs the check
-against a stored record; `dashSpawn` asks before anything is made - inside the
-Original's spawn dialog (`dashSpawnTplHtml`, section `#spTplBox`), or in
-`dashSpawnTplPrompt` for a Revision or Final - with "Build from the current
-template" preselected and "Keep the wording" as the alternative. Current applies
-the template to the child through `ctApplyDataToWorkspace`; both choices are in
-the `spawned` audit entry. An unchanged template spawns with no question, as
-before. A Keep on the parent is deliberately not carried into the question.
-1660 assertions (six new, section 158). Not yet versioned, documented, gated or
-released. The owner was also given a design for template versions with a
-government-revision reason, per-DD-254 provenance, a revision campaign across
-the DD-254s under a contract, and a lineage report; three questions are open
-(what "underneath" covers, automatic or listed revisions, version numbering).
+**In the working build only, not committed (next: v2.25.0): the revision
+chain.** Owner, 25 November 2026: each government DD-254 for a contract is its
+own DD-254 template recording its source (Original / Revision N); "I should get
+a flag ... for all the DD-254's that I issued under that template, and THEN
+also the DD-254 that is inserted into the workflow, should be the DD-254
+template that is highest in the revision chain." He chose: list them (he
+creates the revisions), and our numbering with the government's beside it.
+`tplChainKey` (prime + task order), `tplChainCmp` (government revision, then
+source date), `tplChainOf`/`tplChainLatest`/`tplChainVersion` ("v2 · Government
+Revision 1 · source ..."). Only templates with a recorded source type are
+chained - untyped ones under one contract are not assumed to be revisions (two
+existing tests caught that in the first draft). `ctLatestSource` now uses the
+same order. `dashIntakeMatch` picks the strict latest of a chain instead of
+reporting "several match". `tplChangeDiff` treats a superseded template as
+changed, so the banner, Update and the spawn question all lead to the newest
+revision. Dashboard: `tplRevNeeded` (newest record per line, not
+Cancelled/Skipped, not exempt for this latest), `#dashRevNeeded` notice,
+`tplRevChip`, `tplProvLine` ("Template: ... — v1 · Government Original ·
+applied ..."), `tplRevOpen` (Revise / Open / Exempt), `tplRevExempt`
+(`rec.revExempt`, audited, holds until the next revision). The snapshot records
+`srcVer`. 1667 assertions (seven new, section 159). Not yet versioned,
+documented, gated or released.
 
-Latest published release: **v2.23.0 (Tool 2.174)**, build 5f487795. Signed tag
+Latest published release: **v2.24.0 (Tool 2.175)**, build 86d96d2f. Signed tag
+at f1f2c8a on `main`; 12/12 checksums, the provenance attestation (official
+86d96d2f..., demo 58107ace..., ref refs/tags/v2.24.0, attested commit f1f2c8a),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive 894f4cb and served by Pages,
+byte-identical to the attested demo asset. v2.24.0: spawning an Original,
+Revision or Final asks whether to build from the current template when the
+parent's has changed (`tplChangeForWorkspace`, `dashSpawnTplPrompt`); 1660
+assertions.
+
+**v2.23.0 (Tool 2.174), build 5f487795, IS published**: signed tag
 at 86b3f6c on `main`; 12/12 checksums, the provenance attestation (official
 5f487795..., demo beaecd19..., ref refs/tags/v2.23.0, attested commit 86b3f6c),
 a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
