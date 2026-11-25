@@ -2,6 +2,15 @@
 
 Last updated: 2026-11-25 by Maintainer
 
+Latest published release: **v2.25.0 (Tool 2.176)**, build 873a0238. Signed tag
+at 786b95c on `main`; 12/12 checksums, the provenance attestation (official
+873a0238..., demo e4fa02e1..., ref refs/tags/v2.25.0, attested commit 786b95c),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive 4d9788c and served by Pages,
+byte-identical to the attested demo asset. Verify and release both passed on
+the first run.
+
 What v2.25.0 (Tool 2.176), build 873a0238, changes: **the revision chain.**
 Owner, 25 November 2026: each government DD-254 for a contract is its
 own DD-254 template recording its source (Original / Revision N); "I should get
@@ -28,7 +37,7 @@ headless Chrome. One packaging attempt built from an unstamped working copy
 when a blocked step did not stop the command; it was stopped before any commit
 and redone with a stamp check.
 
-Latest published release: **v2.24.0 (Tool 2.175)**, build 86d96d2f. Signed tag
+**v2.24.0 (Tool 2.175), build 86d96d2f, IS published**: signed tag
 at f1f2c8a on `main`; 12/12 checksums, the provenance attestation (official
 86d96d2f..., demo 58107ace..., ref refs/tags/v2.24.0, attested commit f1f2c8a),
 a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
