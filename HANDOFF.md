@@ -2,6 +2,30 @@
 
 Last updated: 2026-11-25 by Maintainer
 
+**In the working build only, not committed (next: v2.24.0):** the template
+check also runs when spawning. `tplChangeForWorkspace(ws)` runs the check
+against a stored record; `dashSpawn` asks before anything is made - inside the
+Original's spawn dialog (`dashSpawnTplHtml`, section `#spTplBox`), or in
+`dashSpawnTplPrompt` for a Revision or Final - with "Build from the current
+template" preselected and "Keep the wording" as the alternative. Current applies
+the template to the child through `ctApplyDataToWorkspace`; both choices are in
+the `spawned` audit entry. An unchanged template spawns with no question, as
+before. A Keep on the parent is deliberately not carried into the question.
+1660 assertions (six new, section 158). Not yet versioned, documented, gated or
+released. The owner was also given a design for template versions with a
+government-revision reason, per-DD-254 provenance, a revision campaign across
+the DD-254s under a contract, and a lineage report; three questions are open
+(what "underneath" covers, automatic or listed revisions, version numbering).
+
+Latest published release: **v2.23.0 (Tool 2.174)**, build 5f487795. Signed tag
+at 86b3f6c on `main`; 12/12 checksums, the provenance attestation (official
+5f487795..., demo beaecd19..., ref refs/tags/v2.23.0, attested commit 86b3f6c),
+a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
+build's native-browser smoke test, all verified from a fresh download. Live
+demo published as dd254-interactive 386a8c8 and served by Pages,
+byte-identical to the attested demo asset. The first release run failed on the
+hosted runner's Chrome start-up flake; `gh run rerun --failed` passed.
+
 What v2.23.0 (Tool 2.174), build 5f487795, changes. Owner, 25 November 2026:
 "when a DD-254 workflow is opened, it checks the template repo, every time, to
 see if there are any changes, and if there is there is a warning saying
@@ -21,7 +45,7 @@ portfolio-export test is being fixed in a separate session on its own branch
 (it touches `dd254_regression.js` near line 2034; section 157 is near line
 10500).
 
-Latest published release: **v2.22.0 (Tool 2.173)**, build 23c69e31. Signed tag
+**v2.22.0 (Tool 2.173), build 23c69e31, IS published**: signed tag
 at 78f3d3b on `main`; 12/12 checksums, the provenance attestation (official
 23c69e31..., demo 3d6efb65..., ref refs/tags/v2.22.0, attested commit 78f3d3b),
 a byte-identical kit rebuild with no bytecode and a PASS on the downloaded
