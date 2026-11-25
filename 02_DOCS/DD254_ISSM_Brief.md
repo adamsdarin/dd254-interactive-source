@@ -1,6 +1,6 @@
 # DD254 Interactive — brief for the ISSM
 
-DD254 Interactive v2.23.0 / Tool v2.174. Two pages, for the officer deciding
+DD254 Interactive v2.24.0 / Tool v2.175. Two pages, for the officer deciding
 whether this file may be opened on a managed workstation.
 
 The longer [security fact sheet](DD254_Tool_Security_Fact_Sheet.md) is written

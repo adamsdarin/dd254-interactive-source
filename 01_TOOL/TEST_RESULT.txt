@@ -1,4 +1,4 @@
-BUILD_SHA256 5f48779529c675227063a9b1380d61316ed478959a4452151793e0c4a076f6c2
+BUILD_SHA256 86d96d2f71d6e630279959472f4527dd80f232b00002ee148e1aab757c261ef6
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1793,6 +1793,14 @@ BUILD_SHA256 5f48779529c675227063a9b1380d61316ed478959a4452151793e0c4a076f6c2
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 158. v2.24.0 spawning asks whether to build from the current template
+  PASS  spawning a Revision asks when the template has changed, and builds from the current one
+  PASS  keeping the earlier wording carries it, and the Revision warns when it is opened
+  PASS  cancelling makes nothing
+  PASS  a Final is asked the same question
+  PASS  an unchanged template spawns with no question, as before
+  PASS  spawning an Original from a solicitation asks inside its own dialog
+
 ### 157. v2.23.0 a DD-254 warns when its template has changed since it was applied
   PASS  applying a template records which one it was and what it said
   PASS  a change in the repository is a warning and a banner, every time the DD-254 is opened
@@ -1985,5 +1993,5 @@ BUILD_SHA256 5f48779529c675227063a9b1380d61316ed478959a4452151793e0c4a076f6c2
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1654   FAIL 0
+  PASS 1660   FAIL 0
 ================================

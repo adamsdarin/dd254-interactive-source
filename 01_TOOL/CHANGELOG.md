@@ -1,3 +1,23 @@
+## v2.24.0 — 25 November 2026
+
+Tool version 2.175. The template check also happens when a DD-254 is spawned.
+
+- **New: spawning asks whether to build from the current template.** When the
+  template a DD-254 was built from has changed in the repository, spawning an
+  Original from a solicitation, or a Revision or Final from an Original, says
+  so before anything is made. **Build from the current template** is
+  preselected and writes Items 10 to 16 and 18, and Item 13, from the template
+  as it is now; **Keep the wording** carries what the parent says, and the new
+  DD-254 shows the "Template changed" banner when opened. For an Original the
+  question sits inside the spawn dialog; a Revision or Final gets it as a short
+  dialog of its own. Either choice is written into the audit entry.
+- **Why it matters most for a Revision:** its parent is usually Issued, and an
+  Issued DD-254 is never warned — so the question was not asked at the moment
+  it most mattered.
+- **An unchanged template spawns exactly as before**, with no question.
+
+1660 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.23.0 — 25 November 2026
 
 Tool version 2.174. A DD-254 says when the template it was built from has

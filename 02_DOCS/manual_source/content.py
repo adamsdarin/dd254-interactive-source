@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.23.0 (tool version 2.174)"
+VER="DD254 Interactive v2.24.0 (tool version 2.175)"
 
 DOC = [
-("h1","DD254 Interactive v2.23.0 changes"),
+("h1","DD254 Interactive v2.24.0 changes"),
+("b","<b>New: spawning asks whether to build from the current template.</b> If the template a DD-254 was built from has changed, spawning an Original, a Revision or a Final says so first. <i>Build from the current template</i> is preselected; <i>Keep the wording</i> carries what the parent says, and the new DD-254 then shows the Template changed banner when opened. An unchanged template spawns with no question."),
+("h2","DD254 Interactive v2.23.0 changes"),
 ("b","<b>New: Template changed \u2014 update to new template.</b> A DD-254 remembers which template it was built from and what that template said. Each time it is opened, the template is read again from the repository; if it has changed, a banner under the title says so, and the warning is listed with the other findings."),
 ("n","<b>Update to new template</b> re-applies the template as it is now, after confirming that Items 10 to 16 and 18 and Item 13 will be rewritten. <b>Keep this version</b> leaves the DD-254 as it is, records that in the audit log, and the warning returns if the template changes again. Issued, Cancelled and Skipped DD-254s are never warned."),
 ("h2","DD254 Interactive v2.22.0 changes"),

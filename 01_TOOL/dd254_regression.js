@@ -10486,6 +10486,95 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('158. v2.24.0 spawning asks whether to build from the current template');
+/* The owner, 25 November 2026: "this template check should also take place when
+   you're spawning an original from a solicitation or a revision from an
+   original." The parent of a Revision is usually Issued, and an Issued DD-254 is
+   never warned - so without this the question was never asked at the moment
+   it matters. */
+
+const tsTpl=async(i13)=>{ await E("tplSave(TPL_CT,[{ioId:'tc-s',label:'Spawn contract',data:Object.assign(ctBlankData(),{primeContract:'TS-1',i13:"+JSON.stringify(i13)+"})}])"); };
+const tsRec=async(id,stage,status,i13)=>{
+  await E("(async function(){ var t=tplLoad(TPL_CT)[0]; var snap=JSON.stringify({srcLabel:'Spawn contract',srcKind:'ct',srcId:'tc-s',srcFp:tplFingerprint(t),srcAt:'2026-01-05T12:00:00.000Z'});"
+    +" await draftPut({id:'"+id+"',title:'Rae Quinn \u2014 TS-1 \u00b7 N/A"+(stage==='sol'?' \u2014 Solicitation':'')+"',stage:'"+stage+"',status:'"+status+"',requestedByName:'Rae Quinn',"
+    +"meta:{contract:'TS-1',identity:{prime:'TS-1',order:'',sub:'N/A',solicitation:''}},todos:[],dist:[],holds:[],notes:'',"
+    +"workspace:{texts:{i2a:'TS-1',i2b:'N/A',i3a_date:'20260105',item13:"+JSON.stringify(i13)+",ctLangSrc:snap},checks:{},radios:{spec:'3a',fo:'no',fin:'no'},selects:{ctTplSel:'tc-s'},perf:[]}}); })()");
+};
+const tsKids=async(id)=>(await E("draftAll()")).filter(function(r){ return r.parentId===id; });
+const tsI13=(r)=>String((((r||{}).workspace||{}).texts||{}).item13||'');
+
+await ta('spawning a Revision asks when the template has changed, and builds from the current one', async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  await tsTpl('WORDING V1.'); await tsRec('TSO','orig','Issued','WORDING V1.');
+  await tsTpl('WORDING V2.');
+  E("window.__S=dashSpawn('TSO','rev');");
+  const d=await waitFor(()=>w.document.getElementById('dashSpawnTplDlg'),'the spawn question');
+  const text=d.textContent, dflt=d.querySelector('#sp_tpl_current').getAttribute('aria-checked');
+  d.querySelector('#spTplOk').click(); await E("window.__S");
+  const k=(await tsKids('TSO'))[0]||{}, s=JSON.parse((((k.workspace||{}).texts||{}).ctLangSrc)||'{}');
+  const fpNow=E("tplFingerprint(tplLoad(TPL_CT)[0])");
+  const audited=E("audAll()").some(function(x){ return x.action==='spawned'&&/built from the current template \u201cSpawn contract\u201d/.test(JSON.stringify(x)); });
+  return (/Template changed \u2014 \u201cSpawn contract\u201d has changed in the repository since this DD-254 was built from it on 2026-01-05/.test(text)
+       && /Spawn the Revision/.test(text) && dflt==='true' && k.stage==='rev'
+       && tsI13(k).indexOf('WORDING V2.')>=0 && tsI13(k).indexOf('WORDING V1.')<0 && s.srcFp===fpNow
+       && k.workspace.selects.ctTplSel==='tc-s' && audited)
+    ? true : JSON.stringify({text:text.slice(0,200),dflt,stage:k.stage,i13:tsI13(k),fp:[s.srcFp,fpNow],audited});
+});
+
+await ta('keeping the earlier wording carries it, and the Revision warns when it is opened', async()=>{
+  E("window.__S=dashSpawn('TSO','rev');");
+  const d=await waitFor(()=>w.document.getElementById('dashSpawnTplDlg'),'the spawn question');
+  d.querySelector('#sp_tpl_carry').click(); d.querySelector('#spTplOk').click(); await E("window.__S");
+  const k=(await tsKids('TSO')).filter(function(r){ return tsI13(r).indexOf('WORDING V1.')>=0; })[0];
+  if(!k) return 'no Revision carried the earlier wording';
+  await E("dashOpen('"+k.id+"')"); RUN();
+  const b=w.document.getElementById('tplChangedBanner'), shown=!!b&&b.style.display==='block';
+  const audited=E("audAll()").some(function(x){ return x.action==='spawned'&&/kept the earlier wording/.test(JSON.stringify(x)); });
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  return (shown&&audited) ? true : JSON.stringify({shown,audited});
+});
+
+await ta('cancelling makes nothing', async()=>{
+  const before=(await tsKids('TSO')).length;
+  E("window.__S=dashSpawn('TSO','rev');");
+  const d=await waitFor(()=>w.document.getElementById('dashSpawnTplDlg'),'the spawn question');
+  d.querySelector('#spTplCancel').click(); await E("window.__S");
+  return (await tsKids('TSO')).length===before ? true : 'a Revision was made anyway';
+});
+
+await ta('a Final is asked the same question', async()=>{
+  E("window.__S=dashSpawn('TSO','final');");
+  const d=await waitFor(()=>w.document.getElementById('dashSpawnTplDlg'),'the spawn question');
+  const text=d.textContent;
+  d.querySelector('#spTplCancel').click(); await E("window.__S");
+  return /Spawn the Final/.test(text) ? true : text.slice(0,120);
+});
+
+await ta('an unchanged template spawns with no question, as before', async()=>{
+  await tsTpl('WORDING V1.');
+  await E("dashSpawn('TSO','rev')");
+  const asked=!!w.document.getElementById('dashSpawnTplDlg');
+  const n=(await tsKids('TSO')).filter(function(r){ return tsI13(r).indexOf('WORDING V1.')>=0; }).length;
+  return (!asked&&n>=2) ? true : JSON.stringify({asked,n});
+});
+
+await ta('spawning an Original from a solicitation asks inside its own dialog', async()=>{
+  await tsRec('TSS','sol','Draft','WORDING V1.');
+  await tsTpl('WORDING V3.');
+  E("window.__SP=dashSpawn('TSS','orig');");
+  const d=await waitFor(()=>w.document.getElementById('dashSpawnDlg'),'the spawn dialog');
+  const box=d.querySelector('#spTplBox'), text=box?box.textContent:'';
+  d.querySelector('#spSame').click();
+  const sub=d.querySelector('#sp_sub'); sub.value='N/A'; sub.oninput();
+  d.querySelector('#spOk').click(); await E("window.__SP");
+  const k=(await tsKids('TSS'))[0]||{};
+  await wipe(); await E("tplSave(TPL_CT,[])");
+  return (/since the solicitation was built from it/.test(text)&&/Build the Original from the current template/.test(text)
+       && tsI13(k).indexOf('WORDING V3.')>=0 && k.workspace.texts.i2a==='TS-1')
+    ? true : JSON.stringify({text:text.slice(0,160),i13:tsI13(k)});
+});
+
 H('157. v2.23.0 a DD-254 warns when its template has changed since it was applied');
 /* The owner, 25 November 2026: "when a DD-254 workflow is opened, it checks the
    template repo, every time, to see if there are any changes, and if there is
