@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.24.0 (tool version 2.175)"
+VER="DD254 Interactive v2.25.0 (tool version 2.176)"
 
 DOC = [
-("h1","DD254 Interactive v2.24.0 changes"),
+("h1","DD254 Interactive v2.25.0 changes"),
+("b","<b>New: the revision chain.</b> Enter each government DD-254 for a contract as its own DD-254 template and record its source type \u2014 Original, or Revision with its number. The templates under one contract are then read as a chain, numbered v1, v2, v3 with the government\u2019s revision beside each. A new DD-254 is built from the highest revision."),
+("b","<b>DD-254s built from an earlier revision are flagged</b> on the dashboard, with <i>Revision needed</i> on each card. <b>Review</b> lists them: <i>Revise</i> spawns a Revision from the newest template, <i>Open</i> goes to a DD-254 still being prepared, and <i>Exempt</i> records why one stays as it is until the next revision."),
+("n","Each card shows the template a DD-254 was built from, its version and the day it was applied. Templates with no source type recorded are not chained."),
+("h2","DD254 Interactive v2.24.0 changes"),
 ("b","<b>New: spawning asks whether to build from the current template.</b> If the template a DD-254 was built from has changed, spawning an Original, a Revision or a Final says so first. <i>Build from the current template</i> is preselected; <i>Keep the wording</i> carries what the parent says, and the new DD-254 then shows the Template changed banner when opened. An unchanged template spawns with no question."),
 ("h2","DD254 Interactive v2.23.0 changes"),
 ("b","<b>New: Template changed \u2014 update to new template.</b> A DD-254 remembers which template it was built from and what that template said. Each time it is opened, the template is read again from the repository; if it has changed, a banner under the title says so, and the warning is listed with the other findings."),

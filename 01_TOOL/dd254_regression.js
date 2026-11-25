@@ -10486,6 +10486,134 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('159. v2.25.0 a contract\u2019s templates are a revision chain, and DD-254s built from an earlier link are flagged');
+/* The owner, 25 November 2026: "I should get a flag, if/when I enter a new
+   template that is a revision 1, 2, 3, 4, ect for all the DD-254's that I
+   issued under that template, and THEN also the DD-254 that is inserted into
+   the workflow, should be the DD-254 template that is highest in the revision
+   chain." Listed, not created for him; versions numbered ours, with the
+   government's revision beside them. */
+
+const RC_O="{ioId:'rc-o',label:'Alpha Original',srcType:'orig',srcDate:'2025-01-10',data:Object.assign(ctBlankData(),{primeContract:'RC-1',i13:'ORIG WORDING.'})}";
+const RC_R1="{ioId:'rc-r1',label:'Alpha Rev 1',srcType:'rev',srcRev:'1',srcDate:'2026-01-10',data:Object.assign(ctBlankData(),{primeContract:'RC-1',i13:'REV1 WORDING.'})}";
+const RC_R2="{ioId:'rc-r2',label:'Alpha Rev 2',srcType:'rev',srcRev:'2',srcDate:'2026-09-01',data:Object.assign(ctBlankData(),{primeContract:'RC-1',i13:'REV2 WORDING.'})}";
+const rcSave=async(list)=>{ await E("tplSave(TPL_CT,["+list.join(',')+"])"); };
+/* A record built from a template, with the snapshot applying it would leave. */
+const rcRec=async(id,tplId,status,stage)=>{
+  await E("(async function(){ var t=tplLoad(TPL_CT).filter(function(x){return x.ioId==='"+tplId+"';})[0];"
+    +" var snap=JSON.parse(ctLangSrcData(t.data,t.label,t)); snap.srcAt='2026-02-01T10:00:00.000Z';"
+    +" await draftPut({id:'"+id+"',title:'Rae Quinn \u2014 RC-1 \u00b7 "+id+"',stage:'"+(stage||'orig')+"',status:'"+status+"',requestedByName:'Rae Quinn',"
+    +"meta:{contract:'RC-1',identity:{prime:'RC-1',order:'',sub:'"+id+"',solicitation:''}},todos:[],dist:[],holds:[],notes:'',"
+    +"workspace:{texts:{i2a:'RC-1',i2b:'"+id+"',i3a_date:'20260201',item13:t.data.i13,ctLangSrc:JSON.stringify(snap)},checks:{},radios:{spec:'3a',fo:'no',fin:'no'},selects:{ctTplSel:'"+tplId+"'},perf:[]}}); })()");
+};
+const rcNeeded=async()=>E("(async function(){ return tplRevNeeded(await draftAll()).map(function(x){ return x.rec.id; }).sort(); })()");
+const rcI13=(r)=>String((((r||{}).workspace||{}).texts||{}).item13||'');
+
+await ta('the chain orders a contract\u2019s templates by the government\u2019s revision, numbered ours', async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  await rcSave([RC_R1,RC_O,"{ioId:'rc-u',label:'Untyped',data:Object.assign(ctBlankData(),{primeContract:'RC-1'})}",
+    "{ioId:'rc-f',label:'Alpha Final',srcType:'final',srcDate:'2027-01-01',data:Object.assign(ctBlankData(),{primeContract:'RC-1'})}"]);
+  const r=E("(function(){ var f=function(id){ return tplLoad(TPL_CT).filter(function(x){return x.ioId===id;})[0]; };"
+    +" return {o:tplChainVersion(f('rc-o')).label, r1:tplChainVersion(f('rc-r1')).label, latest:tplChainLatest(f('rc-o')).ioId,"
+    +" chain:tplChainOf(f('rc-o')).map(function(x){return x.ioId;}).join('|'), untyped:tplChainOf(f('rc-u')).length, uLatest:tplChainLatest(f('rc-u')).ioId}; })()");
+  return (r.o==='v1 \u00b7 Government Original \u00b7 source 2025-01-10'&&r.r1==='v2 \u00b7 Government Revision 1 \u00b7 source 2026-01-10'
+       && r.latest==='rc-r1' && r.chain==='rc-o|rc-r1' && r.untyped===1 && r.uLatest==='rc-u')
+    ? true : JSON.stringify(r);
+});
+
+await ta('a new DD-254 is built from the highest revision in the chain', async()=>{
+  await rcSave([RC_O,RC_R1]);
+  E("window.__N=dashNewDraft('orig');");
+  const d=await waitFor(()=>w.document.getElementById('dashPartyDlg'),'the create dialog');
+  const put=function(x,v){ const e=d.querySelector('#'+x); e.value=v; if(e.oninput) e.oninput(); };
+  put('np_first','Rae'); put('np_last','Quinn'); put('np_email','r.q@example.test'); put('np_prime','RC-1'); put('np_sub','N/A');
+  const note=d.querySelector('#np_match').textContent;
+  d.querySelector('#np_ok').click(); await E("window.__N");
+  RUN();
+  const i13=String(E("document.getElementById('item13').value"));
+  const snap=JSON.parse(E("document.getElementById('ctLangSrc').value")||'{}');
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe();
+  return (/\u201cAlpha Rev 1\u201d matches this contract and will be applied\. It is the latest of 2 revisions saved for it \(v2 \u00b7 Government Revision 1/.test(note)
+       && i13.indexOf('REV1 WORDING.')>=0 && snap.srcId==='rc-r1' && snap.srcVer==='v2 \u00b7 Government Revision 1 \u00b7 source 2026-01-10')
+    ? true : JSON.stringify({note,i13:i13.slice(0,80),snap});
+});
+
+await ta('entering a newer revision flags the DD-254s issued under an earlier one', async()=>{
+  await rcSave([RC_O]);
+  await rcRec('RCI','rc-o','Issued');
+  const before=await rcNeeded();
+  await rcSave([RC_O,RC_R1]);
+  const after=await rcNeeded();
+  await E("dashRenderCards()");
+  const n=w.document.getElementById('dashRevNeeded');
+  const card=w.document.querySelector('.dash-card[data-id="RCI"]');
+  const chip=!!(card&&card.querySelector('.tpl-rev-chip'));
+  const prov=card?((card.querySelector('.dash-card-tpl')||{}).textContent||''):'';
+  return (before.length===0&&after.join('|')==='RCI'&&n.style.display==='block'&&/1 DD-254 was built from an earlier revision of its contract\u2019s template/.test(n.textContent)
+       && chip && /^Template: Alpha Original \u2014 v1 \u00b7 Government Original \u00b7 source 2025-01-10 \u00b7 applied 2026-02-01$/.test(prov))
+    ? true : JSON.stringify({before,after,notice:n.textContent,chip,prov});
+});
+
+await ta('Revise from the list builds a Revision from the newest link, and the flag clears', async()=>{
+  await E("tplRevOpen()");
+  const dl=w.document.getElementById('tplRevDlg');
+  const text=dl.textContent, go=w.document.getElementById('trGo_RCI'), label=go.textContent;
+  go.click();
+  const sp=await waitFor(()=>w.document.getElementById('dashSpawnTplDlg'),'the spawn question');
+  const q=sp.textContent;
+  sp.querySelector('#spTplOk').click();
+  let child=null;
+  for(let i=0;i<120&&!child;i++){ child=(await E("draftAll()")).filter(function(r){ return r.parentId==='RCI'; })[0]; if(!child) await new Promise(function(r){ setTimeout(r,25); }); }
+  const left=await rcNeeded();
+  return (/Built from \u201cAlpha Original\u201d \(v1 \u00b7 Government Original/.test(text)&&/Now: \u201cAlpha Rev 1\u201d \(v2/.test(text)&&label==='Revise'
+       && /a newer revision of this contract\u2019s template is in the repository: \u201cAlpha Rev 1\u201d \(v2 \u00b7 Government Revision 1 \u00b7 source 2026-01-10\) supersedes \u201cAlpha Original\u201d/.test(q)
+       && child && child.stage==='rev' && rcI13(child).indexOf('REV1 WORDING.')>=0 && left.length===0)
+    ? true : JSON.stringify({text:text.slice(0,200),q:q.slice(0,200),child:child&&{stage:child.stage,i13:rcI13(child)},left});
+});
+
+await ta('Exempt keeps a DD-254 on its revision until the next one', async()=>{
+  await rcRec('RCJ','rc-o','Issued');
+  const listed=(await rcNeeded()).indexOf('RCJ')>=0;
+  E("window.__rcPrompt=window.uiPrompt;window.uiPrompt=async function(){ return 'Contract ends next month; no revision planned.'; };");
+  const ok=await E("(async function(){ var x=tplRevNeeded(await draftAll()).filter(function(y){return y.rec.id==='RCJ';})[0]; return tplRevExempt('RCJ',x); })()");
+  E("window.uiPrompt=window.__rcPrompt;");
+  const quiet=(await rcNeeded()).indexOf('RCJ')<0;
+  const rec=await E("draftGet('RCJ')");
+  const audited=E("audAll()").some(function(x){ return x.action==='revision-exempted'&&/no revision planned/.test(JSON.stringify(x)); });
+  await rcSave([RC_O,RC_R1,RC_R2]);
+  const again=(await rcNeeded()).indexOf('RCJ')>=0;
+  return (listed&&ok===true&&quiet&&rec.revExempt.reason==='Contract ends next month; no revision planned.'&&audited&&again)
+    ? true : JSON.stringify({listed,ok,quiet,audited,again});
+});
+
+await ta('a draft built from an earlier link is told to update, and Update takes the newest', async()=>{
+  await rcRec('RCD','rc-o','Draft');
+  await E("dashOpen('RCD')"); RUN();
+  const b=w.document.getElementById('tplChangedBanner');
+  const text=b.textContent, shown=b.style.display==='block';
+  E("window.__rcConfirm=window.uiConfirm;window.uiConfirm=async function(){return true;};");
+  await E("tplChangeUpdate()");
+  E("window.uiConfirm=window.__rcConfirm;"); RUN();
+  const i13=String(E("document.getElementById('item13').value"));
+  const quiet=b.style.display!=='block';
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  return (shown&&/A newer revision of this contract\u2019s template is in the repository: \u201cAlpha Rev 2\u201d \(v3 \u00b7 Government Revision 2/.test(text)
+       && i13.indexOf('REV2 WORDING.')>=0 && quiet)
+    ? true : JSON.stringify({shown,text:text.slice(0,220),i13:i13.slice(0,60),quiet});
+});
+
+t('task orders follow the government\u2019s revision number first, then the date', ()=>{
+  /* ctLatestSource shares the chain's order: a Revision 2 dated before a
+     Revision 1 (a typing slip, or a late entry) is still the later revision. */
+  const id=E("ctLatestSource([{ioId:'a',srcType:'rev',srcRev:'1',srcDate:'2026-06-01'},{ioId:'b',srcType:'rev',srcRev:'2',srcDate:'2026-01-01'},{ioId:'c',srcType:'final',srcDate:'2027-01-01'}]).ioId");
+  return id==='b' ? true : id;
+});
+
+E("tplSave(TPL_CT,[]);showDashView();resetFormFields();");
+await wipe();
+
 H('158. v2.24.0 spawning asks whether to build from the current template');
 /* The owner, 25 November 2026: "this template check should also take place when
    you're spawning an original from a solicitation or a revision from an

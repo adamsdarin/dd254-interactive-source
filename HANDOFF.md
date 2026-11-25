@@ -2,8 +2,8 @@
 
 Last updated: 2026-11-25 by Maintainer
 
-**In the working build only, not committed (next: v2.25.0): the revision
-chain.** Owner, 25 November 2026: each government DD-254 for a contract is its
+What v2.25.0 (Tool 2.176), build 873a0238, changes: **the revision chain.**
+Owner, 25 November 2026: each government DD-254 for a contract is its
 own DD-254 template recording its source (Original / Revision N); "I should get
 a flag ... for all the DD-254's that I issued under that template, and THEN
 also the DD-254 that is inserted into the workflow, should be the DD-254
@@ -22,8 +22,11 @@ Cancelled/Skipped, not exempt for this latest), `#dashRevNeeded` notice,
 `tplRevChip`, `tplProvLine` ("Template: ... — v1 · Government Original ·
 applied ..."), `tplRevOpen` (Revise / Open / Exempt), `tplRevExempt`
 (`rec.revExempt`, audited, holds until the next revision). The snapshot records
-`srcVer`. 1667 assertions (seven new, section 159). Not yet versioned,
-documented, gated or released.
+`srcVer`. 1667 assertions (seven new, section 159); five gates and both
+smokes pass; the dashboard notice and Review list were photographed in
+headless Chrome. One packaging attempt built from an unstamped working copy
+when a blocked step did not stop the command; it was stopped before any commit
+and redone with a stamp check.
 
 Latest published release: **v2.24.0 (Tool 2.175)**, build 86d96d2f. Signed tag
 at f1f2c8a on `main`; 12/12 checksums, the provenance attestation (official

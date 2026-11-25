@@ -1,3 +1,35 @@
+## v2.25.0 — 25 November 2026
+
+Tool version 2.176. A contract's templates are a revision chain.
+
+- **New: the revision chain.** Each government DD-254 for a contract is entered
+  as its own DD-254 template, recording its source — Original, Revision 1,
+  Revision 2. The templates filed under one prime contract and task order are
+  now read as that contract's chain, ordered by the government's revision and
+  then the source date, and numbered ours: **v1 · Government Original**, **v2 ·
+  Government Revision 1**, and so on. Templates with no source type recorded
+  are not chained: they are not known to be revisions of one another.
+- **A new DD-254 is built from the highest revision.** Typing a contract with
+  several revisions saved used to report "several templates match" and apply
+  none; it now applies the latest and says it is the latest of how many.
+- **DD-254s built from an earlier revision are flagged.** When a newer revision
+  is entered, the dashboard says how many DD-254s were built from an earlier
+  one and puts **Revision needed** on each card. **Review** lists them:
+  **Revise** spawns a Revision built from the newest template (preselected in
+  the spawn question), **Open** takes you to a DD-254 still being prepared,
+  where **Update to new template** leads to the newest revision, and
+  **Exempt…** records why one stays as it is — until the next revision. Only
+  the newest DD-254 in each line is listed; Cancelled and Skipped ones are not.
+- **Each DD-254 says what it was built from.** The card shows the template, its
+  version and the government revision, and the day it was applied — the record
+  that this DD-254 was issued with this template on this date.
+- **Pickers say which templates are superseded**, so an older revision is not
+  chosen by mistake.
+- Task orders now pick their source by the same order — the government's
+  revision number first, then the date.
+
+1667 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.24.0 — 25 November 2026
 
 Tool version 2.175. The template check also happens when a DD-254 is spawned.

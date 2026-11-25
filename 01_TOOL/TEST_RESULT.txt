@@ -1,4 +1,4 @@
-BUILD_SHA256 86d96d2f71d6e630279959472f4527dd80f232b00002ee148e1aab757c261ef6
+BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1793,6 +1793,15 @@ BUILD_SHA256 86d96d2f71d6e630279959472f4527dd80f232b00002ee148e1aab757c261ef6
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 159. v2.25.0 a contract’s templates are a revision chain, and DD-254s built from an earlier link are flagged
+  PASS  the chain orders a contract’s templates by the government’s revision, numbered ours
+  PASS  a new DD-254 is built from the highest revision in the chain
+  PASS  entering a newer revision flags the DD-254s issued under an earlier one
+  PASS  Revise from the list builds a Revision from the newest link, and the flag clears
+  PASS  Exempt keeps a DD-254 on its revision until the next one
+  PASS  a draft built from an earlier link is told to update, and Update takes the newest
+  PASS  task orders follow the government’s revision number first, then the date
+
 ### 158. v2.24.0 spawning asks whether to build from the current template
   PASS  spawning a Revision asks when the template has changed, and builds from the current one
   PASS  keeping the earlier wording carries it, and the Revision warns when it is opened
@@ -1993,5 +2002,5 @@ BUILD_SHA256 86d96d2f71d6e630279959472f4527dd80f232b00002ee148e1aab757c261ef6
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1660   FAIL 0
+  PASS 1667   FAIL 0
 ================================
