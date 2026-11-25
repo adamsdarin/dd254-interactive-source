@@ -1,6 +1,25 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-24 by Maintainer
+Last updated: 2026-11-25 by Maintainer
+
+What v2.23.0 (Tool 2.174), build 5f487795, changes. Owner, 25 November 2026:
+"when a DD-254 workflow is opened, it checks the template repo, every time, to
+see if there are any changes, and if there is there is a warning saying
+'template changed - update to new template'." Applying a template now writes
+`srcKind`/`srcId`/`srcFp`/`srcAt` into the existing `ctLangSrc` snapshot
+(`ctLangSrcData` third argument). `tplChangeInfo()` runs from `buildPanel()`,
+so on every open and every check: it re-fingerprints the template
+(`tplFingerprint` over `tplCanon`, which drops empties, false, trailing spaces,
+`langModeV`, `ioId`, `label`, `updatedAt`) and, on a difference, adds a warning
+and shows `#tplChangedBanner` under the title with Update to new template
+(`tplChangeUpdate` -> `dashApplyTpl`/`dashApplyB13` with `{confirmed:true}`)
+and Keep this version (`srcAck`, audited). Never on final statuses; legacy
+snapshots get a baseline on first open (`srcBaseline`); a removed template is
+reported without an update button. 1654 assertions (nine new, section 157),
+five gates, both smokes; banner photographed in headless Chrome. The flaky
+portfolio-export test is being fixed in a separate session on its own branch
+(it touches `dd254_regression.js` near line 2034; section 157 is near line
+10500).
 
 Latest published release: **v2.22.0 (Tool 2.173)**, build 23c69e31. Signed tag
 at 78f3d3b on `main`; 12/12 checksums, the provenance attestation (official

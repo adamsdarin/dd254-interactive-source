@@ -10486,6 +10486,134 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
 
+H('157. v2.23.0 a DD-254 warns when its template has changed since it was applied');
+/* The owner, 25 November 2026: "when a DD-254 workflow is opened, it checks the
+   template repo, every time, to see if there are any changes, and if there is
+   there is a warning saying 'template changed - update to new template'." */
+
+/* built inside the page: ctBlankData is the tool's, not the runner's */
+const tcSaveA=async(i13)=>{ await E("tplSave(TPL_CT,[{ioId:'tc-a',label:'Alpha contract',data:Object.assign(ctBlankData(),{primeContract:'TC-A',i13:"+JSON.stringify(i13)+",c11:{'11c':true}})}])"); };
+const tcSnap=()=>{ try{ return JSON.parse(E("(document.getElementById('ctLangSrc')||{}).value")||'null'); }catch(e){ return null; } };
+const tcBanner=()=>{ const b=w.document.getElementById('tplChangedBanner'); return {shown:!!b&&b.style.display==='block',text:b?b.textContent:''}; };
+const tcWarn=()=>(E("window.DD254_WARNS")||[]).filter(function(x){ return /^Template changed/.test(x); });
+const tcReopen=async(id)=>{ E("clearTimeout(DASH.timer);"); await E("dashSaveNow()"); E("showDashView();"); await E("dashOpen('"+id+"')"); };
+let TCID='';
+
+await ta('applying a template records which one it was and what it said', async()=>{
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe(); await E("tplSave(TPL_B13,[{label:'CPFF R&D',data:Object.assign(ctBlankData(),{i13:'TYPE V1.'})}])");
+  await tcSaveA('ALPHA V1.');
+  await newDraft('orig',{prime:'TC-A'});
+  TCID=E("DASH.current"); RUN();
+  const s=tcSnap()||{};
+  return (s.srcKind==='ct'&&s.srcId==='tc-a'&&/^[0-9a-f]{16}$/.test(s.srcFp||'')&&/^\d{4}-\d\d-\d\dT/.test(s.srcAt||'')
+       && !tcBanner().shown && tcWarn().length===0 && String(E("document.getElementById('item13').value")).indexOf('ALPHA V1.')>=0)
+    ? true : JSON.stringify({s,banner:tcBanner(),warn:tcWarn()});
+});
+
+await ta('a change in the repository is a warning and a banner, every time the DD-254 is opened', async()=>{
+  await tcSaveA('ALPHA V2.');
+  await tcReopen(TCID); RUN();
+  const first=tcBanner(), warn=tcWarn();
+  const buttons=!!w.document.getElementById('tplChangeUpdate')&&!!w.document.getElementById('tplChangeKeep');
+  await tcReopen(TCID); RUN();
+  const again=tcBanner();
+  return (first.shown&&/Template changed \u2014 update to new template\. \u201cAlpha contract\u201d has changed in the repository since it was applied/.test(first.text)
+       && warn.length===1 && buttons && again.shown)
+    ? true : JSON.stringify({first,warn,buttons,again});
+});
+
+await ta('a change that changes nothing is not a change', async()=>{
+  /* the editor filling in empty fields, an unticked box written out, trailing
+     spaces, the language-mode stamp, a new name, a new last-updated time */
+  await E("tplSave(TPL_CT,[{ioId:'tc-a',label:'Alpha contract (renamed)',updatedAt:'2026-11-25T10:00:00Z',"
+    +"data:Object.assign(ctBlankData(),{primeContract:'TC-A',i13:'ALPHA V1.   ',c11:{'11c':true,'11d':false},l10:{},l11:{'11a':''},langModeV:1,i16:{a:'',b:'',c:'',d:'',e:'',f:''}})}])");
+  await tcReopen(TCID); RUN();
+  return (!tcBanner().shown&&tcWarn().length===0) ? true : JSON.stringify(tcBanner());
+});
+
+await ta('Update to new template brings the new wording across and clears the warning', async()=>{
+  await tcSaveA('ALPHA V2 \u2014 REVISED WORDING.');
+  await tcReopen(TCID); RUN();
+  const before=tcBanner().shown, fp0=(tcSnap()||{}).srcFp;
+  E("window.__tcConfirm=window.uiConfirm;window.uiConfirm=async function(){return true;};");
+  const ok=await E("tplChangeUpdate()");
+  E("window.uiConfirm=window.__tcConfirm;"); RUN();
+  const i13=String(E("document.getElementById('item13').value"));
+  const audited=E("audAll()").some(function(x){ return x.action==='template-change-updated'&&/Alpha contract/.test(JSON.stringify(x)); });
+  return (before&&ok===true&&i13.indexOf('ALPHA V2 \u2014 REVISED WORDING.')>=0&&i13.indexOf('ALPHA V1.')<0
+       && !tcBanner().shown&&tcWarn().length===0&&(tcSnap()||{}).srcFp!==fp0&&audited)
+    ? true : JSON.stringify({before,ok,i13:i13.slice(0,120),banner:tcBanner(),audited});
+});
+
+await ta('Keep this version silences it until the template changes again', async()=>{
+  await tcSaveA('ALPHA V3.');
+  await tcReopen(TCID); RUN();
+  const shown=tcBanner().shown;
+  await E("tplChangeKeep()");
+  const quiet=!tcBanner().shown&&tcWarn().length===0;
+  const audited=E("audAll()").some(function(x){ return x.action==='template-change-kept'; });
+  const kept=String(E("document.getElementById('item13').value")).indexOf('ALPHA V3.')<0;
+  await tcReopen(TCID); RUN();
+  const stillQuiet=!tcBanner().shown;
+  await tcSaveA('ALPHA V4.');
+  await tcReopen(TCID); RUN();
+  return (shown&&quiet&&audited&&kept&&stillQuiet&&tcBanner().shown) ? true : JSON.stringify({shown,quiet,audited,kept,stillQuiet,again:tcBanner()});
+});
+
+await ta('an issued DD-254 is never warned', async()=>{
+  E("clearTimeout(DASH.timer);"); await E("dashSaveNow()");
+  await E("(async function(){ var r=await draftGet('"+TCID+"'); r.status='Issued'; await draftPut(r); })()");
+  E("showDashView();"); await E("dashOpen('"+TCID+"')"); RUN();
+  const quiet=!tcBanner().shown&&tcWarn().length===0;
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  return quiet ? true : JSON.stringify(tcBanner());
+});
+
+await ta('a Contract Type is watched the same way', async()=>{
+  E("window.__N=dashNewDraft('orig');");
+  const d=await waitFor(()=>w.document.getElementById('dashPartyDlg'),'the create dialog');
+  const put=function(x,v){ const e=d.querySelector('#'+x); e.value=v; if(e.oninput) e.oninput(); };
+  put('np_first','Rae'); put('np_last','Quinn'); put('np_email','r.q@example.test'); put('np_prime','TC-NONE'); put('np_sub','N/A');
+  d.querySelector('#np_tk_b13').click(); const sel=d.querySelector('#np_tpl'); sel.value='0'; sel.onchange();
+  d.querySelector('#np_ok').click(); await E("window.__N");
+  const id=E("DASH.current"); RUN();
+  const s=tcSnap()||{};
+  await E("tplSave(TPL_B13,[{label:'CPFF R&D',data:Object.assign(ctBlankData(),{i13:'TYPE V2.'})}])");
+  await tcReopen(id); RUN();
+  const warned=tcBanner().shown;
+  E("window.__tcConfirm=window.uiConfirm;window.uiConfirm=async function(){return true;};");
+  await E("tplChangeUpdate()");
+  E("window.uiConfirm=window.__tcConfirm;"); RUN();
+  const i13=String(E("document.getElementById('item13').value"));
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  return (s.srcKind==='b13'&&s.srcId==='CPFF R&D'&&warned&&i13.indexOf('TYPE V2.')>=0&&!tcBanner().shown)
+    ? true : JSON.stringify({s,warned,i13:i13.slice(0,80)});
+});
+
+await ta('a DD-254 made before this version starts watching from the day it is opened', async()=>{
+  await tcSaveA('LEGACY V1.');
+  await E("draftPut({id:'TCL',title:'Legacy',status:'Draft',stage:'orig',meta:{contract:'TC-A'},todos:[],dist:[],holds:[],notes:'',"
+    +"workspace:{texts:{i2a:'TC-A',item13:'LEGACY V1.',ctLangSrc:JSON.stringify({srcLabel:'Alpha contract'})},checks:{},radios:{},selects:{ctTplSel:'tc-a'},perf:[]}})");
+  await E("dashOpen('TCL')"); RUN();
+  const quiet=!tcBanner().shown, s=tcSnap()||{};
+  await tcSaveA('LEGACY V2.');
+  await tcReopen('TCL'); RUN();
+  const warned=tcBanner().shown;
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  return (quiet&&s.srcKind==='ct'&&s.srcId==='tc-a'&&s.srcBaseline===1&&/^[0-9a-f]{16}$/.test(s.srcFp||'')&&warned)
+    ? true : JSON.stringify({quiet,s,warned});
+});
+
+await ta('a template removed from the repository is reported, with nothing to update to', async()=>{
+  await E("tplSave(TPL_CT,[])");
+  await E("dashOpen('TCL')"); RUN();
+  const b=tcBanner(), upd=!!w.document.getElementById('tplChangeUpdate'), keep=!!w.document.getElementById('tplChangeKeep');
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await wipe(); await E("tplSave(TPL_B13,[])");
+  return (b.shown&&/no longer in the repository/.test(b.text)&&!upd&&keep) ? true : JSON.stringify({b,upd,keep});
+});
+
 H('156. v2.22.0 spawning an Original asks for the contract it is awarded under');
 /* The owner, 24 November 2026: "when you have a solicitation, you go to spawn
    an original, it should require you to enter in a contract number. It isn't

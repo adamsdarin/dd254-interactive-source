@@ -1,4 +1,4 @@
-BUILD_SHA256 23c69e316bd25f0e5f79174f1da159c0d92a9774b1f0ff409bc89c3038933f60
+BUILD_SHA256 5f48779529c675227063a9b1380d61316ed478959a4452151793e0c4a076f6c2
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -1793,6 +1793,17 @@ BUILD_SHA256 23c69e316bd25f0e5f79174f1da159c0d92a9774b1f0ff409bc89c3038933f60
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 157. v2.23.0 a DD-254 warns when its template has changed since it was applied
+  PASS  applying a template records which one it was and what it said
+  PASS  a change in the repository is a warning and a banner, every time the DD-254 is opened
+  PASS  a change that changes nothing is not a change
+  PASS  Update to new template brings the new wording across and clears the warning
+  PASS  Keep this version silences it until the template changes again
+  PASS  an issued DD-254 is never warned
+  PASS  a Contract Type is watched the same way
+  PASS  a DD-254 made before this version starts watching from the day it is opened
+  PASS  a template removed from the repository is reported, with nothing to update to
+
 ### 156. v2.22.0 spawning an Original asks for the contract it is awarded under
   PASS  the dialog asks for the contract, and does not assume the solicitation’s
   PASS  the award’s contract goes into Items 2a and 2b and names the Original
@@ -1974,5 +1985,5 @@ BUILD_SHA256 23c69e316bd25f0e5f79174f1da159c0d92a9774b1f0ff409bc89c3038933f60
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1645   FAIL 0
+  PASS 1654   FAIL 0
 ================================

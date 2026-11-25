@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.22.0 (tool version 2.173)"
+VER="DD254 Interactive v2.23.0 (tool version 2.174)"
 
 DOC = [
-("h1","DD254 Interactive v2.22.0 changes"),
+("h1","DD254 Interactive v2.23.0 changes"),
+("b","<b>New: Template changed \u2014 update to new template.</b> A DD-254 remembers which template it was built from and what that template said. Each time it is opened, the template is read again from the repository; if it has changed, a banner under the title says so, and the warning is listed with the other findings."),
+("n","<b>Update to new template</b> re-applies the template as it is now, after confirming that Items 10 to 16 and 18 and Item 13 will be rewritten. <b>Keep this version</b> leaves the DD-254 as it is, records that in the audit log, and the warning returns if the template changes again. Issued, Cancelled and Skipped DD-254s are never warned."),
+("h2","DD254 Interactive v2.22.0 changes"),
 ("b","<b>New: export the template library as a PDF or a Word document.</b> Manage \u203a Share templates \u203a <b>Export template library (PDF / Word)</b>, or <b>PDF / Word</b> in any template screen. Tick the repositories and choose a format. Every template is laid out by Item, with a heading for each template and each Item, so the Word Navigation Pane and the PDF bookmarks list them and the wording can be searched. The document is a copy; edit wording in the tool."),
 ("n","If this browser holds a sensitive-terms list, the export names any template containing a listed phrase \u2014 never the phrase \u2014 and waits for you to confirm. The marking is CUI when any included template is recorded as producing a CUI form."),
 ("b","<b>New: Contract closed.</b> Tick it on the DD-254 template filed under a contract that has closed. Its templates then read CLOSED in every picker; choosing one, or typing its contract number, shows a red line in the create, copy and spawn dialogs; and on the form a red banner under Item 2a and a finding hold the DD-254 at Draft until you set the finding aside with the reason it is being prepared. Issued, Cancelled and Skipped DD-254s are never flagged."),

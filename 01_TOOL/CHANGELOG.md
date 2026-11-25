@@ -1,3 +1,31 @@
+## v2.23.0 — 25 November 2026
+
+Tool version 2.174. A DD-254 says when the template it was built from has
+changed.
+
+- **New: "Template changed — update to new template."** Applying a DD-254
+  template or a Contract Type now records which template it was and a
+  fingerprint of what it said. Every time the DD-254 is opened — and every time
+  it is checked while open — the template is read again from the repository. If
+  it has changed, a banner under the title names it and the date it was
+  applied, and the same warning is listed with the other findings, so **Done**
+  shows it.
+- **Update to new template** re-applies the template as it is now, after one
+  confirmation that says what will be rewritten. **Keep this version** leaves the
+  DD-254 as it is and records that in the audit log; the warning comes back if
+  the template changes again.
+- **Only real changes count.** A blank field filled in by the editor, an
+  unticked box written out, spaces at the end of a line, an upgrade's internal
+  stamp, a new name or a new last-updated time are not changes.
+- **A template removed from the repository is reported too**, without an update
+  button: there is nothing to update to.
+- **Not on Issued, Cancelled or Skipped DD-254s** — they are the record of what
+  went out.
+- **DD-254s made before this version** start watching the day they are first
+  opened in it: the template as it stands that day is the starting point.
+
+1654 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.22.0 — 24 November 2026
 
 Tool version 2.173. The template library as a searchable document, closed
