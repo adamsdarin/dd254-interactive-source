@@ -2,6 +2,16 @@
 
 Last updated: 2026-11-25 by Maintainer
 
+**Next work - Phase 0 / v2.25.1.** The November architecture review and the
+roadmap to v3.0 are in
+[02_DOCS/product_planning/REVIEW_AND_ROADMAP_2026-11.md](02_DOCS/product_planning/REVIEW_AND_ROADMAP_2026-11.md):
+nine verified defects from an external critique plus five more (the most
+urgent: a received DD-254 import never sets `primeContract`, so imported
+government revisions never join v2.25.0's revision chain). Start a new session
+with [START_PROMPT_v2.25.1.md](02_DOCS/product_planning/START_PROMPT_v2.25.1.md).
+Four owner decisions (§6) are asked before code changes. Branch
+`fix/flaky-portfolio-export` (0467a99) is item P0.1 and is not yet merged.
+
 Latest published release: **v2.25.0 (Tool 2.176)**, build 873a0238. Signed tag
 at 786b95c on `main`; 12/12 checksums, the provenance attestation (official
 873a0238..., demo e4fa02e1..., ref refs/tags/v2.25.0, attested commit 786b95c),
