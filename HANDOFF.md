@@ -2,16 +2,27 @@
 
 Last updated: 2026-11-26 by Claude
 
-**v2.25.1 (Tool 2.177) is PACKAGED on branch `fix/v2.25.1`, build 7dc93921;
-not merged, not tagged, not pushed, demo not updated. Waiting for the owner's
-go-ahead to publish.** 1683 assertions, 0 failures (16 new in section 160; 17
-restated, listed in RELEASE_ASSESSMENT_v2.25.1.md). check_scripts,
+Latest published release: **v2.25.1 (Tool 2.177)**, build 7dc93921, published
+2026-11-26 on the owner's go-ahead. `verify` passed on e52d5bc (branch
+`fix/v2.25.1`), main fast-forwarded to it, SSH-signed tag v2.25.1 at e52d5bc;
+the release workflow passed on its first run. Verified from a fresh download:
+12/12 checksums; the provenance attestation (official 7dc93921..., demo
+775e011a..., ref refs/tags/v2.25.1, attested commit e52d5bc); every attached
+document is v2.25.1 / 2.177; the kit holds no bytecode and rebuilds the build
+byte-identically; the downloaded build passes the native-browser smoke test.
+Live demo published as dd254-interactive 90a4e56 (staged blob checked against
+the release demo first) and served by Pages, byte-identical to the attested
+demo asset.
+
+Next: Phase 1 of the roadmap (field registry). Open for the owner: whether the
+duplicate check (`ctDuplicatePairs`) should stop treating an Original and its
+Revisions under one contract as duplicates (see the P0.2 entry below).
+
+**v2.25.1 at packaging:** 1683 assertions, 0 failures (16 new in section 160;
+17 restated, listed in RELEASE_ASSESSMENT_v2.25.1.md). check_scripts,
 check_release_tools, check_documentation, check_manifest and verify_pdflib
 pass; the rebuild kit splits and rebuilds byte-identically; both builds pass
-the native-browser smoke test; the CSP is byte-for-byte v2.25.0's. To publish,
-follow SETUP.md "Publish": push the branch, require `verify` green on that
-commit, fast-forward main, sign and push tag v2.25.1, verify the release from a
-fresh download, then the demo repo.
+the native-browser smoke test; the CSP is byte-for-byte v2.25.0's.
 
 **Packaging log (2026-11-26, Claude).**
 Owner decisions (§6 of the roadmap), asked 2026-11-26, all four as proposed:
