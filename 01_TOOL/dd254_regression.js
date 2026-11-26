@@ -10755,6 +10755,33 @@ t('P0.10 the demo banner says what the demo actually does', ()=>{
        && /fictitious data only/.test(txt) && guards) ? true : JSON.stringify({txt,guards});
 });
 
+/* P0.11 - N5. dashSaveNow wrote a fresh record when the open id was no longer
+   in the store, so an autosave landing after a deletion could re-create the
+   deleted DD-254 (as {id, status:'Draft'} plus whatever the form held). Proved
+   both ways: deleted underneath the open form (any path other than dashDelete,
+   which also clears DASH.current), and through dashDelete with a save already
+   in flight. */
+await ta('P0.11 an autosave for a deleted open record does not re-create it', async()=>{
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  const mk=(id,c)=>"draftPut({id:'"+id+"',title:'P0.11 "+id+"',stage:'orig',status:'Draft',createdAt:'2026-11-01T00:00:00Z',updatedAt:'2026-11-01T00:00:00Z',todos:[],notes:'',"
+    +"workspace:{texts:{i2a:'"+c+"'},checks:{},radios:{},selects:{},perf:[]}})";
+  await E(mk('P011A','P011-C-0001'));
+  await E("dashOpen('P011A')");
+  const opened=E("DASH.current")==='P011A';
+  await E("draftDel('P011A')");
+  await E("dashSaveNow()");
+  const a=await E("draftGet('P011A')");
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  await E(mk('P011B','P011-C-0002'));
+  await E("dashOpen('P011B')");
+  E("window.__UC=window.uiConfirm;window.uiConfirm=async function(){return true;};");
+  try{ await E("Promise.all([dashSaveNow(),dashDelete('P011B')])"); await E("dashSaveNow()"); }
+  finally{ E("window.uiConfirm=window.__UC;"); }
+  const b=await E("draftGet('P011B')");
+  E("clearTimeout(DASH.timer);DASH.current=null;showDashView();resetFormFields();");
+  return (opened && !a && !b) ? true : JSON.stringify({opened,a:!!a,b:!!b});
+});
+
 H('159. v2.25.0 a contract\u2019s templates are a revision chain, and DD-254s built from an earlier link are flagged');
 /* The owner, 25 November 2026: "I should get a flag, if/when I enter a new
    template that is a revision 1, 2, 3, 4, ect for all the DD-254's that I

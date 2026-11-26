@@ -70,6 +70,13 @@ holds the new assertions, labelled by item.
   and flow-down panel tests (now on the CO package), the obsolete-mapping test
   (now on `coPackageModel`), section 67's three card tests, and section 68's
   section count (12 to 10).
+- 2026-11-26 Claude - **P0.10 done** (1682/0): the demo banner says the demo
+  keeps changes in the browser until its site data is cleared (`demo_seed.html`;
+  the seed guards that make that true are asserted). **P0.11 done** (1683/0):
+  N5 was real. A record deleted underneath the open form came back on the next
+  autosave; `dashSaveNow` no longer writes a record that is not in the store.
+  `dashDelete` with a save in flight was already safe and is asserted too.
+  All eleven Phase 0 items pass; packaging next.
 
 **Next work - Phase 0 / v2.25.1.** The November architecture review and the
 roadmap to v3.0 are in
