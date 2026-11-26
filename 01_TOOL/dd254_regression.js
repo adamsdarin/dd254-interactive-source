@@ -10658,6 +10658,32 @@ t('P0.4 a fully answered form shows 100% and half of it 50%', ()=>{
   return (half===50 && full===100) ? true : JSON.stringify({half,full});
 });
 
+/* P0.5 - D3. Item 12's header said "(optional - not required)" while its
+   instructions said it must be completed and validation blocks an unmarked Q1.
+   Q1 (routing) is required; Q2 (the release authority) is optional. */
+t('P0.5 Item 12 header, instructions and validation agree: Q1 required, Q2 optional', ()=>{
+  const D=w.document;
+  const head=Array.from(D.querySelectorAll('.ilabel')).filter(x=>((x.querySelector('.inum')||{}).textContent||'').trim()==='12')[0];
+  const ht=head?head.textContent:'';
+  const sec=head?head.parentNode.textContent:'';
+  F(); RUN(); const noQ1=(w.DD254_ERRORS||[]).some(x=>/^Item 12: Public release routing must be marked/.test(x));
+  R('i12route','dir'); V('i12',''); RUN(); const q1Only=!(w.DD254_ERRORS||[]).some(x=>/^Item 12/.test(x));
+  F(); RUN();
+  const r={notOptional:!/optional — not required/.test(ht), q1Req:/Q1 required/.test(ht), q2Opt:/Q2 optional/.test(ht),
+    instr:/Q1 \(DIRECT or THROUGH\) must be marked on every DD Form 254/.test(sec), q2Label:/Q2 · Public Release Authority \(optional\)/.test(sec), noQ1, q1Only};
+  return Object.keys(r).every(k=>r[k]) ? true : JSON.stringify(r);
+});
+
+/* P0.6 - D4. #i3a_date carried onclick="e=>{e.stopPropagation()}", which
+   defines a function and never calls it. */
+t('P0.6 Item 3a has no no-op click handler and still takes a date', ()=>{
+  const el=w.document.getElementById('i3a_date');
+  F(); R('spec','3a'); V('i3a_date','20260315'); RUN();
+  const kept=E("document.getElementById('i3a_date').value")==='20260315' && E("collect254Data(false).v.i3a_date")==='20260315';
+  F(); RUN();
+  return (!!el && !el.hasAttribute('onclick') && kept) ? true : JSON.stringify({attr:el&&el.getAttribute('onclick'),kept});
+});
+
 H('159. v2.25.0 a contract\u2019s templates are a revision chain, and DD-254s built from an earlier link are flagged');
 /* The owner, 25 November 2026: "I should get a flag, if/when I enter a new
    template that is a revision 1, 2, 3, 4, ect for all the DD-254's that I

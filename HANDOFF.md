@@ -44,6 +44,12 @@ holds the new assertions, labelled by item.
   list counted (six), so a fully answered form shows 100%. P0.3 and P0.4 share
   one full-suite checkpoint: 1675/0. (P0.3's own full run had one failure, the
   injection test above, restated and checked on both builds before this run.)
+- 2026-11-26 Claude - **P0.5 done** (1676/0): Item 12's header reads "(Q1
+  required · Q2 optional)" with the required asterisk, the instruction says Q1
+  must be marked and THROUGH must name the office, Q2 is labelled optional;
+  validation was already right and is asserted unchanged. **P0.6 done**
+  (1677/0): the no-op `onclick` on `#i3a_date` is gone; the date still reaches
+  the export data.
 
 **Next work - Phase 0 / v2.25.1.** The November architecture review and the
 roadmap to v3.0 are in
