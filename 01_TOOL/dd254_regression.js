@@ -2031,11 +2031,40 @@ await ta('search still narrows the portfolio', async()=>{
   E("dashSetSearch('Portfolio 42')"); await E("dashRenderCards()");
   const v=titles(); E("dashClearFilters();"); await E("dashRenderCards()");
   return v.length===1 && v[0]==='Portfolio 42';});
+/* The export writes every draft in the store at that instant. This test once
+   asserted rows.length===62 (marking + header + the 60 seeded drafts) and failed
+   on a hosted runner (v2.22.0 release run 45482558601) when a background write
+   landed mid-test: a pending autosave (DASH.timer -> dashSaveNow re-creates the
+   open record) or the start-up recount (DD254_AUTO_RECOUNT). So: quiesce both
+   first, then assert only on what this test seeded - each Portfolio N exactly
+   once under its own ID, plus the marking and header rows. DASH.current is
+   restored so the tests after this one see the state they always did.
+   v2.25.1 (P0.1): the pending save is FLUSHED (await dashSaveNow(), which also
+   clears DASH.timer) rather than only cancelled, so the write that was due lands
+   before the export reads the store instead of being dropped - the open record
+   is then set aside so nothing schedules another one mid-export. */
 await ta('the portfolio export handles the whole portfolio', async()=>{
-  let cap=''; const OB=w.Blob; w.Blob=function(p){cap=String(p[0]||'');return new OB(p,{type:'text/csv'});};
-  await E("portfolioCsv()"); w.Blob=OB;
+  if(w.DD254_AUTO_RECOUNT) await w.DD254_AUTO_RECOUNT;
+  await E("dashSaveNow()");
+  const open=E("DASH.current");
+  E("clearTimeout(DASH.timer);DASH.current=null;");
+  let cap=''; const OB=w.Blob;
+  w.Blob=function(p,o){ if(o&&/^text\/csv/.test(o.type||'')) cap=String(p[0]||''); return new OB(p,o); };
+  try{ await E("portfolioCsv()"); } finally{ w.Blob=OB; w.DASH.current=open; }
   const rows=E("ioCsvParse("+JSON.stringify(cap)+")");
-  return rows.length===62;});
+  const marking=rows[0]||[], hdr=rows[1]||[];
+  const markOk=marking.length===1 && /^(UNCLASSIFIED|CUI \/\/ CONTROLLED UNCLASSIFIED INFORMATION)$/.test(marking[0]);
+  const ti=hdr.indexOf('Title'), ii=hdr.indexOf('ID');
+  const hdrOk=ti===0 && ii===hdr.length-1;
+  const data=rows.slice(2);
+  const shapeOk=data.every(r=>r.length===hdr.length);
+  let seededOk=true;
+  for(let i=0;i<60;i++){
+    const hit=data.filter(r=>r[ii]==='P'+i);
+    if(hit.length!==1 || hit[0][ti]!=='Portfolio '+i){ seededOk=false; break; }
+  }
+  const portfolioTitles=data.filter(r=>/^Portfolio \d+$/.test(r[ti])).length;
+  return markOk && hdrOk && shapeOk && seededOk && portfolioTitles===60;});
 /* A performance tripwire, not a benchmark. Recounting this 61-draft portfolio was
    measured back to back on one machine at 32.8s and 20.4s for the same build and
    29.7s for the shipped v1.13.0; CI measured 19.8s, 25.1s and once over 30s. A
