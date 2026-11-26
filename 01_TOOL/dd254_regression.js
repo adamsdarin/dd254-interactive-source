@@ -2038,11 +2038,16 @@ await ta('search still narrows the portfolio', async()=>{
    open record) or the start-up recount (DD254_AUTO_RECOUNT). So: quiesce both
    first, then assert only on what this test seeded - each Portfolio N exactly
    once under its own ID, plus the marking and header rows. DASH.current is
-   restored so the tests after this one see the state they always did. */
+   restored so the tests after this one see the state they always did.
+   v2.25.1 (P0.1): the pending save is FLUSHED (await dashSaveNow(), which also
+   clears DASH.timer) rather than only cancelled, so the write that was due lands
+   before the export reads the store instead of being dropped - the open record
+   is then set aside so nothing schedules another one mid-export. */
 await ta('the portfolio export handles the whole portfolio', async()=>{
+  if(w.DD254_AUTO_RECOUNT) await w.DD254_AUTO_RECOUNT;
+  await E("dashSaveNow()");
   const open=E("DASH.current");
   E("clearTimeout(DASH.timer);DASH.current=null;");
-  if(w.DD254_AUTO_RECOUNT) await w.DD254_AUTO_RECOUNT;
   let cap=''; const OB=w.Blob;
   w.Blob=function(p,o){ if(o&&/^text\/csv/.test(o.type||'')) cap=String(p[0]||''); return new OB(p,o); };
   try{ await E("portfolioCsv()"); } finally{ w.Blob=OB; w.DASH.current=open; }
