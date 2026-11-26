@@ -1,6 +1,37 @@
 # HANDOFF — dd254-interactive-source
 
-Last updated: 2026-11-25 by Maintainer
+Last updated: 2026-11-26 by Claude
+
+**In progress - v2.25.1 on branch `fix/v2.25.1` (not merged, not tagged).**
+Owner decisions (§6 of the roadmap), asked 2026-11-26, all four as proposed:
+(1) Item 7 keeps "one subcontractor per DD Form 254", "informational only" goes;
+(2) Items 1a/1b on an imported DD-254 are recorded on the template as source
+facts (`srcFcl`, `srcSfg`) and shown, never applied; (3) the unreachable
+flow-down ceiling wiring is cut now, rebuilt on `primeSourceId` in Phase 4;
+(4) the Advisory drawer (Phase 5) starts collapsed.
+
+Code changes live in the gitignored working build `01_TOOL/dd254.htm` until
+packaging; only tests and docs are committed per item. Section 160 of the suite
+holds the new assertions, labelled by item.
+
+- 2026-11-26 Claude - **P0.1 done.** `fix/flaky-portfolio-export` rebased onto
+  main (HANDOFF conflict only, main's kept) and changed to flush the pending
+  save (`await dashSaveNow()`) before exporting; the suite cut off after that
+  test passed 20 runs in a row; merged as 248d717.
+- 2026-11-26 Claude - **P0.2 done.** `rcv254Parse` reads Item 2a into
+  `data.primeContract` (and `taskOrder`/`orderType` from "PRIME | Task Order
+  N"), and 1a/1b into `srcFcl`/`srcSfg` (`rcv254Level`, `tplSrcLevels`), shown
+  in the import preview, the repository row and the revision review dialog. A
+  typed (Original/Revision) template with no prime shows "Contract number
+  missing — revision chain cannot include this" on its row (`ctChainGap`).
+  Two assertions restated in section 94 (prime was asserted empty; the
+  import-from-page row check assumed the whole repository stayed on screen,
+  which `ctRepoGo` narrowing to the now-known contract changes). Suite 1672/0.
+  **For the owner:** `ctDuplicatePairs` treats any two templates under one
+  prime/order as duplicates regardless of source type, so importing a
+  government Revision for a contract that already has its Original asks
+  "Possible duplicate templates - Save both?". That is v2.25.0 behaviour for
+  hand-entered chains too; not changed here.
 
 **Next work - Phase 0 / v2.25.1.** The November architecture review and the
 roadmap to v3.0 are in

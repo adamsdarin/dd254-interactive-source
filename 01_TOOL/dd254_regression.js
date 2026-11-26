@@ -6526,14 +6526,20 @@ await ta('confirming the preview creates exactly one DD-254 Template Language en
   const hash=require('crypto').createHash('sha256').update(Buffer.from(bytes)).digest('hex');
   const aud=E("audAll()").filter(x=>x.action==='template-imported-from-dd254');
   const msg=w.__RCVMSG;
+  /* RESTATED v2.25.1 (P0.2): this asserted primeContract==='' and "Not
+     imported: Items 1–9 and 17". Leaving the prime empty is the defect (D8/N1):
+     an imported revision could never join its contract's revision chain. Item 2a
+     is now the template's contract number, and Items 1a/1b are recorded as
+     source facts (owner decision 2), so the preview says Items 2b–9 are not
+     imported. */
   return !!t && ctCount()===beforeCt+1 && E("tplLoad(TPL_B13).length")===beforeB13 && (await E("draftAll()")).length===beforeDrafts
       && added.label==='Received DD 254 — SUB-RCV-0042 — Revision 2 2026-03-01'
       && added.srcType==='rev' && added.srcRev==='2' && added.srcDate==='2026-03-01' && !!added.ioId
-      && added.data.c10['10a'] && added.data.i16.a==='Example GCA' && !('i9' in added.data) && added.data.primeContract===''
+      && added.data.c10['10a'] && added.data.i16.a==='Example GCA' && !('i9' in added.data) && added.data.primeContract==='W911NF-26-C-0001'
       && JSON.stringify(added).indexOf('Example description that must not import')===-1
       && JSON.stringify(added).indexOf('Example Certifier')===-1
       && aud.length>=1 && aud[aud.length-1].detail.indexOf('received-rev2.pdf sha256 '+hash)===0
-      && /Not imported: Items 1–9 and 17/.test(msg) && /No draft or dashboard record is created/.test(msg) && /Item 10: 10a, 10j/.test(msg);
+      && /Not imported: Items 2b–9 and 17/.test(msg) && /No draft or dashboard record is created/.test(msg) && /Item 10: 10a, 10j/.test(msg);
 });
 await ta('the imported template applies to a form like any other', async()=>{
   const added=E("tplLoad(TPL_CT)")[0]; w.__RT=added;
@@ -6578,7 +6584,16 @@ await ta('importing from the open Template Language page adds the entry to that 
   w.__RF=rcvFile(bytes,'from-page.pdf');
   await E("rcv254Upload({target:{files:[window.__RF],value:'x'}})");
   const rows=w.document.querySelectorAll('#tplRows .tpl-row').length;
-  const ok=E("window.TPL_EDIT.length")===before+1 && !!w.document.querySelector('#tplRows .tpl-row[data-index="'+before+'"]') && rows<=12 && E("tplLoad(TPL_CT).length")===before+1;
+  /* RESTATED v2.25.1 (P0.2): this checked for the row at data-index=before,
+     i.e. that the whole repository was still on screen. The import puts the new
+     entry first (index 0) and ctRepoGo(0) narrows the page to that entry's
+     prime contract; with the prime left empty (the D8 defect) the narrowing
+     matched everything. Now the entry has its contract, so the page shows that
+     contract's templates - the new row among them - and not the others. */
+  const shownPrimes=Array.from(w.document.querySelectorAll('#tplRows .tpl-row')).map(r=>String(((E("window.TPL_EDIT")[+r.dataset.index]||{}).data||{}).primeContract||''));
+  const ok=E("window.TPL_EDIT.length")===before+1 && !!w.document.querySelector('#tplRows .tpl-row[data-index="0"]')
+    && E("window.TPL_EDIT[0].label").indexOf('Received DD 254')===0 && shownPrimes.length>0 && shownPrimes.every(p=>p==='W911NF-26-C-0001')
+    && rows<=12 && E("tplLoad(TPL_CT).length")===before+1;
   E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
   return ok; });
 
@@ -10514,6 +10529,83 @@ await ta('a manager with several leaves the choice to the operator', async()=>{
   E("window.TPL_EDIT=[];tplSave(TPL_SM,[]);");
   return (blank===''&&kept==='BIRCH'&&dropped==='')
       ? true : JSON.stringify({blank,kept,dropped}); });
+
+H('160. v2.25.1 Phase 0: verified defects from the November 2026 review');
+/* REVIEW_AND_ROADMAP_2026-11.md section 7, items P0.1 to P0.11. Each item's
+   assertions are labelled with its number. P0.1 (the portfolio export test) is
+   restated in place in section 41, where the test lives. */
+
+/* P0.2 - D8/N1. The importer never set primeContract, so a government revision
+   brought in through "Create from a received DD-254" never joined v2.25.0's
+   revision chain, whose key is the prime contract. Owner decision 2 (26 November
+   2026): Items 1a/1b are recorded on the template as source facts (srcFcl,
+   srcSfg) and shown, never applied to a form. */
+const P02_PRIME='W911NF-26-C-0001';
+const p02Import=async(mutate,name)=>{
+  const bytes=await rcvPdf(mutate);
+  E("window.__RCVMSG='';window.uiConfirm=async function(m){window.__RCVMSG=m;return true;};window.alert=function(){};window.TPL_EDIT=null;window.TPL_EDIT_KIND='';");
+  w.__RF=rcvFile(bytes,name||'p02.pdf');
+  const t=await E("rcv254Import(window.__RF)");
+  E("window.uiConfirm=async function(){return true;};");
+  return t;
+};
+await ta('P0.2 an imported DD-254 carries its prime contract, and Items 1a/1b as source facts', async()=>{
+  E("clearTimeout(DASH.timer);DASH.current=null;"); await E("tplSave(TPL_CT,[])");
+  rcvFill(); const D=w.document; D.getElementById('fcl1a').value='S'; D.getElementById('sfg1b').value='NONE'; E("run()");
+  const res=await rcvTry(await rcvPdf());
+  if(!res.ok) return res.msg;
+  const r=res.r;
+  return (r.data.primeContract===P02_PRIME && r.data.taskOrder==='' && r.srcFcl==='S' && r.srcSfg==='NONE' && r.number==='SUB-RCV-0042')
+    ? true : JSON.stringify({prime:r.data.primeContract,to:r.data.taskOrder,fcl:r.srcFcl,sfg:r.srcSfg,number:r.number});
+});
+await ta('P0.2 a combined Item 2a "PRIME | Task Order N" becomes the prime and the order', async()=>{
+  rcvFill();
+  const res=await rcvTry(await rcvPdf(function(x){ return x.replace(/<two_Prime>[^<]*<\/two_Prime>/,'<two_Prime>W911NF-26-D-0002 | Delivery Order 0007</two_Prime>'); }));
+  if(!res.ok) return res.msg;
+  const d=res.r.data;
+  return (d.primeContract==='W911NF-26-D-0002' && d.taskOrder==='0007' && d.orderType==='Delivery Order')
+    ? true : JSON.stringify({p:d.primeContract,t:d.taskOrder,o:d.orderType});
+});
+await ta('P0.2 an imported Revision 1 joins the chain of the Original already saved for that contract', async()=>{
+  E("clearTimeout(DASH.timer);DASH.current=null;");
+  await E("tplSave(TPL_CT,[{ioId:'p02-o',label:'Gov Original',srcType:'orig',srcDate:'2025-06-01',data:Object.assign(ctBlankData(),{primeContract:'"+P02_PRIME+"',i13:'ORIGINAL WORDING.'})}])");
+  rcvFill(); const D=w.document; D.getElementById('i3b_rev').value='1'; E("run()");
+  const t=await p02Import(null,'gov-rev1.pdf');
+  if(!t) return 'import returned '+JSON.stringify(t);
+  const r=E("(function(){ var L=tplLoad(TPL_CT), o=L.filter(function(x){return x.ioId==='p02-o';})[0], n=L.filter(function(x){return x.ioId==='"+t.ioId+"';})[0];"
+    +" return {chain:tplChainOf(o).map(function(x){return x.ioId;}).join('|'), latest:tplChainLatest(o).ioId, ver:tplChainVersion(n).label}; })()");
+  return (r.chain==='p02-o|'+t.ioId && r.latest===t.ioId && /^v2 \u00b7 Government Revision 1/.test(r.ver)) ? true : JSON.stringify(r);
+});
+await ta('P0.2 Items 1a/1b are kept on the template, shown in the preview and never applied to a form', async()=>{
+  E("clearTimeout(DASH.timer);DASH.current=null;"); await E("tplSave(TPL_CT,[])");
+  rcvFill(); const D=w.document; D.getElementById('fcl1a').value='TS'; D.getElementById('sfg1b').value='S'; E("run()");
+  const t=await p02Import(null,'levels.pdf');
+  if(!t) return 'import returned '+JSON.stringify(t);
+  const msg=String(w.__RCVMSG);
+  w.__RT=t; const ws=E("ctApplyDataToWorkspace(window.__RT.data)");
+  const applied=JSON.stringify(ws.selects||{})+JSON.stringify(ws.texts||{});
+  return (t.srcFcl==='TS' && t.srcSfg==='S' && E("tplLoad(TPL_CT)[0].srcFcl")==='TS'
+       && /Items 1a\/1b as received: Top Secret \/ Secret \u2014 recorded on the template, not applied/.test(msg)
+       && /Item 2a: W911NF-26-C-0001 \u2014 the template\u2019s prime contract/.test(msg)
+       && !/fcl1a|sfg1b/.test(applied) && !('srcFcl' in t.data))
+    ? true : JSON.stringify({fcl:t.srcFcl,sfg:t.srcSfg,msg:msg.slice(0,400),applied:applied.slice(0,200)});
+});
+await ta('P0.2 a revision with no contract number is flagged in the repository until one is entered', async()=>{
+  E("clearTimeout(DASH.timer);DASH.current=null;");
+  await E("tplSave(TPL_CT,[{ioId:'p02-old',label:'Received DD 254 \u2014 OLD \u2014 Revision 1',srcType:'rev',srcRev:'1',srcDate:'2026-02-01',data:ctBlankData()},"
+    +"{ioId:'p02-plain',label:'Hand template',data:ctBlankData()}])");
+  await E("dashTplEdit('ct')");
+  const idx=E("window.TPL_EDIT.map(function(x){return x.ioId;})");
+  const io=idx.indexOf('p02-old'), ip=idx.indexOf('p02-plain');
+  const txt=i=>String((w.document.getElementById('ctSrc_'+i)||{}).textContent||'');
+  const flagged=/Contract number missing \u2014 revision chain cannot include this/.test(txt(io));
+  const plainQuiet=!/Contract number missing/.test(txt(ip));
+  E("ctSetPrime("+io+",'"+P02_PRIME+"')");
+  const cleared=!/Contract number missing/.test(txt(io));
+  E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';showDashView();");
+  await E("tplSave(TPL_CT,[])");
+  return (flagged && plainQuiet && cleared) ? true : JSON.stringify({flagged,plainQuiet,cleared,old:txt(io).slice(0,160)});
+});
 
 H('159. v2.25.0 a contract\u2019s templates are a revision chain, and DD-254s built from an earlier link are flagged');
 /* The owner, 25 November 2026: "I should get a flag, if/when I enter a new
