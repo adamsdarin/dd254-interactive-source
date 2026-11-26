@@ -56,6 +56,20 @@ holds the new assertions, labelled by item.
   from Item 7 (the Access Advisor's own "informational only" is a different
   statement and stays). **P0.8 done** (1679/0): `FN_FIELDS` labels i16a
   "16a — GCA name".
+- 2026-11-26 Claude - **P0.9 done** (1681/0). Checked first, as the start
+  prompt asked: `CLAUSES` is a constant local to `buildClausesPanel` (its only
+  three references are inside it), and `coPackageModel` builds its own clause
+  list (`clauses.push`) and its own flow-down list (`flow`). Removed:
+  `buildClausesPanel`, `buildFlowDownPanel`, `buildTemplateLanguage` (the dead
+  `#bpPanel` lookup) and their calls in `run()`, `resetTpl` and `ctSaveLang`;
+  the two hidden `data-co-only` sections and `#bpButtons`. Kept: `TPL_DEFAULTS`,
+  `getTplText`, `insertTpl` and the card helpers (used by the section composer,
+  the template save and the suite). The CO package models (government and
+  prime) were compared on v2.25.0 and on the working build from the same form
+  state: identical. Seven assertions restated: the panel census, the clauses
+  and flow-down panel tests (now on the CO package), the obsolete-mapping test
+  (now on `coPackageModel`), section 67's three card tests, and section 68's
+  section count (12 to 10).
 
 **Next work - Phase 0 / v2.25.1.** The November architecture review and the
 roadmap to v3.0 are in

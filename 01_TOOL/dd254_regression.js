@@ -1532,13 +1532,22 @@ t('showStep clamps out-of-range values', ()=>{ E("showStep(99);");
   return hi===7 && E("WIZ_STEP")===0; });
 t('the progress readout names the step', ()=>{ E("showStep(3);");
   return /Step 4 of 8/.test(w.document.getElementById('wpText').textContent); });
+/* RESTATED v2.25.1 (P0.9): the next three read #flowDownPanel and #clausesPanel,
+   hidden containers (data-co-only) that nothing ever showed but run() rebuilt
+   on every keystroke. Both are removed. Clause review and the flow-down list
+   are where an operator sees them, in the CO review packages (coPackageModel),
+   so that is where these now look. */
 t('every panel section renders', ()=>{ F(); C('c10f'); C('c11f'); RUN();
-  return ['errorsPanel','item3Panel','warnsPanel','flowDownPanel','clausesPanel','item13tags','completionPanel']
+  return ['errorsPanel','item3Panel','warnsPanel','item13tags','completionPanel']
     .every(id=>{const el=w.document.getElementById(id); return el && el.innerHTML.trim().length>0;}); });
-t('the clauses panel reacts to selections', ()=>{ F(); C('c10j'); RUN();
-  return /DFARS|FAR/.test(w.document.getElementById('clausesPanel').innerHTML); });
-t('the flow-down panel names GCA-approval items', ()=>{ F(); C('c11i'); C('c10f'); RUN();
-  return /GCA/.test(w.document.getElementById('flowDownPanel').innerHTML); });
+t('the prime package’s flow-down clauses react to selections', ()=>{ F(); V('i2b','SUB-1'); RUN();
+  const before=E("coPackageModel('prime').flow.clauses.map(function(c){return c.ref;}).join('|')");
+  C('c10j'); RUN();
+  const after=E("coPackageModel('prime').flow.clauses.map(function(c){return c.ref;}).join('|')");
+  return (/FAR 52\.204-2/.test(before) && !/252\.204-7012/.test(before) && /DFARS 252\.204-7012/.test(after)) ? true : JSON.stringify({before,after}); });
+t('the prime package names GCA-approval items', ()=>{ F(); V('i2b','SUB-1'); C('c11i'); C('c10f'); RUN();
+  const gca=E("coPackageModel('prime').flow.gca");
+  return gca.some(x=>/11i/.test(x.label)&&/GCA/.test(x.rule)) && gca.some(x=>/10f/.test(x.label)&&/GCA/.test(x.rule)); });
 t('completion status reports the counts', ()=>{ F(); RUN();
   const h=w.document.getElementById('completionPanel').innerHTML;
   return /Errors:/.test(h) && /Warnings:/.test(h) && /completion/i.test(h); });
@@ -1804,13 +1813,18 @@ t('the CO package checks Item 12 and minimum signed distribution', ()=>{
       && /18c — DCSA CSO NOT checked/.test(grabbed)
       && /signed and certified DD Form 254/.test(grabbed);
 });
-t('the live clause and flow-down panels do not revive the obsolete mappings', ()=>{
-  const src=E("String(buildClausesPanel)+'\\n'+String(buildFlowDownPanel)");
+/* RESTATED v2.25.1 (P0.9): this read the source of buildClausesPanel and
+   buildFlowDownPanel, the hidden panels that are removed. The clause and
+   flow-down mappings an operator sees are the CO review package's
+   (coPackageModel), so that is the source checked: no obsolete mapping, and the
+   FAR 52.204-2 "conform substantially" wording kept. The two panel headings
+   ("Baseline Applicability Review", "Flow-down review") went with the panels. */
+t('the clause and flow-down lists do not revive the obsolete mappings', ()=>{
+  const src=E("String(coPackageModel)");
   return !/252\.204-7005/.test(src)
       && !/Export-Controlled Items/.test(src)
-      && /Baseline Applicability Review/.test(src)
       && /conform substantially/.test(src)
-      && /Flow-down review/.test(src);
+      && /Subcontract Flow-Down|flowClauses/.test(src);
 });
 t('generated HTML reports encode operator text and declare a locked-down CSP', ()=>{
   const raw='<img src=x onerror="window.opener.pwned=1">';
@@ -4245,24 +4259,27 @@ await ta('a section box saves the text actually in it', async()=>{
 });
 
 H('67. Template language moves out of the side panel in sections layout');
+/* RESTATED v2.25.1 (P0.9): the next three called buildTemplateLanguage() and
+   counted cards in #bpPanel, a panel that had already been retired - the
+   function looked it up, found nothing and returned, on every run(). The dead
+   lookup is removed with the function, so these assert, in each layout, that
+   ticking a box still builds no side-panel template card anywhere. */
 t('the side panel drops Item 10 and 11 cards when sections are on', ()=>{
   b13Clear(); E("b13ViewSet('sections')");
-  E("var t=document.getElementById('cb10a'); if(t&&!document.getElementById('c10a').checked)t.click();");
-  E("buildTemplateLanguage()");
-  const ids=Array.from(w.document.querySelectorAll('#bpPanel .tplcard')).map(c=>c.id.replace('tplcard-',''));
+  E("var t=document.getElementById('cb10a'); if(t&&!document.getElementById('c10a').checked)t.click(); run();");
+  const ids=Array.from(w.document.querySelectorAll('.tplcard')).map(c=>c.id.replace('tplcard-',''));
   const leaked=ids.filter(x=>/^1[01][a-m]/.test(x));
-  return leaked.length===0 ? true : leaked;
+  return (leaked.length===0 && E("typeof buildTemplateLanguage")==='undefined') ? true : leaked;
 });
 t('the retired template-language panel stays absent in one-block layout', ()=>{
   E("b13ViewSet('block')");
-  E("var c=document.getElementById('c10a'); if(c&&!c.checked){var t=document.getElementById('cb10a'); if(t)t.click();}");
-  E("buildTemplateLanguage()");
-  const ids=Array.from(w.document.querySelectorAll('#bpPanel .tplcard')).map(c=>c.id.replace('tplcard-',''));
-  return ids.length===0 ? true : ids;
+  E("var c=document.getElementById('c10a'); if(c&&!c.checked){var t=document.getElementById('cb10a'); if(t)t.click();} run();");
+  const ids=Array.from(w.document.querySelectorAll('.tplcard')).map(c=>c.id.replace('tplcard-',''));
+  return (ids.length===0 && !w.document.getElementById('bpPanel')) ? true : ids;
 });
 t('non Item 10/11 language also stays out of the retired panel', ()=>{
-  E("b13ViewSet('sections'); buildTemplateLanguage()");
-  const a=Array.from(w.document.querySelectorAll('#bpPanel .tplcard')).map(c=>c.id.replace('tplcard-',''));
+  E("b13ViewSet('sections'); run();");
+  const a=Array.from(w.document.querySelectorAll('.tplcard')).map(c=>c.id.replace('tplcard-',''));
   E("b13ViewSet('block')");
   return a.length===0 ? true : a;
 });
@@ -4325,8 +4342,12 @@ t('nothing was dropped in the split', ()=>{
      panel; v2.7.0 added Contract Type, which used to be a chooser at
      origination; v2.14.0 removed Standard Language and Contract Templates
      That Fit, which the permanent left rail now owns outright - two lists of
-     one library, only one of which could insert from it. */
-  return n===12 ? true : n+' sections, expected 12';
+     one library, only one of which could insert from it.
+     RESTATED v2.25.1 (P0.9): 12 became 10. The Subcontract Flow-Down and
+     Applicable Contract Clauses sections were hidden (data-co-only, never
+     shown) and rebuilt on every keystroke; both are removed, and their content
+     is in the CO review packages, which build their own lists. */
+  return n===10 ? true : n+' sections, expected 10';
 });
 t('no panel content ended up outside either panel', ()=>{
   const stray=Array.from(w.document.querySelectorAll('.panel-col .rp-section'))
@@ -10700,6 +10721,27 @@ t('P0.7 Item 7 says one consistent thing: it is the one subcontractor this form 
 t('P0.8 the file-name settings call 16a the GCA name', ()=>{
   const l=E("FN_FIELDS.filter(function(f){return f.key==='i16a';})[0].label");
   return l==='16a — GCA name' ? true : l;
+});
+
+/* P0.9 - D7. run() rebuilt the Clauses and Flow-Down panels on every keystroke
+   into containers nothing ever showed (data-co-only), and called
+   buildTemplateLanguage, whose #bpPanel no longer exists. Checked before
+   removal (26 November 2026): CLAUSES is a constant local to
+   buildClausesPanel and read nowhere else; coPackageModel builds its own
+   clause list and its own flow-down list. */
+t('P0.9 no hidden panel is built on every keystroke', ()=>{
+  const D=w.document, src=fs.readFileSync('dd254.htm','utf8');
+  const r={clauses:E("typeof buildClausesPanel"), flow:E("typeof buildFlowDownPanel"), tl:E("typeof buildTemplateLanguage"),
+    markup:['clausesPanel','flowDownPanel','bpButtons','bpPanel'].filter(id=>D.getElementById(id)),
+    coOnly:D.querySelectorAll('[data-co-only]').length, bpLookup:src.indexOf("ck('bpPanel')")>=0};
+  return (r.clauses==='undefined'&&r.flow==='undefined'&&r.tl==='undefined'&&!r.markup.length&&!r.coOnly&&!r.bpLookup) ? true : JSON.stringify(r);
+});
+t('P0.9 the CO review package still lists its clauses and the prime package its flow-down', ()=>{
+  COP_FORM();
+  const g=E("coPackageModel('gov')"), p=E("coPackageModel('prime')");
+  const gca=((p.flow||{}).gca||[]).map(x=>x.label).join('|');
+  const refs=g.clauses.map(c=>c.ref).join('|');
+  return (/FAR 52\.204-2/.test(refs) && /DFARS 252\.204-7012/.test(refs) && /11i/.test(gca) && /10f/.test(gca) && /10c/.test(gca)) ? true : JSON.stringify({refs,gca});
 });
 
 H('159. v2.25.0 a contract\u2019s templates are a revision chain, and DD-254s built from an earlier link are flagged');
