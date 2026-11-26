@@ -208,15 +208,21 @@ t('NONE / NA not a false positive', ()=> E("dashFlowIssues({workspace:{selects:{
 t('Item 11 compared, GCA keys starred', ()=>{
   const i=E("dashFlowIssues({workspace:{selects:{},checks:{}}},{workspace:{selects:{},checks:{c11i:true,c11b:true,c10a:true}}})");
   return i.includes('11i*')&&i.includes('11b')&&i.includes('10a')&&!i.includes('11b*');});
-t('live: level exceedance is an ERROR', ()=>{
+/* RESTATED v2.25.1 (P0.3, owner decision 3): the next three asserted that the
+   live ceiling (flowIssuesLive) raised an error for a level above the parent's
+   and warnings for added boxes. That path was unreachable from anything the
+   tool creates - every parent is an earlier issuance of the same contract - and
+   is cut until Phase 4 links a subcontract to its prime (primeSourceId). The
+   same parent and form now raise no flow-down finding at all; the rule itself
+   lives on in dashFlowIssues, tested directly above. */
+t('live: level exceedance raises no flow-down error now that the wiring is cut', ()=>{
   E("resetFormFields();window.DD254_PARENT={title:'PRIME-1',workspace:{selects:{fcl1a:'C',sfg1b:'C'},checks:{c11b:true}}};");
   E("document.getElementById('fcl1a').value='S';document.getElementById('sfg1b').value='TS';document.getElementById('c11i').checked=true;document.getElementById('c11b').checked=true;document.getElementById('c10a').checked=true;run();");
-  return (w.DD254_ERRORS||[]).some(x=>/Item 1a FCL \(S\) exceeds PRIME-1/.test(x))
-      && (w.DD254_ERRORS||[]).some(x=>/Item 1b safeguarding \(TS\) exceeds PRIME-1/.test(x));});
-t('live: GCA-approval adds are a WARN not an error', ()=>
-  (w.DD254_WARNS||[]).some(x=>/11i/.test(x)&&/prior GCA written approval/.test(x))
-  && !(w.DD254_ERRORS||[]).some(x=>/prior GCA written approval/.test(x)));
-t('live: non-GCA adds warned separately', ()=> (w.DD254_WARNS||[]).some(x=>/10a/.test(x)&&/actually flows from the prime/.test(x)));
+  return !(w.DD254_ERRORS||[]).some(x=>/exceeds PRIME-1/.test(x));});
+t('live: GCA-approval adds raise no flow-down warning now that the wiring is cut', ()=>
+  !(w.DD254_WARNS||[]).some(x=>/^Flow-down:/.test(x)&&/prior GCA written approval/.test(x))
+  && !(w.DD254_ERRORS||[]).some(x=>/^Flow-down:/.test(x)));
+t('live: non-GCA adds raise no flow-down warning now that the wiring is cut', ()=> !(w.DD254_WARNS||[]).some(x=>/^Flow-down:/.test(x)&&/actually flows from the prime/.test(x)));
 t('live: a box already on the prime is not flagged', ()=>
   !(w.DD254_WARNS||[]).filter(x=>x.indexOf('Flow-down:')===0).some(x=>/\b11b\b/.test(x)));
 t('no parent means no flow-down noise', ()=>{E("window.DD254_PARENT=null;run();");
@@ -4825,14 +4831,19 @@ t('phone text is displayed literally and cannot create validation markup', ()=>{
     && E("window.__validationInjected")===false
     && panel.textContent.includes('<img id="validation-injection-probe"')) ? true : panel.innerHTML;
 });
-t('a parent draft title cannot create markup in an error row', ()=>{
-  F(); V('fcl1a','TS');
-  E("window.__parentInjected=false;window.DD254_PARENT={title:'<svg id=parent-title-probe onload=window.__parentInjected=true>',workspace:{selects:{fcl1a:'C',sfg1b:'NONE'},texts:{},checks:{}}};");
+/* RESTATED v2.25.1 (P0.3): this carried the parent's title into an error row
+   through the flow-down ceiling ("... exceeds <title> ..."), which is cut. The
+   parent-derived text that still reaches an error row is the SAP-lineage
+   finding, which names the parent from its own Item 3 fields
+   (rsumParentName), so the probe now travels in the parent's Item 3a date. */
+t('a parent draft’s text cannot create markup in an error row', ()=>{
+  F(); C('sapFlag');
+  E("window.__parentInjected=false;window.DD254_PARENT={title:'Parent',issuance:true,stage:'orig',workspace:{selects:{fcl1a:'C',sfg1b:'NONE'},texts:{i3a_date:'<svg id=parent-title-probe onload=window.__parentInjected=true>'},checks:{sapFlag:false}}};");
   RUN();
   const panel=w.document.getElementById('errorsPanel');
   const ok=!w.document.getElementById('parent-title-probe') && E("window.__parentInjected")===false
-    && panel.textContent.includes('<svg id=parent-title-probe');
-  E("window.DD254_PARENT=null");
+    && panel.textContent.includes('<svg id=parent-title-probe') && /SAP DD-254: this issuance is marked SAP/.test(panel.textContent);
+  E("window.DD254_PARENT=null"); C('sapFlag',false); RUN();
   return ok ? true : panel.innerHTML;
 });
 t('live findings are rendered through the shared DOM builder', ()=>{
@@ -6810,15 +6821,25 @@ t('a Revision that raises Items 1a and 1b or adds a box gets no flow-down findin
   const all=(w.DD254_ERRORS||[]).concat(w.DD254_WARNS||[]);
   const ok=!all.some(x=>/Flow-down/.test(x)) && rsI13().indexOf('- Item 1b Safeguarding Level: changed from Secret to Top Secret.')>0;
   C('c11i',false); RUN(); return ok ? true : all.filter(x=>/Flow-down|1b/.test(x)); });
-t('a parent that is not an earlier issuance still gets the ceiling', ()=>{
+/* RESTATED v2.25.1 (P0.3, owner decision 3): this asserted that a parent
+   which is not an earlier issuance still got the flow-down ceiling. No parent
+   the tool creates is one (D1), so that branch was unreachable and is cut until
+   Phase 4 builds a real subcontract-to-prime link. Such a parent now raises no
+   flow-down finding either. */
+t('a parent that is not an earlier issuance gets no flow-down finding while the ceiling is cut', ()=>{
   E("window.__rsP=window.DD254_PARENT;window.DD254_PARENT=Object.assign({},window.__rsP,{issuance:false});run();");
-  const hit=(w.DD254_ERRORS||[]).some(x=>/Flow-down: Item 1a FCL \(TS\) exceeds/.test(x));
+  const hit=(w.DD254_ERRORS||[]).concat(w.DD254_WARNS||[]).some(x=>/Flow-down/.test(x));
   E("window.DD254_PARENT=window.__rsP;delete window.__rsP;run();");
-  return hit && !(w.DD254_ERRORS||[]).some(x=>/Flow-down/.test(x)); });
-await ta('the dashboard card shows no "exceeds prime" chip for a Revision', async()=>{
+  return !hit && !(w.DD254_ERRORS||[]).some(x=>/Flow-down/.test(x)); });
+/* RESTATED v2.25.1 (P0.3, owner decision 3): this asserted the chip was absent
+   for a Revision, i.e. that dashParentIsIssuance suppressed it. The chip
+   itself is removed (it could never appear), so the card is checked for it
+   and the card renderer must no longer contain one at all. */
+await ta('the dashboard card shows no "exceeds prime" chip, and no card can', async()=>{
   await E("dashSaveNow()"); await E("dashRenderCards()");
   const h=w.document.getElementById('dashCards').innerHTML;
-  return h.indexOf('W91CRB-26-C-0042')>=0 && h.indexOf('exceeds prime')<0; });
+  const renderer=String(E("String(dashRenderCards)"));
+  return h.indexOf('W91CRB-26-C-0042')>=0 && h.indexOf('exceeds prime')<0 && renderer.indexOf('dashFlowIssues')<0; });
 t('typing in Item 13 is not interrupted; the summary catches up on blur', ()=>{
   const el=w.document.getElementById('item13'); el.tabIndex=0; el.focus();
   if(w.document.activeElement!==el){ el.removeAttribute('tabindex'); return 'item13 not focusable here'; }
@@ -10605,6 +10626,36 @@ await ta('P0.2 a revision with no contract number is flagged in the repository u
   E("window.TPL_EDIT=null;window.TPL_EDIT_KIND='';showDashView();");
   await E("tplSave(TPL_CT,[])");
   return (flagged && plainQuiet && cleared) ? true : JSON.stringify({flagged,plainQuiet,cleared,old:txt(io).slice(0,160)});
+});
+
+/* P0.3 - D1. dashParentIsIssuance() is true for every parent the tool can
+   create, so the flow-down ceiling (flowIssuesLive) and the card's "exceeds
+   prime" chip could never fire. Owner decision 3 (26 November 2026): cut the
+   unreachable wiring now and rebuild it on primeSourceId in Phase 4. The pure
+   dashFlowIssues stays, with its direct tests in section 4. */
+t('P0.3 the unreachable flow-down wiring is gone and the pure comparison stays', ()=>{
+  const src=fs.readFileSync('dd254.htm','utf8');
+  const r={live:E("typeof flowIssuesLive"), pure:E("typeof dashFlowIssues"), chip:src.indexOf('exceeds prime')>=0,
+    pureWorks:E("dashFlowIssues({workspace:{selects:{fcl1a:'C'},checks:{}}},{workspace:{selects:{fcl1a:'TS'},checks:{}}})")[0]};
+  return (r.live==='undefined' && r.pure==='function' && !r.chip && r.pureWorks==='FCL TS > prime C') ? true : JSON.stringify(r);
+});
+t('P0.3 a parent that is not an earlier issuance raises no flow-down finding', ()=>{
+  E("resetFormFields();window.DD254_PARENT={title:'PRIME-1',issuance:false,workspace:{selects:{fcl1a:'C',sfg1b:'C'},checks:{}}};");
+  E("document.getElementById('fcl1a').value='TS';document.getElementById('sfg1b').value='TS';document.getElementById('c11i').checked=true;run();");
+  const all=(w.DD254_ERRORS||[]).concat(w.DD254_WARNS||[]).filter(x=>/Flow-down/.test(x));
+  E("window.DD254_PARENT=null;resetFormFields();run();");
+  return all.length===0 ? true : all;
+});
+
+/* P0.4 - D2. The meter counted at most six answers against a total of 12, so
+   "Estimated completion" could never pass 50%. The total is now the length of
+   the list being counted. */
+t('P0.4 a fully answered form shows 100% and half of it 50%', ()=>{
+  const pct=()=>{ const m=/Estimated completion: (\d+)%/.exec(w.document.getElementById('completionPanel').textContent||''); return m?+m[1]:-1; };
+  F(); V('fcl1a','S'); V('sfg1b','S'); R('spec','3a'); RUN(); const half=pct();
+  V('i9','Example description of the work.'); R('fo','no'); R('fin','no'); RUN(); const full=pct();
+  F(); RUN();
+  return (half===50 && full===100) ? true : JSON.stringify({half,full});
 });
 
 H('159. v2.25.0 a contract\u2019s templates are a revision chain, and DD-254s built from an earlier link are flagged');

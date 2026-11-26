@@ -32,6 +32,18 @@ holds the new assertions, labelled by item.
   government Revision for a contract that already has its Original asks
   "Possible duplicate templates - Save both?". That is v2.25.0 behaviour for
   hand-entered chains too; not changed here.
+- 2026-11-26 Claude - **P0.3 done.** `flowIssuesLive` and its three callers
+  (`run()`, the Preparer's Worksheet, the CO package) and the card's flow-down
+  chip are removed; `dashFlowIssues` and its section 4 tests are unchanged;
+  `dashParentIsIssuance` stays (revision-summary chain). Restated: the three
+  section 4 "live:" tests, the Revision section's "a parent that is not an
+  earlier issuance still gets the ceiling", the card-chip test, and section
+  75's parent-title injection test (the probe now travels in the parent's Item
+  3a date through the SAP-lineage error, the remaining path for parent text).
+- 2026-11-26 Claude - **P0.4 done.** The meter's total is the length of the
+  list counted (six), so a fully answered form shows 100%. P0.3 and P0.4 share
+  one full-suite checkpoint: 1675/0. (P0.3's own full run had one failure, the
+  injection test above, restated and checked on both builds before this run.)
 
 **Next work - Phase 0 / v2.25.1.** The November architecture review and the
 roadmap to v3.0 are in
