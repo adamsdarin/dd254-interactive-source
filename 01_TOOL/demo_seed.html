@@ -319,7 +319,10 @@
     if(document.getElementById('demoBanner')) return;
     const d=document.createElement('div');
     d.id='demoBanner';
-    d.textContent='DEMONSTRATION BUILD — resets on every refresh; fictitious data only. Not for preparing an actual DD Form 254.';
+    /* v2.25.1 (P0.10): this used to claim the demo reset itself on each
+       reload. It does not: seed() and seedPortfolio() leave existing data alone, so what a
+       visitor changes stays in their browser until its site data is cleared. */
+    d.textContent='DEMONSTRATION BUILD — fictitious data only; keeps your changes in this browser until you clear its site data. Not for preparing an actual DD Form 254.';
     d.style.cssText='position:sticky;top:0;z-index:9000;background:#7a4038;color:#fff;'
       +'font-family:Arial,sans-serif;font-size:11.5px;font-weight:bold;letter-spacing:.4px;'
       +'text-align:center;padding:5px 10px;';

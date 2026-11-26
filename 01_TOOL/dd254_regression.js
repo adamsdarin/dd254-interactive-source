@@ -10744,6 +10744,17 @@ t('P0.9 the CO review package still lists its clauses and the prime package its 
   return (/FAR 52\.204-2/.test(refs) && /DFARS 252\.204-7012/.test(refs) && /11i/.test(gca) && /10f/.test(gca) && /10c/.test(gca)) ? true : JSON.stringify({refs,gca});
 });
 
+/* P0.10 - D9. The demo banner said the demo "resets on every refresh", but
+   seed() and seedPortfolio() do nothing when data already exists, so changes
+   stay until the browser's site data is cleared - which is what it now says. */
+t('P0.10 the demo banner says what the demo actually does', ()=>{
+  const src=fs.readFileSync('demo_seed.html','utf8');
+  const m=/d\.textContent='([^']*)'/.exec(src); const txt=m?m[1]:'';
+  const guards=/if\(cur\.length\) return false;/.test(src) && /if\(\(await draftAll\(\)\)\.length\) return false;/.test(src);
+  return (!/resets on every refresh/.test(src) && /keeps your changes in this browser until you clear its site data/.test(txt)
+       && /fictitious data only/.test(txt) && guards) ? true : JSON.stringify({txt,guards});
+});
+
 H('159. v2.25.0 a contract\u2019s templates are a revision chain, and DD-254s built from an earlier link are flagged');
 /* The owner, 25 November 2026: "I should get a flag, if/when I enter a new
    template that is a revision 1, 2, 3, 4, ect for all the DD-254's that I
