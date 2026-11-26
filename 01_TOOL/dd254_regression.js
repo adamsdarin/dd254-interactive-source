@@ -10684,6 +10684,24 @@ t('P0.6 Item 3a has no no-op click handler and still takes a date', ()=>{
   return (!!el && !el.hasAttribute('onclick') && kept) ? true : JSON.stringify({attr:el&&el.getAttribute('onclick'),kept});
 });
 
+/* P0.7 - D5. Item 7 said both "this form covers the one subcontractor" and
+   "this entry is informational only". Owner decision 1 (26 November 2026):
+   one subcontractor per DD Form 254; Item 7 is that subcontractor. */
+t('P0.7 Item 7 says one consistent thing: it is the one subcontractor this form is issued to', ()=>{
+  const head=Array.from(w.document.querySelectorAll('.ilabel')).filter(x=>((x.querySelector('.inum')||{}).textContent||'').trim()==='7')[0];
+  const sec=head?head.parentNode.textContent:'';
+  const r={found:!!head, oneSub:/ONE SUBCONTRACTOR PER DD FORM 254/.test(sec), notInfo:!/informational only/i.test(sec),
+    notDoesNotReplace:!/does not replace|does NOT replace/.test(sec), issuedTo:/Item 7 is the subcontractor this DD Form 254 is issued to/.test(sec)};
+  return Object.keys(r).every(k=>r[k]) ? true : JSON.stringify(r);
+});
+
+/* P0.8 - D6. The file-name settings called i16a "16a - Certifier name"; the
+   Item 16 editor and the form call it the GCA name. */
+t('P0.8 the file-name settings call 16a the GCA name', ()=>{
+  const l=E("FN_FIELDS.filter(function(f){return f.key==='i16a';})[0].label");
+  return l==='16a — GCA name' ? true : l;
+});
+
 H('159. v2.25.0 a contract\u2019s templates are a revision chain, and DD-254s built from an earlier link are flagged');
 /* The owner, 25 November 2026: "I should get a flag, if/when I enter a new
    template that is a revision 1, 2, 3, 4, ect for all the DD-254's that I

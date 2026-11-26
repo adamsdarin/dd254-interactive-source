@@ -50,6 +50,12 @@ holds the new assertions, labelled by item.
   validation was already right and is asserted unchanged. **P0.6 done**
   (1677/0): the no-op `onclick` on `#i3a_date` is gone; the date still reaches
   the export data.
+- 2026-11-26 Claude - **P0.7 done** (1678/0, owner decision 1): Item 7's
+  instruction and info line now say Item 7 is the one subcontractor this DD
+  Form 254 is issued to; "informational only" and "does not replace" are gone
+  from Item 7 (the Access Advisor's own "informational only" is a different
+  statement and stays). **P0.8 done** (1679/0): `FN_FIELDS` labels i16a
+  "16a — GCA name".
 
 **Next work - Phase 0 / v2.25.1.** The November architecture review and the
 roadmap to v3.0 are in
