@@ -1,3 +1,43 @@
+## v2.25.1 — 26 November 2026
+
+Tool version 2.177. A patch release of verified defects from the November 2026
+architecture review (Phase 0 of the roadmap).
+
+- **Fixed: a received DD-254 now joins its contract's revision chain.**
+  *Create from a received DD-254* never recorded the contract number, so an
+  imported government Revision could not join the chain v2.25.0 introduced: no
+  *Revision needed* flag and no automatic use of the latest revision. The
+  import now takes Item 2a as the template's prime contract — and, for a task
+  order's own DD-254, the order number and type from "PRIME | Task Order N".
+- **Items 1a and 1b of a received DD-254 are recorded, not applied.** The
+  import preview, the template's row and the revision review show what the
+  source said ("Items 1a/1b as received: Secret / None"). They are never
+  written to a form; Items 1a and 1b stay the preparer's.
+- **Templates that cannot join a chain say so.** A template recorded as an
+  Original or a Revision but with no prime contract — every received DD-254
+  imported before this version — shows *Contract number missing — revision
+  chain cannot include this* on its row until a contract number is entered.
+- **Fixed: an autosave could bring back a deleted DD-254** that was deleted
+  while it was open. It no longer writes a record that is not stored.
+- **Fixed: the completion meter could never pass 50%.** A fully answered form
+  now shows 100%.
+- **Item 12 reads as required**, as it is validated: Q1 (DIRECT or THROUGH) is
+  required; Q2, the public release authority, is optional.
+- **Item 7 says one thing:** it is the one subcontractor this DD Form 254 is
+  issued to. The contradictory "informational only" line is gone.
+- The export file-name settings call 16a the GCA name, as the form does.
+- **Removed: the subcontract flow-down ceiling** between a DD-254 and the record
+  it was spawned from, and its dashboard chip. Every such record is an earlier
+  issuance of the same contract, so it could never fire; it returns when a
+  subcontract can be linked to its prime. The CO review packages still list the
+  boxes that need GCA approval before they are flowed down.
+- Removed hidden panels that were rebuilt on every keystroke and never shown.
+  The CO review packages are unchanged.
+- The demonstration build's banner now says it keeps your changes in the
+  browser until its site data is cleared — it never reset on refresh.
+
+1683 assertions pass; both builds pass the native-browser smoke test.
+
 ## v2.25.0 — 25 November 2026
 
 Tool version 2.176. A contract's templates are a revision chain.

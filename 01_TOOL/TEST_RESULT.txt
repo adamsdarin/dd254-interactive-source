@@ -1,4 +1,4 @@
-BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
+BUILD_SHA256 7dc93921a5a9c15da1435163a1bc6a839a9d20c3a10cef4fa5043cafc85c009e
 
 ### 1. Block 18 in the language template
   PASS  CT_18 constant and labels
@@ -42,9 +42,9 @@ BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
   PASS  equal levels clean
   PASS  NONE / NA not a false positive
   PASS  Item 11 compared, GCA keys starred
-  PASS  live: level exceedance is an ERROR
-  PASS  live: GCA-approval adds are a WARN not an error
-  PASS  live: non-GCA adds warned separately
+  PASS  live: level exceedance raises no flow-down error now that the wiring is cut
+  PASS  live: GCA-approval adds raise no flow-down warning now that the wiring is cut
+  PASS  live: non-GCA adds raise no flow-down warning now that the wiring is cut
   PASS  live: a box already on the prime is not flagged
   PASS  no parent means no flow-down noise
 
@@ -354,8 +354,8 @@ BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
   PASS  showStep clamps out-of-range values
   PASS  the progress readout names the step
   PASS  every panel section renders
-  PASS  the clauses panel reacts to selections
-  PASS  the flow-down panel names GCA-approval items
+  PASS  the prime package’s flow-down clauses react to selections
+  PASS  the prime package names GCA-approval items
   PASS  completion status reports the counts
   PASS  a clean form clears the error panel
   PASS  the classification banner follows the selector
@@ -400,7 +400,7 @@ BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
   PASS  the CO package removes obsolete SAP CNWDI NATO and overseas clause mappings
   PASS  the CO package reports missing CUI designation direction instead of inferring it
   PASS  the CO package checks Item 12 and minimum signed distribution
-  PASS  the live clause and flow-down panels do not revive the obsolete mappings
+  PASS  the clause and flow-down lists do not revive the obsolete mappings
   PASS  generated HTML reports encode operator text and declare a locked-down CSP
   PASS  the generated-report opener cannot retain access to the tool window
   PASS  the notes report covers holds, to-dos and notes
@@ -960,7 +960,7 @@ BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
 
 ### 75. Safe validation rendering and the sole official export
   PASS  phone text is displayed literally and cannot create validation markup
-  PASS  a parent draft title cannot create markup in an error row
+  PASS  a parent draft’s text cannot create markup in an error row
   PASS  live findings are rendered through the shared DOM builder
   PASS  the dynamic XFA form is the only user-facing official PDF export
 
@@ -1284,8 +1284,8 @@ BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
   PASS  Item 3 bookkeeping is not reported as a change
   PASS  lines follow form order
   PASS  a Revision that raises Items 1a and 1b or adds a box gets no flow-down finding
-  PASS  a parent that is not an earlier issuance still gets the ceiling
-  PASS  the dashboard card shows no "exceeds prime" chip for a Revision
+  PASS  a parent that is not an earlier issuance gets no flow-down finding while the ceiling is cut
+  PASS  the dashboard card shows no "exceeds prime" chip, and no card can
   PASS  typing in Item 13 is not interrupted; the summary catches up on blur
   PASS  a hand-edited summary is kept exactly as edited
   PASS  Redraft replaces the edited summary and it is kept up to date again
@@ -1793,6 +1793,24 @@ BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
   PASS  assigning a manager with one programme fills it in
   PASS  a manager with several leaves the choice to the operator
 
+### 160. v2.25.1 Phase 0: verified defects from the November 2026 review
+  PASS  P0.2 an imported DD-254 carries its prime contract, and Items 1a/1b as source facts
+  PASS  P0.2 a combined Item 2a "PRIME | Task Order N" becomes the prime and the order
+  PASS  P0.2 an imported Revision 1 joins the chain of the Original already saved for that contract
+  PASS  P0.2 Items 1a/1b are kept on the template, shown in the preview and never applied to a form
+  PASS  P0.2 a revision with no contract number is flagged in the repository until one is entered
+  PASS  P0.3 the unreachable flow-down wiring is gone and the pure comparison stays
+  PASS  P0.3 a parent that is not an earlier issuance raises no flow-down finding
+  PASS  P0.4 a fully answered form shows 100% and half of it 50%
+  PASS  P0.5 Item 12 header, instructions and validation agree: Q1 required, Q2 optional
+  PASS  P0.6 Item 3a has no no-op click handler and still takes a date
+  PASS  P0.7 Item 7 says one consistent thing: it is the one subcontractor this form is issued to
+  PASS  P0.8 the file-name settings call 16a the GCA name
+  PASS  P0.9 no hidden panel is built on every keystroke
+  PASS  P0.9 the CO review package still lists its clauses and the prime package its flow-down
+  PASS  P0.10 the demo banner says what the demo actually does
+  PASS  P0.11 an autosave for a deleted open record does not re-create it
+
 ### 159. v2.25.0 a contract’s templates are a revision chain, and DD-254s built from an earlier link are flagged
   PASS  the chain orders a contract’s templates by the government’s revision, numbered ours
   PASS  a new DD-254 is built from the highest revision in the chain
@@ -2002,5 +2020,5 @@ BUILD_SHA256 873a02386e43834f0816793e8cb02136cca8ef28dc0daf11ecd3af882ec33ce0
   PASS  nothing else gates the language any more
 
 ================================
-  PASS 1667   FAIL 0
+  PASS 1683   FAIL 0
 ================================

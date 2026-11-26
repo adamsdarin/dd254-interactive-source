@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 TITLE="DD-254 Interactive — User Manual"
 SUB="Preparing, validating, issuing and tracking DD Form 254"
-VER="DD254 Interactive v2.25.0 (tool version 2.176)"
+VER="DD254 Interactive v2.25.1 (tool version 2.177)"
 
 DOC = [
-("h1","DD254 Interactive v2.25.0 changes"),
+("h1","DD254 Interactive v2.25.1 changes"),
+("b","<b>Fixed: a received DD-254 joins its contract’s revision chain.</b> <i>Create from a received DD-254</i> now records Item 2a as the template’s prime contract (and a task order’s own order number), so an imported government Revision joins the chain of the Original saved for that contract."),
+("b","<b>Items 1a and 1b of a received DD-254 are recorded, not applied.</b> The import preview, the template’s row and the revision review show what the source said. They are never written to a form."),
+("b","<b>A template recorded as an Original or a Revision with no prime contract</b> — every received DD-254 imported before this version — shows <i>Contract number missing — revision chain cannot include this</i> on its row. Enter the prime contract (2a) to bring it into its chain."),
+("b","<b>Fixed:</b> an autosave could bring back a DD-254 deleted while it was open; the completion meter could never pass 50%. Item 12 now reads as it is validated: Q1 required, Q2 optional. Item 7 says it is the one subcontractor this DD Form 254 is issued to."),
+("n","Removed: the subcontract flow-down ceiling against the record a DD-254 was spawned from, and its dashboard chip. Every such record is an earlier issuance of the same contract, so it could never fire. The CO review packages still list the boxes that need GCA approval before they are flowed down."),
+("h2","DD254 Interactive v2.25.0 changes"),
 ("b","<b>New: the revision chain.</b> Enter each government DD-254 for a contract as its own DD-254 template and record its source type \u2014 Original, or Revision with its number. The templates under one contract are then read as a chain, numbered v1, v2, v3 with the government\u2019s revision beside each. A new DD-254 is built from the highest revision."),
 ("b","<b>DD-254s built from an earlier revision are flagged</b> on the dashboard, with <i>Revision needed</i> on each card. <b>Review</b> lists them: <i>Revise</i> spawns a Revision from the newest template, <i>Open</i> goes to a DD-254 still being prepared, and <i>Exempt</i> records why one stays as it is until the next revision."),
 ("n","Each card shows the template a DD-254 was built from, its version and the day it was applied. Templates with no source type recorded are not chained."),
@@ -691,7 +697,7 @@ DOC = [
         ["The GCA's biennial review of the security classification requirements (DoDM 5220.32 Volume 1, paragraph 6.3.g)","Confirming GCA authorization before imposing classified requirements on the subcontractor"],
         ["Issuing a new DD Form 254 at award when the form is for a solicitation","Item 17e prime CAGE and Item 18b subcontractor FSO distribution"],
         ["The contract clause applicability review","Subcontract flow-down: items needing GCA approval before a prime may impose them, and clause flow-down"],
-        ["","The SAP subcontract signature, SAP and IR&D subcontract notices, and the flow-down ceiling against a prime DD-254"]]),
+        ["","The SAP subcontract signature, and the SAP and IR&D subcontract notices"]]),
 ("p","Everything else, such as eligibility and safeguarding checks, Item 13, SAP, SCI, CNWDI, NATO and CUI actions, Items 12, 14 and 15, distribution and the certifying official, is in both, word for word."),
 ("n","Choose <b>Contracting Officer Review Package</b> in the export menu. If Item 2b or 7a names a subcontract the prime subcontract review is selected; otherwise the government review is. The dialog says which and why."),
 ("n","Choose <b>view</b> to open it on screen or <b>PDF</b> to download it. You can pick the other audience in the same dialog."),

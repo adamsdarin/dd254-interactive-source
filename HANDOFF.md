@@ -2,7 +2,18 @@
 
 Last updated: 2026-11-26 by Claude
 
-**In progress - v2.25.1 on branch `fix/v2.25.1` (not merged, not tagged).**
+**v2.25.1 (Tool 2.177) is PACKAGED on branch `fix/v2.25.1`, build 7dc93921;
+not merged, not tagged, not pushed, demo not updated. Waiting for the owner's
+go-ahead to publish.** 1683 assertions, 0 failures (16 new in section 160; 17
+restated, listed in RELEASE_ASSESSMENT_v2.25.1.md). check_scripts,
+check_release_tools, check_documentation, check_manifest and verify_pdflib
+pass; the rebuild kit splits and rebuilds byte-identically; both builds pass
+the native-browser smoke test; the CSP is byte-for-byte v2.25.0's. To publish,
+follow SETUP.md "Publish": push the branch, require `verify` green on that
+commit, fast-forward main, sign and push tag v2.25.1, verify the release from a
+fresh download, then the demo repo.
+
+**Packaging log (2026-11-26, Claude).**
 Owner decisions (§6 of the roadmap), asked 2026-11-26, all four as proposed:
 (1) Item 7 keeps "one subcontractor per DD Form 254", "informational only" goes;
 (2) Items 1a/1b on an imported DD-254 are recorded on the template as source
